@@ -5254,13 +5254,15 @@ void process_next_command() {
 
   // Sanitize the current command:
   //  - Skip leading spaces
-  //  - Bypass N[0-9]+[ ]*
-  //  - Overwrite * with nul to mark the end
   while (*current_command == ' ') ++current_command;
+  //  - Bypass N[0-9]+[ ]*
   if (*current_command == 'N' && current_command[1] >= '0' && current_command[1] <= '9') {
+    // [0-9]*
     while (*current_command >= '0' && *current_command <= '9') ++current_command;
+    // - Bypass [ ]*
     while (*current_command == ' ') ++current_command;
   }
+  //  - Overwrite * with nul to mark the end
   char *starpos = strchr(current_command, '*');  // * should always be the last parameter
   if (starpos) *starpos = '\0';
 
