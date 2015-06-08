@@ -5257,6 +5257,8 @@ void process_next_command() {
   while (*current_command == ' ') ++current_command;
   //  - Bypass N[0-9]+[ ]*
   if (*current_command == 'N' && current_command[1] >= '0' && current_command[1] <= '9') {
+    // Skip the N[0-9] that we just found
+    current_command += 2; // alternately ++current_command; ++current_command;
     // [0-9]*
     while (*current_command >= '0' && *current_command <= '9') ++current_command;
     // - Bypass [ ]*
