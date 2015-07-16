@@ -1463,10 +1463,11 @@ static void setup_for_endstop_move() {
             #ifdef DEBUG_LEVELING
               SERIAL_ECHOPAIR("Raise Z (after) by ", (float)Z_RAISE_AFTER_PROBING);
               SERIAL_EOL;
-              print_xyz("> SERVO_ENDSTOPS > do_blocking_move_to", current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + Z_RAISE_AFTER_PROBING);
+              current_position[Z_AXIS] += Z_RAISE_AFTER_PROBING;
+              print_xyz("> SERVO_ENDSTOPS > do_blocking_move_to", current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]);
             #endif
 
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + Z_RAISE_AFTER_PROBING); // this also updates current_position
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]); // this also updates current_position
             st_synchronize();
           }
         #endif
