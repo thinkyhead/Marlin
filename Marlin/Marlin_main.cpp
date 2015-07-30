@@ -2252,8 +2252,11 @@ inline void gcode_G28() {
   st_synchronize();
 
   // For auto bed leveling, clear the level matrix
+   bool skipclear = code_seen('S');
   #ifdef ENABLE_AUTO_BED_LEVELING
-    plan_bed_level_matrix.set_to_identity();
+      if (skipclear = false) {
+             plan_bed_level_matrix.set_to_identity(); //if G28 S then keep the rotation matrix else clear
+                }
     #ifdef DELTA
       reset_bed_level();
     #endif
