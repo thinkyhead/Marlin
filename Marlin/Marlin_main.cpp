@@ -1089,7 +1089,7 @@ static void axis_is_at_home(AxisEnum axis) {
     #endif
 
     #ifdef DEBUG_LEVELING
-      SERIAL_ECHOPAIR("axis_is_at_home ", (unsigned long)axis);
+      SERIAL_ECHOPAIR("set_axis_is_at_home ", (unsigned long)axis);
       SERIAL_ECHOPAIR(" > (home_offset[axis]==", home_offset[axis]);
       print_xyz(") > current_position", current_position);
     #endif
@@ -2240,7 +2240,7 @@ inline void gcode_G4() {
  *  X   Home to the X endstop
  *  Y   Home to the Y endstop
  *  Z   Home to the Z endstop
- *
+ *	S		Skip clearing the rotation matrix
  */
 inline void gcode_G28() {
 
@@ -2342,7 +2342,12 @@ inline void gcode_G28() {
 
       if (home_all_axis || (homeX && homeY)) {  // First diagonal move
 
-        current_position[X_AXIS] = current_position[Y_AXIS] = 0;
+         #ifdef QUICK_HOME
+
+      if (home_all_axis || (homeX && homeY)) {  // First diagonal move
+		if (skipclear = false) { //don't reset the current position if we have used ABL and want to continue with the existing rotation matrix
+        current_position[X_AXIS] = current_position[Y_AXIS] = 0; //reset the current position to zero
+		  }
 
         #ifdef DUAL_X_CARRIAGE
           int x_axis_home_dir = x_home_dir(active_extruder);
