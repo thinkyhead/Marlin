@@ -739,7 +739,7 @@ void setup() {
  *  - Call LCD update
  */
 void loop() {
-  if (commands_in_queue < BUFSIZE - 1) get_command();
+  if (commands_in_queue < BUFSIZE) get_command();
 
   #if ENABLED(SDSUPPORT)
     card.checkautostart(false);
@@ -916,7 +916,7 @@ void get_command() {
       // The command will be injected when EOL is reached
     }
     else if (serial_char == '\\') {  // Handle escapes
-      if (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
+      if (MYSERIAL.available() > 0) {
         // if we have one more character, copy it over
         serial_char = MYSERIAL.read();
         serial_line_buffer[serial_count++] = serial_char;
@@ -927,7 +927,7 @@ void get_command() {
       if (serial_char == ';') comment_mode = true;
       if (!comment_mode) serial_line_buffer[serial_count++] = serial_char;
     }
-  }
+  } // queue has space, serial has data
 
   #if ENABLED(SDSUPPORT)
 
@@ -942,7 +942,7 @@ void get_command() {
 
     uint16_t sd_count = 0;
     bool card_eof = card.eof();
-    while (!card_eof && commands_in_queue < BUFSIZE && !stop_buffering) {
+    while (commands_in_queue < BUFSIZE && !card_eof && !stop_buffering) {
       int16_t n = card.get();
       card_eof = card.eof();
       char sd_char = (char)n;
@@ -6992,7 +6992,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
       filrunout();
   #endif
 
-  if (commands_in_queue < BUFSIZE - 1) get_command();
+  if (commands_in_queue < BUFSIZE) get_command();
 
   millis_t ms = millis();
 
