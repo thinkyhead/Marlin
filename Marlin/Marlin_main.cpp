@@ -803,7 +803,7 @@ void get_command() {
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
-  #if ENABLED(NO_TIMEOUTS)
+  #if defined(NO_TIMEOUTS) && NO_TIMEOUTS > 0
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
@@ -902,7 +902,7 @@ void get_command() {
       // If command was e-stop process now
       if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
 
-      #if ENABLED(NO_TIMEOUTS)
+      #if defined(NO_TIMEOUTS) && NO_TIMEOUTS > 0
         last_command_time = ms;
       #endif
 
