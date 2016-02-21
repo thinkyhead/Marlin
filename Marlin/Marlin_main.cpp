@@ -276,9 +276,8 @@ const char echomagic[] PROGMEM = "echo:";
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
-static char serial_char;
-static int serial_count = 0;
 static boolean comment_mode = false;
+static int serial_count = 0;
 static char* seen_pointer; ///< A pointer to find chars in the command string (X, Y, Z, E, etc.)
 const char* queued_commands_P = NULL; /* pointer to the current line in the active sequence of commands, or NULL when none */
 const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
@@ -800,6 +799,8 @@ void gcode_line_error(const char* err, bool doFlush = true) {
  */
 void get_command() {
 
+  static char serial_line_buffer[MAX_CMD_SIZE];
+
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
   #if ENABLED(NO_TIMEOUTS)
@@ -817,24 +818,21 @@ void get_command() {
   //
   while (commands_in_queue < BUFSIZE && MYSERIAL.available() > 0) {
 
-    #if ENABLED(NO_TIMEOUTS)
-      last_command_time = ms;
-    #endif
-
-    serial_char = MYSERIAL.read();
+    char serial_char = MYSERIAL.read();
 
     //
-    // If the character ends the line, or the line is full...
+    // If the character ends the line
     //
-    if (serial_char == '\n' || serial_char == '\r' || serial_count >= MAX_CMD_SIZE - 1) {
+    if (serial_char == '\n' || serial_char == '\r') {
 
       // end of line == end of comment
       comment_mode = false;
 
       if (!serial_count) return; // empty lines just exit
 
-      char* command = command_queue[cmd_queue_index_w];
-      command[serial_count] = 0; // terminate string
+      serial_line_buffer[serial_count] = 0; // terminate string
+
+      char* command = serial_line_buffer;
 
       // this item in the queue is not from sd
       #if ENABLED(SDSUPPORT)
@@ -904,44 +902,55 @@ void get_command() {
       // If command was e-stop process now
       if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
 
-      cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-      commands_in_queue += 1;
+      #if ENABLED(NO_TIMEOUTS)
+        last_command_time = ms;
+      #endif
 
-      serial_count = 0; //clear buffer
+      // Add the command to the queue
+      enqueuecommand(serial_line_buffer);
+
+      serial_count = 0; //reset buffer
+    }
+    else if (serial_count >= MAX_CMD_SIZE - 1) {
+      // Keep fetching, but ignore normal characters beyond the max length
+      // The command will be injected when EOL is reached
     }
     else if (serial_char == '\\') {  // Handle escapes
       if (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
         // if we have one more character, copy it over
         serial_char = MYSERIAL.read();
-        command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+        serial_line_buffer[serial_count++] = serial_char;
       }
       // otherwise do nothing
     }
     else { // its not a newline, carriage return or escape char
       if (serial_char == ';') comment_mode = true;
-      if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+      if (!comment_mode) serial_line_buffer[serial_count++] = serial_char;
     }
   }
 
   #if ENABLED(SDSUPPORT)
 
-    if (!card.sdprinting || serial_count) return;
+    if (!card.sdprinting) return;
 
     // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
-    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
+    // if it occurs, stop_buffering is triggered and the buffer is run dry.
     // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
 
     static bool stop_buffering = false;
     if (commands_in_queue == 0) stop_buffering = false;
 
-    while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
+    uint16_t sd_count = 0;
+    bool card_eof = card.eof();
+    while (!card_eof && commands_in_queue < BUFSIZE && !stop_buffering) {
       int16_t n = card.get();
-      serial_char = (char)n;
-      if (serial_char == '\n' || serial_char == '\r' ||
-          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
-          serial_count >= (MAX_CMD_SIZE - 1) || n == -1
+      card_eof = card.eof();
+      char sd_char = (char)n;
+      if (card_eof || n == -1
+          || sd_char == '\n' || sd_char == '\r'
+          || ((sd_char == '#' || sd_char == ':') && !comment_mode)
       ) {
-        if (card.eof()) {
+        if (card_eof) {
           SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
           print_job_stop_ms = millis();
           char time[30];
@@ -954,24 +963,25 @@ void get_command() {
           card.printingHasFinished();
           card.checkautostart(true);
         }
-        if (serial_char == '#') stop_buffering = true;
+        if (sd_char == '#') stop_buffering = true;
 
-        if (!serial_count) {
-          comment_mode = false; //for new command
-          return; //if empty line
-        }
-        command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-        // if (!comment_mode) {
+        if (!sd_count) continue; //skip empty lines
+
+        command_queue[cmd_queue_index_w][sd_count] = '\0'; //terminate string
         fromsd[cmd_queue_index_w] = true;
-        commands_in_queue += 1;
         cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-        // }
+        commands_in_queue++;
+
         comment_mode = false; //for new command
-        serial_count = 0; //clear buffer
+        sd_count = 0; //clear buffer
+      }
+      else if (sd_count >= MAX_CMD_SIZE - 1) {
+        // Keep fetching, but ignore normal characters beyond the max length
+        // The command will be injected when EOL is reached
       }
       else {
-        if (serial_char == ';') comment_mode = true;
-        if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+        if (sd_char == ';') comment_mode = true;
+        if (!comment_mode) command_queue[cmd_queue_index_w][sd_count++] = sd_char;
       }
     }
 
