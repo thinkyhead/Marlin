@@ -408,9 +408,7 @@ static uint8_t target_extruder;
   static bool filrunoutEnqueued = false;
 #endif
 
-#if ENABLED(SDSUPPORT)
-  static bool fromsd[BUFSIZE];
-#endif
+static bool send_ok[BUFSIZE];
 
 #if HAS_SERVOS
   Servo servo[NUM_SERVOS];
@@ -517,6 +515,7 @@ bool enqueuecommand(const char* cmd) {
   SERIAL_ECHOPGM(MSG_Enqueueing);
   SERIAL_ECHO(command);
   SERIAL_ECHOLNPGM("\"");
+  send_ok[cmd_queue_index_w] = false;
   cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
   commands_in_queue++;
   return true;
@@ -678,9 +677,8 @@ void setup() {
   SERIAL_ECHOPGM(MSG_PLANNER_BUFFER_BYTES);
   SERIAL_ECHOLN((int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 
-  #if ENABLED(SDSUPPORT)
-    for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
-  #endif
+  // Send "ok" after commands by default
+  for (int8_t i = 0; i < BUFSIZE; i++) send_ok[i] = true;
 
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
@@ -834,10 +832,8 @@ void get_command() {
 
       char* command = serial_line_buffer;
 
-      // this item in the queue is not from sd
-      #if ENABLED(SDSUPPORT)
-        fromsd[cmd_queue_index_w] = false;
-      #endif
+      // This item in the queue is from the serial line
+      send_ok[cmd_queue_index_w] = true;
 
       while (*command == ' ') command++; // skip any leading spaces
       char* npos = (*command == 'N') ? command : NULL; // Require the N parameter to start the line
@@ -968,7 +964,7 @@ void get_command() {
         if (!sd_count) continue; //skip empty lines
 
         command_queue[cmd_queue_index_w][sd_count] = '\0'; //terminate string
-        fromsd[cmd_queue_index_w] = true;
+        send_ok[cmd_queue_index_w] = false;
         cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
         commands_in_queue++;
 
@@ -6305,9 +6301,7 @@ void FlushSerialRequestResend() {
 
 void ok_to_send() {
   refresh_cmd_timeout();
-  #if ENABLED(SDSUPPORT)
-    if (fromsd[cmd_queue_index_r]) return;
-  #endif
+  if (!send_ok[cmd_queue_index_r]) return;
   SERIAL_PROTOCOLPGM(MSG_OK);
   #if ENABLED(ADVANCED_OK)
     char* p = command_queue[cmd_queue_index_r];
