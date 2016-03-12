@@ -480,7 +480,7 @@ static bool drain_queued_commands_P() {
   char c;
   while ((c = cmd[i]) && c != '\n') i++; // find the end of this gcode command
   cmd[i] = '\0';
-  if (enqueuecommand(cmd)) {      // buffer was not full (else we will retry later)
+  if (enqueue_and_echo_command(cmd)) {      // buffer was not full (else we will retry later)
     if (c)
       queued_commands_P += i + 1; // move to next command
     else
@@ -494,31 +494,37 @@ static bool drain_queued_commands_P() {
  * Aborts the current queue, if any.
  * Note: drain_queued_commands_P() must be called repeatedly to drain the commands afterwards
  */
-void enqueuecommands_P(const char* pgcode) {
+void enqueue_and_echo_commands_P(const char* pgcode) {
   queued_commands_P = pgcode;
   drain_queued_commands_P(); // first command executed asap (when possible)
 }
 
 /**
  * Copy a command directly into the main command buffer, from RAM.
- *
- * This is done in a non-safe way and needs a rework someday.
- * Returns false if it doesn't add any command
+ * Returns true if successfully adds the command
  */
-bool enqueuecommand(const char* cmd) {
+inline bool _enqueuecommand(const char* cmd) {
   if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
-
-  // This is dangerous if a mixing of serial and this happens
   char* command = command_queue[cmd_queue_index_w];
   strcpy(command, cmd);
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPGM(MSG_Enqueueing);
-  SERIAL_ECHO(command);
-  SERIAL_ECHOLNPGM("\"");
   send_ok[cmd_queue_index_w] = false;
   cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
   commands_in_queue++;
   return true;
+}
+
+/**
+ * Enqueue with Serial Echo
+ */
+bool enqueue_and_echo_command(const char* cmd) {
+  if (_enqueuecommand(cmd)) {
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPGM(MSG_Enqueueing);
+    SERIAL_ECHO(cmd);
+    SERIAL_ECHOLNPGM("\"");
+    return true;
+  }
+  return false;
 }
 
 void setup_killpin() {
@@ -903,7 +909,7 @@ void get_command() {
       #endif
 
       // Add the command to the queue
-      enqueuecommand(serial_line_buffer);
+      _enqueuecommand(serial_line_buffer);
 
       serial_count = 0; //reset buffer
     }
@@ -2660,7 +2666,7 @@ inline void gcode_G28() {
       case MeshStart:
         mbl.reset();
         probe_point = 0;
-        enqueuecommands_P(PSTR("G28\nG29 S2"));
+        enqueue_and_echo_commands_P(PSTR("G28\nG29 S2"));
         break;
 
       case MeshNext:
@@ -2699,7 +2705,7 @@ inline void gcode_G28() {
           SERIAL_PROTOCOLLNPGM("Mesh probing done.");
           probe_point = -1;
           mbl.active = 1;
-          enqueuecommands_P(PSTR("G28"));
+          enqueue_and_echo_commands_P(PSTR("G28"));
         }
         break;
 
@@ -3216,7 +3222,7 @@ inline void gcode_G28() {
           SERIAL_ECHOLNPGM(Z_PROBE_END_SCRIPT);
         }
       #endif
-      enqueuecommands_P(PSTR(Z_PROBE_END_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
       st_synchronize();
     #endif
 
@@ -3375,7 +3381,7 @@ inline void gcode_M17() {
   }
 
   /**
-   * M23: Select a file
+   * M23: Open a file
    */
   inline void gcode_M23() {
     card.openFile(current_command_args, true);
@@ -5241,7 +5247,7 @@ inline void gcode_M428() {
         SERIAL_ERRORLNPGM(MSG_ERR_M428_TOO_FAR);
         LCD_ALERTMESSAGEPGM("Err: Too far!");
         #if HAS_BUZZER
-          enqueuecommands_P(PSTR("M300 S40 P200"));
+          enqueue_and_echo_commands_P(PSTR("M300 S40 P200"));
         #endif
         err = true;
         break;
@@ -5255,7 +5261,7 @@ inline void gcode_M428() {
     sync_plan_position();
     LCD_ALERTMESSAGEPGM("Offset applied.");
     #if HAS_BUZZER
-      enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
+      enqueue_and_echo_commands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
     #endif
   }
 }
@@ -7043,7 +7049,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     const int HOME_DEBOUNCE_DELAY = 2500;
     if (!READ(HOME_PIN)) {
       if (!homeDebounceCount) {
-        enqueuecommands_P(PSTR("G28"));
+        enqueue_and_echo_commands_P(PSTR("G28"));
         LCD_MESSAGEPGM(MSG_AUTO_HOME);
       }
       if (homeDebounceCount < HOME_DEBOUNCE_DELAY)
@@ -7169,7 +7175,7 @@ void kill(const char* lcd_msg) {
   void filrunout() {
     if (!filrunoutEnqueued) {
       filrunoutEnqueued = true;
-      enqueuecommands_P(PSTR(FILAMENT_RUNOUT_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(FILAMENT_RUNOUT_SCRIPT));
       st_synchronize();
     }
   }
