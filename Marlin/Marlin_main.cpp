@@ -502,11 +502,11 @@ void enqueue_and_echo_commands_P(const char* pgcode) {
  * Copy a command directly into the main command buffer, from RAM.
  * Returns true if successfully adds the command
  */
-inline bool _enqueuecommand(const char* cmd) {
+inline bool _enqueuecommand(const char* cmd, bool okIt = false) {
   if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
   char* command = command_queue[cmd_queue_index_w];
   strcpy(command, cmd);
-  send_ok[cmd_queue_index_w] = false;
+  send_ok[cmd_queue_index_w] = okIt;
   cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
   commands_in_queue++;
   return true;
@@ -516,7 +516,7 @@ inline bool _enqueuecommand(const char* cmd) {
  * Enqueue with Serial Echo
  */
 bool enqueue_and_echo_command(const char* cmd) {
-  if (_enqueuecommand(cmd)) {
+  if (_enqueuecommand(cmd), false) {
     SERIAL_ECHO_START;
     SERIAL_ECHOPGM(MSG_Enqueueing);
     SERIAL_ECHO(cmd);
@@ -839,9 +839,6 @@ void get_command() {
 
       char* command = serial_line_buffer;
 
-      // This item in the queue is from the serial line
-      send_ok[cmd_queue_index_w] = true;
-
       while (*command == ' ') command++; // skip any leading spaces
       char* npos = (*command == 'N') ? command : NULL; // Require the N parameter to start the line
       char* apos = strchr(command, '*');
@@ -910,7 +907,7 @@ void get_command() {
       #endif
 
       // Add the command to the queue
-      _enqueuecommand(serial_line_buffer);
+      _enqueuecommand(serial_line_buffer, true);
     }
     else if (serial_count >= MAX_CMD_SIZE - 1) {
       // Keep fetching, but ignore normal characters beyond the max length
