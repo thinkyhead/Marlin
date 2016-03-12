@@ -276,7 +276,6 @@ const char echomagic[] PROGMEM = "echo:";
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
-static boolean comment_mode = false;
 static int serial_count = 0;
 static char* seen_pointer; ///< A pointer to find chars in the command string (X, Y, Z, E, etc.)
 const char* queued_commands_P = NULL; /* pointer to the current line in the active sequence of commands, or NULL when none */
@@ -804,6 +803,8 @@ void gcode_line_error(const char* err, bool doFlush = true) {
 void get_command() {
 
   static char serial_line_buffer[MAX_CMD_SIZE];
+  static boolean serial_comment_mode = false,
+                 sd_comment_mode = false;
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
@@ -829,12 +830,12 @@ void get_command() {
     //
     if (serial_char == '\n' || serial_char == '\r') {
 
-      // end of line == end of comment
-      comment_mode = false;
+      serial_comment_mode = false; // end of line == end of comment
 
       if (!serial_count) return; // empty lines just exit
 
       serial_line_buffer[serial_count] = 0; // terminate string
+      serial_count = 0; //reset buffer
 
       char* command = serial_line_buffer;
 
@@ -910,8 +911,6 @@ void get_command() {
 
       // Add the command to the queue
       _enqueuecommand(serial_line_buffer);
-
-      serial_count = 0; //reset buffer
     }
     else if (serial_count >= MAX_CMD_SIZE - 1) {
       // Keep fetching, but ignore normal characters beyond the max length
@@ -925,10 +924,11 @@ void get_command() {
       }
       // otherwise do nothing
     }
-    else { // its not a newline, carriage return or escape char
-      if (serial_char == ';') comment_mode = true;
-      if (!comment_mode) serial_line_buffer[serial_count++] = serial_char;
+    else { // it's not a newline, carriage return or escape char
+      if (serial_char == ';') serial_comment_mode = true;
+      if (!serial_comment_mode) serial_line_buffer[serial_count++] = serial_char;
     }
+
   } // queue has space, serial has data
 
   #if ENABLED(SDSUPPORT)
@@ -950,7 +950,7 @@ void get_command() {
       char sd_char = (char)n;
       if (card_eof || n == -1
           || sd_char == '\n' || sd_char == '\r'
-          || ((sd_char == '#' || sd_char == ':') && !comment_mode)
+          || ((sd_char == '#' || sd_char == ':') && !sd_comment_mode)
       ) {
         if (card_eof) {
           SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
@@ -974,7 +974,7 @@ void get_command() {
         cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
         commands_in_queue++;
 
-        comment_mode = false; //for new command
+        sd_comment_mode = false; //for new command
         sd_count = 0; //clear buffer
       }
       else if (sd_count >= MAX_CMD_SIZE - 1) {
@@ -982,8 +982,8 @@ void get_command() {
         // The command will be injected when EOL is reached
       }
       else {
-        if (sd_char == ';') comment_mode = true;
-        if (!comment_mode) command_queue[cmd_queue_index_w][sd_count++] = sd_char;
+        if (sd_char == ';') sd_comment_mode = true;
+        if (!sd_comment_mode) command_queue[cmd_queue_index_w][sd_count++] = sd_char;
       }
     }
 
