@@ -177,7 +177,7 @@
 #endif
 
 #if ((HAS_Z_MIN && ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)) && HAS_Z_PROBE) && ( ENABLED(FIX_MOUNTED_PROBE) || defined(Z_ENDSTOP_SERVO_NR) || ENABLED(MECHANICAL_PROBE) || ENABLED(Z_PROBE_SLED))
-  #error A probe should not be connected to more then one pin! [Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN || HAS_Z_PROBE]
+  #error A probe should not be connected to more than one pin! [Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN || HAS_Z_PROBE]
 #endif
 
 /**
@@ -191,7 +191,7 @@
   #error For Z_SAFE_HOMING define one kind of probe! [Servo | MECHANICAL_PROBE | Z_PROBE_SLED | FIX_MOUNTED_PROBE]
 #endif
 
-// To do: Fail with more then one probe defined
+// To do: Fail with more than one probe defined
 
 /**
  * Auto Bed Leveling
@@ -288,6 +288,10 @@
  */
 #if ENABLED(ULTIPANEL) && DISABLED(NEWPANEL) && DISABLED(SR_LCD_2W_NL) && !defined(SHIFT_CLK)
   #error ULTIPANEL requires some kind of encoder.
+#endif
+
+#if ENCODER_PULSES_PER_STEP < 0
+  #error ENCODER_PULSES_PER_STEP should not be negative, use REVERSE_MENU_DIRECTION instead
 #endif
 
 /**

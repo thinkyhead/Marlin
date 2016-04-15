@@ -199,19 +199,25 @@ static void lcd_status_screen();
    *     menu_action_setting_edit_int3(PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
    *
    */
-  #define MENU_ITEM(type, label, args...) do { \
+  #define _MENU_ITEM_PART_1(type, label, args...) \
     if (_menuItemNr == _lineNr) { \
       itemSelected = encoderLine == _menuItemNr; \
       if (lcdDrawUpdate) \
         lcd_implementation_drawmenu_ ## type(itemSelected, _drawLineNr, PSTR(label), ## args); \
       if (wasClicked && itemSelected) { \
-        lcd_quick_feedback(); \
+        lcd_quick_feedback()
+
+  #define _MENU_ITEM_PART_2(type, args...) \
         menu_action_ ## type(args); \
         return; \
       } \
     } \
-    _menuItemNr++; \
-  } while(0)
+    _menuItemNr++
+
+  #define MENU_ITEM(type, label, args...) do { \
+      _MENU_ITEM_PART_1(type, label, ## args); \
+      _MENU_ITEM_PART_2(type, ## args); \
+    } while(0)
 
   #if ENABLED(ENCODER_RATE_MULTIPLIER)
 
@@ -221,20 +227,12 @@ static void lcd_status_screen();
      * MENU_MULTIPLIER_ITEM generates drawing and handling code for a multiplier menu item
      */
     #define MENU_MULTIPLIER_ITEM(type, label, args...) do { \
-      if (_menuItemNr == _lineNr) { \
-        itemSelected = encoderLine == _menuItemNr; \
-        if (lcdDrawUpdate) \
-          lcd_implementation_drawmenu_ ## type(itemSelected, _drawLineNr, PSTR(label), ## args); \
-        if (wasClicked && itemSelected) { \
-          lcd_quick_feedback(); \
-          encoderRateMultiplierEnabled = true; \
-          lastEncoderMovementMillis = 0; \
-          menu_action_ ## type(args); \
-          return; \
-        } \
-      } \
-      _menuItemNr++; \
-    } while(0)
+        _MENU_ITEM_PART_1(type, label, ## args); \
+        encoderRateMultiplierEnabled = true; \
+        lastEncoderMovementMillis = 0; \
+        _MENU_ITEM_PART_2(type, ## args); \
+      } while(0)
+
   #endif //ENCODER_RATE_MULTIPLIER
 
   #define MENU_ITEM_DUMMY() do { _menuItemNr++; } while(0)
@@ -789,16 +787,20 @@ void _lcd_preheat(int endnum, const float temph, const float tempb, const int fa
   #endif
 
   void lcd_preheat_pla0123() {
-    setTargetHotend0(plaPreheatHotendTemp);
-    setTargetHotend1(plaPreheatHotendTemp);
-    setTargetHotend2(plaPreheatHotendTemp);
-    _lcd_preheat(3, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed);
+    #if EXTRUDERS > 1
+      setTargetHotend0(plaPreheatHotendTemp);
+      setTargetHotend1(plaPreheatHotendTemp);
+      setTargetHotend2(plaPreheatHotendTemp);
+    #endif
+    _lcd_preheat(EXTRUDERS - 1, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed);
   }
   void lcd_preheat_abs0123() {
-    setTargetHotend0(absPreheatHotendTemp);
-    setTargetHotend1(absPreheatHotendTemp);
-    setTargetHotend2(absPreheatHotendTemp);
-    _lcd_preheat(3, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed);
+    #if EXTRUDERS > 1
+      setTargetHotend0(absPreheatHotendTemp);
+      setTargetHotend1(absPreheatHotendTemp);
+      setTargetHotend2(absPreheatHotendTemp);
+    #endif
+    _lcd_preheat(EXTRUDERS - 1, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed);
   }
 
 #endif // EXTRUDERS > 1
@@ -883,14 +885,35 @@ void lcd_cooldown() {
    */
 
   static int _lcd_level_bed_position;
+  static bool mbl_wait_for_move = false;
+
+  // Utility to go to the next mesh point
+  // A raise is added between points if MIN_Z_HEIGHT_FOR_HOMING is in use
+  // Note: During Manual Bed Leveling the homed Z position is MESH_HOME_SEARCH_Z
+  // Z position will be restored with the final action, a G28
+  inline void _mbl_goto_xy(float x, float y) {
+    mbl_wait_for_move = true;
+    #if MIN_Z_HEIGHT_FOR_HOMING > 0
+      current_position[Z_AXIS] += MIN_Z_HEIGHT_FOR_HOMING;
+      line_to_current(Z_AXIS);
+    #endif
+    current_position[X_AXIS] = x + home_offset[X_AXIS];
+    current_position[Y_AXIS] = y + home_offset[Y_AXIS];
+    line_to_current(manual_feedrate[X_AXIS] <= manual_feedrate[Y_AXIS] ? X_AXIS : Y_AXIS);
+    #if MIN_Z_HEIGHT_FOR_HOMING > 0
+      current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+      line_to_current(Z_AXIS);
+    #endif
+    st_synchronize();
+    mbl_wait_for_move = false;
+  }
 
   /**
-   * MBL Wait for controller movement and clicks:
-   *   - Movement adjusts the Z axis
-   *   - Click saves the Z and goes to the next mesh point
+   * 5. MBL Wait for controller movement and clicks:
+   *        - Movement adjusts the Z axis
+   *        - Click saves the Z, goes to the next mesh point
    */
   static void _lcd_level_bed_procedure() {
-    static bool mbl_wait_for_move = false;
     // Menu handlers may be called in a re-entrant fashion
     // if they call st_synchronize or plan_buffer_line. So
     // while waiting for a move we just ignore new input.
@@ -927,11 +950,7 @@ void lcd_cooldown() {
     if (LCD_CLICKED) {
       if (!debounce_click) {
         debounce_click = true; // ignore multiple "clicks" in a row
-        int ix = _lcd_level_bed_position % (MESH_NUM_X_POINTS),
-            iy = _lcd_level_bed_position / (MESH_NUM_X_POINTS);
-        if (iy & 1) ix = (MESH_NUM_X_POINTS - 1) - ix; // Zig zag
-        mbl.set_z(ix, iy, current_position[Z_AXIS]);
-        _lcd_level_bed_position++;
+        mbl.set_zigzag_z(_lcd_level_bed_position++, current_position[Z_AXIS]);
         if (_lcd_level_bed_position == (MESH_NUM_X_POINTS) * (MESH_NUM_Y_POINTS)) {
           lcd_return_to_status();
           LCD_ALERTMESSAGEPGM(MSG_LEVEL_BED_DONE);
@@ -942,24 +961,16 @@ void lcd_cooldown() {
           current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
           line_to_current(Z_AXIS);
           st_synchronize();
-          mbl.active = 1;
+          mbl.active = true;
           enqueue_and_echo_commands_P(PSTR("G28"));
         }
         else {
           #if ENABLED(NEWPANEL)
             lcd_quick_feedback();
           #endif
-          mbl_wait_for_move = true;
-          current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
-          line_to_current(Z_AXIS);
-          ix = _lcd_level_bed_position % (MESH_NUM_X_POINTS);
-          iy = _lcd_level_bed_position / (MESH_NUM_X_POINTS);
-          if (iy & 1) ix = (MESH_NUM_X_POINTS - 1) - ix; // Zig zag
-          current_position[X_AXIS] = mbl.get_x(ix);
-          current_position[Y_AXIS] = mbl.get_y(iy);
-          line_to_current(manual_feedrate[X_AXIS] <= manual_feedrate[Y_AXIS] ? X_AXIS : Y_AXIS);
-          st_synchronize();
-          mbl_wait_for_move = false;
+          int ix, iy;
+          mbl.zigzag(_lcd_level_bed_position, ix, iy);
+          _mbl_goto_xy(mbl.get_x(ix), mbl.get_y(iy));
           encoderPosition = 0;
         }
       }
@@ -969,22 +980,25 @@ void lcd_cooldown() {
     }
   }
 
+  /**
+   * 4. MBL Display "Click to Begin", wait for click
+   *        Move to the first probe position
+   */
   static void _lcd_level_bed_homing_done() {
     if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_WAITING), NULL);
     lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+    if (mbl_wait_for_move) return;
     if (LCD_CLICKED) {
       current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-      current_position[X_AXIS] = MESH_MIN_X;
-      current_position[Y_AXIS] = MESH_MIN_Y;
-      line_to_current(manual_feedrate[X_AXIS] <= manual_feedrate[Y_AXIS] ? X_AXIS : Y_AXIS);
+      _mbl_goto_xy(MESH_MIN_X, MESH_MIN_Y);
       _lcd_level_bed_position = 0;
       lcd_goto_menu(_lcd_level_bed_procedure, true);
     }
   }
 
   /**
-   * MBL Move to mesh starting point
+   * 3. MBL Display "Hoing XYZ" - Wait for homing to finish
    */
   static void _lcd_level_bed_homing() {
     if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_HOMING), NULL);
@@ -994,7 +1008,7 @@ void lcd_cooldown() {
   }
 
   /**
-   * MBL Continue Bed Leveling...
+   * 2. MBL Continue Bed Leveling...
    */
   static void _lcd_level_bed_continue() {
     defer_return_to_status = true;
@@ -1005,7 +1019,7 @@ void lcd_cooldown() {
   }
 
   /**
-   * MBL entry-point
+   * 1. MBL entry-point: "Cancel" or "Level Bed"
    */
   static void lcd_level_bed() {
     START_MENU();

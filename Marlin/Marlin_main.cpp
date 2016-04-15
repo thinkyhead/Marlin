@@ -283,6 +283,8 @@ int extruder_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS1(100);
 bool volumetric_enabled = false;
 float filament_size[EXTRUDERS] = ARRAY_BY_EXTRUDERS1(DEFAULT_NOMINAL_FILAMENT_DIA);
 float volumetric_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS1(1.0);
+
+float position_shift[3] = { 0 };
 float home_offset[3] = { 0 };
 float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
 float max_pos[3] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS };
@@ -496,6 +498,11 @@ void gcode_M114();
   void print_xyz(const char* prefix, const float xyz[]) {
     print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
   }
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    void print_xyz(const char* prefix, const vector_3 &xyz) {
+      print_xyz(prefix, xyz.x, xyz.y, xyz.z);
+    }
+  #endif
   #define DEBUG_POS(PREFIX,VAR) do{ SERIAL_ECHOPGM(PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
 #endif
 
@@ -1190,6 +1197,45 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir, HOME_DIR);
 
 #endif //DUAL_X_CARRIAGE
 
+/**
+ * Software endstops can be used to monitor the open end of
+ * an axis that has a hardware endstop on the other end. Or
+ * they can prevent axes from moving past endstops and grinding.
+ *
+ * To keep doing their job as the coordinate system changes,
+ * the software endstop positions must be refreshed to remain
+ * at the same positions relative to the machine.
+ */
+static void update_software_endstops(AxisEnum axis) {
+  float offs = home_offset[axis] + position_shift[axis];
+  #if ENABLED(DUAL_X_CARRIAGE)
+    if (axis == X_AXIS) {
+      float dual_max_x = max(extruder_offset[X_AXIS][1], X2_MAX_POS);
+      if (active_extruder != 0) {
+        min_pos[X_AXIS] = X2_MIN_POS + offs;
+        max_pos[X_AXIS] = dual_max_x + offs;
+        return;
+      }
+      else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
+        min_pos[X_AXIS] = base_min_pos(X_AXIS) + offs;
+        max_pos[X_AXIS] = min(base_max_pos(X_AXIS), dual_max_x - duplicate_extruder_x_offset) + offs;
+        return;
+      }
+    }
+    else
+  #endif
+  {
+    min_pos[axis] = base_min_pos(axis) + offs;
+    max_pos[axis] = base_max_pos(axis) + offs;
+  }
+}
+
+static void set_home_offset(AxisEnum axis, float v) {
+  current_position[axis] += v - home_offset[axis];
+  home_offset[axis] = v;
+  update_software_endstops(axis);
+}
+
 static void set_axis_is_at_home(AxisEnum axis) {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
@@ -1198,21 +1244,16 @@ static void set_axis_is_at_home(AxisEnum axis) {
     }
   #endif
 
+  position_shift[axis] = 0;
+
   #if ENABLED(DUAL_X_CARRIAGE)
-    if (axis == X_AXIS) {
-      if (active_extruder != 0) {
+    if (axis == X_AXIS && (active_extruder != 0 || dual_x_carriage_mode == DXC_DUPLICATION_MODE)) {
+      if (active_extruder != 0)
         current_position[X_AXIS] = x_home_pos(active_extruder);
-                 min_pos[X_AXIS] = X2_MIN_POS;
-                 max_pos[X_AXIS] = max(extruder_offset[X_AXIS][1], X2_MAX_POS);
-        return;
-      }
-      else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
-        float xoff = home_offset[X_AXIS];
-        current_position[X_AXIS] = base_home_pos(X_AXIS) + xoff;
-                 min_pos[X_AXIS] = base_min_pos(X_AXIS) + xoff;
-                 max_pos[X_AXIS] = min(base_max_pos(X_AXIS) + xoff, max(extruder_offset[X_AXIS][1], X2_MAX_POS) - duplicate_extruder_x_offset);
-        return;
-      }
+      else
+        current_position[X_AXIS] = base_home_pos(X_AXIS) + home_offset[X_AXIS];
+      update_software_endstops(X_AXIS);
+      return;
     }
   #endif
 
@@ -1260,8 +1301,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
   #endif
   {
     current_position[axis] = base_home_pos(axis) + home_offset[axis];
-    min_pos[axis] = base_min_pos(axis) + home_offset[axis];
-    max_pos[axis] = base_max_pos(axis) + home_offset[axis];
+    update_software_endstops(axis);
 
     #if ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_HOME_DIR < 0
       if (axis == Z_AXIS) {
@@ -1373,6 +1413,11 @@ static void setup_for_endstop_move() {
 
       static void set_bed_level_equation_lsq(double* plane_equation_coefficients) {
 
+        vector_3 planeNormal = vector_3(-plane_equation_coefficients[0], -plane_equation_coefficients[1], 1);
+        plan_bed_level_matrix = matrix_3x3::create_look_at(planeNormal);
+
+        //plan_bed_level_matrix.debug("bed level before");
+
         #if ENABLED(DEBUG_LEVELING_FEATURE)
           plan_bed_level_matrix.set_to_identity();
           if (DEBUGGING(LEVELING)) {
@@ -1382,17 +1427,8 @@ static void setup_for_endstop_move() {
           }
         #endif
 
-        vector_3 planeNormal = vector_3(-plane_equation_coefficients[0], -plane_equation_coefficients[1], 1);
-        // planeNormal.debug("planeNormal");
-        plan_bed_level_matrix = matrix_3x3::create_look_at(planeNormal);
-        //bedLevel.debug("bedLevel");
-
-        //plan_bed_level_matrix.debug("bed level before");
-        //vector_3 uncorrected_position = plan_get_position();
-        //uncorrected_position.debug("position before");
-
         vector_3 corrected_position = plan_get_position();
-        //corrected_position.debug("position after");
+ 
         current_position[X_AXIS] = corrected_position.x;
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
@@ -1426,12 +1462,20 @@ static void setup_for_endstop_move() {
       plan_bed_level_matrix = matrix_3x3::create_look_at(planeNormal);
 
       vector_3 corrected_position = plan_get_position();
+
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+          vector_3 uncorrected_position = corrected_position;
+          DEBUG_POS("set_bed_level_equation_3pts", uncorrected_position);
+        }
+      #endif
+
       current_position[X_AXIS] = corrected_position.x;
       current_position[Y_AXIS] = corrected_position.y;
       current_position[Z_AXIS] = corrected_position.z;
 
       #if ENABLED(DEBUG_LEVELING_FEATURE)
-        if (DEBUGGING(LEVELING)) DEBUG_POS("set_bed_level_equation_3pts", current_position);
+        if (DEBUGGING(LEVELING)) DEBUG_POS("set_bed_level_equation_3pts", corrected_position);
       #endif
 
       sync_plan_position();
@@ -2465,7 +2509,7 @@ inline void gcode_G28() {
    */
   #if ENABLED(MESH_BED_LEVELING)
     uint8_t mbl_was_active = mbl.active;
-    mbl.active = 0;
+    mbl.active = false;
   #endif
 
   setup_for_endstop_move();
@@ -2799,6 +2843,28 @@ inline void gcode_G28() {
 
   enum MeshLevelingState { MeshReport, MeshStart, MeshNext, MeshSet, MeshSetZOffset };
 
+  inline void _mbl_goto_xy(float x, float y) {
+    saved_feedrate = feedrate;
+    feedrate = homing_feedrate[X_AXIS];
+
+    #if MIN_Z_HEIGHT_FOR_HOMING > 0
+      current_position[Z_AXIS] = MESH_HOME_SEARCH_Z + MIN_Z_HEIGHT_FOR_HOMING;
+      line_to_current_position();
+    #endif
+
+    current_position[X_AXIS] = x + home_offset[X_AXIS];
+    current_position[Y_AXIS] = y + home_offset[Y_AXIS];
+    line_to_current_position();
+
+    #if MIN_Z_HEIGHT_FOR_HOMING > 0
+      current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+      line_to_current_position();
+    #endif
+
+    feedrate = saved_feedrate;
+    st_synchronize();
+  }
+
   /**
    * G29: Mesh-based Z probe, probes a grid and produces a
    *      mesh to compensate for variable bed height
@@ -2866,37 +2932,32 @@ inline void gcode_G28() {
           SERIAL_PROTOCOLLNPGM("Start mesh probing with \"G29 S1\" first.");
           return;
         }
+        // For each G29 S2...
         if (probe_point == 0) {
-          // Set Z to a positive value before recording the first Z.
-          current_position[Z_AXIS] = MESH_HOME_SEARCH_Z + home_offset[Z_AXIS];
+          // For the intial G29 S2 make Z a positive value (e.g., 4.0)
+          current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
           sync_plan_position();
         }
         else {
-          // For others, save the Z of the previous point, then raise Z again.
-          ix = (probe_point - 1) % (MESH_NUM_X_POINTS);
-          iy = (probe_point - 1) / (MESH_NUM_X_POINTS);
-          if (iy & 1) ix = (MESH_NUM_X_POINTS - 1) - ix; // zig-zag
-          mbl.set_z(ix, iy, current_position[Z_AXIS]);
-          current_position[Z_AXIS] = MESH_HOME_SEARCH_Z + home_offset[Z_AXIS];
-          plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], homing_feedrate[X_AXIS] / 60, active_extruder);
-          st_synchronize();
+          // For G29 S2 after adjusting Z.
+          mbl.set_zigzag_z(probe_point - 1, current_position[Z_AXIS]);
         }
-        // Is there another point to sample? Move there.
+        // If there's another point to sample, move there with optional lift.
         if (probe_point < (MESH_NUM_X_POINTS) * (MESH_NUM_Y_POINTS)) {
-          ix = probe_point % (MESH_NUM_X_POINTS);
-          iy = probe_point / (MESH_NUM_X_POINTS);
-          if (iy & 1) ix = (MESH_NUM_X_POINTS - 1) - ix; // zig-zag
-          current_position[X_AXIS] = mbl.get_x(ix) + home_offset[X_AXIS];
-          current_position[Y_AXIS] = mbl.get_y(iy) + home_offset[Y_AXIS];
-          plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], homing_feedrate[X_AXIS] / 60, active_extruder);
-          st_synchronize();
+          mbl.zigzag(probe_point, ix, iy);
+          _mbl_goto_xy(mbl.get_x(ix), mbl.get_y(iy));
           probe_point++;
         }
         else {
+          // One last "return to the bed" (as originally coded) at completion
+          current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+          line_to_current_position();
+          st_synchronize();
+
           // After recording the last point, activate the mbl and home
           SERIAL_PROTOCOLLNPGM("Mesh probing done.");
           probe_point = -1;
-          mbl.active = 1;
+          mbl.active = true;
           enqueue_and_echo_commands_P(PSTR("G28"));
         }
         break;
@@ -3531,7 +3592,14 @@ inline void gcode_G92() {
   bool didXYZ = false;
   for (int i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
-      float v = current_position[i] = code_value();
+      float p = current_position[i],
+            v = code_value();
+
+      current_position[i] = v;
+
+      position_shift[i] += v - p; // Offset the coordinate space
+      update_software_endstops((AxisEnum)i);
+
       if (i == E_AXIS)
         plan_set_e_position(v);
       else
@@ -5018,13 +5086,6 @@ inline void gcode_M205() {
   if (code_seen('X')) max_xy_jerk = code_value();
   if (code_seen('Z')) max_z_jerk = code_value();
   if (code_seen('E')) max_e_jerk = code_value();
-}
-
-static void set_home_offset(AxisEnum axis, float v) {
-  min_pos[axis] = base_min_pos(axis) + v;
-  max_pos[axis] = base_max_pos(axis) + v;
-  current_position[axis] += v - home_offset[axis];
-  home_offset[axis] = v;
 }
 
 /**
@@ -7284,26 +7345,26 @@ void plan_arc(
 ) {
 
   float radius = hypot(offset[X_AXIS], offset[Y_AXIS]),
-        center_axis0 = current_position[X_AXIS] + offset[X_AXIS],
-        center_axis1 = current_position[Y_AXIS] + offset[Y_AXIS],
+        center_X = current_position[X_AXIS] + offset[X_AXIS],
+        center_Y = current_position[Y_AXIS] + offset[Y_AXIS],
         linear_travel = target[Z_AXIS] - current_position[Z_AXIS],
         extruder_travel = target[E_AXIS] - current_position[E_AXIS],
-        r_axis0 = -offset[X_AXIS],  // Radius vector from center to current location
-        r_axis1 = -offset[Y_AXIS],
-        rt_axis0 = target[X_AXIS] - center_axis0,
-        rt_axis1 = target[Y_AXIS] - center_axis1;
+        r_X = -offset[X_AXIS],  // Radius vector from center to current location
+        r_Y = -offset[Y_AXIS],
+        rt_X = target[X_AXIS] - center_X,
+        rt_Y = target[Y_AXIS] - center_Y;
 
   // CCW angle of rotation between position and target from the circle center. Only one atan2() trig computation required.
-  float angular_travel = atan2(r_axis0 * rt_axis1 - r_axis1 * rt_axis0, r_axis0 * rt_axis0 + r_axis1 * rt_axis1);
-  if (angular_travel < 0)  angular_travel += RADIANS(360);
-  if (clockwise)  angular_travel -= RADIANS(360);
+  float angular_travel = atan2(r_X * rt_Y - r_Y * rt_X, r_X * rt_X + r_Y * rt_Y);
+  if (angular_travel < 0) angular_travel += RADIANS(360);
+  if (clockwise) angular_travel -= RADIANS(360);
 
   // Make a circle if the angular rotation is 0
-  if (current_position[X_AXIS] == target[X_AXIS] && current_position[Y_AXIS] == target[Y_AXIS] && angular_travel == 0)
-    angular_travel += RADIANS(360);
+  if (angular_travel == 0 && current_position[X_AXIS] == target[X_AXIS] && current_position[Y_AXIS] == target[Y_AXIS])
+    angular_travel == RADIANS(360);
 
   float mm_of_travel = hypot(angular_travel * radius, fabs(linear_travel));
-  if (mm_of_travel < 0.001)  return;
+  if (mm_of_travel < 0.001) return;
   uint16_t segments = floor(mm_of_travel / (MM_PER_ARC_SEGMENT));
   if (segments == 0) segments = 1;
 
@@ -7342,9 +7403,7 @@ void plan_arc(
   float sin_T = theta_per_segment;
 
   float arc_target[NUM_AXIS];
-  float sin_Ti;
-  float cos_Ti;
-  float r_axisi;
+  float sin_Ti, cos_Ti, r_new_Y;
   uint16_t i;
   int8_t count = 0;
 
@@ -7356,28 +7415,29 @@ void plan_arc(
 
   float feed_rate = feedrate * feedrate_multiplier / 60 / 100.0;
 
-  for (i = 1; i < segments; i++) { // Increment (segments-1)
+  for (i = 1; i < segments; i++) { // Iterate (segments-1) times
 
-    if (count < N_ARC_CORRECTION) {
-      // Apply vector rotation matrix to previous r_axis0 / 1
-      r_axisi = r_axis0 * sin_T + r_axis1 * cos_T;
-      r_axis0 = r_axis0 * cos_T - r_axis1 * sin_T;
-      r_axis1 = r_axisi;
-      count++;
+    if (++count < N_ARC_CORRECTION) {
+      // Apply vector rotation matrix to previous r_X / 1
+      r_new_Y = r_X * sin_T + r_Y * cos_T;
+      r_X = r_X * cos_T - r_Y * sin_T;
+      r_Y = r_new_Y;
     }
     else {
       // Arc correction to radius vector. Computed only every N_ARC_CORRECTION increments.
       // Compute exact location by applying transformation matrix from initial radius vector(=-offset).
+      // To reduce stuttering, the sin and cos could be computed at different times.
+      // For now, compute both at the same time.
       cos_Ti = cos(i * theta_per_segment);
       sin_Ti = sin(i * theta_per_segment);
-      r_axis0 = -offset[X_AXIS] * cos_Ti + offset[Y_AXIS] * sin_Ti;
-      r_axis1 = -offset[X_AXIS] * sin_Ti - offset[Y_AXIS] * cos_Ti;
+      r_X = -offset[X_AXIS] * cos_Ti + offset[Y_AXIS] * sin_Ti;
+      r_Y = -offset[X_AXIS] * sin_Ti - offset[Y_AXIS] * cos_Ti;
       count = 0;
     }
 
     // Update arc_target location
-    arc_target[X_AXIS] = center_axis0 + r_axis0;
-    arc_target[Y_AXIS] = center_axis1 + r_axis1;
+    arc_target[X_AXIS] = center_X + r_X;
+    arc_target[Y_AXIS] = center_Y + r_Y;
     arc_target[Z_AXIS] += linear_per_segment;
     arc_target[E_AXIS] += extruder_per_segment;
 
