@@ -508,16 +508,23 @@
 #ifndef MSG_DELTA_CALIBRATE_CENTER
   #define MSG_DELTA_CALIBRATE_CENTER          "Calibrate Center"
 #endif
-#ifndef MSG_CHANGE_FILAMENT 
- #define MSG_CHANGE_FILAMENT                 "Filament"
+#ifndef MSG_CHANGE_FILAMENT
+  #define MSG_CHANGE_FILAMENT                 "Filament"
 #endif
-#ifndef MSG_REMOVE_FILAMENT  
- #define MSG_REMOVE_FILAMENT                 "Remove"
+#ifndef MSG_EJECT_FILAMENT
+  #define MSG_EJECT_FILAMENT                  "Eject"
 #endif
-#ifndef MSG_INSERT_FILAMENT 
- #define MSG_INSERT_FILAMENT                 "Insert"
+#ifndef MSG_INSERT_FILAMENT
+  #define MSG_INSERT_FILAMENT                 "Insert"
 #endif
-#ifndef MSG_INSERT_FILAMENT_SLOW 
- #define MSG_INSERT_FILAMENT_SLOW            "Slow Insert"
+#ifndef MSG_INSERT_FILAMENT_SLOW
+  #define MSG_INSERT_FILAMENT_SLOW            "Slow Insert"
 #endif
+#ifndef MSG_STOP_EJECT
+  #define MSG_STOP_EJECT                      "Stop " MSG_EJECT_FILAMENT
+#endif
+#ifndef MSG_STOP_INSERT
+  #define MSG_STOP_INSERT                     "Stop " MSG_INSERT_FILAMENT
+#endif
+
 #endif // LANGUAGE_EN_H

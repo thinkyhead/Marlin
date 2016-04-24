@@ -61,9 +61,10 @@ int absPreheatHotendTemp;
 int absPreheatHPBTemp;
 int absPreheatFanSpeed;
 
-bool filamentInsert;
-bool filamentSlowInsert;
-bool filamentRemove;
+#if ENABLED(MANUAL_FILAMENT_CHANGE)
+  enum MFCState { MFC_IDLE, MFC_EJECTING, MFC_INSERTING, MFC_INSERTING_SLOW };
+  MFCState mfc_state = MFC_IDLE;
+#endif
 
 #if ENABLED(FILAMENT_LCD_DISPLAY)
   millis_t previous_lcd_status_ms = 0;
@@ -101,10 +102,7 @@ static void lcd_status_screen();
   static void lcd_control_motion_menu();
   static void lcd_control_volumetric_menu();
   static void lcd_change_filament_menu();
-  static void lcd_retract_filament();
-  static void lcd_insert_filament_menu();
   static void lcd_insert_filament();
-  static void lcd_insert_filament_slow();
   #if ENABLED(HAS_LCD_CONTRAST)
     static void lcd_set_contrast();
   #endif
@@ -503,7 +501,9 @@ inline void line_to_current(AxisEnum axis) {
 static void lcd_main_menu() {
   START_MENU();
   MENU_ITEM(back, MSG_WATCH);
-  MENU_ITEM(submenu, MSG_CHANGE_FILAMENT, lcd_change_filament_menu);
+  #if ENABLED(MANUAL_FILAMENT_CHANGE)
+    MENU_ITEM(submenu, MSG_CHANGE_FILAMENT, lcd_change_filament_menu);
+  #endif
   if (planner.movesplanned() || IS_SD_PRINTING) {
     MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
   }
@@ -764,7 +764,7 @@ static void lcd_tune_menu() {
   //
   // Change filament
   //
-  #if ENABLED(FILAMENTCHANGEENABLE)
+  #if ENABLED(FILAMENTCHANGEENABLE) && DISABLED(MANUAL_FILAMENT_CHANGE)
      MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600"));
   #endif
 
@@ -1100,51 +1100,65 @@ void lcd_cooldown() {
 
 #endif  // MANUAL_BED_LEVELING
 
-/**
- *
- * "Change Filament" submenu
- *
- */
-static void lcd_change_filament_menu() {
-  START_MENU();
-  MENU_ITEM(back, MSG_MAIN);
-  MENU_ITEM(function, MSG_REMOVE_FILAMENT , lcd_retract_filament);
-  MENU_ITEM(submenu, MSG_INSERT_FILAMENT , lcd_insert_filament_menu);
-  END_MENU();
-}
+#if ENABLED(MANUAL_FILAMENT_CHANGE)
 
-static void lcd_insert_filament_menu() {
-  START_MENU();
-  MENU_ITEM(back, MSG_CHANGE_FILAMENT);
-  MENU_ITEM_EDIT_CALLBACK(bool, MSG_INSERT_FILAMENT_SLOW ,&filamentSlowInsert ,lcd_insert_filament_slow);
-  if(!filamentSlowInsert)
-    MENU_ITEM(function, MSG_INSERT_FILAMENT  , lcd_insert_filament);
-  END_MENU();
-}
+  /**
+   *
+   * "Change Filament" submenu
+   *
+   */
 
-static void lcd_insert_filament_slow(){
- while (filamentSlowInsert) {
-  //While the selection at menu is true it keeps slowing insert till the filament in on the tube
-  current_position[E_AXIS] += 1.0;
-  plan_buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], FILAMENTCOMPLETCHANGE_SLOW_FEEDRATE, active_extruder);
-  st_synchronize();
- }
-}
+  static void lcd_set_mfc_state(MFCState state) {
+    mfc_state = MFC_IDLE;
+    lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW;
+    defer_return_to_status = mfc_state != MFC_IDLE;
+  }
 
-static void lcd_retract_filament() {
- //This value must be setted according the size you have at your printer
- current_position[E_AXIS] -= FILAMENTCOMPLETCHANGE_SIZE;
- plan_buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], FILAMENTCOMPLETCHANGE_FAST_FEEDRATE, active_extruder);
- st_synchronize();
-}
+  inline void lcd_stop_mfc() { lcd_set_mfc_state(MFC_IDLE); }
 
-static void lcd_insert_filament(){
- //This value must be setted according the size you have at your printer
- current_position[E_AXIS] += FILAMENTCOMPLETCHANGE_SIZE;
- plan_buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], FILAMENTCOMPLETCHANGE_FAST_FEEDRATE, active_extruder);
- st_synchronize();
- }
-  
+  static void lcd_mfc_move(MFCState state, float distance, float speed=100.0) {
+    lcd_set_mfc_state(state);
+    int count = -(FILAMENTCHANGE_FINALRETRACT);
+    while (mfc_state == state && count--) {
+      current_position[E_AXIS] += distance;
+      plan_buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], speed, active_extruder);
+      st_synchronize();
+    }
+    lcd_stop_mfc();
+  }
+  static void lcd_eject_filament() { lcd_mfc_move(MFC_EJECTING, -1.0); }
+  static void lcd_insert_filament() { lcd_mfc_move(MFC_INSERTING, 1.0); }
+  static void lcd_insert_filament_slow_callback() { lcd_mfc_move(MFC_INSERTING_SLOW, 1.0, 1.5); }
+
+  static void lcd_insert_filament_menu() {
+    START_MENU();
+    MENU_ITEM(back, MSG_CHANGE_FILAMENT);
+    MENU_ITEM_EDIT_CALLBACK(bool, MSG_INSERT_FILAMENT_SLOW, &mfc_filament_slow_inserting, lcd_insert_filament_slow_callback);
+    if (mfc_state == MFC_IDLE) MENU_ITEM(function, MSG_INSERT_FILAMENT, lcd_insert_filament);
+    END_MENU();
+  }
+
+  static void lcd_change_filament_menu() {
+    START_MENU();
+    MENU_ITEM(back, MSG_MAIN);
+    switch (mfc_state) {
+      case MFC_IDLE:
+        MENU_ITEM(function, MSG_EJECT_FILAMENT, lcd_eject_filament);
+        MENU_ITEM(submenu, MSG_INSERT_FILAMENT, lcd_insert_filament_menu);
+        break;
+      case MFC_EJECTING:
+        MENU_ITEM(function, MSG_STOP_EJECT, lcd_stop_mfc);
+        break;
+      case MFC_INSERTING:
+      case MFC_INSERTING_SLOW:
+        MENU_ITEM(function, MSG_STOP_INSERT, lcd_stop_mfc);
+        break;
+    }
+    END_MENU();
+  }
+
+#endif // MANUAL_FILAMENT_CHANGE
+
 /**
  *
  * "Prepare" submenu
