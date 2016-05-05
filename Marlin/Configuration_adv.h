@@ -516,7 +516,7 @@ const unsigned int dropsegments = 5; //everything with less than this number of 
 
 // Add support for experimental filament exchange support M600; requires display
 #if ENABLED(ULTIPANEL)
-  #define FILAMENTCHANGEENABLE
+  //#define FILAMENTCHANGEENABLE
   #if ENABLED(FILAMENTCHANGEENABLE)
     #define MANUAL_FILAMENT_CHANGE              //Add Filament Change to the LCD Menus
     #define FILAMENTCHANGE_XPOS 3
