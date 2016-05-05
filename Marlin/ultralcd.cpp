@@ -1142,8 +1142,8 @@ void lcd_cooldown() {
     }
     lcd_stop_mfc();
   }
-  static void lcd_eject_filament() { lcd_mfc_move(MFC_EJECTING BOWDEN_LENGTH, FILAMENT_CHANGE_NORMAL_SPEED); }
-  static void lcd_insert_filament() { lcd_mfc_move(MFC_INSERTING,BOWDEN_LENGTH, FILAMENT_CHANGE_NORMAL_SPEED); }
+  static void lcd_eject_filament() { lcd_mfc_move(MFC_EJECTING, FILAMENT_LOAD_LENGTH, FILAMENT_CHANGE_NORMAL_SPEED); }
+  static void lcd_insert_filament() { lcd_mfc_move(MFC_INSERTING,FILAMENT_LOAD_LENGTH, FILAMENT_CHANGE_NORMAL_SPEED); }
   static void lcd_insert_filament_slow_callback() { lcd_mfc_move(MFC_INSERTING_SLOW,  1.0,  FILAMENT_CHANGE_SLOW_SPEED); }
 
   static void lcd_insert_filament_menu() {

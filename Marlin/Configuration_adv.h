@@ -529,9 +529,9 @@ const unsigned int dropsegments = 5; //everything with less than this number of 
     #define AUTO_FILAMENT_CHANGE_FEEDRATE 300   //Extrusion feedrate (mm/min) on automatic extrusion loop
  
   #if ENABLED(MANUAL_FILAMENT_CHANGE)
-      #define BOWDEN_LENGTH 55 //i guess it's in cm
-      #define FILAMENT_CHANGE_NORMAL_SPEED 100
-      #define FILAMENT_CHANGE_SLOW_SPEED 3.5
+    #define FILAMENT_LOAD_LENGTH 55 //i guess it's in cm
+    #define FILAMENT_CHANGE_NORMAL_SPEED 100
+    #define FILAMENT_CHANGE_SLOW_SPEED 3.5
   #endif
   
   #endif
