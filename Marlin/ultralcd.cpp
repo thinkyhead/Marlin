@@ -64,6 +64,7 @@ int absPreheatFanSpeed;
 #if ENABLED(MANUAL_FILAMENT_CHANGE)
   enum MFCState { MFC_IDLE, MFC_EJECTING, MFC_INSERTING, MFC_INSERTING_SLOW };
   MFCState mfc_state = MFC_IDLE;
+  bool mfc_filament_slow_inserting;
 #endif
 
 #if ENABLED(FILAMENT_LCD_DISPLAY)
@@ -1116,19 +1117,34 @@ void lcd_cooldown() {
 
   inline void lcd_stop_mfc() { lcd_set_mfc_state(MFC_IDLE); }
 
-  static void lcd_mfc_move(MFCState state, float distance, float speed=100.0) {
+  static void lcd_mfc_move(MFCState state, float distance, float speed=) {
     lcd_set_mfc_state(state);
-    int count = -(FILAMENTCHANGE_FINALRETRACT);
-    while (mfc_state == state && count--) {
-      current_position[E_AXIS] += distance;
-      plan_buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], speed, active_extruder);
-      st_synchronize();
+
+    switch(state){
+      case MFC_INSERTING_SLOW:
+        while (mfc_filament_slow_inserting) {
+          current_position[E_AXIS] += distance;
+          planner.buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], speed, active_extruder);
+          stepper.synchronize();
+        }
+      break;
+      case MFC_INSERTING:
+        current_position[E_AXIS] += distance;
+        planner.buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], speed, active_extruder);
+        stepper.synchronize();
+      break;
+     
+      case MFC_EJECTING:
+        current_position[E_AXIS] -= distance;
+        planner.buffer_line(current_position[(X_AXIS)], current_position[(Y_AXIS)], current_position[(Z_AXIS)], current_position[E_AXIS], speed, active_extruder);
+        stepper.synchronize();
+      break;  
     }
     lcd_stop_mfc();
   }
-  static void lcd_eject_filament() { lcd_mfc_move(MFC_EJECTING, -1.0); }
-  static void lcd_insert_filament() { lcd_mfc_move(MFC_INSERTING, 1.0); }
-  static void lcd_insert_filament_slow_callback() { lcd_mfc_move(MFC_INSERTING_SLOW, 1.0, 1.5); }
+  static void lcd_eject_filament() { lcd_mfc_move(MFC_EJECTING BOWDEN_LENGTH, FILAMENT_CHANGE_NORMAL_SPEED); }
+  static void lcd_insert_filament() { lcd_mfc_move(MFC_INSERTING,BOWDEN_LENGTH, FILAMENT_CHANGE_NORMAL_SPEED); }
+  static void lcd_insert_filament_slow_callback() { lcd_mfc_move(MFC_INSERTING_SLOW,  1.0,  FILAMENT_CHANGE_SLOW_SPEED); }
 
   static void lcd_insert_filament_menu() {
     START_MENU();
