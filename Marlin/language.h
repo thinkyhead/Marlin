@@ -64,6 +64,8 @@
 // kana_utf8  Japanese (UTF8)
 // cn         Chinese
 // cz         Czech
+// el         Greek
+// el-gr      Greek (Greece)
 
 #if ENABLED(USE_AUTOMATIC_VERSIONING)
   #include "_Version.h"
