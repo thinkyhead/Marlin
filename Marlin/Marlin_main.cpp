@@ -333,7 +333,7 @@ const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 
 static int serial_count = 0;
 
-// GCode parameter pointer used by code_seen(), code_value(), etc.
+// GCode parameter pointer used by code_seen(), code_value_float(), etc.
 static char* seen_pointer;
 
 // Next Immediate GCode Command pointer. NULL if none.
@@ -857,8 +857,6 @@ void setup() {
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
 
-  lcd_init();
-
   thermalManager.init();    // Initialize temperature loop
 
   #if ENABLED(DELTA) || ENABLED(SCARA)
@@ -906,6 +904,18 @@ void setup() {
     pinMode(STAT_LED_BLUE, OUTPUT);
     digitalWrite(STAT_LED_BLUE, LOW); // turn it off
   #endif
+
+  lcd_init();
+  #if ENABLED(SHOW_BOOTSCREEN)
+    #if ENABLED(DOGLCD)
+      delay(1000);
+    #elif ENABLED(ULTRA_LCD)
+      bootscreen();
+      lcd_init();
+    #endif
+  #endif
+
+
 }
 
 /**
@@ -6475,6 +6485,16 @@ inline void gcode_M503() {
 
 #endif // DUAL_X_CARRIAGE
 
+#if ENABLED(LIN_ADVANCE)
+  /**
+   * M905: Set advance factor
+   */
+  inline void gcode_M905() {
+    stepper.synchronize();
+    stepper.advance_M905(code_seen('K') ? code_value_float() : -1.0);
+  }
+#endif
+
 /**
  * M907: Set digital trimpot motor current using axis codes X, Y, Z, E, B, S
  */
@@ -6593,6 +6613,7 @@ inline void gcode_M999() {
  * T0-T3: Switch tool, usually switching extruders
  *
  *   F[mm/min] Set the movement feedrate
+ *   S1        Don't move the tool in XY after change
  */
 inline void gcode_T(uint8_t tmp_extruder) {
   if (tmp_extruder >= EXTRUDERS) {
@@ -6606,7 +6627,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
   float stored_feedrate = feedrate;
 
   if (code_seen('F')) {
-    float next_feedrate = code_value_axis_units(E_AXIS);
+    float next_feedrate = code_value_axis_units(X_AXIS);
     if (next_feedrate > 0.0) stored_feedrate = feedrate = next_feedrate;
   }
   else {
@@ -6619,8 +6640,9 @@ inline void gcode_T(uint8_t tmp_extruder) {
 
   #if HOTENDS > 1
     if (tmp_extruder != active_extruder) {
+      bool no_move = code_seen('S') && code_value_bool();
       // Save current position to return to after applying extruder offset
-      set_destination_to_current();
+      if (!no_move) set_destination_to_current();
       #if ENABLED(DUAL_X_CARRIAGE)
         if (dual_x_carriage_mode == DXC_AUTO_PARK_MODE && IsRunning() &&
             (delayed_move_time || current_position[X_AXIS] != x_home_pos(active_extruder))) {
@@ -6724,7 +6746,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
       #endif
 
       // Move to the "old position" (move the extruder into place)
-      if (IsRunning()) prepare_move_to_destination();
+      if (!no_move && IsRunning()) prepare_move_to_destination();
 
     } // (tmp_extruder != active_extruder)
 
@@ -7347,6 +7369,12 @@ void process_next_command() {
           gcode_M605();
           break;
       #endif // DUAL_X_CARRIAGE
+      
+      #if ENABLED(LIN_ADVANCE)
+        case 905: // M905 Set advance factor.
+          gcode_M905();
+          break;
+      #endif
 
       case 907: // M907 Set digital trimpot motor current using axis codes.
         gcode_M907();
@@ -8283,6 +8311,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
 void kill(const char* lcd_msg) {
   #if ENABLED(ULTRA_LCD)
+    lcd_init();
     lcd_setalertstatuspgm(lcd_msg);
   #else
     UNUSED(lcd_msg);
