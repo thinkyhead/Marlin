@@ -34,7 +34,7 @@
 //#define SIMULATE_ROMFONT
 
 //#define MAPPER_C2C3
-//#define DISPLAY_CHARSET_ISO10646_1
+#define DISPLAY_CHARSET_ISO10646_4
 
 #define WELCOME_MSG                         MACHINE_NAME " έτοιμο."
 #define MSG_SD_INSERTED                     "Τοποθετήθηκε η κάρτα SD"
