@@ -29,6 +29,7 @@
 #define BOARD_GEN7_12           11   // Gen7 v1.1, v1.2
 #define BOARD_GEN7_13           12   // Gen7 v1.3
 #define BOARD_GEN7_14           13   // Gen7 v1.4
+#define BOARD_CNCONTROLS_12     112  // Cartesio CN Controls V12
 #define BOARD_CHEAPTRONIC       2    // Cheaptronic v1.0
 #define BOARD_SETHI             20   // Sethi 3D_1
 #define BOARD_RAMPS_OLD         3    // MEGA/RAMPS up to 1.2
@@ -39,6 +40,7 @@
 #define BOARD_RAMPS_13_SF       38   // RAMPS 1.3 (Power outputs: Spindle, Controller Fan)
 #define BOARD_FELIX2            37   // Felix 2.0+ Electronics Board (RAMPS like)
 #define BOARD_RIGIDBOARD        42   // Invent-A-Part RigidBoard
+#define BOARD_RIGIDBOARD_V2     52   // Invent-A-Part RigidBoard V2
 #define BOARD_RAMPS_14_EFB      43   // RAMPS 1.4 (Power outputs: Hotend, Fan, Bed)
 #define BOARD_RAMPS_14_EEB      44   // RAMPS 1.4 (Power outputs: Hotend0, Hotend1, Bed)
 #define BOARD_RAMPS_14_EFF      45   // RAMPS 1.4 (Power outputs: Hotend, Fan0, Fan1)

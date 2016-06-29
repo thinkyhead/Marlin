@@ -174,8 +174,8 @@
 #define MSG_INIT_SDCARD                     "Nacist SD kartu"
 #define MSG_CNG_SDCARD                      "Vymenit SD kartu"
 #define MSG_ZPROBE_OUT                      "Sonda Z mimo podl"
-#define MSG_YX_UNHOMED                      "Domu X/Y pred Z"
-#define MSG_XYZ_UNHOMED                     "Domu XYZ prvni"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Z ofset"
 #define MSG_BABYSTEP_X                      "Babystep X"
 #define MSG_BABYSTEP_Y                      "Babystep Y"
@@ -194,7 +194,6 @@
 #define MSG_HEATING_COMPLETE                "Zahrati hotovo."
 #define MSG_BED_HEATING                     "Zahrivani podl."
 #define MSG_BED_DONE                        "Podlozka hotova."
-
 #define MSG_DELTA_CALIBRATE                 "Delta Kalibrace"
 #define MSG_DELTA_CALIBRATE_X               "Kalibrovat X"
 #define MSG_DELTA_CALIBRATE_Y               "Kalibrovat Y"

@@ -83,7 +83,6 @@
 #define MSG_MOVE_E2                         "2"
 #define MSG_MOVE_E3                         "3"
 #define MSG_MOVE_E4                         "4"
-
 #define MSG_MOVE_01MM                       "Flyt 0.1mm"
 #define MSG_MOVE_1MM                        "Flyt 1mm"
 #define MSG_MOVE_10MM                       "Flyt 10mm"
@@ -171,8 +170,8 @@
 #define MSG_INIT_SDCARD                     "Init. SD card"
 #define MSG_CNG_SDCARD                      "Skift SD kort"
 #define MSG_ZPROBE_OUT                      "Probe udenfor plade"
-#define MSG_YX_UNHOMED                      "Home X/Y før Z"
-#define MSG_XYZ_UNHOMED                     "Home XYZ first"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Z Offset"
 #define MSG_BABYSTEP_X                      "Babystep X"
 #define MSG_BABYSTEP_Y                      "Babystep Y"
@@ -191,11 +190,10 @@
 #define MSG_HEATING_COMPLETE                "Opvarmet"
 #define MSG_BED_HEATING                     "Opvarmer plade"
 #define MSG_BED_DONE                        "Plade opvarmet"
-
-#define MSG_DELTA_CALIBRATE               "Delta Kalibrering"
-#define MSG_DELTA_CALIBRATE_X             "Kalibrer X"
-#define MSG_DELTA_CALIBRATE_Y             "Kalibrer Y"
-#define MSG_DELTA_CALIBRATE_Z             "Kalibrer Z"
-#define MSG_DELTA_CALIBRATE_CENTER        "Kalibrerings Center"
+#define MSG_DELTA_CALIBRATE                 "Delta Kalibrering"
+#define MSG_DELTA_CALIBRATE_X               "Kalibrer X"
+#define MSG_DELTA_CALIBRATE_Y               "Kalibrer Y"
+#define MSG_DELTA_CALIBRATE_Z               "Kalibrer Z"
+#define MSG_DELTA_CALIBRATE_CENTER          "Kalibrerings Center"
 
 #endif // LANGUAGE_DA_H

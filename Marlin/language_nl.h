@@ -144,7 +144,8 @@
 #define MSG_INIT_SDCARD                     "Init. SD kaart"
 #define MSG_CNG_SDCARD                      "Verv. SD Kaart"
 #define MSG_ZPROBE_OUT                      "Z probe uit. bed"
-#define MSG_YX_UNHOMED                      "Home X/Y voor Z"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Z Offset"
 #define MSG_BABYSTEP_X                      "Babystap X"
 #define MSG_BABYSTEP_Y                      "Babystap Y"
@@ -163,7 +164,6 @@
 #define MSG_HEATING_COMPLETE                "Voorverw. kompl."
 #define MSG_BED_HEATING                     "Bed voorverw."
 #define MSG_BED_DONE                        "Bed is voorverw."
-
 #define MSG_DELTA_CALIBRATE                 "Delta Calibratie"
 #define MSG_DELTA_CALIBRATE_X               "Kalibreer X"
 #define MSG_DELTA_CALIBRATE_Y               "Kalibreer Y"

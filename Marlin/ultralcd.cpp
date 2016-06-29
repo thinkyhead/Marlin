@@ -496,17 +496,16 @@ static void lcd_status_screen() {
     }
 
     static void lcd_sdcard_stop() {
-      stepper.quick_stop();
-      #if DISABLED(DELTA) && DISABLED(SCARA)
-        set_current_position_from_planner();
-      #endif // !DELTA && !SCARA
+      card.stopSDPrint();
       clear_command_queue();
-      card.sdprinting = false;
-      card.closefile();
+      stepper.quick_stop();
       print_job_timer.stop();
       thermalManager.autotempShutdown();
       cancel_heatup = true;
       lcd_setstatus(MSG_PRINT_ABORTED, true);
+      #if DISABLED(DELTA) && DISABLED(SCARA)
+        set_current_position_from_planner();
+      #endif // !DELTA && !SCARA
     }
 
   #endif //SDSUPPORT
@@ -575,18 +574,21 @@ static void lcd_status_screen() {
 
   #if ENABLED(BABYSTEPPING)
 
-    int babysteps_done = 0;
+    long babysteps_done = 0;
 
     static void _lcd_babystep(const AxisEnum axis, const char* msg) {
       ENCODER_DIRECTION_NORMAL();
       if (encoderPosition) {
-        int distance = (int32_t)encoderPosition * BABYSTEP_MULTIPLICATOR;
+        int babystep_increment = (int32_t)encoderPosition * BABYSTEP_MULTIPLICATOR;
         encoderPosition = 0;
         lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
-        thermalManager.babystep_axis(axis, distance);
-        babysteps_done += distance;
+        thermalManager.babystep_axis(axis, babystep_increment);
+        babysteps_done += babystep_increment;
       }
-      if (lcdDrawUpdate) lcd_implementation_drawedit(msg, itostr3sign(babysteps_done));
+      if (lcdDrawUpdate)
+        lcd_implementation_drawedit(msg, ftostr43sign(
+          ((1000 * babysteps_done) / planner.axis_steps_per_mm[axis]) * 0.001f
+        ));
       if (LCD_CLICKED) lcd_goto_previous_menu(true);
     }
 
@@ -1055,7 +1057,11 @@ static void lcd_status_screen() {
       if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_WAITING));
       if (LCD_CLICKED) {
         _lcd_level_bed_position = 0;
-        current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+        current_position[Z_AXIS] = MESH_HOME_SEARCH_Z
+          #if Z_HOME_DIR > 0
+            + Z_MAX_POS
+          #endif
+        ;
         planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
         lcd_goto_screen(_lcd_level_goto_next_point, true);
       }
@@ -1290,7 +1296,7 @@ static void lcd_status_screen() {
       #if EXTRUDERS == 1
         pos_label = PSTR(MSG_MOVE_E);
       #else
-        switch (e) {
+        switch (eindex) {
           case 0: pos_label = PSTR(MSG_MOVE_E MSG_MOVE_E1); break;
           case 1: pos_label = PSTR(MSG_MOVE_E MSG_MOVE_E2); break;
           #if EXTRUDERS > 2
@@ -1681,7 +1687,7 @@ static void lcd_status_screen() {
   static void lcd_control_motion_menu() {
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL);
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    #if HAS_BED_PROBE
       MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX);
     #endif
     // Manual bed leveling, Bed Z:
@@ -1795,7 +1801,7 @@ static void lcd_status_screen() {
       #if EXTRUDERS > 1
         MENU_ITEM_EDIT(float52, MSG_CONTROL_RETRACT_SWAP, &retract_length_swap, 0, 100);
       #endif
-      MENU_ITEM_EDIT(float3, MSG_CONTROL_RETRACTF, &retract_feedrate, 1, 999);
+      MENU_ITEM_EDIT(float3, MSG_CONTROL_RETRACTF, &retract_feedrate_mm_s, 1, 999);
       MENU_ITEM_EDIT(float52, MSG_CONTROL_RETRACT_ZLIFT, &retract_zlift, 0, 999);
       MENU_ITEM_EDIT(float52, MSG_CONTROL_RETRACT_RECOVER, &retract_recover_length, 0, 100);
       #if EXTRUDERS > 1
@@ -1997,9 +2003,8 @@ static void lcd_status_screen() {
       lcd.buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
     #elif PIN_EXISTS(BEEPER)
       buzzer.tone(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
-    #else
-      delay(LCD_FEEDBACK_FREQUENCY_DURATION_MS);
     #endif
+    delay(10); // needed for buttons to settle
   }
 
   /**
@@ -2261,14 +2266,11 @@ void lcd_update() {
 
                 #if ENABLED(ENCODER_RATE_MULTIPLIER_DEBUG)
                   SERIAL_ECHO_START;
-                  SERIAL_ECHO("Enc Step Rate: ");
-                  SERIAL_ECHO(encoderStepRate);
-                  SERIAL_ECHO("  Multiplier: ");
-                  SERIAL_ECHO(encoderMultiplier);
-                  SERIAL_ECHO("  ENCODER_10X_STEPS_PER_SEC: ");
-                  SERIAL_ECHO(ENCODER_10X_STEPS_PER_SEC);
-                  SERIAL_ECHO("  ENCODER_100X_STEPS_PER_SEC: ");
-                  SERIAL_ECHOLN(ENCODER_100X_STEPS_PER_SEC);
+                  SERIAL_ECHOPAIR("Enc Step Rate: ", encoderStepRate);
+                  SERIAL_ECHOPAIR("  Multiplier: ", encoderMultiplier);
+                  SERIAL_ECHOPAIR("  ENCODER_10X_STEPS_PER_SEC: ", ENCODER_10X_STEPS_PER_SEC);
+                  SERIAL_ECHOPAIR("  ENCODER_100X_STEPS_PER_SEC: ", ENCODER_100X_STEPS_PER_SEC);
+                  SERIAL_EOL;
                 #endif //ENCODER_RATE_MULTIPLIER_DEBUG
               }
 

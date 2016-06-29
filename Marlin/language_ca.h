@@ -143,7 +143,8 @@
 #define MSG_INIT_SDCARD                     "Iniciant SD"
 #define MSG_CNG_SDCARD                      "Canviar SD"
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
-#define MSG_YX_UNHOMED                      "Home X/Y abans Z"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Z Offset"
 #define MSG_BABYSTEP_X                      "Babystep X"
 #define MSG_BABYSTEP_Y                      "Babystep Y"
@@ -151,7 +152,6 @@
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
 #define MSG_END_HOUR                        "hours"
 #define MSG_END_MINUTE                      "minutes"
-
 #define MSG_DELTA_CALIBRATE                 "Delta Calibration"
 #define MSG_DELTA_CALIBRATE_X               "Calibrate X"
 #define MSG_DELTA_CALIBRATE_Y               "Calibrate Y"

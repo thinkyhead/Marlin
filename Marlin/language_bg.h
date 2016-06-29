@@ -143,7 +143,8 @@
 #define MSG_INIT_SDCARD                     "Иниц. SD-Карта"
 #define MSG_CNG_SDCARD                      "Смяна SD-Карта"
 #define MSG_ZPROBE_OUT                      "Z-сондата е извадена"
-#define MSG_YX_UNHOMED                      "Задайте X/Y преди Z"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Z Отстояние"
 #define MSG_BABYSTEP_X                      "Министъпка X"
 #define MSG_BABYSTEP_Y                      "Министъпка Y"
@@ -151,7 +152,6 @@
 #define MSG_ENDSTOP_ABORT                   "Стоп Кр.Изключватели"
 #define MSG_END_HOUR                        "часа"
 #define MSG_END_MINUTE                      "минути"
-
 #define MSG_DELTA_CALIBRATE                 "Делта Калибровка"
 #define MSG_DELTA_CALIBRATE_X               "Калибровка X"
 #define MSG_DELTA_CALIBRATE_Y               "Калибровка Y"
