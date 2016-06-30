@@ -142,7 +142,8 @@
 #define MSG_INIT_SDCARD                     "Hasieratu txartela"
 #define MSG_CNG_SDCARD                      "Aldatu txartela"
 #define MSG_ZPROBE_OUT                      "Z ohe hasiera"
-#define MSG_YX_UNHOMED                      "Posizio ezezaguna"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Z konpentsatu"
 #define MSG_BABYSTEP_X                      "Babystep X"
 #define MSG_BABYSTEP_Y                      "Babystep Y"
@@ -150,7 +151,6 @@
 #define MSG_ENDSTOP_ABORT                   "Endstop deuseztat"
 #define MSG_END_HOUR                        "hours"
 #define MSG_END_MINUTE                      "minutes"
-
 #define MSG_DELTA_CALIBRATE                 "Delta Calibration"
 #define MSG_DELTA_CALIBRATE_X               "Calibrate X"
 #define MSG_DELTA_CALIBRATE_Y               "Calibrate Y"

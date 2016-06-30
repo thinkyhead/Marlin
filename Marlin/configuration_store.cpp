@@ -107,7 +107,7 @@
  *  391  M209 S    autoretract_enabled (bool)
  *  392  M207 S    retract_length (float)
  *  396  M207 W    retract_length_swap (float)
- *  400  M207 F    retract_feedrate (float)
+ *  400  M207 F    retract_feedrate_mm_s (float)
  *  404  M207 Z    retract_zlift (float)
  *  408  M208 S    retract_recover_length (float)
  *  412  M208 W    retract_recover_length_swap (float)
@@ -304,7 +304,7 @@ void Config_StoreSettings()  {
       dummy = 0.0f;
       EEPROM_WRITE_VAR(i, dummy);
     #endif
-    EEPROM_WRITE_VAR(i, retract_feedrate);
+    EEPROM_WRITE_VAR(i, retract_feedrate_mm_s);
     EEPROM_WRITE_VAR(i, retract_zlift);
     EEPROM_WRITE_VAR(i, retract_recover_length);
     #if EXTRUDERS > 1
@@ -344,7 +344,9 @@ void Config_RetrieveSettings() {
   char stored_ver[4];
   char ver[4] = EEPROM_VERSION;
   EEPROM_READ_VAR(i, stored_ver); //read stored version
-  //  SERIAL_ECHOLN("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
+  //  SERIAL_ECHOPAIR("Version: [", ver);
+  //  SERIAL_ECHOPAIR("] Stored version: [", stored_ver);
+  //  SERIAL_ECHOLNPGM("]");
 
   if (strncmp(ver, stored_ver, 3) != 0) {
     Config_ResetDefault();
@@ -482,7 +484,7 @@ void Config_RetrieveSettings() {
       #else
         EEPROM_READ_VAR(i, dummy);
       #endif
-      EEPROM_READ_VAR(i, retract_feedrate);
+      EEPROM_READ_VAR(i, retract_feedrate_mm_s);
       EEPROM_READ_VAR(i, retract_zlift);
       EEPROM_READ_VAR(i, retract_recover_length);
       #if EXTRUDERS > 1
@@ -617,7 +619,7 @@ void Config_ResetDefault() {
     #if EXTRUDERS > 1
       retract_length_swap = RETRACT_LENGTH_SWAP;
     #endif
-    retract_feedrate = RETRACT_FEEDRATE;
+    retract_feedrate_mm_s = RETRACT_FEEDRATE;
     retract_zlift = RETRACT_ZLIFT;
     retract_recover_length = RETRACT_RECOVER_LENGTH;
     #if EXTRUDERS > 1
@@ -717,7 +719,7 @@ void Config_PrintSettings(bool forReplay) {
 
   CONFIG_ECHO_START;
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Home offset (mm):");
+    SERIAL_ECHOLNPGM("Home offset (mm)");
     CONFIG_ECHO_START;
   }
   SERIAL_ECHOPAIR("  M206 X", home_offset[X_AXIS]);
@@ -864,7 +866,7 @@ void Config_PrintSettings(bool forReplay) {
     #if EXTRUDERS > 1
       SERIAL_ECHOPAIR(" W", retract_length_swap);
     #endif
-    SERIAL_ECHOPAIR(" F", retract_feedrate * 60);
+    SERIAL_ECHOPAIR(" F", retract_feedrate_mm_s * 60);
     SERIAL_ECHOPAIR(" Z", retract_zlift);
     SERIAL_EOL;
     CONFIG_ECHO_START;
@@ -883,7 +885,7 @@ void Config_PrintSettings(bool forReplay) {
       SERIAL_ECHOLNPGM("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
       CONFIG_ECHO_START;
     }
-    SERIAL_ECHOPAIR("  M209 S", (autoretract_enabled ? 1 : 0));
+    SERIAL_ECHOPAIR("  M209 S", autoretract_enabled ? 1 : 0);
     SERIAL_EOL;
 
   #endif // FWRETRACT

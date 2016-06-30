@@ -170,8 +170,8 @@
 #define MSG_INIT_SDCARD                     "Iniciando SD"
 #define MSG_CNG_SDCARD                      "Cambiar SD"
 #define MSG_ZPROBE_OUT                      "Sonda-Z sen cama"
-#define MSG_YX_UNHOMED                      "X/Y antes que Z"
-#define MSG_XYZ_UNHOMED                     "Orixe XYZ antes"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Offset Z"
 #define MSG_BABYSTEP_X                      "Micropaso X"
 #define MSG_BABYSTEP_Y                      "Micropaso Y"
@@ -190,11 +190,10 @@
 #define MSG_HEATING_COMPLETE                "Xa esta quente"
 #define MSG_BED_HEATING                     "Quentando cama"
 #define MSG_BED_DONE                        "Cama esta quente"
-
-#define MSG_DELTA_CALIBRATE               "Calibracion Delta"
-#define MSG_DELTA_CALIBRATE_X             "Calibrar X"
-#define MSG_DELTA_CALIBRATE_Y             "Calibrar Y"
-#define MSG_DELTA_CALIBRATE_Z             "Calibrar Z"
-#define MSG_DELTA_CALIBRATE_CENTER        "Calibrar Centro"
+#define MSG_DELTA_CALIBRATE                 "Calibracion Delta"
+#define MSG_DELTA_CALIBRATE_X               "Calibrar X"
+#define MSG_DELTA_CALIBRATE_Y               "Calibrar Y"
+#define MSG_DELTA_CALIBRATE_Z               "Calibrar Z"
+#define MSG_DELTA_CALIBRATE_CENTER          "Calibrar Centro"
 
 #endif // LANGUAGE_GL_H

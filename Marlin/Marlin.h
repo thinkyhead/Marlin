@@ -84,8 +84,9 @@ typedef unsigned long millis_t;
 #define SERIAL_PROTOCOL_F(x,y) MYSERIAL.print(x,y)
 #define SERIAL_PROTOCOLPGM(x) serialprintPGM(PSTR(x))
 #define SERIAL_PROTOCOLLN(x) do{ MYSERIAL.print(x); SERIAL_EOL; }while(0)
-#define SERIAL_PROTOCOLLNPGM(x) do{ serialprintPGM(PSTR(x)); SERIAL_EOL; }while(0)
+#define SERIAL_PROTOCOLLNPGM(x) do{ serialprintPGM(PSTR(x "\n")); }while(0)
 
+#define SERIAL_PROTOCOLPAIR(name, value) SERIAL_ECHOPAIR(name, value)
 
 extern const char errormagic[] PROGMEM;
 extern const char echomagic[] PROGMEM;
@@ -352,7 +353,7 @@ float code_value_temp_diff();
 #if ENABLED(FWRETRACT)
   extern bool autoretract_enabled;
   extern bool retracted[EXTRUDERS]; // extruder[n].retracted
-  extern float retract_length, retract_length_swap, retract_feedrate, retract_zlift;
+  extern float retract_length, retract_length_swap, retract_feedrate_mm_s, retract_zlift;
   extern float retract_recover_length, retract_recover_length_swap, retract_recover_feedrate;
 #endif
 

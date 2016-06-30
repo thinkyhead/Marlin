@@ -144,7 +144,8 @@
 #define MSG_INIT_SDCARD                     "Iniciar SD"
 #define MSG_CNG_SDCARD                      "Trocar SD"
 #define MSG_ZPROBE_OUT                      "Son. fora da mesa"
-#define MSG_YX_UNHOMED                      "Pos. Desconhecida"
+#define MSG_HOME                            "Home"  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "Deslocamento no Z"
 #define MSG_BABYSTEP_X                      "Passinho X"
 #define MSG_BABYSTEP_Y                      "Passinho Y"
@@ -163,7 +164,6 @@
 #define MSG_HEATING_COMPLETE                "Aquecida."
 #define MSG_BED_HEATING                     "Aquecendo base.."
 #define MSG_BED_DONE                        "Base aquecida."
-
 #define MSG_DELTA_CALIBRATE                 "Calibrar Delta"
 #define MSG_DELTA_CALIBRATE_X               "Calibrar X"
 #define MSG_DELTA_CALIBRATE_Y               "Calibrar Y"

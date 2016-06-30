@@ -45,11 +45,11 @@
  * will force a minimum config file revision, otherwise Marlin will not build.
  */
 #if ! defined(CONFIGURATION_H_VERSION) || CONFIGURATION_H_VERSION < REQUIRED_CONFIGURATION_H_VERSION
-  #error You are using an old Configuration.h file, update it before building Marlin.
+  #error "You are using an old Configuration.h file, update it before building Marlin."
 #endif
 
 #if ! defined(CONFIGURATION_ADV_H_VERSION) || CONFIGURATION_ADV_H_VERSION < REQUIRED_CONFIGURATION_ADV_H_VERSION
-  #error You are using an old Configuration_adv.h file, update it before building Marlin.
+  #error "You are using an old Configuration_adv.h file, update it before building Marlin."
 #endif
 
 /**
@@ -125,6 +125,17 @@
 #endif
 
 /**
+ * Filament Runout needs a pin and SD Support
+ */
+#if ENABLED(FILAMENT_RUNOUT_SENSOR)
+  #if !HAS_FIL_RUNOUT
+    #error "FILAMENT_RUNOUT_SENSOR requires FIL_RUNOUT_PIN."
+  #elif DISABLED(SDSUPPORT)
+    #error "FILAMENT_RUNOUT_SENSOR requires SDSUPPORT."
+  #endif
+#endif
+
+/**
  * Filament Change with Extruder Runout Prevention
  */
 #if ENABLED(FILAMENTCHANGEENABLE) && ENABLED(EXTRUDER_RUNOUT_PREVENT)
@@ -135,7 +146,7 @@
  * Individual axis homing is useless for DELTAS
  */
 #if ENABLED(INDIVIDUAL_AXIS_HOMING_MENU) && ENABLED(DELTA)
-  #error INDIVIDUAL_AXIS_HOMING_MENU is incompatible with DELTA kinematics.
+  #error "INDIVIDUAL_AXIS_HOMING_MENU is incompatible with DELTA kinematics."
 #endif
 
 /**
@@ -223,6 +234,17 @@
 #if PROBE_SELECTED
 
   /**
+   * NUM_SERVOS is required for a Z servo probe
+   */
+  #if HAS_Z_SERVO_ENDSTOP
+    #ifndef NUM_SERVOS
+      #error "You must set NUM_SERVOS for a Z servo probe (Z_ENDSTOP_SERVO_NR)."
+    #elif Z_ENDSTOP_SERVO_NR >= NUM_SERVOS
+      #error "Z_ENDSTOP_SERVO_NR must be less than NUM_SERVOS."
+    #endif
+  #endif
+
+  /**
    * A probe needs a pin
    */
   #if !PROBE_PIN_CONFIGURED
@@ -246,11 +268,10 @@
   /**
    * Only allow one probe option to be defined
    */
-  #if (ENABLED(FIX_MOUNTED_PROBE) && (ENABLED(MECHANICAL_PROBE) || ENABLED(Z_PROBE_ALLEN_KEY) || HAS_Z_SERVO_ENDSTOP || ENABLED(Z_PROBE_SLED))) \
-       || (ENABLED(MECHANICAL_PROBE) && (ENABLED(Z_PROBE_ALLEN_KEY) || HAS_Z_SERVO_ENDSTOP || ENABLED(Z_PROBE_SLED))) \
+  #if (ENABLED(FIX_MOUNTED_PROBE) && (ENABLED(Z_PROBE_ALLEN_KEY) || HAS_Z_SERVO_ENDSTOP || ENABLED(Z_PROBE_SLED))) \
        || (ENABLED(Z_PROBE_ALLEN_KEY) && (HAS_Z_SERVO_ENDSTOP || ENABLED(Z_PROBE_SLED))) \
        || (HAS_Z_SERVO_ENDSTOP && ENABLED(Z_PROBE_SLED))
-    #error "Please define only one type of probe: Z Servo, MECHANICAL_PROBE, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, or FIX_MOUNTED_PROBE."
+    #error "Please define only one type of probe: Z Servo, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, or FIX_MOUNTED_PROBE."
   #endif
 
   /**
@@ -289,10 +310,12 @@
 #else
 
   /**
-   * Require some kind of probe for bed leveling
+   * Require some kind of probe for bed leveling and probe testing
    */
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-    #error "AUTO_BED_LEVELING_FEATURE requires a probe! Define a Z Servo, MECHANICAL_PROBE, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, or FIX_MOUNTED_PROBE."
+    #error "AUTO_BED_LEVELING_FEATURE requires a probe! Define a Z Servo, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, or FIX_MOUNTED_PROBE."
+  #elif ENABLED(Z_MIN_PROBE_REPEATABILITY_TEST)
+    #error "Z_MIN_PROBE_REPEATABILITY_TEST requires a probe! Define a Z Servo, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, or FIX_MOUNTED_PROBE."
   #endif
 
 #endif
@@ -307,11 +330,7 @@
    */
   #if !PIN_EXISTS(Z_MIN)
     #if !PIN_EXISTS(Z_MIN_PROBE) || (DISABLED(Z_MIN_PROBE_ENDSTOP) || ENABLED(DISABLE_Z_MIN_PROBE_ENDSTOP)) // It's possible for someone to set a pin for the Z probe, but not enable it.
-      #if ENABLED(Z_MIN_PROBE_REPEATABILITY_TEST)
-        #error "You must have a Z_MIN or Z_PROBE endstop to enable Z_MIN_PROBE_REPEATABILITY_TEST."
-      #else
-        #error "AUTO_BED_LEVELING_FEATURE requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_MIN_PROBE_PIN must point to a valid hardware pin."
-      #endif
+      #error "AUTO_BED_LEVELING_FEATURE requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_MIN_PROBE_PIN must point to a valid hardware pin."
     #endif
   #endif
 
@@ -362,7 +381,7 @@
  * Advance Extrusion
  */
 #if ENABLED(ADVANCE) && ENABLED(LIN_ADVANCE)
-  #error You can enable ADVANCE or LIN_ADVANCE, but not both.
+  #error "You can enable ADVANCE or LIN_ADVANCE, but not both."
 #endif
 
 /**
@@ -420,10 +439,14 @@
 #endif
 
 /**
- * Allen Key Z probe requires Auto Bed Leveling grid and Delta
+ * Allen Key Z probe requires Delta and Auto Bed Leveling grid
  */
-#if ENABLED(Z_PROBE_ALLEN_KEY) && !(ENABLED(AUTO_BED_LEVELING_GRID) && ENABLED(DELTA))
-  #error "Invalid use of Z_PROBE_ALLEN_KEY."
+#if ENABLED(Z_PROBE_ALLEN_KEY)
+  #if !ENABLED(DELTA)
+    #error "Z_PROBE_ALLEN_KEY is only usable with DELTA."
+  #elif ENABLED(MESH_BED_LEVELING) || (ENABLED(AUTO_BED_LEVELING_FEATURE) && !ENABLED(AUTO_BED_LEVELING_GRID))
+    #error "Z_PROBE_ALLEN_KEY can only use AUTO_BED_LEVELING_GRID leveling."
+  #endif
 #endif
 
 /**
@@ -532,15 +555,15 @@
  */
 #if EXTRUDERS > 3
   #if !PIN_EXISTS(E3_STEP) || !PIN_EXISTS(E3_DIR) || !PIN_EXISTS(E3_ENABLE)
-    #error E3_STEP_PIN, E3_DIR_PIN, or E3_ENABLE_PIN not defined for this board.
+    #error "E3_STEP_PIN, E3_DIR_PIN, or E3_ENABLE_PIN not defined for this board."
   #endif
 #elif EXTRUDERS > 2
   #if !PIN_EXISTS(E2_STEP) || !PIN_EXISTS(E2_DIR) || !PIN_EXISTS(E2_ENABLE)
-    #error E2_STEP_PIN, E2_DIR_PIN, or E2_ENABLE_PIN not defined for this board.
+    #error "E2_STEP_PIN, E2_DIR_PIN, or E2_ENABLE_PIN not defined for this board."
   #endif
 #elif EXTRUDERS > 1
   #if !PIN_EXISTS(E1_STEP) || !PIN_EXISTS(E1_DIR) || !PIN_EXISTS(E1_ENABLE)
-    #error E1_STEP_PIN, E1_DIR_PIN, or E1_ENABLE_PIN not defined for this board.
+    #error "E1_STEP_PIN, E1_DIR_PIN, or E1_ENABLE_PIN not defined for this board."
   #endif
 #endif
 
@@ -570,8 +593,6 @@
   #error "Z_LATE_ENABLE can't be used with COREXZ."
 #elif defined(X_HOME_RETRACT_MM)
   #error "[XYZ]_HOME_RETRACT_MM settings have been renamed [XYZ]_HOME_BUMP_MM."
-#elif defined(PROBE_SERVO_DEACTIVATION_DELAY)
-  #error "PROBE_SERVO_DEACTIVATION_DELAY has been replaced with DEACTIVATE_SERVOS_AFTER_MOVE and SERVO_DEACTIVATION_DELAY."
 #elif defined(BEEPER)
   #error "BEEPER is now BEEPER_PIN. Please update your pins definitions."
 #elif defined(SDCARDDETECT)
@@ -610,6 +631,12 @@
   #error "SERVO_ENDSTOP_ANGLES is deprecated. Use Z_SERVO_ANGLES instead."
 #elif defined(X_ENDSTOP_SERVO_NR) || defined(Y_ENDSTOP_SERVO_NR)
   #error "X_ENDSTOP_SERVO_NR and Y_ENDSTOP_SERVO_NR are deprecated and should be removed."
+#elif defined(XY_TRAVEL_SPEED)
+  #error "XY_TRAVEL_SPEED is deprecated. Use XY_PROBE_SPEED instead."
+#elif defined(PROBE_SERVO_DEACTIVATION_DELAY)
+  #error "PROBE_SERVO_DEACTIVATION_DELAY is deprecated. Use DEACTIVATE_SERVOS_AFTER_MOVE instead."
+#elif defined(SERVO_DEACTIVATION_DELAY)
+  #error "SERVO_DEACTIVATION_DELAY is deprecated. Use SERVO_DELAY instead."
 #endif
 
 #endif //SANITYCHECK_H
