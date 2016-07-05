@@ -146,11 +146,6 @@
   #endif // DISPLAY_CHARSET_HD44780
 #endif // SIMULATE_ROMFONT
 
-//moved from language_en as not to define MAPPER_NON, if another mapper is not yet parsed before language_en.h
-#if DISABLED(MAPPER_NON) && DISABLED(MAPPER_C2C3) && DISABLED(MAPPER_D0D1) && DISABLED(MAPPER_D0D1_MOD) && DISABLED(MAPPER_E382E383)
-  #define MAPPER_NON         // For direct ascii codes
-#endif
-
 #if ENABLED(MAPPER_NON)
 
   char charset_mapper(char c) {
