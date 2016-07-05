@@ -33,8 +33,8 @@
 // Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
 //#define SIMULATE_ROMFONT
 
-//#define MAPPER_CECF
-//#define DISPLAY_CHARSET_ISO10646_GREEK
+#define MAPPER_CECF
+#define DISPLAY_CHARSET_ISO10646_GREEK
 
 #define WELCOME_MSG                         MACHINE_NAME " έτοιμο."
 #define MSG_SD_INSERTED                     "Εισαγωγή κάρτας"
@@ -42,29 +42,29 @@
 #define MSG_LCD_ENDSTOPS                    "Endstops" // Max length 8 characters
 #define MSG_MAIN                            "Βασική Οθόνη"
 #define MSG_AUTOSTART                       "Αυτόματη εκκίνηση"
-#define MSG_DISABLE_STEPPERS                "Απενεργοποίηση βηματιστή"
-#define MSG_AUTO_HOME                       "Αυτομ. επαναφορά στο αρχικό σημείο"
+#define MSG_DISABLE_STEPPERS                "Απενεργοποίηση βηματιστή"  //SHORTEN
+#define MSG_AUTO_HOME                       "Αυτομ. επαναφορά στο αρχικό σημείο" //SHORTEN
 #define MSG_AUTO_HOME_X                     "Αρχικό σημείο X"
 #define MSG_AUTO_HOME_Y                     "Αρχικό σημείο Y"
 #define MSG_AUTO_HOME_Z                     "Αρχικό σημείο Z"
-#define MSG_LEVEL_BED_HOMING                "Επαναφορά στο αρχικό σημείο ΧΥΖ"
-#define MSG_LEVEL_BED_WAITING               "Κάντε κλικ για να ξεκινήσετε"
+#define MSG_LEVEL_BED_HOMING                "Επαναφορά στο αρχικό σημείο ΧΥΖ" //SHORTEN
+#define MSG_LEVEL_BED_WAITING               "Κάντε κλικ για να ξεκινήσετε" //SHORTEN
 #define MSG_LEVEL_BED_NEXT_POINT            "Επόμενο σημείο"
-#define MSG_LEVEL_BED_DONE                  "Ολοκλήρωση επιπεδοποίησης!"
+#define MSG_LEVEL_BED_DONE                  "Ολοκλήρωση επιπεδοποίησης!" //SHORTEN
 #define MSG_LEVEL_BED_CANCEL                "Ακύρωση"
-#define MSG_SET_HOME_OFFSETS                "Ορισμός βασικών μετατοπίσεων"
-#define MSG_HOME_OFFSETS_APPLIED            "Εφαρμόστηκαν οι μετατοπίσεις"
-#define MSG_SET_ORIGIN                      "Ορισμός προέλευσης"
+#define MSG_SET_HOME_OFFSETS                "Ορισμός βασικών μετατοπίσεων" //SHORTEN
+#define MSG_HOME_OFFSETS_APPLIED            "Εφαρμόστηκαν οι μετατοπίσεις" //SHORTEN
+#define MSG_SET_ORIGIN                      "Ορισμός προέλευσης" //SHORTEN
 #define MSG_PREHEAT_PLA                     "Προθέρμανση PLA"
 #define MSG_PREHEAT_PLA_N                   MSG_PREHEAT_PLA " "
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " όλα"
-#define MSG_PREHEAT_PLA_BEDONLY             MSG_PREHEAT_PLA " κλίνη"
-#define MSG_PREHEAT_PLA_SETTINGS            MSG_PREHEAT_PLA " επιβεβαίωση"
+#define MSG_PREHEAT_PLA_BEDONLY             MSG_PREHEAT_PLA " κλίνη" //SHORTEN
+#define MSG_PREHEAT_PLA_SETTINGS            MSG_PREHEAT_PLA " επιβεβαίωση" //SHORTEN
 #define MSG_PREHEAT_ABS                     "Προθέρμανση ABS"
 #define MSG_PREHEAT_ABS_N                   MSG_PREHEAT_ABS " "
 #define MSG_PREHEAT_ABS_ALL                 MSG_PREHEAT_ABS " όλα"
-#define MSG_PREHEAT_ABS_BEDONLY             MSG_PREHEAT_ABS " Bed"
-#define MSG_PREHEAT_ABS_SETTINGS            MSG_PREHEAT_ABS " επιβεβαίωση"
+#define MSG_PREHEAT_ABS_BEDONLY             MSG_PREHEAT_ABS " κλίνη" //SHORTEN
+#define MSG_PREHEAT_ABS_SETTINGS            MSG_PREHEAT_ABS " επιβεβαίωση" //SHORTEN
 #define MSG_H1                              "1"
 #define MSG_H2                              "2"
 #define MSG_H3                              "3"
@@ -84,9 +84,9 @@
 #define MSG_MOVE_E2                         "2"
 #define MSG_MOVE_E3                         "3"
 #define MSG_MOVE_E4                         "4"
-#define MSG_MOVE_01MM                       "Μετακίνηση 0,1 μμ"
-#define MSG_MOVE_1MM                        "Μετακίνηση 1 μμ"
-#define MSG_MOVE_10MM                       "Μετακίνηση 10 μμ"
+#define MSG_MOVE_01MM                       "Μετακίνηση 0,1μμ"
+#define MSG_MOVE_1MM                        "Μετακίνηση 1μμ"
+#define MSG_MOVE_10MM                       "Μετακίνηση 10μμ"
 #define MSG_SPEED                           "Ταχύτητα"
 #define MSG_BED_Z                           "Κλίνη Z"
 #define MSG_NOZZLE                          "Ακροφύσιο"
@@ -101,7 +101,7 @@
 #define MSG_MIN                             " " LCD_STR_THERMOMETER " Min"
 #define MSG_MAX                             " " LCD_STR_THERMOMETER " Max"
 #define MSG_FACTOR                          " " LCD_STR_THERMOMETER " Fact"
-#define MSG_AUTOTEMP                        "Αυτομ. ρύθμιση θερμοκρασίας"
+#define MSG_AUTOTEMP                        "Αυτομ ρύθμιση θερ/σίας" //SHORTEN
 #define MSG_ON                              "Ενεργοποιημένο"
 #define MSG_OFF                             "Απενεργοποιημένο"
 #define MSG_PID_P                           "PID-P"
@@ -142,7 +142,7 @@
 #define MSG_CONTRAST                        "Κοντράστ LCD"
 #define MSG_STORE_EPROM                     "Αποθήκευση"
 #define MSG_LOAD_EPROM                      "Φόρτωση"
-#define MSG_RESTORE_FAILSAFE                "Επαναφορά ασφαλούς αντιγράφου"
+#define MSG_RESTORE_FAILSAFE                "Επαναφορά ασφαλούς αντιγράφου" //SHORTEN
 #define MSG_REFRESH                         "Ανανέωση"
 #define MSG_WATCH                           "Οθόνη πληροφόρησης"
 #define MSG_PREPARE                         "Προετοιμασία"
@@ -152,15 +152,15 @@
 #define MSG_STOP_PRINT                      "Διακοπή εκτύπωσης"
 #define MSG_CARD_MENU                       "Εκτύπωση από SD"
 #define MSG_NO_CARD                         "Δεν βρέθηκε SD"
-#define MSG_DWELL                           "Αναστολή λειτουργίας..."
-#define MSG_USERWAIT                        "Αναμονή για χρήστη…"
-#define MSG_RESUMING                        "Συνεχίζεται η εκτύπωση"
-#define MSG_PRINT_ABORTED                   "Διακόπτεται η εκτύπωση"
+#define MSG_DWELL                           "Αναστολή λειτουργίας..." //SHORTEN
+#define MSG_USERWAIT                        "Αναμονή για χρήστη..."  //SHORTEN
+#define MSG_RESUMING                        "Συνεχίζεται η εκτύπωση" //SHORTEN
+#define MSG_PRINT_ABORTED                   "Διακόπτεται η εκτύπωση" //SHORTEN
 #define MSG_NO_MOVE                         "Καμία κίνηση."
 #define MSG_KILLED                          "ΤΕΡΜΑΤΙΣΜΟΣ. "
 #define MSG_STOPPED                         "ΔΙΑΚΟΠΗ. "
 #define MSG_CONTROL_RETRACT                 "Ανάσυρση μμ"
-#define MSG_CONTROL_RETRACT_SWAP            "Εναλλαγή ανάσυρσης μμ"
+#define MSG_CONTROL_RETRACT_SWAP            "Εναλλαγή ανάσυρσης μμ"  //SHORTEN
 #define MSG_CONTROL_RETRACTF                "Ανάσυρση V"
 #define MSG_CONTROL_RETRACT_ZLIFT           "Μεταπήδηση μμ"
 #define MSG_CONTROL_RETRACT_RECOVER         "UnRet +mm"
@@ -168,10 +168,10 @@
 #define MSG_CONTROL_RETRACT_RECOVERF        "UnRet  V"
 #define MSG_AUTORETRACT                     "Αυτόματη ανάσυρση"
 #define MSG_FILAMENTCHANGE                  "Αλλαγή νήματος"
-#define MSG_INIT_SDCARD                     "Προετοιμασία κάρτας SD"
+#define MSG_INIT_SDCARD                     "Προετοιμασία κάρτας SD"  //SHORTEN
 #define MSG_CNG_SDCARD                      "Αλλαγή κάρτας SD"
-#define MSG_ZPROBE_OUT                      "Διερεύνηση Z εκτός κλίνης"
-#define MSG_YX_UNHOMED                      "Επαναφορά Χ/Υ πριν από Ζ"
+#define MSG_ZPROBE_OUT                      "Διερεύνηση Z εκτός κλίνης" //SHORTEN
+#define MSG_YX_UNHOMED                      "Επαναφορά Χ/Υ πριν από Ζ" //SHORTEN
 #define MSG_XYZ_UNHOMED                     "Επαναφορά ΧΥΖ πρώτα"
 #define MSG_ZPROBE_ZOFFSET                  "Μετατόπιση Ζ"
 #define MSG_BABYSTEP_X                      "Μικρό βήμα Χ"
@@ -179,18 +179,18 @@
 #define MSG_BABYSTEP_Z                      "Μικρό βήμα Ζ"
 #define MSG_ENDSTOP_ABORT                   "Ματαίωση endstop "
 #define MSG_HEATING_FAILED_LCD              "Ανεπιτυχής θέρμανση"
-#define MSG_ERR_REDUNDANT_TEMP              "Λάθος: ΠΛΕΟΝΑΖΟΥΣΑ ΘΕΡΜΟΤΗΤΑ"
-#define MSG_THERMAL_RUNAWAY                 "ΔΙΑΦΥΓΗ ΘΕΡΜΟΤΗΤΑΣ"
-#define MSG_ERR_MAXTEMP                     "Λάθος: ΜΕΓΙΣΤΗ ΘΕΡΜΟΤΗΤΑ"
-#define MSG_ERR_MINTEMP                     "Λάθος: ΕΛΑΧΙΣΤΗ ΘΕΡΜΟΤΗΤΑ"
-#define MSG_ERR_MAXTEMP_BED                 "Λάθος: ΜΕΓΙΣΤΗ ΘΕΡΜΟΤΗΤΑ ΚΛΙΝΗΣ"
-#define MSG_ERR_MINTEMP_BED                 "Λάθος: ΕΛΑΧΙΣΤΗ ΘΕΡΜΟΤΗΤΑ ΚΛΙΝΗΣ"
+#define MSG_ERR_REDUNDANT_TEMP              "Λάθος: ΠΛΕΟΝΑΖΟΥΣΑ ΘΕΡΜΟΤΗΤΑ" //SHORTEN
+#define MSG_THERMAL_RUNAWAY                 "ΔΙΑΦΥΓΗ ΘΕΡΜΟΤΗΤΑΣ" //SHORTEN
+#define MSG_ERR_MAXTEMP                     "Λάθος: ΜΕΓΙΣΤΗ ΘΕΡΜΟΤΗΤΑ" //SHORTEN
+#define MSG_ERR_MINTEMP                     "Λάθος: ΕΛΑΧΙΣΤΗ ΘΕΡΜΟΤΗΤΑ" //SHORTEN
+#define MSG_ERR_MAXTEMP_BED                 "Λάθος: ΜΕΓΙΣΤΗ ΘΕΡΜΟΤΗΤΑ ΚΛΙΝΗΣ" //SHORTEN
+#define MSG_ERR_MINTEMP_BED                 "Λάθος: ΕΛΑΧΙΣΤΗ ΘΕΡΜΟΤΗΤΑ ΚΛΙΝΗΣ" //SHORTEN
 #define MSG_END_HOUR                        "ώρες"
 #define MSG_END_MINUTE                      "λεπτά"
 #define MSG_HEATING                         "Θερμαίνεται…"
-#define MSG_HEATING_COMPLETE                "Η θέρμανση ολοκληρώθηκε."
-#define MSG_BED_HEATING                     "Θέρμανση κλίνης."
-#define MSG_BED_DONE                        "Η κλίνη ολοκληρώθηκε."
+#define MSG_HEATING_COMPLETE                "Η θέρμανση ολοκληρώθηκε." //SHORTEN
+#define MSG_BED_HEATING                     "Θέρμανση κλίνης." 
+#define MSG_BED_DONE                        "Η κλίνη ολοκληρώθηκε." //SHORTEN
 #define MSG_DELTA_CALIBRATE                 "Βαθμονόμηση Delta"
 #define MSG_DELTA_CALIBRATE_X               "Βαθμονόμηση X"
 #define MSG_DELTA_CALIBRATE_Y               "Βαθμονόμηση Y"
