@@ -211,7 +211,6 @@
 #define MSG_INFO_MAX_TEMP                   "Max Temp"
 #define MSG_INFO_PSU                        "Power Supply"
 #define MSG_FILAMENT_CHANGE_HEADER          "CHANGE FILAMENT"
-#define MSG_FILAMENT_CHANGE_OPTION_HEADER   "CHANGE OPTIONS:"
 #define MSG_FILAMENT_CHANGE_OPTION_EXTRUDE  "Extrude more"
 #define MSG_FILAMENT_CHANGE_OPTION_RESUME   "Resume print"
 
