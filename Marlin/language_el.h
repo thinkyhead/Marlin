@@ -185,6 +185,8 @@
 #define MSG_ERR_MINTEMP                     "ΜΗ ΕΠΑΡΚΗΣ ΘΕΡΜΟΚΡΑΣΙΑΣ" //SHORTEN
 #define MSG_ERR_MAXTEMP_BED                 "ΜΕΓΙΣΤΗ ΘΕΡΜΟΚΡΑΣΙΑΣ ΕΠ. ΕΚΤΥΠΩΣΗΣ" //SHORTEN
 #define MSG_ERR_MINTEMP_BED                 "ΕΛΑΧΙΣΤΗ ΘΕΡΜΟΚΡΑΣΙΑΣ ΕΠ. ΕΚΤΥΠΩΣΗΣ" //SHORTEN
+#define MSG_HALTED                          "H εκτύπωση διακόπηκε"
+#define MSG_PLEASE_RESET                    "PLEASE RESET" //TRANSLATE
 #define MSG_END_HOUR                        "ώρες"
 #define MSG_END_MINUTE                      "λεπτά"
 #define MSG_HEATING                         "Θερμαίνεται…"
