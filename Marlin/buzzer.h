@@ -26,7 +26,6 @@
 #include "types.h"
 #include "fastio.h"
 #include "circularqueue.h"
-#include "temperature.h"
 
 #include "MarlinConfig.h"
 
@@ -105,10 +104,7 @@ class Buzzer {
      * @param frequency Frequency of the tone in hertz
      */
     void tone(uint16_t const &duration, uint16_t const &frequency = 0) {
-      while (buffer.isFull()) {
-        this->tick();
-        thermalManager.manage_heater();
-      }
+      while (buffer.isFull()) this->tick();
       this->buffer.enqueue((tone_t) { duration, frequency });
     }
 

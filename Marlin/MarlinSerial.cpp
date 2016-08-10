@@ -443,11 +443,6 @@ MarlinSerial customizedSerial;
 #endif // whole file
 #endif // !USBCON
 
-// For AT90USB targets use the UART for BT interfacing
-#if defined(USBCON) && ENABLED(BLUETOOTH)
-  HardwareSerial bluetoothSerial;
-#endif
-
 #if ENABLED(EMERGENCY_PARSER)
 
   // Currently looking for: M108, M112, M410
@@ -489,14 +484,9 @@ MarlinSerial customizedSerial;
 
       case state_M1:
         switch (c) {
-          case '0': state = state_M10;    break;
           case '1': state = state_M11;    break;
           default: state = state_IGNORE;
         }
-        break;
-
-      case state_M10:
-        state = (c == '8') ? state_M108 : state_IGNORE;
         break;
 
       case state_M11:
@@ -522,7 +512,7 @@ MarlinSerial customizedSerial;
               wait_for_heatup = false;
               break;
             case state_M112:
-              kill(PSTR(MSG_KILLED));
+              kill();
               break;
             case state_M410:
               quickstop_stepper();

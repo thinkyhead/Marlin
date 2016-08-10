@@ -34,14 +34,8 @@ class Endstops {
   public:
 
     static bool enabled, enabled_globally;
-    static volatile char endstop_hit_bits; // use X_MIN, Y_MIN, Z_MIN and Z_MIN_PROBE as BIT value
-
-    #if ENABLED(Z_DUAL_ENDSTOPS)
-      static uint16_t
-    #else
-      static byte
-    #endif
-        current_endstop_bits, old_endstop_bits;
+    static volatile char endstop_hit_bits; // use A_MIN, B_MIN, C_MIN and C_MIN_PROBE as BIT value
+    static byte current_endstop_bits, old_endstop_bits;
 
     Endstops() {};
 
@@ -76,18 +70,6 @@ class Endstops {
 
     // Clear endstops (i.e., they were hit intentionally) to suppress the report
     static void hit_on_purpose() { endstop_hit_bits = 0; }
-
-    // Enable / disable endstop z-probe checking
-    #if HAS_BED_PROBE
-      static volatile bool z_probe_enabled;
-      static void enable_z_probe(bool onoff=true) { z_probe_enabled = onoff; }
-    #endif
-
-  private:
-
-    #if ENABLED(Z_DUAL_ENDSTOPS)
-      static void test_dual_z_endstops(EndstopEnum es1, EndstopEnum es2);
-    #endif
 };
 
 extern Endstops endstops;

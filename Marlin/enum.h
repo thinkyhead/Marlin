@@ -25,39 +25,21 @@
 
 /**
  * Axis indices as enumerated constants
- *
- * Special axis:
- *  - A_AXIS and B_AXIS are used by COREXY printers
- *  - X_HEAD and Y_HEAD is used for systems that don't have a 1:1 relationship
- *    between X_AXIS and X Head movement, like CoreXY bots
  */
 enum AxisEnum {
   NO_AXIS = -1,
-  X_AXIS  = 0,
   A_AXIS  = 0,
-  Y_AXIS  = 1,
   B_AXIS  = 1,
-  Z_AXIS  = 2,
   C_AXIS  = 2,
-  E_AXIS  = 3,
-  X_HEAD  = 4,
-  Y_HEAD  = 5,
-  Z_HEAD  = 6
+  D_AXIS  = 3
 };
 
-#define LOOP_XYZ(VAR)  for (uint8_t VAR=X_AXIS; VAR<=Z_AXIS; VAR++)
-#define LOOP_XYZE(VAR) for (uint8_t VAR=X_AXIS; VAR<=E_AXIS; VAR++)
+#define LOOP_ABCD(VAR) for (uint8_t VAR=A_AXIS; VAR<=D_AXIS; VAR++)
 
 typedef enum {
   LINEARUNIT_MM,
   LINEARUNIT_INCH
 } LinearUnit;
-
-typedef enum {
-  TEMPUNIT_C,
-  TEMPUNIT_K,
-  TEMPUNIT_F
-} TempUnit;
 
 /**
  * Debug flags
@@ -74,35 +56,14 @@ enum DebugFlags {
 };
 
 enum EndstopEnum {
-  X_MIN,
-  Y_MIN,
-  Z_MIN,
-  Z_MIN_PROBE,
-  X_MAX,
-  Y_MAX,
-  Z_MAX,
-  Z2_MIN,
-  Z2_MAX
-};
-
-/**
- * Temperature
- * Stages in the ISR loop
- */
-enum TempState {
-  PrepareTemp_0,
-  MeasureTemp_0,
-  PrepareTemp_BED,
-  MeasureTemp_BED,
-  PrepareTemp_1,
-  MeasureTemp_1,
-  PrepareTemp_2,
-  MeasureTemp_2,
-  PrepareTemp_3,
-  MeasureTemp_3,
-  Prepare_FILWIDTH,
-  Measure_FILWIDTH,
-  StartupDelay // Startup, delay initial temp reading a tiny bit so the hardware can settle
+  A_MIN,
+  B_MIN,
+  C_MIN,
+  D_MIN,
+  A_MAX,
+  B_MAX,
+  C_MAX,
+  D_MAX
 };
 
 #if ENABLED(EMERGENCY_PARSER)
@@ -111,8 +72,6 @@ enum TempState {
     state_N,
     state_M,
     state_M1,
-    state_M10,
-    state_M108,
     state_M11,
     state_M112,
     state_M4,
@@ -121,73 +80,5 @@ enum TempState {
     state_IGNORE // to '\n'
   };
 #endif
-
-#if ENABLED(FILAMENT_CHANGE_FEATURE)
-  enum FilamentChangeMenuResponse {
-    FILAMENT_CHANGE_RESPONSE_WAIT_FOR,
-    FILAMENT_CHANGE_RESPONSE_EXTRUDE_MORE,
-    FILAMENT_CHANGE_RESPONSE_RESUME_PRINT
-  };
-
-  #if ENABLED(ULTIPANEL)
-    enum FilamentChangeMessage {
-      FILAMENT_CHANGE_MESSAGE_INIT,
-      FILAMENT_CHANGE_MESSAGE_UNLOAD,
-      FILAMENT_CHANGE_MESSAGE_INSERT,
-      FILAMENT_CHANGE_MESSAGE_LOAD,
-      FILAMENT_CHANGE_MESSAGE_EXTRUDE,
-      FILAMENT_CHANGE_MESSAGE_OPTION,
-      FILAMENT_CHANGE_MESSAGE_RESUME,
-      FILAMENT_CHANGE_MESSAGE_STATUS
-    };
-  #endif
-#endif
-
-/**
- * States for managing Marlin and host communication
- * Marlin sends messages if blocked or busy
- */
-#if ENABLED(HOST_KEEPALIVE_FEATURE)
-  enum MarlinBusyState {
-    NOT_BUSY,           // Not in a handler
-    IN_HANDLER,         // Processing a GCode
-    IN_PROCESS,         // Known to be blocking command input (as in G29)
-    PAUSED_FOR_USER,    // Blocking pending any input
-    PAUSED_FOR_INPUT    // Blocking pending text input (concept)
-  };
-#endif
-
-#if ENABLED(MESH_BED_LEVELING)
-  enum MeshLevelingState {
-    MeshReport,
-    MeshStart,
-    MeshNext,
-    MeshSet,
-    MeshSetZOffset,
-    MeshReset
-  };
-
-  enum MBLStatus {
-    MBL_STATUS_NONE = 0,
-    MBL_STATUS_HAS_MESH_BIT = 0,
-    MBL_STATUS_ACTIVE_BIT = 1
-  };
-#endif
-
-/**
- * SD Card
- */
-enum LsAction { LS_SerialPrint, LS_Count, LS_GetFilename };
-
-/**
- * Ultra LCD
- */
-enum LCDViewAction {
-  LCDVIEW_NONE,
-  LCDVIEW_REDRAW_NOW,
-  LCDVIEW_CALL_REDRAW_NEXT,
-  LCDVIEW_CLEAR_CALL_REDRAW,
-  LCDVIEW_CALL_NO_REDRAW
-};
 
 #endif // __ENUM_H__

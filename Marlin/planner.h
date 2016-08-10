@@ -35,10 +35,6 @@
 #include "types.h"
 #include "MarlinConfig.h"
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
-  #include "vector_3.h"
-#endif
-
 class Planner;
 extern Planner planner;
 
@@ -53,32 +49,15 @@ extern Planner planner;
  */
 typedef struct {
 
-  unsigned char active_extruder;            // The extruder to move (if E move)
-
   // Fields used by the bresenham algorithm for tracing the line
   long steps[NUM_AXIS];                     // Step count along each axis
   unsigned long step_event_count;           // The number of step events required to complete this block
-
-  #if ENABLED(MIXING_EXTRUDER)
-    unsigned long mix_event_count[MIXING_STEPPERS]; // Scaled step_event_count for the mixing steppers
-  #endif
 
   long accelerate_until,                    // The index of the step event on which to stop acceleration
        decelerate_after,                    // The index of the step event on which to start decelerating
        acceleration_rate;                   // The acceleration rate used for acceleration calculation
 
   unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
-
-  // Advance extrusion
-  #if ENABLED(LIN_ADVANCE)
-    bool use_advance_lead;
-    int e_speed_multiplier8; // Factorised by 2^8 to avoid float
-  #elif ENABLED(ADVANCE)
-    long advance_rate;
-    volatile long initial_advance;
-    volatile long final_advance;
-    float advance;
-  #endif
 
   // Fields used by the motion planner to manage acceleration
   float nominal_speed,                               // The nominal speed for this block in mm/sec
@@ -94,14 +73,6 @@ typedef struct {
                 initial_rate,                        // The jerk-adjusted step rate at start of block
                 final_rate,                          // The minimal rate at exit
                 acceleration_steps_per_s2;           // acceleration steps/sec^2
-
-  #if FAN_COUNT > 0
-    unsigned long fan_speed[FAN_COUNT];
-  #endif
-
-  #if ENABLED(BARICUDA)
-    unsigned long valve_pressure, e_to_p_pressure;
-  #endif
 
   volatile char busy;
 
@@ -131,14 +102,8 @@ class Planner {
     static float acceleration;         // Normal acceleration mm/s^2  DEFAULT ACCELERATION for all printing moves. M204 SXXXX
     static float retract_acceleration; // Retract acceleration mm/s^2 filament pull-back and push-forward while standing still in the other axes M204 TXXXX
     static float travel_acceleration;  // Travel acceleration mm/s^2  DEFAULT ACCELERATION for all NON printing moves. M204 MXXXX
-    static float max_xy_jerk;          // The largest speed change requiring no acceleration
-    static float max_z_jerk;
-    static float max_e_jerk;
+    static float max_z_jerk;           // The largest speed change requiring no acceleration
     static float min_travel_feedrate_mm_s;
-
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-      static matrix_3x3 bed_level_matrix; // Transform to compensate for bed level
-    #endif
 
   private:
 
@@ -157,22 +122,6 @@ class Planner {
      * Nominal speed of previous path line segment
      */
     static float previous_nominal_speed;
-
-    #if ENABLED(DISABLE_INACTIVE_EXTRUDER)
-      /**
-       * Counters to manage disabling inactive extruders
-       */
-      static uint8_t g_uc_extruder_last_move[EXTRUDERS];
-    #endif // DISABLE_INACTIVE_EXTRUDER
-
-    #ifdef XY_FREQUENCY_LIMIT
-      // Used for the frequency limit
-      #define MAX_FREQ_TIME long(1000000.0/XY_FREQUENCY_LIMIT)
-      // Old direction bits. Used for speed calculations
-      static unsigned char old_direction_bits;
-      // Segment times (in µs). Used for speed calculations
-      static long axis_segment_time[2][3];
-    #endif
 
   public:
 
@@ -201,46 +150,8 @@ class Planner {
 
     static bool is_full() { return (block_buffer_tail == BLOCK_MOD(block_buffer_head + 1)); }
 
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)
-
-      #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-        /**
-         * The corrected position, applying the bed level matrix
-         */
-        static vector_3 adjusted_position();
-      #endif
-
-      /**
-       * Add a new linear movement to the buffer.
-       *
-       *  x,y,z,e   - target position in mm
-       *  fr_mm_s   - (target) speed of the move (mm/s)
-       *  extruder  - target extruder
-       */
-      static void buffer_line(float x, float y, float z, const float& e, float fr_mm_s, const uint8_t extruder);
-
-      /**
-       * Set the planner.position and individual stepper positions.
-       * Used by G92, G28, G29, and other procedures.
-       *
-       * Multiplies by axis_steps_per_mm[] and does necessary conversion
-       * for COREXY / COREXZ / COREYZ to set the corresponding stepper positions.
-       *
-       * Clears previous speed values.
-       */
-      static void set_position_mm(float x, float y, float z, const float& e);
-
-    #else
-
-      static void buffer_line(const float& x, const float& y, const float& z, const float& e, float fr_mm_s, const uint8_t extruder);
-      static void set_position_mm(const float& x, const float& y, const float& z, const float& e);
-
-    #endif // AUTO_BED_LEVELING_FEATURE || MESH_BED_LEVELING
-
-    /**
-     * Set the E position (mm) of the planner (and the E stepper)
-     */
-    static void set_e_position_mm(const float& e);
+    static void buffer_line(const float& a, const float& b, const float& c, const float& d, float fr_mm_s);
+    static void set_position_mm(const float& a, const float& b, const float& c, const float& d);
 
     /**
      * Does the buffer have any blocks queued?
@@ -269,15 +180,6 @@ class Planner {
       else
         return NULL;
     }
-
-    #if ENABLED(AUTOTEMP)
-      static float autotemp_max;
-      static float autotemp_min;
-      static float autotemp_factor;
-      static bool autotemp_enabled;
-      static void getHighESpeed();
-      static void autotemp_M109();
-    #endif
 
   private:
 
