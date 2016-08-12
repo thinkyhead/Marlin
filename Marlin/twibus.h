@@ -1,4 +1,4 @@
-/*
+/**
  * Marlin 3D Printer Firmware
  * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -33,36 +33,30 @@
 typedef void (*twiReceiveFunc_t)(int bytes);
 typedef void (*twiRequestFunc_t)();
 
+#define TWIBUS_BUFFER_SIZE 32
+
 /**
  * TWIBUS class
  *
- * This class implements a wrapper around the two wire (I2C) bus, it allows
- * Marlin to send and request data from any slave device on the bus. This is
- * an experimental feature and it's inner workings as well as public facing
- * interface are prune to change in the future.
+ * This class implements a wrapper around the two wire (I2C) bus, allowing
+ * Marlin to send and request data from any slave device on the bus.
  *
- * The two main consumers of this class are M155 and M156, where M155 allows
- * Marlin to send a I2C packet to a device (please be aware that no repeated
- * starts are possible), this can be done in caching method by calling multiple
- * times M155 B<byte-1 value in base 10> or a one liner M155, have a look at
- * the gcode_M155() function for more information. M156 allows Marlin to
- * request data from a device, the received data is then relayed into the serial
- * line for host interpretation.
+ * The two main consumers of this class are M260 and M261. M260 provides a way
+ * to send an I2C packet to a device (no repeated starts) by caching up to 32
+ * bytes in a buffer and then sending the buffer.
+ * M261 requests data from a device. The received data is relayed to serial out
+ * for the host to interpret.
+ *
+ *  For more information see
+ *    - http://marlinfw.org/docs/gcode/M260.html
+ *    - http://marlinfw.org/docs/gcode/M261.html
  *
  */
 class TWIBus {
   private:
     /**
-     * @brief Timeout value in milliseconds
-     * @details Maximum amount of time (ms) to wait for a reply.
-     *          Useful if something goes wrong on the bus and the
-     *          SDA/SCL lines are held up by another device.
-     */
-    const int timeout = 5;
-
-    /**
      * @brief Number of bytes on buffer
-     * @description Number of bytes in the buffer waiting to be flushed to the bus.
+     * @description Number of bytes in the buffer waiting to be flushed to the bus
      */
     uint8_t buffer_s = 0;
 
@@ -70,7 +64,7 @@ class TWIBus {
      * @brief Internal buffer
      * @details A fixed buffer. TWI commands can be no longer than this.
      */
-    char buffer[32];
+    char buffer[TWIBUS_BUFFER_SIZE];
 
 
   public:
@@ -94,7 +88,7 @@ class TWIBus {
 
     /**
      * @brief Send the buffer data to the bus
-     * @details Flush the buffer to the bus at the target address.
+     * @details Flush the buffer to the target address
      */
     void send();
 
@@ -108,44 +102,98 @@ class TWIBus {
     void addbyte(const char c);
 
     /**
+     * @brief Add some bytes to the buffer
+     * @details Add bytes to the end of the buffer.
+     *          Concatenates at the buffer size.
+     *
+     * @param src source data address
+     * @param bytes the number of bytes to add
+     */
+    void addbytes(char src[], uint8_t bytes);
+
+    /**
+     * @brief Add a null-terminated string to the buffer
+     * @details Add bytes to the end of the buffer up to a nul.
+     *          Concatenates at the buffer size.
+     *
+     * @param str source string address
+     */
+    void addstring(char str[]);
+
+    /**
      * @brief Set the target slave address
-     * @details The target slave address for sending the full packet.
+     * @details The target slave address for sending the full packet
      *
-     * @param addr 7-bit integer address
+     * @param adr 7-bit integer address
      */
-    void address(const uint8_t addr);
+    void address(const uint8_t adr);
 
     /**
-     * @brief Request data from the slave device
+     * @brief Prefix for echo to serial
+     * @details Echo a label, length, address, and "data:"
+     *
+     * @param bytes the number of bytes to request
+     */
+    static void echoprefix(uint8_t bytes, const char prefix[], uint8_t adr);
+
+    /**
+     * @brief Echo data on the bus to serial
+     * @details Echo some number of bytes from the bus
+     *          to serial in a parser-friendly format.
+     *
+     * @param bytes the number of bytes to request
+     */
+    static void echodata(uint8_t bytes, const char prefix[], uint8_t adr);
+
+    /**
+     * @brief Echo data in the buffer to serial
+     * @details Echo the entire buffer to serial
+     *          to serial in a parser-friendly format.
+     *
+     * @param bytes the number of bytes to request
+     */
+    void echobuffer(const char prefix[], uint8_t adr);
+
+    /**
+     * @brief Request data from the slave device and wait.
      * @details Request a number of bytes from a slave device.
-     *          This implementation simply sends the data to serial
-     *          in a parser-friendly format.
+     *          Wait for the data to arrive, and return true
+     *          on success.
      *
      * @param bytes the number of bytes to request
+     * @return status of the request: true=success, false=fail
      */
-    void reqbytes(const uint8_t bytes);
+    bool request(const uint8_t bytes);
 
     /**
-     * @brief Relay data from the slave device to serial
-     * @details Relay a number of bytes from the bus to
-     *          serial in a parser-friendly format.
+     * @brief Capture data from the bus into the buffer.
+     * @details Capture data after a request has succeeded.
+     *
+     * @param bytes the number of bytes to request
+     * @return the number of bytes captured to the buffer
+     */
+    uint8_t capture(char *dst, const uint8_t bytes);
+
+    /**
+     * @brief Flush the i2c bus.
+     * @details Get all bytes on the bus and throw them away.
+     */
+    static void flush();
+
+    /**
+     * @brief Request data from the slave device, echo to serial.
+     * @details Request a number of bytes from a slave device and output
+     *          the returned data to serial in a parser-friendly format.
      *
      * @param bytes the number of bytes to request
      */
-    void relaydata(uint8_t bytes);
+    void relay(const uint8_t bytes);
 
     #if I2C_SLAVE_ADDRESS > 0
 
       /**
-       * @brief Receive bytes (passively)
-       * @details Receive bytes sent to our slave address.
-       *          and simply echo them to serial.
-       */
-      inline void receive(uint8_t bytes) { relaydata(bytes); }
-
-      /**
        * @brief Register a slave receive handler
-       * @details Set a handler to receive data addressed to us.
+       * @details Set a handler to receive data addressed to us
        *
        * @param handler A function to handle receiving bytes
        */
@@ -153,11 +201,26 @@ class TWIBus {
 
       /**
        * @brief Register a slave request handler
-       * @details Set a handler to send data requested from us.
+       * @details Set a handler to send data requested from us
        *
        * @param handler A function to handle receiving bytes
        */
       inline void onRequest(const twiRequestFunc_t handler) { Wire.onRequest(handler); }
+
+      /**
+       * @brief Default handler to receive
+       * @details Receive bytes sent to our slave address
+       *          and simply echo them to serial.
+       */
+      void receive(uint8_t bytes);
+
+      /**
+       * @brief Send a reply to the bus
+       * @details Send the buffer and clear it.
+       *          If a string is passed, write it into the buffer first.
+       */
+      void reply(char str[]=NULL);
+      inline void reply(const char str[]) { this->reply((char*)str); }
 
     #endif
 
@@ -167,9 +230,13 @@ class TWIBus {
        * @brief Prints a debug message
        * @details Prints a simple debug message "TWIBus::function: value"
        */
-      static void debug(const char func[], int32_t val = -1);
+      static void prefix(const char func[]);
+      static void debug(const char func[], uint32_t adr);
+      static void debug(const char func[], char c);
+      static void debug(const char func[], char adr[]);
+      static inline void debug(const char func[], uint8_t v) { debug(func, (uint32_t)v); }
 
     #endif
 };
 
-#endif //TWIBUS_H
+#endif // TWIBUS_H
