@@ -388,16 +388,47 @@ void suicide() {
 
 #if ENABLED(EXPERIMENTAL_I2CBUS) && I2C_SLAVE_ADDRESS > 0
 
+  static char remote_reply = 'F', remote_success_reply = 'F';
+
   //
   // [A3D] Handle commands to the Z Axis controller here!
   //
-  void i2c_on_receive(int bytes) { // just echo all bytes received to serial
-    static char buff[33];
-    buff[i2c.capture(buff, 32)] = '\0';
+  void i2c_on_receive(int bytes) {
+    static char i2c_buffer[33];
+    uint8_t len = i2c.capture(i2c_buffer, 32); // capture only up to 32 bytes
+    i2c_buffer[len] = '\0';
+
+    if (len == 1) {                 // Handle single-letter commands
+      remote_success_reply = i2c_buffer[0];
+      switch (i2c_buffer[0]) {
+        case 'Z':
+          remote_reply = 'B';      // Busy
+          enqueue_and_echo_commands_P(PSTR("G28 Z"));
+          break;
+        case 'L':
+          remote_reply = 'B';      // Busy
+          enqueue_and_echo_commands_P(PSTR("G29"));
+          break;
+        default:
+          remote_reply = 'F';      // Unrecognized command - Fail
+          break;
+      }
+    }
+    else {
+      enqueue_and_echo_command_now(i2c_buffer);
+    }
   }
 
-  void i2c_on_request() {          // just send dummy data for now
-    i2c.reply("Hello World!\n");
+  //
+  // [A3D] Reply to a request
+  //
+  // The reply will depend on previous command sent
+  // For our purposes, just send a single-letter status
+  //
+  void i2c_on_request() {
+    i2c.reset();
+    i2c.addbyte(remote_reply); // B, F, or "success"
+    i2c.reply();
   }
 
 #endif
@@ -997,6 +1028,8 @@ inline void gcode_G4() {
  */
 inline void gcode_G28() {
 
+  remote_reply = 'B'; // Busy
+
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM(">>> gcode_G28");
   #endif
@@ -1051,6 +1084,8 @@ inline void gcode_G28() {
   #endif
 
   report_current_position();
+
+  remote_reply = remote_success_reply;
 }
 
 /**
