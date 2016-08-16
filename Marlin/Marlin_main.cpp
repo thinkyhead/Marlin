@@ -162,8 +162,6 @@ const float homing_feedrate_mm_s = MMM_TO_MMS(HOMING_FEEDRATE_Z);
 static float feedrate_mm_s = MMM_TO_MMS(1500.0), saved_feedrate_mm_s;
 int feedrate_percentage = 100, saved_feedrate_percentage;
 
-bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
-
 // This offset is added to the configured home position.
 // Set by M206, M428, or menu item. Saved to EEPROM.
 float home_offset[NUM_AXIS] = { 0 };
@@ -768,7 +766,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
 /**
  * Some planner shorthand inline functions
  */
-inline float get_homing_bump_feedrate(AxisEnum axis) {
+inline float get_homing_bump_feedrate() {
   int hbd = HOMING_BUMP_DIVISOR;
   if (hbd < 1) {
     hbd = 10;
@@ -866,7 +864,7 @@ static void clean_up_after_endstop_move() {
 
 #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
 
-static void homeaxis(AxisEnum axis) {
+static void homeaxis(const AxisEnum axis) {
   #define HOMEAXIS_DO(LETTER) \
     ((LETTER##_MIN_PIN > -1 && Z_HOME_DIR == -1) || (LETTER##_MAX_PIN > -1 && Z_HOME_DIR == 1))
 
@@ -897,7 +895,7 @@ static void homeaxis(AxisEnum axis) {
   line_to_axis_pos(axis, -(Z_HOME_BUMP_MM) * (Z_HOME_DIR));
 
   // Move slowly towards the endstop until triggered
-  line_to_axis_pos(axis, 2 * (Z_HOME_BUMP_MM) * (Z_HOME_DIR), get_homing_bump_feedrate(axis));
+  line_to_axis_pos(axis, 2 * (Z_HOME_BUMP_MM) * (Z_HOME_DIR), get_homing_bump_feedrate());
 
   // reset current_position to 0 to reflect hitting endpoint
   current_position[axis] = 0;
@@ -918,8 +916,7 @@ static void homeaxis(AxisEnum axis) {
 
   destination[axis] = current_position[axis];
   endstops.hit_on_purpose(); // clear endstop hit flags
-  axis_known_position[axis] = true;
-  axis_homed[axis] = true;
+  axis_known_position[axis] = axis_homed[axis] = true;
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
@@ -943,9 +940,17 @@ static void homeaxis(AxisEnum axis) {
  *  - Set the feedrate, if included
  */
 void gcode_get_destination() {
+
+  // [A3D] Z = ABCD
+  if (code_seen('Z')) {
+    float z = code_value_axis_units();
+    LOOP_ABCD(i)
+      destination[i] = z + (relative_mode ? current_position[i] : 0);
+  }
+
   LOOP_ABCD(i) {
     if (code_seen(axis_codes[i]))
-      destination[i] = code_value_axis_units(i) + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
+      destination[i] = code_value_axis_units() + (relative_mode ? current_position[i] : 0);
     else
       destination[i] = current_position[i];
   }
@@ -988,19 +993,7 @@ inline void gcode_G4() {
 }
 
 /**
- * G28: Home one or more axes
- *
- * Parameters
- *
- *  None  Home ABCD to any endstop
- *
- * Cartesian parameters
- *
- *  A   Home A to the A endstop
- *  B   Home B to the B endstop
- *  C   Home C to the C endstop
- *  D   Home D to the D endstop
- *
+ * G28: Home the single Z axis
  */
 inline void gcode_G28() {
 
@@ -1011,47 +1004,36 @@ inline void gcode_G28() {
   // Wait for planner moves to finish!
   stepper.synchronize();
 
+  // Set our homing destination for all: ABCD
+  LOOP_ABCD(i) {
+    current_position[i] = 0;
+    destination[i] = (Z_MAX_LENGTH + 10) * (Z_HOME_DIR);
+  }
+  sync_plan_position();
+
   setup_for_endstop_move();
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("> endstops.enable(true)");
   #endif
   endstops.enable(true); // Enable endstops for next homing move
 
-  bool homeA = code_seen('A'), homeB = code_seen('B'), homeC = code_seen('C'), homeD = code_seen('D'),
-       home_all_axis = (!homeA && !homeB && !homeC && !homeD) || (homeA && homeB && homeC && homeD);
+  // First move at homing speed
+  line_to_destination(homing_feedrate_mm_s);
 
-  set_destination_to_current();
+  // Move away from the endstop by the axis HOME_BUMP_MM
+  LOOP_ABCD(i) destination[i] = (Z_HOME_BUMP_MM) * -(Z_HOME_DIR);
+  line_to_destination(homing_feedrate_mm_s);
 
-  // Home A
-  if (home_all_axis || homeA) {
-    HOMEAXIS(A);
-    #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("> homeA", current_position);
-    #endif
-  }
+  // Second move at slow speed
+  LOOP_ABCD(i) destination[i] = (Z_MAX_LENGTH + 10) * (Z_HOME_DIR);
+  line_to_destination(get_homing_bump_feedrate());
 
-  // Home B
-  if (home_all_axis || homeB) {
-    HOMEAXIS(B);
-    #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("> homeB", current_position);
-    #endif
-  }
+  // Clear endstop hit flags
+  endstops.hit_on_purpose();
 
-  // Home C
-  if (home_all_axis || homeC) {
-    HOMEAXIS(C);
-    #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("> homeC", current_position);
-    #endif
-  }
-
-  // Home D
-  if (home_all_axis || homeD) {
-    HOMEAXIS(D);
-    #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("> homeD", current_position);
-    #endif
+  LOOP_ABCD(i) {
+    set_axis_is_at_home((AxisEnum)i);
+    axis_known_position[i] = axis_homed[i] = true;
   }
 
   sync_plan_position();
@@ -1717,7 +1699,7 @@ void process_next_command() {
         gcode_G4();
         break;
 
-      case 28: // G28: Home all axes, one at a time
+      case 28: // G28: Home all axes together
         gcode_G28();
         break;
 

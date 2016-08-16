@@ -176,7 +176,6 @@ extern int feedrate_percentage;
 #define MMS_TO_MMM(MM_S) ((MM_S)*60.0)
 #define MMS_SCALED(MM_S) ((MM_S)*feedrate_percentage*0.01)
 
-extern bool axis_relative_modes[];
 extern bool axis_known_position[NUM_AXIS];
 extern bool axis_homed[NUM_AXIS];
 extern float current_position[NUM_AXIS];
