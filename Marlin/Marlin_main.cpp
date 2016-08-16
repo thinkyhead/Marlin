@@ -1054,12 +1054,77 @@ inline void gcode_G28() {
 }
 
 /**
+ * G29: Home each axis in turn to level the bed
+ */
+
+// How close to move them
+#define CORNER_HOMING_GAP 4
+
+inline void gcode_G29() {
+
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM(">>> gcode_G29");
+  #endif
+
+  remote_reply = 'B'; // Busy
+
+  LOOP_ABCD(i) if (!axis_homed[i]) {
+    remote_reply = 'F'; // Fail
+    return;
+  }
+
+  // Wait for planner moves to finish!
+  stepper.synchronize();
+
+  // Move ABCD close to the home position
+  LOOP_ABCD(i) destination[i] = LOGICAL_POSITION(Z_HOME_POS + CORNER_HOMING_GAP * -(Z_HOME_DIR), i);
+  line_to_destination(homing_feedrate_mm_s);
+
+  // Get ready...
+  setup_for_endstop_move();
+  endstops.enable(true);
+
+  // Home Each corner in turn
+  LOOP_ABCD(i) {
+    // Slowly home a single corner
+    destination[i] = LOGICAL_POSITION(Z_HOME_POS, i);
+    line_to_destination(get_homing_bump_feedrate());
+
+    // Clear endstop-hit flags
+    endstops.hit_on_purpose();
+
+    // Set the single corner to the home position
+    set_axis_is_at_home((AxisEnum)i);
+
+    // Move away by a fixed amount
+    destination[i] = Z_HOME_POS + CORNER_HOMING_GAP * -(Z_HOME_DIR);
+    line_to_destination(homing_feedrate_mm_s);
+
+    // The corner is marked as homed
+    axis_known_position[i] = axis_homed[i] = true;
+  }
+
+  // Update current position from destination
+  set_current_to_destination();
+
+  // Tell the planner/steppers where we are
+  sync_plan_position();
+
+  // Restore endstops to non-homing state
+  endstops.not_homing();
+
+  report_current_position();
+
+  remote_reply = remote_success_reply;
+}
+
+/**
  * G92: Set current position to given X Y Z E
  */
 inline void gcode_G92() {
   LOOP_ABCD(i)
     if (code_seen(axis_codes[i]))
-      current_position[i] = code_value_axis_units(i);
+      current_position[i] = code_value_axis_units();
 
   stepper.synchronize();
   sync_plan_position();
@@ -1701,6 +1766,10 @@ void process_next_command() {
 
       case 28: // G28: Home all axes together
         gcode_G28();
+        break;
+
+      case 29: // G29: Home axes one at a time to adjust leveling
+        gcode_G29();
         break;
 
       case 90: // G90
