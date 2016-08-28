@@ -1658,4 +1658,12 @@
   //#define FILAMENT_LCD_DISPLAY
 #endif
 
+/**
+ * External i2c Z Axis Controller
+ */
+//#define REMOTE_Z_AXIS
+#if ENABLED(REMOTE_Z_AXIS)
+  #define Z_AXIS_I2C_ADDRESS 10
+#endif
+
 #endif // CONFIGURATION_H

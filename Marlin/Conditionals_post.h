@@ -506,13 +506,13 @@
   #define HAS_Y2_DIR        (PIN_EXISTS(Y2_DIR))
   #define HAS_Y2_STEP       (PIN_EXISTS(Y2_STEP))
 
-  #define HAS_Z_ENABLE      (PIN_EXISTS(Z_ENABLE))
-  #define HAS_Z_DIR         (PIN_EXISTS(Z_DIR))
-  #define HAS_Z_STEP        (PIN_EXISTS(Z_STEP))
+  #define HAS_Z_ENABLE      (PIN_EXISTS(Z_ENABLE) && DISABLED(REMOTE_Z_AXIS))
+  #define HAS_Z_DIR         (PIN_EXISTS(Z_DIR) && DISABLED(REMOTE_Z_AXIS))
+  #define HAS_Z_STEP        (PIN_EXISTS(Z_STEP) && DISABLED(REMOTE_Z_AXIS))
 
-  #define HAS_Z2_ENABLE     (PIN_EXISTS(Z2_ENABLE))
-  #define HAS_Z2_DIR        (PIN_EXISTS(Z2_DIR))
-  #define HAS_Z2_STEP       (PIN_EXISTS(Z2_STEP))
+  #define HAS_Z2_ENABLE     (PIN_EXISTS(Z2_ENABLE) && DISABLED(REMOTE_Z_AXIS))
+  #define HAS_Z2_DIR        (PIN_EXISTS(Z2_DIR) && DISABLED(REMOTE_Z_AXIS))
+  #define HAS_Z2_STEP       (PIN_EXISTS(Z2_STEP) && DISABLED(REMOTE_Z_AXIS))
 
   // Extruder steppers and solenoids
   #define HAS_E0_ENABLE     (PIN_EXISTS(E0_ENABLE))

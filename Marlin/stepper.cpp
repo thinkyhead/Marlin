@@ -1243,6 +1243,16 @@ void Stepper::set_e_position(const long &e) {
   CRITICAL_SECTION_END;
 }
 
+#if ENABLED(REMOTE_Z_AXIS)
+
+  void Stepper::set_z_position(const long& z) {
+    CRITICAL_SECTION_START;
+    count_position[Z_AXIS] = z;
+    CRITICAL_SECTION_END;
+  }
+
+#endif
+
 /**
  * Get a stepper's position in steps.
  */

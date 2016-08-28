@@ -450,7 +450,7 @@ uint16_t max_display_update_time = 0;
   bool liveEdit;
 
   // Manual Moves
-  const float manual_feedrate_mm_m[] = MANUAL_FEEDRATE;
+  constexpr float manual_feedrate_mm_m[] = MANUAL_FEEDRATE;
   millis_t manual_move_start_time = 0;
   int8_t manual_move_axis = (int8_t)NO_AXIS;
   #if EXTRUDERS > 1
@@ -2737,7 +2737,16 @@ void kill_screen(const char* lcd_msg) {
    */
   inline void manage_manual_move() {
     if (manual_move_axis != (int8_t)NO_AXIS && ELAPSED(millis(), manual_move_start_time) && !planner.is_full()) {
-      planner.buffer_line_kinematic(current_position, MMM_TO_MMS(manual_feedrate_mm_m[manual_move_axis]), manual_move_e_index);
+      #if ENABLED(DELTA)
+        planner.buffer_line_kinematic(current_position, MMM_TO_MMS(manual_feedrate_mm_m[manual_move_axis]), manual_move_e_index);
+      #elif ENABLED(REMOTE_Z_AXIS)
+        if (manual_move_axis == Z_AXIS)
+          remote_z_move(current_position[Z_AXIS], manual_feedrate_mm_m[manual_move_axis]);
+        else
+          planner.buffer_line_kinematic(current_position, MMM_TO_MMS(manual_feedrate_mm_m[manual_move_axis]), manual_move_e_index);
+      #else
+        planner.buffer_line_kinematic(current_position, MMM_TO_MMS(manual_feedrate_mm_m[manual_move_axis]), manual_move_e_index);
+      #endif
       manual_move_axis = (int8_t)NO_AXIS;
     }
   }

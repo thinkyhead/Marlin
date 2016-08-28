@@ -494,4 +494,8 @@ FORCE_INLINE bool position_is_reachable_xy(const float &lx, const float &ly) {
   return position_is_reachable_raw_xy(RAW_X_POSITION(lx), RAW_Y_POSITION(ly));
 }
 
-#endif // MARLIN_H
+#if ENABLED(REMOTE_Z_AXIS)
+  void remote_z_move(float z, float fr_mm_m=0.0, bool wait=false);
+#endif
+
+#endif //MARLIN_H

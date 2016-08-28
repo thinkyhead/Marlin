@@ -194,6 +194,10 @@ class Stepper {
     static void set_position(const AxisEnum &a, const long &v);
     static void set_e_position(const long &e);
 
+    #if ENABLED(REMOTE_Z_AXIS)
+      void set_z_position(const long& z);
+    #endif
+
     //
     // Set direction bits for all steppers
     //

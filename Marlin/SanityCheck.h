@@ -1039,7 +1039,7 @@ static_assert(1 >= 0
  #error "You must enable USE_XMIN_PLUG or USE_XMAX_PLUG."
 #elif DISABLED(USE_YMIN_PLUG) && DISABLED(USE_YMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _YMAX_, _YMIN_))
  #error "You must enable USE_YMIN_PLUG or USE_YMAX_PLUG."
-#elif DISABLED(USE_ZMIN_PLUG) && DISABLED(USE_ZMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _ZMAX_, _ZMIN_))
+#elif DISABLED(USE_ZMIN_PLUG) && DISABLED(USE_ZMAX_PLUG) && DISABLED(REMOTE_Z_AXIS) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _ZMAX_, _ZMIN_))
  #error "You must enable USE_ZMIN_PLUG or USE_ZMAX_PLUG."
 #elif ENABLED(Z_DUAL_ENDSTOPS)
   #if !Z2_USE_ENDSTOP
@@ -1058,9 +1058,9 @@ static_assert(1 >= 0
     #error "Enable USE_YMIN_PLUG when homing Y to MIN."
   #elif Y_HOME_DIR > 0 && DISABLED(USE_YMAX_PLUG)
     #error "Enable USE_YMAX_PLUG when homing Y to MAX."
-  #elif Z_HOME_DIR < 0 && DISABLED(USE_ZMIN_PLUG)
+  #elif Z_HOME_DIR < 0 && DISABLED(USE_ZMIN_PLUG) && DISABLED(REMOTE_Z_AXIS)
     #error "Enable USE_ZMIN_PLUG when homing Z to MIN."
-  #elif Z_HOME_DIR > 0 && DISABLED(USE_ZMAX_PLUG)
+  #elif Z_HOME_DIR > 0 && DISABLED(USE_ZMAX_PLUG) && DISABLED(REMOTE_Z_AXIS)
     #error "Enable USE_ZMAX_PLUG when homing Z to MAX."
   #endif
 #endif

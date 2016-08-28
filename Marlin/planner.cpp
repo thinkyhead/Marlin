@@ -1525,6 +1525,16 @@ void Planner::set_position_mm(const AxisEnum axis, const float &v) {
   previous_speed[axis] = 0.0;
 }
 
+#if ENABLED(REMOTE_Z_AXIS)
+  /**
+   * Directly set the planner Z position (hence the stepper Z position).
+   */
+  void Planner::set_z_position_mm(const float& z) {
+    position[Z_AXIS] = lround(z * axis_steps_per_mm[Z_AXIS]);
+    stepper.set_z_position(position[Z_AXIS]);
+  }
+#endif
+
 // Recalculate the steps/s^2 acceleration rates, based on the mm/s^2
 void Planner::reset_acceleration_rates() {
   #if ENABLED(DISTINCT_E_FACTORS)

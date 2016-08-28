@@ -773,6 +773,10 @@ void sync_plan_position() {
 }
 inline void sync_plan_position_e() { planner.set_e_position_mm(current_position[E_AXIS]); }
 
+#if ENABLED(REMOTE_Z_AXIS)
+  inline void sync_plan_position_z() { planner.set_z_position_mm(current_position[Z_AXIS]); }
+#endif
+
 #if IS_KINEMATIC
 
   inline void sync_plan_position_kinematic() {
@@ -1459,6 +1463,135 @@ bool get_target_extruder_from_command(const uint16_t code) {
   }
 #endif // HAS_M206_COMMAND
 
+#if ENABLED(REMOTE_Z_AXIS)
+
+  // Convert float to string
+  char* ftostr(float f) {
+    static char out[25];
+    long intval = labs(long(f * 100000.0 + 0.5));
+    bool got_nonzero = false;
+    int i = sizeof(out), deci = 5;
+    out[--i] = '\0';
+    do {
+      int digit = intval % 10;
+      if (digit || got_nonzero) {
+        out[--i] = '0' + digit;
+        got_nonzero = true;
+      }
+      if (!--deci) {
+        if (got_nonzero) out[--i] = '.';
+        got_nonzero = true;
+      }
+      intval /= 10;
+    } while (intval != 0 || deci > 0);
+    if (!deci) out[--i] = '0';
+    if (f < 0) out[--i] = '-';
+    return &out[i];
+  }
+
+  // Get the status of the remote
+  // If it fails to answer then it hung up
+  char get_remote_z_status() {
+    for (uint8_t tries=5; tries--;) {
+      if (i2c.request(1)) {             // Request a single byte
+        char answer;                    // a buffer to store the reply
+        i2c.capture(&answer, 1);        // Get the reply
+        return answer;                  // Return it
+      }
+    }
+    return 0;                           // 0 for total failure
+  }
+
+  // Wait for a response from the remote
+  bool remote_z_wait(char good_status, uint16_t wait=250) {
+    bool z_command_done = false;
+    while (!z_command_done) {           // Wait for the remote to finish
+      safe_delay(wait);                   // Wait 1/20 second before checking
+      char status = get_remote_z_status();
+      switch (status) {
+        case '?': break;                // ? = Busy (still homing)
+
+        case 0:
+          SERIAL_ERROR_START();
+          SERIAL_ERRORLNPGM("Remote Hung Up");
+
+        case 'F':
+          return false;                 // F = Failed
+
+        default:                        // good reply = Operation Done
+          if (status == good_status)
+            z_command_done = true;
+          else {
+            SERIAL_ECHO_START();
+            SERIAL_ECHOLNPAIR("Zee status: ", status);
+          }
+          break;
+      }
+    }
+    return true;
+  }
+
+  // Set one or all axis positions on the remote
+  void remote_set_axis_pos(const char axis[], float pos) {
+    char cmd[20];
+    sprintf_P(cmd, PSTR("G92 %s%s"), axis, ftostr(pos));
+    i2c.address(Z_AXIS_I2C_ADDRESS);
+    i2c.reset();
+    do {
+      i2c.addstring(cmd);
+      i2c.send();
+    } while (get_remote_z_status() == 'Q');
+  }
+
+  /**
+   * Send a command to the remote and wait for success or fail
+   *
+   *   H - Home Z
+   *   L - Level Bed
+   *   S - Synchronize
+   *   Z - Move Z
+   *   F - Set feedrate
+   *
+   * Additionally, G0/G1 may send "Znnn.nnn Fnnnn"
+   * Regular GCode may also be sent with i2c.send.
+   *
+   */
+  bool remote_z_command(char command) {
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("Sending command: ", command);
+    i2c.address(Z_AXIS_I2C_ADDRESS);
+    i2c.flush();                        // Clear stale data from the bus
+    i2c.reset();
+    char status;
+    do {
+      i2c.addbyte(command);
+      i2c.send();
+      status = get_remote_z_status();
+    } while (status == 'Q');
+    return (status == command || remote_z_wait(command));
+  }
+
+  // Unrestrained Z move on remote
+  void remote_z_move(float z, float fr_mm_m/*=0.0*/, bool wait/*=false*/) {
+    if (fr_mm_m == 0.0) fr_mm_m = MMS_TO_MMM(feedrate_mm_s);
+    char cmd[33];
+    cmd[0] = 'Z'; cmd[1] = '\0';
+    strcat(cmd, ftostr(z));
+    strcat_P(cmd, PSTR(" F"));
+    strcat(cmd, ftostr(fr_mm_m));
+    i2c.address(Z_AXIS_I2C_ADDRESS);
+    i2c.reset();
+    char status;
+    do {
+      i2c.addstring(cmd);
+      i2c.send();
+      status = get_remote_z_status();
+    } while (status == 'Q');
+    if (wait && status != 'Z') remote_z_wait('Z');
+  }
+
+#endif
+
 /**
  * Set an axis' current position to its home position (after homing).
  *
@@ -1558,6 +1691,10 @@ static void set_axis_is_at_home(const AxisEnum axis) {
 
         if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("*** Z HOMED TO ENDSTOP (Z_MIN_PROBE_ENDSTOP) ***");
 
+      #endif
+
+      #if ENABLED(REMOTE_Z_AXIS)
+        remote_set_axis_pos("Z", current_position[Z_AXIS]);
       #endif
     }
   #endif
@@ -2990,7 +3127,13 @@ static void homeaxis(const AxisEnum axis) {
   #else
     #define CAN_HOME(A) \
       (axis == A##_AXIS && ((A##_MIN_PIN > -1 && A##_HOME_DIR < 0) || (A##_MAX_PIN > -1 && A##_HOME_DIR > 0)))
-    if (!CAN_HOME(X) && !CAN_HOME(Y) && !CAN_HOME(Z)) return;
+    if (!CAN_HOME(X) && !CAN_HOME(Y) &&
+      #if DISABLED(REMOTE_Z_AXIS)
+        !CAN_HOME(Z)
+      #else
+        (axis != Z_AXIS)
+      #endif
+    ) return;
   #endif
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -3017,43 +3160,55 @@ static void homeaxis(const AxisEnum axis) {
     if (axis == Z_AXIS) stepper.set_homing_flag(true);
   #endif
 
-  // Disable stealthChop if used. Enable diag1 pin on driver.
-  #if ENABLED(SENSORLESS_HOMING)
-    #if ENABLED(X_IS_TMC2130)
-      if (axis == X_AXIS) tmc2130_sensorless_homing(stepperX);
-    #endif
-    #if ENABLED(Y_IS_TMC2130)
-      if (axis == Y_AXIS) tmc2130_sensorless_homing(stepperY);
-    #endif
-  #endif
+  #if ENABLED(REMOTE_Z_AXIS)
 
-  // Fast move towards endstop until triggered
-  #if ENABLED(DEBUG_LEVELING_FEATURE)
-    if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Home 1 Fast:");
-  #endif
-  do_homing_move(axis, 1.5 * max_length(axis) * axis_home_dir);
-
-  // When homing Z with probe respect probe clearance
-  const float bump = axis_home_dir * (
-    #if HOMING_Z_WITH_PROBE
-      (axis == Z_AXIS) ? max(Z_CLEARANCE_BETWEEN_PROBES, home_bump_mm(Z_AXIS)) :
+    if (axis == Z_AXIS) {
+      if (!remote_z_command('H')) {
+        SERIAL_ERROR_START();
+        SERIAL_ERRORLNPGM("G28 Z Homing Failed");
+      }
+    }
+    else // . . . normal XY homing
+  #endif // REMOTE_Z_AXIS
+  {
+    // Disable stealthChop if used. Enable diag1 pin on driver.
+    #if ENABLED(SENSORLESS_HOMING)
+      #if ENABLED(X_IS_TMC2130)
+        if (axis == X_AXIS) tmc2130_sensorless_homing(stepperX);
+      #endif
+      #if ENABLED(Y_IS_TMC2130)
+        if (axis == Y_AXIS) tmc2130_sensorless_homing(stepperY);
+      #endif
     #endif
-    home_bump_mm(axis)
-  );
 
-  // If a second homing move is configured...
-  if (bump) {
-    // Move away from the endstop by the axis HOME_BUMP_MM
+    // Fast move towards endstop until triggered
     #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Move Away:");
+      if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Home 1 Fast:");
     #endif
-    do_homing_move(axis, -bump);
+    do_homing_move(axis, 1.5 * max_length(axis) * axis_home_dir);
 
-    // Slow move towards endstop until triggered
-    #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Home 2 Slow:");
-    #endif
-    do_homing_move(axis, 2 * bump, get_homing_bump_feedrate(axis));
+    // When homing Z with probe respect probe clearance
+    const float bump = axis_home_dir * (
+      #if HOMING_Z_WITH_PROBE
+        (axis == Z_AXIS) ? max(Z_CLEARANCE_BETWEEN_PROBES, home_bump_mm(Z_AXIS)) :
+      #endif
+      home_bump_mm(axis)
+    );
+
+    // If a second homing move is configured...
+    if (bump) {
+      // Move away from the endstop by the axis HOME_BUMP_MM
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Move Away:");
+      #endif
+      do_homing_move(axis, -bump);
+
+      // Slow move towards endstop until triggered
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Home 2 Slow:");
+      #endif
+      do_homing_move(axis, 2 * bump, get_homing_bump_feedrate(axis));
+    }
   }
 
   #if ENABLED(Z_DUAL_ENDSTOPS)
@@ -3404,6 +3559,37 @@ inline void gcode_G0_G1(
         }
       }
     #endif // FWRETRACT
+
+    #if ENABLED(REMOTE_Z_AXIS)
+
+      // This sends Z moves to the remote,
+      // which adds them to its buffer.
+
+      // Currently with a remote Z axis, we
+      // will need to wait for moves to complete,
+      // then send the Z move.
+
+      // We can then send 'S' to synchronize the remote
+      // and wait for it to reply that it synchronized.
+
+      // TODO: Handle an 'F' by itself as an 'F' command
+      //       Noting that its success code is 'Z'.
+
+      if (destination[Z_AXIS] != current_position[Z_AXIS]) {
+
+        // Wait for all buffered XY and E moves before moving Z
+        stepper.synchronize();
+
+        remote_z_move(destination[Z_AXIS]);  // Send Z move, don't wait... yet
+
+        remote_z_command('S');               // Tell remote to wait
+
+        // Update our copy of the Z axis immediately
+        current_position[Z_AXIS] = destination[Z_AXIS];
+        sync_plan_position_z();
+      }
+
+    #endif // REMOTE_Z_AXIS
 
     #if IS_SCARA
       fast_move ? prepare_uninterpolated_move_to_destination() : prepare_move_to_destination();
@@ -5281,7 +5467,17 @@ void home_all_axes() { gcode_G28(true); }
       SYNC_PLAN_POSITION_KINEMATIC();
   }
 
-#endif // HAS_ABL && !AUTO_BED_LEVELING_UBL
+#elif ENABLED(REMOTE_Z_AXIS)
+
+  inline void gcode_G29() {
+    // Tell the remote to do Z leveling with "L"
+    if (!remote_z_command('L')) {
+      SERIAL_ERROR_START();
+      SERIAL_ERRORLNPGM("G29 Leveling Failed");
+    }
+  }
+
+#endif // REMOTE_Z_AXIS
 
 #if HAS_BED_PROBE
 
@@ -5926,11 +6122,16 @@ void home_all_axes() { gcode_G28(true); }
  * G92: Set current position to given X Y Z E
  */
 inline void gcode_G92() {
-  bool didXYZ = false,
-       didE = parser.seenval('E');
+  #if ENABLED(REMOTE_Z_AXIS)
+    #define SHIFT_CONDITION (i != Z_AXIS)
+  #else
+    #define SHIFT_CONDITION true
+  #endif
 
+  const bool didE = parser.seen('E');
   if (!didE) stepper.synchronize();
 
+  bool didXYZ = false;
   LOOP_XYZE(i) {
     if (parser.seenval(axis_codes[i])) {
       #if IS_SCARA
@@ -5947,18 +6148,32 @@ inline void gcode_G92() {
         if (i != E_AXIS) {
           didXYZ = true;
           #if HAS_POSITION_SHIFT
-            position_shift[i] += v - p; // Offset the coordinate space
-            update_software_endstops((AxisEnum)i);
-
+            if (SHIFT_CONDITION) {
+              position_shift[i] += v - p; // Offset the coordinate space
+              update_software_endstops((AxisEnum)i);
+            }
             #if ENABLED(I2C_POSITION_ENCODERS)
               I2CPEM.encoders[I2CPEM.idx_from_axis((AxisEnum)i)].set_axis_offset(position_shift[i]);
             #endif
-
           #endif
         }
       #endif
+      #if ENABLED(REMOTE_Z_AXIS)
+        if (i == Z_AXIS) remote_set_axis_pos("Z", current_position[Z_AXIS]);
+      #endif
     }
   }
+
+  // Allow remote setting of ABCD individually
+  #if ENABLED(REMOTE_Z_AXIS)
+    for (char i = 'A'; i <= 'D'; i++) {
+      if (parser.seen(i)) {
+        char remote_axis[2] = { i, '\0' };
+        remote_set_axis_pos(remote_axis, parser.value_axis_units(Z_AXIS));
+      }
+    }
+  #endif
+
   if (didXYZ)
     SYNC_PLAN_POSITION_KINEMATIC();
   else if (didE)
@@ -9216,7 +9431,12 @@ inline void gcode_M303() {
 /**
  * M400: Finish all moves
  */
-inline void gcode_M400() { stepper.synchronize(); }
+inline void gcode_M400() {
+  stepper.synchronize();
+  #if ENABLED(REMOTE_Z_AXIS)
+    remote_z_command('S');
+  #endif
+}
 
 #if HAS_BED_PROBE
 
@@ -10917,7 +11137,7 @@ void process_next_command() {
         gcode_G28(false);
         break;
 
-      #if HAS_LEVELING
+      #if HAS_LEVELING || ENABLED(REMOTE_Z_AXIS)
         case 29: // G29 Detailed Z probe, probes the bed at 3 or more points,
                  // or provides access to the UBL System if enabled.
           gcode_G29();
