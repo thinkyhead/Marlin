@@ -273,6 +273,14 @@
 #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
   // Set true if the two Y motors need to rotate in opposite directions
   #define INVERT_Y2_VS_Y_DIR true
+
+  //
+  // [A3D] Y2 using pins for X steppers!
+  // (Also: X is using the Z pins. See pins_RAMPS.h for changes.)
+  //
+  #define Y2_STEP_PIN   54
+  #define Y2_DIR_PIN    55
+  #define Y2_ENABLE_PIN 38
 #endif
 
 // A single Z stepper driver is usually used to drive 2 stepper motors.

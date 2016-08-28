@@ -95,6 +95,8 @@
   #undef SD_DETECT_PIN
   #undef BEEPER_PIN
   #undef KILL_PIN
+  #undef STAT_LED_RED_PIN
+  #undef STAT_LED_BLUE_PIN
 
   //
   // VIKI2 12-wire lead
@@ -110,7 +112,7 @@
   #define BTN_EN2         37
 
   // purple               ENCBTN
-  #define BTN_ENC         31
+  #define BTN_ENC         23 // 31
 
   // brown                A0
   #define DOGLCD_A0       27
@@ -130,7 +132,7 @@
   //
 
   // blue                 BTN
-  #define KILL_PIN        23
+  #define KILL_PIN        -1 // 23
 
   // green                BUZZER
   #define BEEPER_PIN      25
