@@ -6523,12 +6523,53 @@ inline void gcode_G92() {
   #else
     #define IS_G92_0 true
   #endif
-
   bool didE = false;
   #if IS_SCARA || !HAS_POSITION_SHIFT
     bool didXYZ = false;
   #else
     constexpr bool didXYZ = false;
+  #endif
+
+  #if 0 && IS_SCARA
+    bool didC = false;
+    float abze[XYZE], orig_abze[XYZE];
+    // A and B will be degrees, no translation to local space needed
+    // Z and E will also be in local space. But C/Z may be shifted by
+    // bed leveling, so if changing C directly, it should be un-shifted
+    // when setting Z.
+    LOOP_XYZE(i) orig_abze[i] = abze[i] = planner.get_axis_position_mm((AxisEnum)i);
+    LOOP_XYZ(i) {
+      if (parser.seen(stepper_codes[i])) {
+        abze[i] = parser.value_float();
+        didXYZ = true;
+        if (i == C_AXIS) didC = true;
+      }
+    }
+
+    // Set the steppers to the given positions
+    // The stepper presumes that bed leveling was already applied
+    // before these values were set. If only using mesh leveling,
+    // then only Z will need adjustment.
+    stepper.set_position(Z_AXIS, abze[Z_AXIS]);
+
+    // Convert steppers into cartesian. Forward kinematics will be applied.
+    // If mesh leveling is in use, Z will need to be un-corrected based on
+    // the old position
+    get_cartesian_from_steppers();
+
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+
+      // If the C axis was altered, get the corresponding un-leveled Z
+      // TODO: This should be done for XYZ in get_cartesian_from_steppers!
+      if (didC) {
+        vector_3 pos = planner.adjusted_position();
+        cartes[Z_AXIS] = pos.z;
+      }
+
+    #endif
+
+    // Update the current position
+    COPY(current_position, cartes);
   #endif
 
   if (IS_G92_0) LOOP_XYZE(i) {
