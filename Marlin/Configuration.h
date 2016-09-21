@@ -2095,4 +2095,25 @@
 
 #endif
 
+/**
+ * Laser
+ *
+ * The laser must use a 12V heater pin for power. This pin may be used as the PWM pin also,
+ * but this will shorten the life of lasers that have a separate 3.3V or 5V PWM pin.
+ */
+#define LASER
+#if ENABLED(LASER)
+  #define LASER_MIN_DUTY_CYCLE 0 // percent
+#endif
+
+/**
+ * Foam Cutter
+ *
+ * The foam cutter uses a 12V heater pin for power.
+ */
+#define FOAM_CUTTER
+#if ENABLED(FOAM_CUTTER)
+  #define FOAM_CUTTER_HEATER 0
+#endif
+
 #endif // CONFIGURATION_H

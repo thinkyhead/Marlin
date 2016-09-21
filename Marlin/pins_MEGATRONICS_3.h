@@ -111,6 +111,17 @@
 #endif
 
 //
+// Laser main power is the same as Heater 0
+// Its low-voltage (5V) PWM pin is hardware PWM-able.
+//
+// If the laser can use the main power for PWM, then either
+// use Hardware PWM at 25KHz (e.g., Pin 9 or 10 on Timer 1)
+// or run any timer at 25KHz and apply the duty cycle in software.
+//
+#define LASER_POWER_PIN     2
+#define LASER_PWM_PIN      46
+
+//
 // Heaters / Fans
 //
 #define HEATER_0_PIN        2

@@ -693,6 +693,18 @@
 #ifndef MSG_PRINT_ABORTED
   #define MSG_PRINT_ABORTED                   _UxGT("Print aborted")
 #endif
+#ifndef MSG_LASER_ON
+  #define MSG_LASER_ON                        "LASER ON"
+#endif
+#ifndef MSG_LASER_OFF
+  #define MSG_LASER_OFF                       "LASER OFF"
+#endif
+#ifndef MSG_FOAM_CUTTER_ON
+  #define MSG_FOAM_CUTTER_ON                  "FOAM CUTTER ON"
+#endif
+#ifndef MSG_FOAM_CUTTER_OFF
+  #define MSG_FOAM_CUTTER_OFF                 "FOAM CUTTER OFF"
+#endif
 #ifndef MSG_NO_MOVE
   #define MSG_NO_MOVE                         _UxGT("No move.")
 #endif

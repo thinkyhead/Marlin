@@ -604,6 +604,43 @@ class Temperature {
       #endif
     #endif
 
+    #if ENABLED(MAKERARM_SCARA)
+
+      // Simply disable heaters as a tool-switching behavior
+      static void toolSwitched() {
+        disable_all_heaters(); // Also turns off laser power
+      }
+
+    #endif
+
+    #if ENABLED(LASER)
+
+      // Set laser power 0-100, scaling to 0-255
+      static void setLaserPower(const uint8_t power) {
+        if (tool_type != TOOL_TYPE_LASER) return;
+        #if PIN_EXISTS(LASER_PWM)
+          const float min_dc = 0.01 * (LASER_MIN_DUTY_CYCLE),
+                      dc = min_dc + (1.0 - min_dc) * power / 255.0;
+          set_pwm_frequency_hz(power ? 25000 : 0, dc);
+        #endif
+        WRITE(LASER_POWER_PIN, power ? HIGH : LOW);
+      }
+
+    #endif // LASER
+
+    #if ENABLED(FOAM_CUTTER)
+
+      #define WRITE_CUTTER_(NR, v) WRITE(HEATER_## NR ##_PIN, v)
+      #define WRITE_CUTTER(NR, v) WRITE_CUTTER_(NR, v)
+
+      // Turn foam cutter on or off
+      static void enableFoamCutter(bool onoff) {
+        if (tool_type == TOOL_TYPE_FOAM_CUTTER)
+          WRITE_CUTTER(FOAM_CUTTER_HEATER, onoff ? HIGH : LOW);
+      }
+
+    #endif
+
   private:
 
     #if ENABLED(FAST_PWM_FAN)

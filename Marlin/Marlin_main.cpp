@@ -81,9 +81,9 @@
  *
  * M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
  * M1   -> M0
- * M3   - Turn laser/spindle on, set spindle/laser speed/power, set rotation to clockwise
- * M4   - Turn laser/spindle on, set spindle/laser speed/power, set rotation to counter-clockwise
- * M5   - Turn laser/spindle off
+ * M3   - Spindle on (clockwise) with given speed (Requires SPINDLE_LASER_ENABLE). Laser on with given power (Requires LASER).
+ * M4   - Spindle on (counter-clockwise) with given speed (Requires SPINDLE_LASER_ENABLE). Laser on with given power (Requires LASER).
+ * M5   - Spindle off (Requires SPINDLE_LASER_ENABLE). Laser off (Requires LASER).
  * M17  - Enable/Power all stepper motors
  * M18  - Disable all stepper motors; same as M84
  * M20  - List SD card. (Requires SDSUPPORT)
@@ -7046,11 +7046,10 @@ inline void gcode_G92() {
    * it accepts inputs of 0-255
    */
 
-  inline void ocr_val_mode() {
+  inline void ocr_val_mode(const byte power) {
     uint8_t spindle_laser_power = parser.value_byte();
     WRITE(SPINDLE_LASER_ENABLE_PIN, SPINDLE_LASER_ENABLE_INVERT); // turn spindle on (active low)
-    if (SPINDLE_LASER_PWM_INVERT) spindle_laser_power = 255 - spindle_laser_power;
-    analogWrite(SPINDLE_LASER_PWM_PIN, spindle_laser_power);
+    analogWrite(SPINDLE_LASER_PWM_PIN, SPINDLE_LASER_PWM_INVERT ? 255 - power : power);
   }
 
   inline void gcode_M3_M4(bool is_M3) {
@@ -7074,7 +7073,8 @@ inline void gcode_G92() {
      * Then needed to AND the uint16_t result with 0x00FF to make sure we only wrote the byte of interest.
      */
     #if ENABLED(SPINDLE_LASER_PWM)
-      if (parser.seen('O')) ocr_val_mode();
+      if (parser.seen('O'))
+        ocr_val_mode(parser.value_byte());
       else {
         const float spindle_laser_power = parser.floatval('S');
         if (spindle_laser_power == 0) {
@@ -7083,15 +7083,9 @@ inline void gcode_G92() {
           delay_for_power_down();
         }
         else {
+          spindle_laser_power = constrain(spindle_laser_power, SPEED_POWER_MIN, SPEED_POWER_MAX);
           int16_t ocr_val = (spindle_laser_power - (SPEED_POWER_INTERCEPT)) * (1.0f / (SPEED_POWER_SLOPE)); // convert RPM to PWM duty cycle
-          NOMORE(ocr_val, 255);                                                                             // limit to max the Atmel PWM will support
-          if (spindle_laser_power <= SPEED_POWER_MIN)
-            ocr_val = (SPEED_POWER_MIN - (SPEED_POWER_INTERCEPT)) * (1.0f / (SPEED_POWER_SLOPE));           // minimum setting
-          if (spindle_laser_power >= SPEED_POWER_MAX)
-            ocr_val = (SPEED_POWER_MAX - (SPEED_POWER_INTERCEPT)) * (1.0f / (SPEED_POWER_SLOPE));           // limit to max RPM
-          if (SPINDLE_LASER_PWM_INVERT) ocr_val = 255 - ocr_val;
-          WRITE(SPINDLE_LASER_ENABLE_PIN, SPINDLE_LASER_ENABLE_INVERT);                                     // turn spindle on (active low)
-          analogWrite(SPINDLE_LASER_PWM_PIN, ocr_val & 0xFF);                                               // only write low byte
+          ocr_val_mode(constrain(ocr_val, 0, 255));                                                         // limit to Atmel PWM supported range
           delay_for_power_up();
         }
       }
@@ -7113,7 +7107,106 @@ inline void gcode_G92() {
     delay_for_power_down();
   }
 
-#endif // SPINDLE_LASER_ENABLE
+#elif ENABLED(LASER) || ENABLED(MILLING) || ENABLED(FOAM_CUTTER)
+
+  #define WARNING_BEEP_INTERVAL 4000
+
+  /**
+   * M3 or M4: Laser On with S<power>
+   *           Foam Cutter On
+   */
+  inline void gcode_M3_M4() {
+    bool onoff = false;
+    planner.synchronize();
+
+    switch (tool_type) {
+
+      #if ENABLED(LASER)
+        case TOOL_TYPE_LASER: {
+          uint8_t power = parser.seen('S') ? parser.value_byte() : 255;
+          thermalManager.setLaserPower(DEBUGGING(DRYRUN) ? 0 : power);
+          if (power) {
+            onoff = true;
+            SERIAL_ECHO_START();
+            SERIAL_ECHOLNPGM(MSG_LASER_ON);
+          }
+        }
+        break;
+      #endif
+
+      #if ENABLED(MILLING)
+        case TOOL_TYPE_MILLING:
+          // Spindle support to be added here
+          onoff = true;
+          break;
+      #endif
+
+      #if ENABLED(FOAM_CUTTER)
+        case TOOL_TYPE_FOAM_CUTTER:
+          onoff = true;
+          thermalManager.enableFoamCutter(true);
+          SERIAL_ECHO_START();
+          SERIAL_ECHOLNPGM(MSG_FOAM_CUTTER_ON);
+          break;
+      #endif
+
+      default: break; // other tools
+
+    } // tool_type
+
+    static millis_t next_warning_beep; // = 0
+    const millis_t ms = millis();
+    if (onoff) {
+      if (ELAPSED(ms, next_warning_beep)) {
+        CRITICAL_SECTION_START;
+        BUZZ( 80, 880);
+        BUZZ( 20,   0);
+        BUZZ(100, 932);
+        BUZZ( 20,   0);
+        BUZZ( 80, 988);
+        CRITICAL_SECTION_END;
+      }
+      next_warning_beep = ms + WARNING_BEEP_INTERVAL; // enforce minimum interval since last enable
+    }
+  }
+
+  /**
+   * M5: Laser Off
+   *     Foam Cutter Off
+   */
+  inline void gcode_M5() {
+    planner.synchronize();
+
+    switch (tool_type) {
+
+      #if ENABLED(LASER)
+        case TOOL_TYPE_LASER:
+          thermalManager.setLaserPower(0);
+          SERIAL_ECHO_START();
+          SERIAL_ECHOLNPGM(MSG_LASER_OFF);
+          break;
+      #endif
+
+      #if ENABLED(MILLING)
+        case TOOL_TYPE_MILLING:
+          // Spindle support to be added here
+          break;
+      #endif
+
+      #if ENABLED(FOAM_CUTTER)
+        case TOOL_TYPE_FOAM_CUTTER:
+          thermalManager.enableFoamCutter(false);
+          SERIAL_ECHO_START();
+          SERIAL_ECHOLNPGM(MSG_FOAM_CUTTER_OFF);
+          break;
+      #endif
+
+      default: break; // other tools
+
+    } // tool_type
+  }
+
+#endif // LASER || MILLING || FOAM_CUTTER
 
 /**
  * M17: Enable power on all stepper motors
@@ -11012,6 +11105,54 @@ inline void gcode_M502() {
 #if ENABLED(MAKERARM_SCARA)
 
   /**
+   * Set Timer 5 PWM frequency in Hz, from 3.8Hz up to ~16MHz
+   * with a minimum resolution of 100 steps.
+   *
+   * DC values -1.0 to 1.0. Negative duty cycle inverts the pulse.
+   */
+  uint16_t set_pwm_frequency_hz(const float &hz, const float dca, const float dcb, const float dcc) {
+    float count = 0;
+    if (hz > 0 && (dca || dcb || dcc)) {
+      count = float(F_CPU) / hz;            // 1x prescaler, TOP for 16MHz base freq.
+      uint16_t prescaler;                   // Range of 30.5Hz (65535) 64.5KHz (>31)
+
+           if (count >= 255. * 256.) { prescaler = 1024; SET_CS(5, PRESCALER_1024); }
+      else if (count >= 255. * 64.)  { prescaler = 256;  SET_CS(5,  PRESCALER_256); }
+      else if (count >= 255. * 8.)   { prescaler = 64;   SET_CS(5,   PRESCALER_64); }
+      else if (count >= 255.)        { prescaler = 8;    SET_CS(5,    PRESCALER_8); }
+      else                           { prescaler = 1;    SET_CS(5,    PRESCALER_1); }
+
+      count /= float(prescaler);
+      const float pwm_top = round(count);   // Get the rounded count
+
+      ICR5 = (uint16_t)pwm_top - 1;         // Subtract 1 for TOP
+      OCR5A = pwm_top * FABS(dca);          // Update and scale DCs
+      OCR5B = pwm_top * FABS(dcb);
+      OCR5C = pwm_top * FABS(dcc);
+      _SET_COM(5, A, dca ? (dca < 0 ? COM_SET_CLEAR : COM_CLEAR_SET) : COM_NORMAL); // Set compare modes
+      _SET_COM(5, B, dcb ? (dcb < 0 ? COM_SET_CLEAR : COM_CLEAR_SET) : COM_NORMAL);
+      _SET_COM(5, C, dcc ? (dcc < 0 ? COM_SET_CLEAR : COM_CLEAR_SET) : COM_NORMAL);
+
+      SET_WGM(5, FAST_PWM_ICRn);            // Fast PWM with ICR5 as TOP
+
+      //SERIAL_ECHOLNPGM("Timer 5 Settings:");
+      //SERIAL_ECHOLNPAIR("  Prescaler=", prescaler);
+      //SERIAL_ECHOLNPAIR("        TOP=", ICR5);
+      //SERIAL_ECHOLNPAIR("      OCR5A=", OCR5A);
+      //SERIAL_ECHOLNPAIR("      OCR5B=", OCR5B);
+      //SERIAL_ECHOLNPAIR("      OCR5C=", OCR5C);
+    }
+    else {
+      // Restore the default for Timer 5
+      SET_WGM(5, PWM_PC_8);                 // PWM 8-bit (Phase Correct)
+      SET_COMS(5, NORMAL, NORMAL, NORMAL);  // Do nothing
+      SET_CS(5, PRESCALER_64);              // 16MHz / 64 = 250KHz
+      OCR5A = OCR5B = OCR5C = 0;
+    }
+    return round(count);
+  }
+
+  /**
    * MakerArm Tool Selection:
    *  - Extruder
    *  - Picker (Spindle, Pump, Valve)
@@ -11025,7 +11166,6 @@ inline void gcode_M502() {
 
     switch (type) {
       case TOOL_TYPE_EXTRUDER:
-        stepper.activate_spindle(false);
         current_position[E_AXIS] = 0;
         planner.set_e_position_mm(0);
         // planner.axis_steps_per_mm[E_AXIS] = E_STEPS_PER_MM;
@@ -11045,11 +11185,19 @@ inline void gcode_M502() {
         // planner.refresh_positioning();
         break;
 
-      case TOOL_TYPE_LASER: break;
+      case TOOL_TYPE_LASER:
+        // The LASER_PWM_PIN will do PWM at 25KHz
+        SET_OUTPUT(LASER_PWM_PIN);
+        break;
       case TOOL_TYPE_FOAM_CUTTER: break;
       case TOOL_TYPE_MILLING: break;
       default: break;
     }
+
+    // Turn Timer 5 on or off depending on tool
+    (void)set_pwm_frequency_hz(tool_type == TOOL_TYPE_LASER ? 25000 : 0);
+
+    thermalManager.toolSwitched();
   }
 
   /**
@@ -13027,10 +13175,14 @@ void process_parsed_command() {
         case 0: case 1: gcode_M0_M1(); break;                     // M0: Unconditional stop, M1: Conditional stop
       #endif
 
-      #if ENABLED(SPINDLE_LASER_ENABLE)
-        case 3: gcode_M3_M4(true); break;                         // M3: Laser/CW-Spindle Power
-        case 4: gcode_M3_M4(false); break;                        // M4: Laser/CCW-Spindle Power
-        case 5: gcode_M5(); break;                                // M5: Laser/Spindle OFF
+      #if ENABLED(SPINDLE_LASER_ENABLE) || ENABLED(LASER)
+        #if ENABLED(SPINDLE_LASER_ENABLE)
+          case 3: gcode_M3_M4(true); break;                       // M3: Spindle on (clockwise), set speed
+          case 4: gcode_M3_M4(false); break;                      // M4: Spindle on (counter-clockwise), set speed
+        #else
+          case 3: case 4: gcode_M3_M4(); break;                   // M3 / M4: Laser On
+        #endif
+        case 5: gcode_M5(); break;                                // M5: Laser / Spindle Off
       #endif
 
       case 17: gcode_M17(); break;                                // M17: Enable all steppers
@@ -14460,7 +14612,7 @@ void prepare_move_to_destination() {
 
   #if ENABLED(PREVENT_COLD_EXTRUSION) || ENABLED(PREVENT_LENGTHY_EXTRUDE)
 
-    if (!DEBUGGING(DRYRUN) && !stepper.spindle_active) {
+    if (!DEBUGGING(DRYRUN) && tool_type == TOOL_TYPE_EXTRUDER) {
       if (destination[E_AXIS] != current_position[E_AXIS]) {
         #if ENABLED(PREVENT_COLD_EXTRUSION)
           if (thermalManager.tooColdToExtrude(active_extruder)) {

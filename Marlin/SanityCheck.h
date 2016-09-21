@@ -1541,6 +1541,17 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
 #endif
 
 /**
+ * Laser
+ */
+#if ENABLED(LASER)
+  #if !PIN_EXISTS(LASER_POWER)
+    #error "LASER requires LASER_POWER_PIN. Please define in your Configuration.h or pins file."
+  #elif PIN_EXISTS(LASER_PWM) && !LASER_USES_TIMER5
+    #error "LASER currently only supports a LASER_PWM_PIN of 44, 45, or 46."
+  #endif
+#endif
+
+/**
  * Require 4 or more elements in per-axis initializers
  */
 constexpr float sanity_arr_1[] = DEFAULT_AXIS_STEPS_PER_UNIT,

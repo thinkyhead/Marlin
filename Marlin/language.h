@@ -176,6 +176,7 @@
 #define MSG_ERR_M420_FAILED                 "Failed to enable Bed Leveling"
 #define MSG_ERR_M428_TOO_FAR                "Too far from reference point"
 #define MSG_ERR_M303_DISABLED               "PIDTEMP disabled"
+#define MSG_ERR_WRONG_TOOL                  "Wrong tool for PID tuning"
 #define MSG_M119_REPORT                     "Reporting endstop status"
 #define MSG_ENDSTOP_HIT                     "TRIGGERED"
 #define MSG_ENDSTOP_OPEN                    "open"

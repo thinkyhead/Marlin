@@ -870,6 +870,21 @@
 
 #define HAS_AUTO_REPORTING (ENABLED(AUTO_REPORT_TEMPERATURES) || ENABLED(AUTO_REPORT_SD_STATUS))
 
+// Laser support
+#define HAS_LASER_POWER (PIN_EXISTS(LASER_POWER))
+#define _LASER_IS_HEATER(N) (HAS_HEATER_##N && LASER_POWER_PIN == HEATER_##N##_PIN)
+#define LASER_IS_HEATER (HAS_LASER_POWER && (_LASER_IS_HEATER(0) || _LASER_IS_HEATER(1) || _LASER_IS_HEATER(2) || _LASER_IS_HEATER(3) || _LASER_IS_HEATER(4)))
+#define LASER_USES_TIMER5 WITHIN(LASER_PWM_PIN, 44, 46)
+#if LASER_USES_TIMER5
+  #if LASER_PWM_PIN == 46
+    #define LASER_OCR OCR5A
+  #elif LASER_PWM_PIN == 45
+    #define LASER_OCR OCR5B
+  #elif LASER_PWM_PIN == 44
+    #define LASER_OCR OCR5C
+  #endif
+#endif
+
 /**
  * This setting is also used by M109 when trying to calculate
  * a ballpark safe margin to prevent wait-forever situation.
