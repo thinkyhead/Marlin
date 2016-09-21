@@ -1116,11 +1116,18 @@ void Stepper::set_directions() {
  *
  * Directly pulses the stepper motors at high frequency.
  */
-
 HAL_STEP_TIMER_ISR {
   HAL_timer_isr_prologue(STEP_TIMER_NUM);
 
+  // #ifdef OSCILLOSCOPE_PIN_A
+  //   WRITE(OSCILLOSCOPE_PIN_A, HIGH);
+  // #endif
+
   Stepper::isr();
+
+  // #ifdef OSCILLOSCOPE_PIN_A
+  //   WRITE(OSCILLOSCOPE_PIN_A, LOW);
+  // #endif
 
   HAL_timer_isr_epilogue(STEP_TIMER_NUM);
 }
@@ -1305,6 +1312,12 @@ void Stepper::stepper_pulse_phase_isr() {
     #if HAS_X_STEP
       PULSE_START(X);
     #endif
+
+    // Timing between X pulses
+    #ifdef OSCILLOSCOPE_PIN_A
+      WRITE(OSCILLOSCOPE_PIN_A, 255);
+    #endif
+
     #if HAS_Y_STEP
       PULSE_START(Y);
     #endif
@@ -1358,6 +1371,11 @@ void Stepper::stepper_pulse_phase_isr() {
     #if HAS_X_STEP
       PULSE_STOP(X);
     #endif
+
+    #ifdef OSCILLOSCOPE_PIN_A
+      WRITE(OSCILLOSCOPE_PIN_A, LOW);
+    #endif
+
     #if HAS_Y_STEP
       PULSE_STOP(Y);
     #endif

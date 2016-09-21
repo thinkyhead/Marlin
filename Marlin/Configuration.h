@@ -1919,4 +1919,11 @@
 // With this option servos are powered only during movement, then turned off to prevent jitter.
 //#define DEACTIVATE_SERVOS_AFTER_MOVE
 
+/**
+ * Custom additions for MakerArm
+ */
+
+// Debug with an oscilloscope
+//#define OSCILLOSCOPE_PIN_A 45
+
 #endif // CONFIGURATION_H

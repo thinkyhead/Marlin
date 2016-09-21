@@ -14711,6 +14711,12 @@ void setup() {
     check_print_job_recovery();
   #endif
 
+  #ifdef OSCILLOSCOPE_PIN_A
+    SERIAL_ECHOLNPGM("OSCILLOSCOPE_PIN_A = " STRINGIFY(OSCILLOSCOPE_PIN_A));
+    pinMode(OSCILLOSCOPE_PIN_A, OUTPUT);
+    digitalWrite(OSCILLOSCOPE_PIN_A, LOW);
+  #endif
+
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
   #endif
@@ -14728,6 +14734,12 @@ void setup() {
  *  - Call LCD update
  */
 void loop() {
+
+  #ifdef OSCILLOSCOPE_PIN_A
+    static uint8_t test_state = HIGH;
+    WRITE(OSCILLOSCOPE_PIN_A, test_state);
+    test_state = HIGH - test_state;
+  #endif
 
   #if ENABLED(SDSUPPORT)
 
