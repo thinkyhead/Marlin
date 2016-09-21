@@ -1599,6 +1599,24 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   , float fr_mm_s, const uint8_t extruder, const float &millimeters/*=0.0*/
 ) {
 
+  //#define NO_STEPPING
+
+  #if ENABLED(NO_STEPPING)
+    // The position is set provisionally to the given target position
+    // but the actual move may be interrupted by an endstop or probe,
+    // so the planner position may need to be refreshed in such cases.
+    memcpy(position, target, sizeof(position));
+
+    // If moving below zero assume it's a probe or homing move
+    // Probe moves have a known destination, so use that here to
+    // set the steppers' true final position.
+    if (target[C_AXIS] < 0)
+      target[C_AXIS] = NEAR(target[C_AXIS], -(Z_MAX_LENGTH) - 10) ? -zprobe_zoffset : 0;
+
+    stepper.set_position(target[X_AXIS], target[B_AXIS], target[C_AXIS], target[E_AXIS]);
+    return;
+  #endif
+
   const int32_t da = target[A_AXIS] - position[A_AXIS],
                 db = target[B_AXIS] - position[B_AXIS],
                 dc = target[C_AXIS] - position[C_AXIS];
