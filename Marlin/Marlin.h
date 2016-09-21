@@ -310,7 +310,6 @@ void report_current_position();
 
 #if IS_KINEMATIC
   extern float delta[ABC];
-  void inverse_kinematics(const float raw[XYZ]);
 #endif
 
 #if ENABLED(DELTA)
@@ -343,6 +342,11 @@ void report_current_position();
   }while(0)
 
 #elif IS_SCARA
+  #if ENABLED(MAKERARM_SCARA)
+    void inverse_kinematics(const float raw[XYZ], const float probe_y_offset=0.0);
+  #elif ENABLED(MORGAN_SCARA)
+    void inverse_kinematics(const float raw[XYZ]);
+  #endif
   void forward_kinematics_SCARA(const float &a, const float &b);
 #endif
 
@@ -496,34 +500,59 @@ void do_blocking_move_to_xy(const float &rx, const float &ry, const float &fr_mm
  * position_is_reachable family of functions
  */
 
-#if IS_KINEMATIC // (DELTA or SCARA)
+#if IS_KINEMATIC
 
   #if IS_SCARA
+
     extern const float L1, L2;
-  #endif
 
-  // Return true if the given point is within the printable area
-  inline bool position_is_reachable(const float &rx, const float &ry, const float inset=0) {
-    #if ENABLED(DELTA)
-      return HYPOT2(rx, ry) <= sq(DELTA_PRINTABLE_RADIUS - inset);
-    #elif IS_SCARA
-      const float R2 = HYPOT2(rx - SCARA_OFFSET_X, ry - SCARA_OFFSET_Y);
-      return (
-        R2 <= sq(L1 + L2) - inset
-        #if MIDDLE_DEAD_ZONE_R > 0
-          && R2 >= sq(float(MIDDLE_DEAD_ZONE_R))
-        #endif
-      );
+    bool position_is_reachable(const float target[XYZ]
+      #if HAS_BED_PROBE
+        , const bool by_probe=false
+      #endif
+      , const bool do_center=true
+    );
+
+    #if HAS_BED_PROBE
+
+      FORCE_INLINE bool position_is_reachable_by_probe(const float &rx, const float &ry, const bool do_center=true) {
+        const float target[XYZ] = { rx, ry, 0 };
+        return position_is_reachable(target, true, do_center);
+      }
+
     #endif
-  }
 
-  #if HAS_BED_PROBE
-    // Return true if the both nozzle and the probe can reach the given point.
-    // Note: This won't work on SCARA since the probe offset rotates with the arm.
-    inline bool position_is_reachable_by_probe(const float &rx, const float &ry) {
-      return position_is_reachable(rx - (X_PROBE_OFFSET_FROM_EXTRUDER), ry - (Y_PROBE_OFFSET_FROM_EXTRUDER))
-             && position_is_reachable(rx, ry, ABS(MIN_PROBE_EDGE));
+    FORCE_INLINE bool position_is_reachable(const float &rx, const float &ry
+      #if HAS_BED_PROBE
+        , const bool by_probe=false
+      #endif
+      , const bool do_center=true
+    ) {
+      const float target[XYZ] = { rx, ry, 0 };
+      return position_is_reachable(target
+        #if HAS_BED_PROBE
+          , by_probe
+        #endif
+        , do_center
+      );
     }
+
+  #else // DELTA
+
+    // Return true if the given point is within the printable area
+    inline bool position_is_reachable(const float &rx, const float &ry, const float inset=0) {
+      return HYPOT2(rx, ry) <= sq(DELTA_PRINTABLE_RADIUS - inset);
+    }
+
+    #if HAS_BED_PROBE
+      // Return true if the both nozzle and the probe can reach the given point.
+      // Note: This won't work on SCARA since the probe offset rotates with the arm.
+      inline bool position_is_reachable_by_probe(const float &rx, const float &ry) {
+        return position_is_reachable(rx - (X_PROBE_OFFSET_FROM_EXTRUDER), ry - (Y_PROBE_OFFSET_FROM_EXTRUDER))
+               && position_is_reachable(rx, ry, ABS(MIN_PROBE_EDGE));
+      }
+    #endif
+
   #endif
 
 #else // CARTESIAN

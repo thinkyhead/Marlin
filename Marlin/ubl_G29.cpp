@@ -1233,8 +1233,12 @@
           const float mx = mesh_index_to_xpos(i),
                       my = mesh_index_to_ypos(j);
 
-          if (!position_is_reachable_by_probe(mx, my))  // make sure the probe can get to the mesh point
-            continue;
+          // Make sure the probe can get to the mesh point
+          if (!position_is_reachable_by_probe(mx, my
+            #if IS_SCARA
+              , false
+            #endif
+          )) continue;
 
           found_a_NAN = true;
 
@@ -1308,8 +1312,11 @@
           // Also for round beds, there are grid points outside the bed the nozzle can't reach.
           // Prune them from the list and ignore them till the next Phase (manual nozzle probing).
 
-          if (probe_as_reference ? !position_is_reachable_by_probe(mx, my) : !position_is_reachable(mx, my))
-            continue;
+          if (!probe_as_reference ? !position_is_reachable(mx, my) : !position_is_reachable_by_probe(mx, my
+            #if IS_SCARA
+              , false
+            #endif
+          )) continue;
 
           // Reachable. Check if it's the best_so_far location to the nozzle.
 
