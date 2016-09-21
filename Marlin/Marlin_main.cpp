@@ -3365,6 +3365,10 @@ inline void gcode_G0_G1(
   if (IsRunning() && G0_G1_CONDITION) {
     gcode_get_destination(); // For X Y Z E F
 
+    #if ENABLED(MAKERARM_SCARA)
+      if (!position_is_reachable(destination)) return BUZZ(100, 880);
+    #endif
+
     #if ENABLED(FWRETRACT)
       if (MIN_AUTORETRACT <= MAX_AUTORETRACT) {
         // When M209 Autoretract is enabled, convert E-only moves to firmware retract/prime moves
