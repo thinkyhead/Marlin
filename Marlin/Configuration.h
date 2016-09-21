@@ -65,16 +65,54 @@
 //===========================================================================
 //============================= SCARA Printer ===============================
 //===========================================================================
-// For a SCARA printer start with the configuration files in
-// example_configurations/SCARA and customize for your machine.
-//
+
+/**
+ * MORGAN_SCARA was developed by QHARLEY in South Africa in 2012-2013.
+ * Implemented and slightly reworked by JCERNY in June, 2014.
+ *
+ * MAKERARM_SCARA is in development, included as an alternate example.
+ * Other SCARA models may be added, or SCARA may be unified in the future.
+ */
+
+// Specify the specific SCARA model
+//#define MORGAN_SCARA
+#define MAKERARM_SCARA
+
+#if ENABLED(MORGAN_SCARA) || ENABLED(MAKERARM_SCARA)
+
+  #define DEBUG_SCARA_KINEMATICS
+  #define SCARA_FEEDRATE_SCALING // Convert XY feedrate from mm/s to degrees/s on the fly
+
+  #define SCARA_SEGMENTS_PER_SECOND 100 // If movement is choppy try lowering this value
+
+  // Precise lengths of inner (shoulder) and outer (elbow) support arms
+  #define SCARA_LINKAGE_1 200 //mm
+  #define SCARA_LINKAGE_2 200 //mm
+
+  // SCARA tower offset (position of Tower relative to bed zero position)
+  // This needs to be reasonably accurate as it defines the printbed position in the SCARA space.
+  #define SCARA_OFFSET_X 0   //mm X=0 is in the middle
+  #define SCARA_OFFSET_Y 0   //mm Y=0 is aligned with the center of the robot
+
+  // Calculate with Calibration Guide and M360 / M114
+  // See photo at http://reprap.harleystudio.co.za/?page_id=1073
+  #define THETA_HOMING_OFFSET 0
+  #define PSI_HOMING_OFFSET   0
+
+  #define MIDDLE_DEAD_ZONE_R  125       // For arm mounted to a central tower
+
+#endif
+
+//===========================================================================
+//==================== END ==== SCARA Printer ==== END ======================
+//===========================================================================
 
 // @section info
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_CONFIG_H_AUTHOR "(none, default config)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(SRL, MakerArmV1)" // Who made the changes.
 #define SHOW_BOOTSCREEN
 #define STRING_SPLASH_LINE1 SHORT_BUILD_VERSION // will be shown during bootup in line 1
 #define STRING_SPLASH_LINE2 WEBSITE_URL         // will be shown during bootup in line 2
@@ -136,7 +174,7 @@
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
-#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
@@ -144,7 +182,7 @@
 // The following define selects which electronics board you have.
 // Please choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_RAMPS_14_EFB
+  #define MOTHERBOARD BOARD_MEGATRONICS_3
 #endif
 
 // Optional custom name for your RepStrap or other custom machine
@@ -159,13 +197,13 @@
 
 // This defines the number of extruders
 // :[1, 2, 3, 4, 5]
-#define EXTRUDERS 1
+#define EXTRUDERS 2 // MakerArm: E0=Extruder, E1=Spindle
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
 #define DEFAULT_NOMINAL_FILAMENT_DIA 3.0
 
 // For Cyclops or any "multi-extruder" that shares a single nozzle.
-//#define SINGLENOZZLE
+#define SINGLENOZZLE
 
 /**
  * Průša MK2 Single Nozzle Multi-Material Multiplexer, and variants.
@@ -323,7 +361,7 @@
  *
  * :{ '0': "Not used", '1':"100k / 4.7k - EPCOS", '2':"200k / 4.7k - ATC Semitec 204GT-2", '3':"Mendel-parts / 4.7k", '4':"10k !! do not use for a hotend. Bad resolution at high temp. !!", '5':"100K / 4.7k - ATC Semitec 104GT-2 (Used in ParCan & J-Head)", '501':"100K Zonestar (Tronxy X3A)", '6':"100k / 4.7k EPCOS - Not as accurate as Table 1", '7':"100k / 4.7k Honeywell 135-104LAG-J01", '8':"100k / 4.7k 0603 SMD Vishay NTCS0603E3104FXT", '9':"100k / 4.7k GE Sensing AL03006-58.2K-97-G1", '10':"100k / 4.7k RS 198-961", '11':"100k / 4.7k beta 3950 1%", '12':"100k / 4.7k 0603 SMD Vishay NTCS0603E3104FXT (calibrated for Makibox hot bed)", '13':"100k Hisens 3950  1% up to 300°C for hotend 'Simple ONE ' & hotend 'All In ONE'", '20':"PT100 (Ultimainboard V2.x)", '51':"100k / 1k - EPCOS", '52':"200k / 1k - ATC Semitec 204GT-2", '55':"100k / 1k - ATC Semitec 104GT-2 (Used in ParCan & J-Head)", '60':"100k Maker's Tool Works Kapton Bed Thermistor beta=3950", '66':"Dyze Design 4.7M High Temperature thermistor", '70':"the 100K thermistor found in the bq Hephestos 2", '71':"100k / 4.7k Honeywell 135-104LAF-J01", '147':"Pt100 / 4.7k", '1047':"Pt1000 / 4.7k", '110':"Pt100 / 1k (non-standard)", '1010':"Pt1000 / 1k (non standard)", '-4':"Thermocouple + AD8495", '-3':"Thermocouple + MAX31855 (only for sensor 0)", '-2':"Thermocouple + MAX6675 (only for sensor 0)", '-1':"Thermocouple + AD595",'998':"Dummy 1", '999':"Dummy 2" }
  */
-#define TEMP_SENSOR_0 1
+#define TEMP_SENSOR_0 6
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
@@ -467,7 +505,7 @@
  * *** IT IS HIGHLY RECOMMENDED TO LEAVE THIS OPTION ENABLED! ***
  */
 #define PREVENT_COLD_EXTRUSION
-#define EXTRUDE_MINTEMP 170
+#define EXTRUDE_MINTEMP 130
 
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
@@ -543,11 +581,11 @@
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
 #define X_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
 #define Y_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Z_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
+#define Z_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
 #define X_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
 #define Y_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
 #define Z_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Z_MIN_PROBE_ENDSTOP_INVERTING false // set to true to invert the logic of the probe.
+#define Z_MIN_PROBE_ENDSTOP_INVERTING true // set to true to invert the logic of the probe.
 
 /**
  * Stepper Drivers
@@ -577,7 +615,7 @@
 
 // Enable this feature if all enabled endstop pins are interrupt-capable.
 // This will remove the need to poll the interrupt pins, saving many CPU cycles.
-//#define ENDSTOP_INTERRUPTS_FEATURE
+#define ENDSTOP_INTERRUPTS_FEATURE
 
 /**
  * Endstop Noise Filter
@@ -602,6 +640,92 @@
 // @section motion
 
 /**
+ * Jumper Settings (inside-out):
+ *
+ *  001  2x  ( 400 spr)
+ *  010  4x  ( 800 spr)
+ *  011  8x  (1600 spr)
+ *  100 16x  (3200 spr)
+ *  101 32x  (6400 spr)
+ */
+
+#define A_NEMA_FULLSTEPS 200    // 1.8 degree steps
+#define B_NEMA_FULLSTEPS 200
+#define Z_NEMA_FULLSTEPS 200
+#define E_NEMA_FULLSTEPS 200
+#define S_NEMA_FULLSTEPS 200
+
+//#define OLD_MAKERARM_PROTO
+#define MAKERARM_TMC2130
+#if ENABLED(OLD_MAKERARM_PROTO)
+
+  // AB Stepper
+  #define A_MICROSTEPPING    8    // DRV8825 with jumpers: 011
+  #define B_MICROSTEPPING    8    // DRV8825 with jumpers: 011
+  #define A_HDRIVE_RATIO    50    // 100:1 harmonic drive
+  #define B_HDRIVE_RATIO   100    // 100:1 harmonic drive
+
+  // Z Stepper
+  #define Z_MICROSTEPPING   32    // DRV8825 with jumpers: 101
+  #define Z_ROD_PITCH        4    // 4mm pitch leadscrew
+
+  #define E_MICROSTEPPING    8      // DRV8825 with jumpers: 011
+  #define E_GEARBOX_RATIO    5      // 17HS1070-C5X 5:1 gearbox
+  #define E_GEAR_DIAMETER   10.956  // Calibrated 2016-09-01
+
+  #define MAKERARM_MAX_Z   210
+
+#elif ENABLED(MAKERARM_TMC2130)
+
+  // AB Stepper
+  #define A_MICROSTEPPING   16    // DRV8825 with jumpers: 011
+  #define B_MICROSTEPPING   16    // DRV8825 with jumpers: 011
+  #define A_HDRIVE_RATIO    50    // Harmonic drive @ 50:1
+  #define B_HDRIVE_RATIO    50    // Harmonic drive @ 50:1
+
+  // Z Stepper
+  #define Z_MICROSTEPPING   16    // DRV8825 with jumpers: 011
+  #define Z_ROD_PITCH        4    // 4mm pitch leadscrew
+
+  // E Stepper
+  #define E_MICROSTEPPING    8     // DRV8825 with jumpers: 011
+  #define E_GEARBOX_RATIO    1     // Direct drive
+  #define E_GEAR_DIAMETER   11.4   // Calibrated 2018-02-15
+
+  #define MAKERARM_MAX_Z   159
+
+#else
+
+  // AB Stepper
+  #define A_MICROSTEPPING    8    // DRV8825 with jumpers: 011
+  #define B_MICROSTEPPING    8    // DRV8825 with jumpers: 011
+  #define A_HDRIVE_RATIO    50    // Harmonic drive @ 50:1
+  #define B_HDRIVE_RATIO    50    // Harmonic drive @ 50:1
+
+  // Z Stepper
+  #define Z_MICROSTEPPING    8    // DRV8825 with jumpers: 011
+  #define Z_ROD_PITCH        3    // 3mm pitch leadscrew
+
+  // E Stepper
+  #define E_MICROSTEPPING    8     // DRV8825 with jumpers: 011
+  #define E_GEARBOX_RATIO    1     // Direct drive
+  #define E_GEAR_DIAMETER   11.181 // Calibrated 2017-06-28
+
+  #define MAKERARM_MAX_Z   193.5
+
+#endif
+
+// Calculated steps
+#define A_STEPS_PER_DEGREE (1.0 * A_NEMA_FULLSTEPS * A_MICROSTEPPING * A_HDRIVE_RATIO / 360.0)
+#define B_STEPS_PER_DEGREE (1.0 * B_NEMA_FULLSTEPS * B_MICROSTEPPING * B_HDRIVE_RATIO / 360.0)
+#define Z_STEPS_PER_MM     (1.0 * Z_NEMA_FULLSTEPS * Z_MICROSTEPPING / Z_ROD_PITCH)
+#define E_STEPS_PER_MM     (1.0 * E_NEMA_FULLSTEPS * E_MICROSTEPPING * E_GEARBOX_RATIO / (E_GEAR_DIAMETER * M_PI))
+
+// Spindle
+#define S_MICROSTEPPING    8
+#define S_STEPS_PER_DEGREE (1.0 * S_NEMA_FULLSTEPS * S_MICROSTEPPING / 360.0)
+
+/**
  * Default Settings
  *
  * These settings can be reset by M502
@@ -614,21 +738,21 @@
  * following movement settings. If fewer factors are given than the
  * total number of extruders, the last value applies to the rest.
  */
-//#define DISTINCT_E_FACTORS
+#define DISTINCT_E_FACTORS
 
 /**
  * Default Axis Steps Per Unit (steps/mm)
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 4000, 500 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { A_STEPS_PER_DEGREE, B_STEPS_PER_DEGREE, Z_STEPS_PER_MM, E_STEPS_PER_MM, S_STEPS_PER_DEGREE }
 
 /**
  * Default Max Feed Rate (mm/s)
  * Override with M203
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 14.327, 28.653, 15, 25, 100 }    // degrees/s, degrees/s, mm/s, mm/s
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -636,7 +760,7 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 3000, 3000, 100, 10000 }
+#define DEFAULT_MAX_ACCELERATION      { 172, 344, 100, 10000, 1000 } // A, B, Z, E maximum start speed for accelerated moves.
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -646,9 +770,9 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_ACCELERATION            20    // ??? A, B, Z and E acceleration for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  3000    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_TRAVEL_ACCELERATION    150    // A, B, Z acceleration for travel (non printing) moves
 
 /**
  * Default Jerk (mm/s)
@@ -658,9 +782,9 @@
  * When changing speed and direction, if the difference is less than the
  * value set here, it may happen instantaneously.
  */
-#define DEFAULT_XJERK                 10.0
-#define DEFAULT_YJERK                 10.0
-#define DEFAULT_ZJERK                  0.3
+#define DEFAULT_XJERK                  1.433
+#define DEFAULT_YJERK                  2.865
+#define DEFAULT_ZJERK                  0.4
 #define DEFAULT_EJERK                  5.0
 
 /**
@@ -729,7 +853,7 @@
  * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
  *   (e.g., an inductive probe or a nozzle-based probe-switch.)
  */
-//#define FIX_MOUNTED_PROBE
+#define FIX_MOUNTED_PROBE
 
 /**
  * Z Servo Probe, such as an endstop switch on a rotating arm.
@@ -789,15 +913,15 @@
  *      O-- FRONT --+
  *    (0,0)
  */
-#define X_PROBE_OFFSET_FROM_EXTRUDER 10  // X offset: -left  +right  [of the nozzle]
-#define Y_PROBE_OFFSET_FROM_EXTRUDER 10  // Y offset: -front +behind [the nozzle]
-#define Z_PROBE_OFFSET_FROM_EXTRUDER 0   // Z offset: -below +above  [the nozzle]
+#define X_PROBE_OFFSET_FROM_EXTRUDER   0   // X offset: -left  +right  [of the nozzle]
+#define Y_PROBE_OFFSET_FROM_EXTRUDER -29   // Y offset: -front +behind [the nozzle]
+#define Z_PROBE_OFFSET_FROM_EXTRUDER  -4.2 // Z offset: -below +above  [the nozzle]
 
 // Certain types of probes need to stay away from edges
 #define MIN_PROBE_EDGE 10
 
 // X and Y axis travel speed (mm/m) between probes
-#define XY_PROBE_SPEED 8000
+#define XY_PROBE_SPEED (60*50)
 
 // Feedrate (mm/m) for the first approach when double-probing (MULTIPLE_PROBING == 2)
 #define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
@@ -808,7 +932,7 @@
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
 //   Set to 3 or more for slow probes, averaging the results.
-//#define MULTIPLE_PROBING 2
+#define MULTIPLE_PROBING 5
 
 /**
  * Z probes require clearance when deploying, stowing, and moving between
@@ -824,8 +948,8 @@
  * Example: `M851 Z-5` with a CLEARANCE of 4  =>  9mm from bed to nozzle.
  *     But: `M851 Z+1` with a CLEARANCE of 2  =>  2mm from bed to nozzle.
  */
-#define Z_CLEARANCE_DEPLOY_PROBE   10 // Z Clearance for Deploy/Stow
-#define Z_CLEARANCE_BETWEEN_PROBES  5 // Z Clearance between probe points
+#define Z_CLEARANCE_DEPLOY_PROBE    7 // Z Clearance for Deploy/Stow
+#define Z_CLEARANCE_BETWEEN_PROBES  4 // Z Clearance between probe points
 #define Z_CLEARANCE_MULTI_PROBE     5 // Z Clearance between multiple probes
 //#define Z_AFTER_PROBING           5 // Z position after probing is done
 
@@ -836,7 +960,7 @@
 #define Z_PROBE_OFFSET_RANGE_MAX 20
 
 // Enable the M48 repeatability test to test probe accuracy
-//#define Z_MIN_PROBE_REPEATABILITY_TEST
+#define Z_MIN_PROBE_REPEATABILITY_TEST
 
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 // :{ 0:'Low', 1:'High' }
@@ -863,13 +987,13 @@
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #define INVERT_X_DIR false
 #define INVERT_Y_DIR true
-#define INVERT_Z_DIR false
+#define INVERT_Z_DIR true
 
 // @section extruder
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.
 #define INVERT_E0_DIR false
-#define INVERT_E1_DIR false
+#define INVERT_E1_DIR true
 #define INVERT_E2_DIR false
 #define INVERT_E3_DIR false
 #define INVERT_E4_DIR false
@@ -880,7 +1004,7 @@
 
 //#define UNKNOWN_Z_NO_RAISE // Don't raise Z (lower the bed) if Z is "unknown." For beds that fall when Z is powered off.
 
-//#define Z_HOMING_HEIGHT 4  // (in mm) Minimal z height before homing (G28) for Z clearance above the bed, clamps, ...
+#define Z_HOMING_HEIGHT 0  // (in mm) Minimal z height before homing (G28) for Z clearance above the bed, clamps, ...
                              // Be sure you have this distance over your Z_MAX_POS in case.
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
@@ -892,16 +1016,16 @@
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 200
-#define Y_BED_SIZE 200
+#define X_BED_SIZE 800
+#define Y_BED_SIZE 400
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
-#define X_MIN_POS 0
+#define X_MIN_POS -(SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
-#define X_MAX_POS X_BED_SIZE
-#define Y_MAX_POS Y_BED_SIZE
-#define Z_MAX_POS 200
+#define X_MAX_POS (SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
+#define Y_MAX_POS (SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
+#define Z_MAX_POS MAKERARM_MAX_Z
 
 /**
  * Software Endstops
@@ -913,7 +1037,7 @@
  */
 
 // Min software endstops constrain movement within minimum coordinate bounds
-#define MIN_SOFTWARE_ENDSTOPS
+//#define MIN_SOFTWARE_ENDSTOPS
 #if ENABLED(MIN_SOFTWARE_ENDSTOPS)
   #define MIN_SOFTWARE_ENDSTOP_X
   #define MIN_SOFTWARE_ENDSTOP_Y
@@ -921,7 +1045,7 @@
 #endif
 
 // Max software endstops constrain movement within maximum coordinate bounds
-#define MAX_SOFTWARE_ENDSTOPS
+//#define MAX_SOFTWARE_ENDSTOPS
 #if ENABLED(MAX_SOFTWARE_ENDSTOPS)
   #define MAX_SOFTWARE_ENDSTOP_X
   #define MAX_SOFTWARE_ENDSTOP_Y
@@ -988,7 +1112,7 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-//#define AUTO_BED_LEVELING_BILINEAR
+#define AUTO_BED_LEVELING_BILINEAR
 //#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
 
@@ -1003,7 +1127,7 @@
  * Turn on with the command 'M111 S32'.
  * NOTE: Requires a lot of PROGMEM!
  */
-//#define DEBUG_LEVELING_FEATURE
+#define DEBUG_LEVELING_FEATURE
 
 #if ENABLED(MESH_BED_LEVELING) || ENABLED(AUTO_BED_LEVELING_BILINEAR) || ENABLED(AUTO_BED_LEVELING_UBL)
   // Gradually reduce leveling correction until a set height is reached,
@@ -1033,17 +1157,20 @@
 #if ENABLED(AUTO_BED_LEVELING_LINEAR) || ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 3
+  #define GRID_MAX_POINTS_X 7
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Set the boundaries for probing (where the probe can reach).
-  //#define LEFT_PROBE_BED_POSITION MIN_PROBE_EDGE
-  //#define RIGHT_PROBE_BED_POSITION (X_BED_SIZE - MIN_PROBE_EDGE)
-  //#define FRONT_PROBE_BED_POSITION MIN_PROBE_EDGE
-  //#define BACK_PROBE_BED_POSITION (Y_BED_SIZE - MIN_PROBE_EDGE)
+  // For MakerArm SCARA don't probe past where the probe can reach
+  // Give enough extra margin to account for potential float imprecision
+  // because we're using the arc cosine of the ratio of the XY distances
+  #define LEFT_PROBE_BED_POSITION  X_MIN_POS + 200
+  #define RIGHT_PROBE_BED_POSITION X_MAX_POS - 200
+  #define FRONT_PROBE_BED_POSITION Y_MIN_POS + 140
+  #define BACK_PROBE_BED_POSITION  Y_MAX_POS
 
   // Probe along the Y axis, advancing X after each column
-  //#define PROBE_Y_FIRST
+  #define PROBE_Y_FIRST
 
   #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
@@ -1141,9 +1268,9 @@
 
 // Manually set the home position. Leave these undefined for automatic settings.
 // For DELTA this is the top-center of the Cartesian print volume.
-//#define MANUAL_X_HOME_POS 0
-//#define MANUAL_Y_HOME_POS 0
-//#define MANUAL_Z_HOME_POS 0
+#define MANUAL_X_HOME_POS 0
+#define MANUAL_Y_HOME_POS 400
+#define MANUAL_Z_HOME_POS 0
 
 // Use "Z Safe Homing" to avoid homing with a Z probe outside the bed area.
 //
@@ -1154,7 +1281,7 @@
 // - Move the Z probe (or nozzle) to a defined XY point before Z Homing when homing all axes (G28).
 // - Prevent Z homing when the Z probe is outside bed area.
 //
-//#define Z_SAFE_HOMING
+#define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
   #define Z_SAFE_HOMING_X_POINT ((X_BED_SIZE) / 2)    // X point for Z homing when homing all axes (G28).
@@ -1162,8 +1289,8 @@
 #endif
 
 // Homing speeds (mm/m)
-#define HOMING_FEEDRATE_XY (50*60)
-#define HOMING_FEEDRATE_Z  (4*60)
+#define HOMING_FEEDRATE_XY (20*60)
+#define HOMING_FEEDRATE_Z  (8.3*60)
 
 // @section calibrate
 
@@ -1236,7 +1363,7 @@
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //
-//#define EEPROM_SETTINGS // Enable for M500 and M501 commands
+#define EEPROM_SETTINGS   // Enable for M500 and M501 commands
 //#define DISABLE_M503    // Saves ~2700 bytes of PROGMEM. Disable for release!
 #define EEPROM_CHITCHAT   // Give feedback on EEPROM commands. Disable to save PROGMEM.
 
@@ -1246,7 +1373,7 @@
 // When enabled Marlin will send a busy status message to the host
 // every couple of seconds when it can't accept commands.
 //
-#define HOST_KEEPALIVE_FEATURE        // Disable this if your host doesn't like keepalive messages
+//#define HOST_KEEPALIVE_FEATURE        // Disable this if your host doesn't like keepalive messages
 #define DEFAULT_KEEPALIVE_INTERVAL 2  // Number of seconds between "busy" messages. Set with M113.
 #define BUSY_WHILE_HEATING            // Some hosts require "busy" messages even during heating
 
@@ -1519,7 +1646,7 @@
 // If you have a speaker that can produce tones, enable it here.
 // By default Marlin assumes you have a buzzer with a fixed frequency.
 //
-//#define SPEAKER
+#define SPEAKER
 
 //
 // The duration and frequency for the UI feedback sound.
@@ -1927,12 +2054,12 @@
  * Set this manually if there are extra servos needing manual control.
  * Leave undefined or set to 0 to entirely disable the servo subsystem.
  */
-//#define NUM_SERVOS 3 // Servo index starts with 0 for M280 command
+#define NUM_SERVOS 4 // Servo index starts with 0 for M280 command
 
 // Delay (in milliseconds) before the next move will start, to give the servo time to reach its target angle.
 // 300ms is a good value but you can try less delay.
 // If the servo can't reach the requested position, increase it.
-#define SERVO_DELAY { 300 }
+#define SERVO_DELAY { 300, 300, 300, 300 }
 
 // Servo deactivation
 //

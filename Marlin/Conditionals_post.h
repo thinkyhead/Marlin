@@ -747,10 +747,17 @@
 
 // Endstops and bed probe
 #define HAS_STOP_TEST(A,M) (PIN_EXISTS(A##_##M) && !IS_X2_ENDSTOP(A,M) && !IS_Y2_ENDSTOP(A,M) && !IS_Z2_OR_PROBE(A,M))
-#define HAS_X_MIN HAS_STOP_TEST(X,MIN)
-#define HAS_X_MAX HAS_STOP_TEST(X,MAX)
-#define HAS_Y_MIN HAS_STOP_TEST(Y,MIN)
-#define HAS_Y_MAX HAS_STOP_TEST(Y,MAX)
+#if ENABLED(MAKERARM_SCARA) && DISABLED(MAKERARM_BETA0)
+  #define HAS_X_MIN false
+  #define HAS_X_MAX false
+  #define HAS_Y_MIN false
+  #define HAS_Y_MAX false
+#else
+  #define HAS_X_MIN HAS_STOP_TEST(X,MIN)
+  #define HAS_X_MAX HAS_STOP_TEST(X,MAX)
+  #define HAS_Y_MIN HAS_STOP_TEST(Y,MIN)
+  #define HAS_Y_MAX HAS_STOP_TEST(Y,MAX)
+#endif
 #define HAS_Z_MIN HAS_STOP_TEST(Z,MIN)
 #define HAS_Z_MAX HAS_STOP_TEST(Z,MAX)
 #define HAS_X2_MIN (PIN_EXISTS(X2_MIN))
