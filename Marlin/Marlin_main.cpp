@@ -5729,8 +5729,14 @@ void home_all_axes() { gcode_G28(true); }
    *   E   Engage the probe for each probe (default 1)
    */
   inline void gcode_G30() {
-    const float xpos = parser.linearval('X', current_position[X_AXIS] + X_PROBE_OFFSET_FROM_EXTRUDER),
-                ypos = parser.linearval('Y', current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_EXTRUDER);
+    #if ENABLED(MAKERARM_SCARA)
+      vector_3 probe = end_point_to_probe_point(current_position);
+      const float xpos = parser.linearval('X', probe.x),
+                  ypos = parser.linearval('Y', probe.y);
+    #else
+      const float xpos = parser.linearval('X', current_position[X_AXIS] + X_PROBE_OFFSET_FROM_EXTRUDER),
+                  ypos = parser.linearval('Y', current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_EXTRUDER);
+    #endif
 
     if (!position_is_reachable_by_probe(xpos, ypos)) return;
 
