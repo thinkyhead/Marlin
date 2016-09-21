@@ -2018,7 +2018,13 @@ void Stepper::init() {
 
   ENABLE_STEPPER_DRIVER_INTERRUPT();
 
-  endstops.enable(true); // Start with endstops active. After homing they can be disabled
+  //endstops.enable(true); // Start with endstops active. After homing they can be disabled
+
+  #if ENABLED(LIN_ADVANCE)
+    for (uint8_t i = 0; i < COUNT(e_steps); i++) e_steps[i] = 0;
+    ZERO(current_adv_steps);
+  #endif
+
   sei();
 
   set_directions(); // Init directions to last_direction_bits = 0
