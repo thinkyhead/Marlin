@@ -51,6 +51,10 @@
  * G3   - CCW ARC
  * G4   - Dwell S<seconds> or P<milliseconds>
  * G5   - Cubic B-spline with XYZE destination and IJPQ offsets
+ * G6  - MakerArm: Direct move SCARA ABC steppers
+ * G7  - MakerArm: (Dev) Convert SCARA XY to AB and vice-versa
+ * G8  - MakerArm: (Dev) Reset coordinates to home position
+ * G9  - MakerArm: (Dev) Set arm orientation: L=Left R=Right
  * G10  - Retract filament according to settings of M207 (Requires FWRETRACT)
  * G11  - Retract recover filament according to settings of M208 (Requires FWRETRACT)
  * G12  - Clean tool (Requires NOZZLE_CLEAN_FEATURE)
@@ -519,6 +523,7 @@ volatile bool wait_for_heatup = true;
 #endif
 
 const char axis_codes[XYZE] = { 'X', 'Y', 'Z', 'E' };
+const char stepper_codes[NUM_AXIS] = { 'A', 'B', 'C', 'E' };
 
 // Number of characters read in the current line of serial input
 static int serial_count; // = 0;
@@ -651,6 +656,7 @@ uint8_t target_extruder;
 
   float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND,
         delta[ABC];
+  static void plan_direct_stepper_move(const float target[XYZE]);
 #endif
 
 float cartes[XYZ] = { 0 };
@@ -3695,6 +3701,119 @@ inline void gcode_G4() {
   }
 
 #endif // BEZIER_CURVE_SUPPORT
+
+#if ENABLED(MAKERARM_SCARA)
+
+  inline void gcode_G6() {
+    if (parser.seen('F') && parser.value_linear_units() > 0.0)
+      feedrate_mm_s = MMM_TO_MMS(parser.value_linear_units());
+
+    // inverse_kinematics(current_position);
+
+    float target[XYZE] = {
+      planner.get_axis_position_degrees(A_AXIS),
+      planner.get_axis_position_degrees(B_AXIS),
+      current_position[Z_AXIS],
+      current_position[E_AXIS]
+    };
+
+    bool relative = parser.seen('R') || relative_mode;
+
+    #if ENABLED(DEBUG_SCARA_KINEMATICS)
+      if (DEBUGGING(SCARA)) {
+        DEBUG_POS("plan_direct_stepper_move from", target);
+        if (relative) SERIAL_ECHOPGM("Relative ");
+        SERIAL_ECHOPGM("Move to");
+      }
+    #endif
+
+    LOOP_XYZE(a) {
+      if (parser.seen(stepper_codes[a])) {
+        target[a] = parser.value_float() + (relative ? target[a] : 0);
+        #if ENABLED(DEBUG_SCARA_KINEMATICS)
+          if (DEBUGGING(SCARA)) {
+            SERIAL_CHAR(' '); SERIAL_CHAR(stepper_codes[a]);
+            SERIAL_CHAR(':'); SERIAL_ECHO(target[a]);
+          }
+        #endif
+      }
+    }
+
+    #if ENABLED(DEBUG_SCARA_KINEMATICS)
+      if (DEBUGGING(SCARA)) SERIAL_EOL();
+    #endif
+
+    plan_direct_stepper_move(target);
+  }
+
+  /**
+   * G7 - Test Kinematics
+   *      Use G7 to request a conversion from ABC to XYZ or vice-versa
+   *      Parameters: A B angles, C mm, X Y Z mm
+   */
+  inline void gcode_G7() {
+    bool old_arm_orientation = arm_orientation;
+    uint16_t old_debug = marlin_debug_flags;
+    marlin_debug_flags = DEBUG_ALL;
+    float a = parser.seen('A') ? parser.value_float() : 0.0,
+          b = parser.seen('B') ? parser.value_float() : 0.0;
+    if (parser.seen('A') || parser.seen('B')) {
+      if (parser.seen('I')) a += parser.value_float();
+      if (parser.seen('J')) b += parser.value_float();
+      if (parser.seen('K')) a = parser.value_float() - a;
+      if (parser.seen('L')) b = parser.value_float() - b;
+      forward_kinematics_SCARA(a, b);
+      if (!position_is_reachable(cartes)) BUZZ(100, 880);
+    }
+    else {
+      gcode_get_destination(); // For X Y Z E F
+      if (parser.seen('R')) arm_orientation = parser.value_bool();
+      float p = parser.seen('P') ? parser.value_float() : 0.0;
+      if (!position_is_reachable(destination, !!p)) BUZZ(100, 880);
+      if (parser.seen('Q')) {
+        vector_3 pos = end_point_to_probe_point(destination);
+        SERIAL_ECHOPAIR("End X", destination[X_AXIS]);
+        SERIAL_ECHOPAIR(" Y", destination[Y_AXIS]);
+        SERIAL_ECHOPAIR(" = Probe X", pos.x);
+        SERIAL_ECHOLNPAIR(" Y", pos.y);
+      }
+      else {
+        inverse_kinematics(destination, p);
+      }
+    }
+    marlin_debug_flags = old_debug;
+    arm_orientation = old_arm_orientation;
+  }
+
+  /**
+   * G8: [MakerArm] Set position to home
+   */
+  inline void gcode_G8() {
+    // Apply forward kinematics for front-and-center angles
+    float a = 90, b = 0;
+    forward_kinematics_SCARA(a, b);
+    current_position[X_AXIS] = cartes[X_AXIS];
+    current_position[Y_AXIS] = cartes[Y_AXIS];
+    current_position[Z_AXIS] = Z_HOME_POS;
+    axis_homed = axis_known_position = xyz_bits;
+    SYNC_PLAN_POSITION_KINEMATIC();
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPGM("MakerArm Home X=" STRINGIFY(X_HOME_POS) " Y=" STRINGIFY(Y_HOME_POS) " Z=" STRINGIFY(Z_HOME_POS));
+    report_current_position();
+  }
+
+  /**
+   * G9: Get and set SCARA Arm Orientation. L=left R=right
+   */
+  inline void gcode_G9() {
+    if (parser.seen('L')) arm_orientation = LEFT_ARM;
+    if (parser.seen('R')) arm_orientation = RIGHT_ARM;
+    SERIAL_ECHOPGM("SCARA Arm Orientation: ");
+    serialprintPGM(arm_orientation ? PSTR("Right") : PSTR("Left"));
+    SERIAL_EOL();
+  }
+
+#endif // MAKERARM_SCARA
 
 #if ENABLED(FWRETRACT)
 
@@ -12463,6 +12582,13 @@ void process_parsed_command() {
         case 12: gcode_G12(); break;                              // G12: Clean Nozzle
       #endif
 
+      #if ENABLED(MAKERARM_SCARA)
+        case 6: gcode_G6(); break;                                // G6: SCARA Raw Move to angles AB and position Z
+        case 7: gcode_G7(); break;                                // G7: SCARA Kinematic Test
+        case 8: gcode_G8(); break;                                // G8: Force machine to be "homed"
+        case 9: gcode_G9(); break;                                // G9: Get/Set Arm Orientation
+      #endif
+
       #if ENABLED(CNC_WORKSPACE_PLANES)
         case 17: gcode_G17(); break;                              // G17: Select Plane XY
         case 18: gcode_G18(); break;                              // G18: Select Plane ZX
@@ -13530,6 +13656,21 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
 
 #endif // AUTO_BED_LEVELING_BILINEAR
 #endif // IS_CARTESIAN
+
+#if ENABLED(MAKERARM_SCARA)
+
+  void plan_direct_stepper_move(const float target[XYZE]) {
+    planner.buffer_line(target[A_AXIS], target[B_AXIS], target[Z_AXIS], target[E_AXIS], feedrate_mm_s, active_extruder);
+
+    // Update current position kinematically
+    forward_kinematics_SCARA(target[A_AXIS], target[B_AXIS]);
+    current_position[X_AXIS] = cartes[X_AXIS];
+    current_position[Y_AXIS] = cartes[Y_AXIS];
+    current_position[Z_AXIS] = target[Z_AXIS];
+    current_position[E_AXIS] = target[E_AXIS];
+  }
+
+#endif // MAKERARM_SCARA
 
 #if !UBL_SEGMENTED
 #if IS_KINEMATIC
