@@ -2073,4 +2073,26 @@
 // Debug with an oscilloscope
 //#define OSCILLOSCOPE_PIN_A 45
 
+/**
+ * Pick and Place
+ *
+ * Add support for pick-and-place GCode and pins
+ */
+#define PICK_AND_PLACE
+#if ENABLED(PICK_AND_PLACE)
+  // Offsets from the native "tool position"
+  #define PP_OFFSET_X  0
+  #define PP_OFFSET_Y  0
+  #define PP_OFFSET_Z  3.8
+
+  // Pins for the pump and valves
+  #define PP_PUMP_PIN      44 // Megatronics 3.1 Keypad/AUX2 Pinout 3
+  #define PP_VACUUM_1_PIN  45 // Megatronics 3.1 Keypad/AUX2 Pinout 5
+  #define PP_VACUUM_2_PIN  43 // Megatronics 3.1 Keypad/AUX2 Pinout 7
+  #define PP_EXHAUST_1_PIN -1
+  #define PP_EXHAUST_2_PIN -1
+  #define PP_LED_PIN LED_PIN
+
+#endif
+
 #endif // CONFIGURATION_H

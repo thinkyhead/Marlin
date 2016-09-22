@@ -33,16 +33,20 @@
  *  - X_HEAD, Y_HEAD, and Z_HEAD should be used for Steppers on Core kinematics
  */
 enum AxisEnum : unsigned char {
-  X_AXIS    = 0,
-  A_AXIS    = 0,
-  Y_AXIS    = 1,
-  B_AXIS    = 1,
-  Z_AXIS    = 2,
-  C_AXIS    = 2,
-  E_AXIS    = 3,
-  X_HEAD    = 4,
-  Y_HEAD    = 5,
-  Z_HEAD    = 6,
+  A_AXIS    ,                 // DELTA tower 1, SCARA Theta
+  X_AXIS    = A_AXIS,         // X Cartesian
+  B_AXIS    ,                 // DELTA tower 2, SCARA Theta+Psi
+  Y_AXIS    = B_AXIS,         // Y Cartesian
+  C_AXIS    ,                 // DELTA tower 3
+  Z_AXIS    = C_AXIS,         // Z Cartesian/SCARA
+  #if ENABLED(CLAWCAM_TOOL)
+    T_AXIS  ,                 // Misc. extra axis
+  #endif
+  E_AXIS    ,                 // Active extruder
+  S_AXIS    = E_AXIS,         // Spindle, also called "C"
+  X_HEAD    ,
+  Y_HEAD    ,
+  Z_HEAD    ,
   ALL_AXES  = 0xFE,
   NO_AXIS   = 0xFF
 };
@@ -168,6 +172,22 @@ enum LCDViewAction : char {
  */
 #if ENABLED(CNC_WORKSPACE_PLANES)
   enum WorkspacePlane : char { PLANE_XY, PLANE_ZX, PLANE_YZ };
+#endif
+
+/**
+ * MakerArm tool types for M450
+ */
+#if ENABLED(MAKERARM_SCARA)
+  enum ToolType {
+    TOOL_TYPE_EXTRUDER,     // M450 S0 or M451
+    TOOL_TYPE_LASER,        // M450 S1 or M452
+    TOOL_TYPE_MILLING,      // M450 S2 or M453
+    TOOL_TYPE_PICKER,       // M450 S3
+    TOOL_TYPE_SOLDER,       // M450 S4
+    TOOL_TYPE_PLOTTER,
+    TOOL_TYPE_FOAM_CUTTER,
+    TOOL_TYPE_COUNT
+  };
 #endif
 
 #endif // __ENUM_H__

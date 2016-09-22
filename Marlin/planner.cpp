@@ -1637,7 +1637,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   //*/
 
   #if ENABLED(PREVENT_COLD_EXTRUSION) || ENABLED(PREVENT_LENGTHY_EXTRUDE)
-    if (de) {
+    if (de && tool_type == TOOL_TYPE_EXTRUDER) {
       #if ENABLED(PREVENT_COLD_EXTRUSION)
         if (thermalManager.tooColdToExtrude(extruder)) {
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
