@@ -108,6 +108,26 @@
 #define SERIAL_PORT 0
 
 /**
+ * WiFi Support
+ *
+ * Enable one of the specific WiFi interfaces below to connect wirelessly to a host
+ * using a WiFi shield or breakout board.
+ *
+ * - WINC1500 requires the library https://github.com/arduino-libraries/WiFi101
+ */
+//#define WIFI_WINC1500
+#if ENABLED(WIFI_WINC1500)
+  #define WIFI_SSID_1     "CCTCORP"
+  #define WIFI_PASS_1     "C0rM@r1n3p5!?"
+  #define WIFI_WEP_KEY    "0123456789ABCDEF"
+  #define WIFI_KEYINDEX    0  // Only needed for WEP connection
+  #define WIFI_CS_PIN     56  // SPI Chip Select Pin
+  #define WIFI_IRQ_PIN    36  // IRQ Pin
+  #define WIFI_RESET_PIN  30  // Reset Pin (optional)
+  #define WIFI_EN_PIN     31  // SPI Enable Pin
+#endif
+
+/**
  * This setting determines the communication speed of the printer.
  *
  * 250000 works in most cases, but you might try a lower speed if

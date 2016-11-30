@@ -324,6 +324,11 @@
   #include "tmc_util.h"
 #endif
 
+#if ENABLED(WIFI_WINC1500)
+  #include <SPI.h>
+  #include <WiFi101.h>
+#endif
+
 #if ENABLED(DAC_STEPPER_CURRENT)
   #include "stepper_dac.h"
 #endif
@@ -14716,6 +14721,52 @@ void setup() {
     pinMode(OSCILLOSCOPE_PIN_A, OUTPUT);
     digitalWrite(OSCILLOSCOPE_PIN_A, LOW);
   #endif
+
+  #if ENABLED(WIFI_WINC1500)
+
+    /*
+    #if PIN_EXISTS(WIFI_EN)
+      SET_OUTPUT(WIFI_EN_PIN);
+    #endif
+
+    #if PIN_EXISTS(WIFI_RESET)
+      SET_OUTPUT(WIFI_RESET_PIN);
+    #endif
+
+    SET_OUTPUT(WIFI_CS_PIN);
+    SET_INPUT(WIFI_IRQ_PIN);
+
+    SERIAL_ECHOLNPGM("WiFi Set Pins...");
+    safe_delay(500);
+    */
+
+    WiFi.setPins(WIFI_CS_PIN, WIFI_IRQ_PIN, WIFI_RESET_PIN, WIFI_EN_PIN);
+
+    // Print firmware version on the shield
+    // String fv = WiFi.firmwareVersion();
+    // SERIAL_ECHOLNPAIR("Firmware version installed: ", fv);
+    // safe_delay(500);
+
+    char ssid[] = WIFI_SSID_1, pass[] = WIFI_PASS_1;
+    SERIAL_ECHOLNPGM("WiFi Get Status...");
+    if (WiFi.status() == WL_NO_SHIELD) {
+      SERIAL_ERROR_START();
+      SERIAL_ERRORLNPGM("WiFi shield not present");
+    }
+    else {
+      SERIAL_ECHOLNPGM("WiFi Connecting...");
+      WiFi.begin(ssid, pass);
+
+      if (WiFi.status() == WL_IDLE_STATUS) {
+        SERIAL_ERROR_START();
+        SERIAL_ERRORLNPGM("WiFi couldn't connect");
+      }
+      else {
+        SERIAL_ECHOLNPAIR("IP Address: ", WiFi.localIP());
+      }
+    }
+
+  #endif // WIFI_WINC1500
 
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
