@@ -95,25 +95,24 @@ extern "C" {
 #define PIXEL_LEN_NOLIMIT ((pixel_len_t)(-1))
 
 typedef int (* pf_bsearch_cb_comp_t)(void *userdata, size_t idx, void * data_pin); /*"data_list[idx] - *data_pin"*/
-int pf_bsearch_r (void *userdata, size_t num_data, pf_bsearch_cb_comp_t cb_comp, void *data_pinpoint, size_t *ret_idx);
+int pf_bsearch_r(void *userdata, size_t num_data, pf_bsearch_cb_comp_t cb_comp, void *data_pinpoint, size_t *ret_idx);
 
-//wchar_t get_val_utf82uni (uint8_t *pstart);
-//uint8_t * get_utf8_value (uint8_t *pstart, wchar_t *pval);
-//uint8_t * get_utf8_value_cb (uint8_t *pstart, uint8_t (*cb_read_byte)(uint8_t * str), wchar_t *pval);
-uint8_t * get_utf8_value_cb (uint8_t *pstart, read_byte_cb_t cb_read_byte, wchar_t *pval);
+//wchar_t get_val_utf82uni(uint8_t *pstart);
+//uint8_t * get_utf8_value(uint8_t *pstart, wchar_t *pval);
+uint8_t * get_utf8_value_cb(uint8_t *pstart, read_byte_cb_t cb_read_byte, wchar_t *pval);
 
-int utf8_strlen (const char *pstart);
-int utf8_strlen_p (const char *pstart);
+int utf8_strlen(const char *pstart);
+int utf8_strlen_p(const char *pstart);
 
-char * utf8_strncpy (char * destination, const char * source, size_t num);
-char * utf8_strncpy_p (char * destination, const char * source, size_t num);
+char * utf8_strncpy(char * destination, const char * source, size_t num);
+char * utf8_strncpy_p(char * destination, const char * source, size_t num);
 
 #if DEBUG
 #if defined(ARDUINO)
 #if defined(__AVR__)
-#define TRACE(fmt, ...) {static const PROGMEM char CONSTSTR[] = "%d %d " fmt " {ln:%d;}\n"; serial_printf_P (CONSTSTR, millis(), ##__VA_ARGS__, __LINE__);  }
+#define TRACE(fmt, ...) {static const PROGMEM char CONSTSTR[] = "%d %d " fmt " {ln:%d;}\n"; serial_printf_P(CONSTSTR, millis(), ##__VA_ARGS__, __LINE__);  }
 #else
-#define TRACE(fmt, ...) {static const PROGMEM char CONSTSTR[] = "%d " fmt " {ln:%d, fn:" __FILE__ "}\n"; serial_printf_P (CONSTSTR, millis(), ##__VA_ARGS__, __LINE__);  }
+#define TRACE(fmt, ...) {static const PROGMEM char CONSTSTR[] = "%d " fmt " {ln:%d, fn:" __FILE__ "}\n"; serial_printf_P(CONSTSTR, millis(), ##__VA_ARGS__, __LINE__);  }
 #endif
 #define assert(a) if (!(a)) {TRACE("Assert: " # a ); }
 
@@ -127,7 +126,7 @@ void serial_printf_P(const char *format, ...);
 
 #else // ARDUINO
 #define assert(a) if (!(a)) {printf("Assert: " # a); exit(1);}
-#define TRACE(fmt, ...) fprintf (stdout, "[%s()] " fmt " {ln:%d, fn:" __FILE__ "}\n", __func__, ##__VA_ARGS__, __LINE__)
+#define TRACE(fmt, ...) fprintf(stdout, "[%s()] " fmt " {ln:%d, fn:" __FILE__ "}\n", __func__, ##__VA_ARGS__, __LINE__)
 //#else
 //#define assert(a)
 //#define TRACE(...)
