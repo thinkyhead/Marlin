@@ -11,7 +11,7 @@
 
 [ -d "Marlin" ] && cd "Marlin"
 
-FILES=$(ls language_*.h | grep -v -E "(_en|_test)\.h" | sed -E 's/language_([^\.]+)\.h/\1/')
+FILES=$(ls language_*.h | grep -v -E "(language_(data_.+|en|test))\.h" | sed -E 's/language_([^\.]+)\.h/\1/')
 declare -A STRING_MAP
 
 # Get files matching the given arguments
