@@ -33,7 +33,7 @@
 //#define SIMULATE_ROMFONT
 #define DISPLAY_CHARSET_ISO10646_TR
 
-#define WELCOME_MSG                         MACHINE_NAME " haz\xfdr."                                    //hazır.
+#define WELCOME_MSG                         MACHINE_NAME _UxGT(" haz\xfdr.")                                    //hazır.
 #define MSG_SD_INSERTED                     "SD Yerle\xfeti."                                            //SD Yerleşti.
 #define MSG_SD_REMOVED                      "SD \xc7\xfdkar\xfdld\xfd."                                  //SD Çıkarıldı.
 #define MSG_LCD_ENDSTOPS                    "Endstops" // Max length 8 characters                        //Endstops
@@ -83,9 +83,9 @@
 #define MSG_FAN_SPEED                       "Fan H\xfdz\xfd"                                             //Fan Hızı
 #define MSG_FLOW                            "Ak\xfd\xfe"                                                 //Akış
 #define MSG_CONTROL                         "Kontrol"                                                    //Kontrol
-#define MSG_MIN                             " " LCD_STR_THERMOMETER " Min"                               // Min
-#define MSG_MAX                             " " LCD_STR_THERMOMETER " Max"                               // Max
-#define MSG_FACTOR                          " " LCD_STR_THERMOMETER " \xc7\x61rpan"                      // Çarpan
+#define MSG_MIN                             " " LCD_STR_THERMOMETER _UxGT(" Min")                               // Min
+#define MSG_MAX                             " " LCD_STR_THERMOMETER _UxGT(" Max")                               // Max
+#define MSG_FACTOR                          " " LCD_STR_THERMOMETER _UxGT(" \xc7\x61rpan")                      // Çarpan
 #define MSG_AUTOTEMP                        "Autotemp"                                                   // Autotemp
 #define MSG_ON                              "On "                                                        //On 
 #define MSG_OFF                             "Off"                                                        //Off
