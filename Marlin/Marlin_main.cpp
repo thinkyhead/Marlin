@@ -4015,23 +4015,31 @@ inline void gcode_G28() {
 
       #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
+        int new_bilinear_grid_spacing[2] = { bilinear_grid_spacing[X_AXIS], bilinear_grid_spacing[Y_AXIS] },
+            new_bilinear_start[2] = { bilinear_start[X_AXIS], bilinear_start[Y_AXIS] };
+
+        #if ENABLED(ABL_BILINEAR_SUBDIVISION)
+          int new_bilinear_grid_spacing_virt[2] = { bilinear_grid_spacing_virt[X_AXIS], bilinear_grid_spacing_virt[Y_AXIS] };
+        #endif
+
         float zoffset = zprobe_zoffset;
         if (code_seen('Z')) zoffset += code_value_axis_units(Z_AXIS);
 
-        if ( xGridSpacing != bilinear_grid_spacing[X_AXIS]
-          || yGridSpacing != bilinear_grid_spacing[Y_AXIS]
-          || left_probe_bed_position != bilinear_start[X_AXIS]
-          || front_probe_bed_position != bilinear_start[Y_AXIS]
-        ) {
+        if ( !dryrun && (
+             xGridSpacing != new_bilinear_grid_spacing[X_AXIS]
+          || yGridSpacing != new_bilinear_grid_spacing[Y_AXIS]
+          || left_probe_bed_position != new_bilinear_start[X_AXIS]
+          || front_probe_bed_position != new_bilinear_start[Y_AXIS]
+        ) ) {
           reset_bed_level();
           #if ENABLED(ABL_BILINEAR_SUBDIVISION)
             bilinear_grid_spacing_virt[X_AXIS] = xGridSpacing / (BILINEAR_SUBDIVISIONS);
             bilinear_grid_spacing_virt[Y_AXIS] = yGridSpacing / (BILINEAR_SUBDIVISIONS);
           #endif
-          bilinear_grid_spacing[X_AXIS] = xGridSpacing;
-          bilinear_grid_spacing[Y_AXIS] = yGridSpacing;
-          bilinear_start[X_AXIS] = RAW_X_POSITION(left_probe_bed_position);
-          bilinear_start[Y_AXIS] = RAW_Y_POSITION(front_probe_bed_position);
+          new_bilinear_grid_spacing[X_AXIS] = xGridSpacing;
+          new_bilinear_grid_spacing[Y_AXIS] = yGridSpacing;
+          new_bilinear_start[X_AXIS] = RAW_X_POSITION(left_probe_bed_position);
+          new_bilinear_start[Y_AXIS] = RAW_Y_POSITION(front_probe_bed_position);
           // Can't re-enable (on error) until the new grid is written
           abl_should_enable = false;
         }
@@ -4125,7 +4133,7 @@ inline void gcode_G28() {
 
           #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
-            bed_level_grid[xCount][yCount] = measured_z + zoffset;
+            if (!dryrun) bed_level_grid[xCount][yCount] = measured_z + zoffset;
 
           #endif
 
@@ -4195,14 +4203,16 @@ inline void gcode_G28() {
     // Calculate leveling, print reports, correct the position
     #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
-      if (!dryrun) extrapolate_unprobed_bed_level();
-      print_bed_level();
+      if (!dryrun) {
+        extrapolate_unprobed_bed_level();
+        print_bed_level();
 
-      #if ENABLED(ABL_BILINEAR_SUBDIVISION)
-        bed_level_virt_prepare();
-        bed_level_virt_interpolate();
-        bed_level_virt_print();
-      #endif
+        #if ENABLED(ABL_BILINEAR_SUBDIVISION)
+          bed_level_virt_prepare();
+          bed_level_virt_interpolate();
+          bed_level_virt_print();
+        #endif
+      }
 
     #elif ENABLED(AUTO_BED_LEVELING_LINEAR)
 
@@ -4390,15 +4400,29 @@ inline void gcode_G28() {
       if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< gcode_G29");
     #endif
 
-    report_current_position();
-
     KEEPALIVE_STATE(IN_HANDLER);
+
+    #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
+      if (!dryrun) {
+        bilinear_grid_spacing[X_AXIS] = new_bilinear_grid_spacing[X_AXIS];
+        bilinear_grid_spacing[Y_AXIS] = new_bilinear_grid_spacing[Y_AXIS];
+        bilinear_start[X_AXIS] = new_bilinear_start[X_AXIS];
+        bilinear_start[Y_AXIS] = new_bilinear_start[Y_AXIS];
+        #if ENABLED(ABL_BILINEAR_SUBDIVISION)
+          bilinear_grid_spacing_virt[X_AXIS] = new_bilinear_grid_spacing_virt[X_AXIS];
+          bilinear_grid_spacing_virt[Y_AXIS] = new_bilinear_grid_spacing_virt[Y_AXIS];
+        #endif
+      }
+    #endif
 
     // Auto Bed Leveling is complete! Enable if possible.
     planner.abl_enabled = dryrun ? abl_should_enable : true;
 
-    if (planner.abl_enabled)
-      SYNC_PLAN_POSITION_KINEMATIC();
+    // Always apply current_position to steppers when done,
+    // so there will be no precision errors.
+    SYNC_PLAN_POSITION_KINEMATIC();
+
+    report_current_position();
   }
 
 #endif // HAS_ABL
