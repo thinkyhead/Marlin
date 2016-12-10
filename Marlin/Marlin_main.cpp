@@ -3986,7 +3986,7 @@ inline void gcode_G28() {
     // Disable auto bed leveling during G29
     bool abl_should_enable = planner.abl_enabled;
 
-    planner.abl_enabled = false;
+    set_bed_leveling_enabled(false);
 
     if (!dryrun) {
       // Re-orient the current position without leveling
@@ -4000,10 +4000,7 @@ inline void gcode_G28() {
     setup_for_endstop_or_probe_move();
 
     // Deploy the probe. Probe will raise if needed.
-    if (DEPLOY_PROBE()) {
-      planner.abl_enabled = abl_should_enable;
-      return;
-    }
+    if (DEPLOY_PROBE()) return;
 
     float xProbe = 0, yProbe = 0, measured_z = 0;
 
@@ -4118,10 +4115,7 @@ inline void gcode_G28() {
 
           measured_z = probe_pt(xProbe, yProbe, stow_probe_after_each, verbose_level);
 
-          if (measured_z == NAN) {
-            planner.abl_enabled = abl_should_enable;
-            return;
-          }
+          if (measured_z == NAN) return;
 
           #if ENABLED(AUTO_BED_LEVELING_LINEAR)
 
@@ -4162,10 +4156,7 @@ inline void gcode_G28() {
         measured_z = points[i].z = probe_pt(xProbe, yProbe, stow_probe_after_each, verbose_level);
       }
 
-      if (measured_z == NAN) {
-        planner.abl_enabled = abl_should_enable;
-        return;
-      }
+      if (measured_z == NAN) return;
 
       if (!dryrun) {
         vector_3 planeNormal = vector_3::cross(points[0] - points[1], points[2] - points[1]).get_normal();
@@ -4183,10 +4174,7 @@ inline void gcode_G28() {
     #endif // AUTO_BED_LEVELING_3POINT
 
     // Raise to _Z_CLEARANCE_DEPLOY_PROBE. Stow the probe.
-    if (STOW_PROBE()) {
-      planner.abl_enabled = abl_should_enable;
-      return;
-    }
+    if (STOW_PROBE()) return;
 
     //
     // Unless this is a dry run, auto bed leveling will
@@ -4378,7 +4366,7 @@ inline void gcode_G28() {
         #endif
 
         // Unapply the offset because it is going to be immediately applied
-        // and cause compensation movement in Z
+        // and cause compensation movement in Z. (Just like planner.unapply_leveling)
         current_position[Z_AXIS] -= bilinear_z_offset(current_position);
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
