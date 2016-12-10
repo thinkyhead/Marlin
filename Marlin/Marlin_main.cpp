@@ -3933,7 +3933,7 @@ inline void gcode_G28() {
 
       #else
 
-         const int abl_grid_points_x = ABL_GRID_MAX_POINTS_X, abl_grid_points_y = ABL_GRID_MAX_POINTS_Y;
+         const uint8_t abl_grid_points_x = ABL_GRID_MAX_POINTS_X, abl_grid_points_y = ABL_GRID_MAX_POINTS_Y;
 
       #endif
 
