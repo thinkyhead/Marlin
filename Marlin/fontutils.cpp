@@ -121,7 +121,7 @@ int pf_bsearch_r(void *userdata, size_t num_data, pf_bsearch_cb_comp_t cb_comp, 
     *ret_idx = i;
   else if (ileft >= i + 2)
     *ret_idx = i + 1;
-  //DBGMSG (PFDBG_CATLOG_PF, PFDBG_LEVEL_DEBUG, "not found! num_data=%"PRIuSZ"; ileft=%"PRIuSZ", iright=%"PRIuSZ", i=%"PRIuSZ"", num_data, ileft, iright, i);
+  //DBGMSG (PFDBG_CATLOG_PF, PFDBG_LEVEL_DEBUG, "not found! num_data=%" PRIuSZ "; ileft=%" PRIuSZ ", iright=%" PRIuSZ ", i=%" PRIuSZ "", num_data, ileft, iright, i);
   return -1;
 }
 

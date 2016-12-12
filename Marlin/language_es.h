@@ -53,7 +53,7 @@
 #define MSG_PREHEAT_1                       _UxGT("Precalentar PLA")
 #define MSG_PREHEAT_1_N                     MSG_PREHEAT_1 _UxGT(" ")
 #define MSG_PREHEAT_1_ALL                   MSG_PREHEAT_1 _UxGT("Todo")
-#define MSG_PREHEAT_1_BEDONLY               MSG_PREHEAT_1"Plataforma"
+#define MSG_PREHEAT_1_BEDONLY               MSG_PREHEAT_1 _UxGT("Plataforma")
 #define MSG_PREHEAT_1_SETTINGS              MSG_PREHEAT_1 _UxGT("Config")
 #define MSG_PREHEAT_2                       _UxGT("Precalentar ABS")
 #define MSG_PREHEAT_2_N                     MSG_PREHEAT_2 _UxGT(" ")
@@ -178,16 +178,19 @@
 #define MSG_INFO_EXTRUDERS                  _UxGT("Extrusores")
 #define MSG_INFO_BAUDRATE                   _UxGT("Baudios")
 #define MSG_INFO_PROTOCOL                   _UxGT("Protocolo")
+#if LCD_WIDTH > 19
 #define MSG_INFO_PRINT_COUNT                _UxGT("Conteo de impresion")
 #define MSG_INFO_COMPLETED_PRINTS           _UxGT("Completadas")
 #define MSG_INFO_PRINT_TIME                 _UxGT("Tiempo total de imp.")
 #define MSG_INFO_PRINT_LONGEST              _UxGT("Impresion mas larga")
 #define MSG_INFO_PRINT_FILAMENT             _UxGT("Total de Extrusion")
+#else
 #define MSG_INFO_PRINT_COUNT                _UxGT("Impresiones")
 #define MSG_INFO_COMPLETED_PRINTS           _UxGT("Completadas")
 #define MSG_INFO_PRINT_TIME                 _UxGT("Total")
 #define MSG_INFO_PRINT_LONGEST              _UxGT("Mas larga")
 #define MSG_INFO_PRINT_FILAMENT             _UxGT("Extrusion")
+#endif
 #define MSG_INFO_MIN_TEMP                   _UxGT("Temperatura minima")
 #define MSG_INFO_MAX_TEMP                   _UxGT("Temperatura maxima")
 #define MSG_INFO_PSU                        _UxGT("Fuente de poder")

@@ -388,7 +388,7 @@
   #define MSG_BLTOUCH_RESET                   _UxGT("Reset BLTouch")
 #endif
 #ifndef MSG_HOME
-  #define MSG_HOME                            _UxGT("Home")  // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
+  #define MSG_HOME                            _UxGT("Home") // Used as MSG_HOME " " MSG_X MSG_Y MSG_Z " " MSG_FIRST
 #endif
 #ifndef MSG_FIRST
   #define MSG_FIRST                           _UxGT("first")

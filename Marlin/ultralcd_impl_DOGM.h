@@ -657,7 +657,7 @@ static void lcd_implementation_status_screen() {
     if (!PAGE_CONTAINS(row_y1, row_y2)) return;
 
     lcd_printstr_P(pstr, (LCD_WIDTH - (START_COL) - 2) * DOG_CHAR_WIDTH);
-    lcd_moveto(LCD_PIXEL_WIDTH - (DOG_CHAR_WIDTH), (row + 1) * (DOG_CHAR_HEIGHT));
+    lcd_moveto(LCD_PIXEL_WIDTH - (DOG_CHAR_WIDTH), row_y2);
 
     lcd_print_u(post_char);
     lcd_print_u(' ');
@@ -679,7 +679,7 @@ static void lcd_implementation_status_screen() {
     const uint8_t vallen = (pgm ? lcd_strlen_P(data) : (lcd_strlen((char*)data)));
 
     lcd_printstr_P(pstr, (LCD_WIDTH - (START_COL) - 2 - vallen) * DOG_CHAR_WIDTH);
-    lcd_moveto(LCD_PIXEL_WIDTH - (DOG_CHAR_WIDTH) * vallen, (row + 1) * (DOG_CHAR_HEIGHT));
+    lcd_moveto(LCD_PIXEL_WIDTH - (DOG_CHAR_WIDTH) * vallen, row_y2);
 
     pgm ? lcd_printPGM(data) : lcd_print((char*)data);
   }
