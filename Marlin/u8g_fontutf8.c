@@ -39,10 +39,10 @@
  *
  * Get the screen pixel length of a ROM UTF-8 string
  */
-typedef int (* fontgroup_cb_draw_t)(void *userdata, font_t *fnt_current, const char *msg);
+typedef int (* fontgroup_cb_draw_t)(void *userdata, const font_t *fnt_current, const char *msg);
 
-//extern int fontgroup_init(font_group_t * root, uxg_fontinfo_t * fntinfo, int number);
-//extern int fontgroup_drawstring(font_group_t *group, font_t *fnt_default, const char *utf8_msg, const void *userdata, fontgroup_cb_draw_t cb_draw);
+//extern int fontgroup_init(font_group_t * root, const uxg_fontinfo_t * fntinfo, int number);
+//extern int fontgroup_drawstring(font_group_t *group, const font_t *fnt_default, const char *utf8_msg, void *userdata, fontgroup_cb_draw_t cb_draw);
 //extern uxg_fontinfo_t* fontgroup_first(font_group_t * root);
 
 
@@ -73,7 +73,7 @@ static int pf_bsearch_cb_comp_fntifo_pgm (void *userdata, size_t idx, void *data
 }
 
 typedef struct _font_group_t {
-  uxg_fontinfo_t * m_fntifo;
+  const uxg_fontinfo_t * m_fntifo;
   int m_fntinfo_num;
 } font_group_t;
 
@@ -97,9 +97,9 @@ static const font_t* fontgroup_find(font_group_t * root, wchar_t val) {
   return vcmp.fntdata;
 }
 
-static void fontgroup_drawwchar(font_group_t *group, const font_t *fnt_default, wchar_t val, const void * userdata, fontgroup_cb_draw_t cb_draw_ram) {
+static void fontgroup_drawwchar(font_group_t *group, const font_t *fnt_default, wchar_t val, void * userdata, fontgroup_cb_draw_t cb_draw_ram) {
   uint8_t buf[2] = {0, 0};
-  font_t * fntpqm = NULL;
+  const font_t * fntpqm = NULL;
 
   TRACE("fontgroup_drawwchar char=%d(0x%X)", (int)val, (int)val);
   buf[0] = (uint8_t)(val & 0x7F);
@@ -131,7 +131,7 @@ static void fontgroup_drawwchar(font_group_t *group, const font_t *fnt_default, 
  *
  * Get the screen pixel length of a ROM UTF-8 string
  */
-static void fontgroup_drawstring(font_group_t *group, font_t *fnt_default, const char *utf8_msg, int len_msg, read_byte_cb_t cb_read_byte, const void * userdata, fontgroup_cb_draw_t cb_draw_ram) {
+static void fontgroup_drawstring(font_group_t *group, const font_t *fnt_default, const char *utf8_msg, int len_msg, read_byte_cb_t cb_read_byte, void * userdata, fontgroup_cb_draw_t cb_draw_ram) {
   uint8_t *pend = (uint8_t*)utf8_msg + len_msg;
   for (uint8_t *p = (uint8_t*)utf8_msg; p < pend; ) {
     wchar_t val = 0;
@@ -165,10 +165,10 @@ struct _uxg_drawu8_data_t {
   unsigned int y;
   unsigned int adv;
   unsigned int max_length; // the max pixel length of the string allowed
-  void * fnt_prev;
+  const void * fnt_prev;
 };
 
-static int fontgroup_cb_draw_u8g (void *userdata, font_t *fnt_current, const char *msg) {
+static int fontgroup_cb_draw_u8g (void *userdata, const font_t *fnt_current, const char *msg) {
   struct _uxg_drawu8_data_t * pdata = userdata;
 
   assert(NULL != userdata);
@@ -249,7 +249,7 @@ unsigned int uxg_DrawUtf8Str(u8g_t *pu8g, unsigned int x, unsigned int y, const 
   data.adv = 0;
   data.max_length = max_length;
   data.fnt_prev = NULL;
-  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen(utf8_msg), read_byte_ram, (const void*)&data, fontgroup_cb_draw_u8g);
+  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen(utf8_msg), read_byte_ram, (void*)&data, fontgroup_cb_draw_u8g);
   u8g_SetFont(pu8g, fnt_default);
 
   return data.adv;
@@ -285,7 +285,7 @@ unsigned int uxg_DrawUtf8StrP(u8g_t *pu8g, unsigned int x, unsigned int y, const
   data.max_length = max_length;
   data.fnt_prev = NULL;
   TRACE("call fontgroup_drawstring");
-  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen_P(utf8_msg), read_byte_rom, (const void*)&data, fontgroup_cb_draw_u8g);
+  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen_P(utf8_msg), read_byte_rom, (void*)&data, fontgroup_cb_draw_u8g);
   TRACE("restore font");
   u8g_SetFont(pu8g, fnt_default);
 
@@ -293,7 +293,7 @@ unsigned int uxg_DrawUtf8StrP(u8g_t *pu8g, unsigned int x, unsigned int y, const
   return data.adv;
 }
 
-static int fontgroup_cb_draw_u8gstrlen(void *userdata, font_t *fnt_current, const char *msg) {
+static int fontgroup_cb_draw_u8gstrlen(void *userdata, const font_t *fnt_current, const char *msg) {
   struct _uxg_drawu8_data_t * pdata = userdata;
 
   assert(NULL != userdata);
@@ -329,7 +329,7 @@ int uxg_GetUtf8StrPixelWidth(u8g_t *pu8g, const char *utf8_msg) {
   memset(&data, 0, sizeof(data));
   data.pu8g = pu8g;
   data.adv = 0;
-  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen(utf8_msg), read_byte_ram, (const void*)&data, fontgroup_cb_draw_u8gstrlen);
+  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen(utf8_msg), read_byte_ram, (void*)&data, fontgroup_cb_draw_u8gstrlen);
   u8g_SetFont(pu8g, fnt_default);
 
   return data.adv;
@@ -357,7 +357,7 @@ int uxg_GetUtf8StrPixelWidthP(u8g_t *pu8g, const char *utf8_msg) {
   memset(&data, 0, sizeof(data));
   data.pu8g = pu8g;
   data.adv = 0;
-  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen_P(utf8_msg), read_byte_rom, (const void*)&data, fontgroup_cb_draw_u8gstrlen);
+  fontgroup_drawstring(group, fnt_default, utf8_msg, strlen_P(utf8_msg), read_byte_rom, (void*)&data, fontgroup_cb_draw_u8gstrlen);
   u8g_SetFont(pu8g, fnt_default);
   return data.adv;
 }
