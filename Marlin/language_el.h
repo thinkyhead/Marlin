@@ -186,11 +186,11 @@
 
 #if LCD_WIDTH >= 20
   #define MSG_INFO_PRINT_COUNT              _UxGT("Print Count")
-  #define MSG_INFO_COMPLETED_PRINTS         "Completed  _UxGT("
-  #define MSG_INFO_PRINT_TIME               ")Total Time "
+  #define MSG_INFO_COMPLETED_PRINTS         _UxGT("Completed  ")
+  #define MSG_INFO_PRINT_TIME               _UxGT("Total Time ")
 #else
-  #define MSG_INFO_PRINT_COUNT              "Prints   _UxGT("
-  #define MSG_INFO_COMPLETED_PRINTS         ")Completed"
+  #define MSG_INFO_PRINT_COUNT              _UxGT("Prints   ")
+  #define MSG_INFO_COMPLETED_PRINTS         _UxGT("Completed")
   #define MSG_INFO_PRINT_TIME               _UxGT("Duration ")
 #endif
 #define MSG_INFO_MIN_TEMP                   _UxGT("Min Temp")
