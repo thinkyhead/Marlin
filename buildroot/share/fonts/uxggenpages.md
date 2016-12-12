@@ -23,7 +23,7 @@ where xx is the language/country code, for example en is for English.
 You may start with a existing language file by copying it to a new location:
 
 ```bash
-cp language_zh_cn.h language_zh_tw.h
+cp language_zh_CN.h language_zh_TW.h
 ```
 
 Then you can replace the strings in the macro _UxGT().
@@ -53,13 +53,14 @@ all of the language translation files. You may edit the script to change the var
 LANGS to the list of languages you want to process. For example
 
 ```bash
-LANGS="zh_tw"
+LANGS="zh_TW"
 ```
 
 and then you run the script to get the font data (language_data_xx.h):
 
 ```bash
-./genallfont.sh
+cd Marlin/
+../buildroot/share/fonts/genallfont.sh
 ```
 
 3. change the language settings
@@ -88,35 +89,16 @@ You may need to use a different font to support your own language,
 because the default 9pt font is not complete.
 (You may support them by adding missing glyph to the font.)
 
-After you prepared your font, you need to modify the script Marlin/genallfonts.sh,
-so that the font it used for your language is your new font. For example, your
-new font name is newfont.bdf, then change the Marlin/genallfonts.sh or create an
-new script, (in this example, see the variable FN_NEWFONT).
+After you prepared your font, you need to specify the font file path as an argument for
+script buildroot/share/fonts/genallfont.sh, so that the font it used for your language
+is your new font. For example, your new font file name is newfont.bdf, then run the
+following command.
 
-```sh
-#!/bin/sh
-
-FN_NEWFONT=./newfont.bdf
-
-DN_WORK=./tmp1
-
-DN_EXEC=../buildroot/share/fonts/
-(cd ${DN_EXEC}; gcc -o genpages genpages.c getline.c)
-
-LANGS="zh_tw"
-
-for LANG in ${LANGS} ; do
-    rm -rf ${DN_WORK}/
-    mkdir -p ${DN_WORK}
-    cp language_${LANG}.h ${DN_WORK}/
-    cd ${DN_WORK}/
-    ../../buildroot/share/fonts/uxggenpages.sh ${FN_NEWFONT}
-    cd ../
-    mv ${DN_WORK}/fontutf8-data.h language_data_${LANG}.h
-    rm -rf ${DN_WORK}/
-done
-
+```bash
+cd Marlin/
+../buildroot/share/fonts/genallfont.sh ./newfont.bdf
 ```
+
 
 Suggestions for Maintainer
 --------------------------
