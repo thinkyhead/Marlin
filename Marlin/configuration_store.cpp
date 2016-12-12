@@ -522,7 +522,7 @@ void Config_Postprocess() {
       EEPROM_READ(grid_max_y);                       // 1 byte
       #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
         if (grid_max_x == ABL_GRID_MAX_POINTS_X && grid_max_y == ABL_GRID_MAX_POINTS_Y) {
-          set_bed_leveling_enabled(false);
+          set_bed_leveling_enabled(true);
           EEPROM_READ(bilinear_grid_spacing);        // 2 ints
           EEPROM_READ(bilinear_start);               // 2 ints
           EEPROM_READ(bed_level_grid);               // 9 to 256 floats
