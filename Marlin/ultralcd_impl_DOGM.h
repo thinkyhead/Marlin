@@ -318,10 +318,10 @@ FORCE_INLINE void _draw_heater_status(const uint8_t x, const int8_t heater) {
   #endif
 
   if (PAGE_UNDER(7))
-    _draw_centered_temp((isBed ? thermalManager.degTargetBed() : thermalManager.degTargetHotend(heater)) + 0.5, x, 7);
+    _draw_centered_temp((isBed ? thermalManager.degTargetBed() : thermalManager.degTargetHotend(heater)) + 0.5, x, 6);
 
   if (PAGE_CONTAINS(21, 28))
-    _draw_centered_temp((isBed ? thermalManager.degBed() : thermalManager.degHotend(heater)) + 0.5, x, 28);
+    _draw_centered_temp((isBed ? thermalManager.degBed() : thermalManager.degHotend(heater)) + 0.5, x, 27);
 
   if (PAGE_CONTAINS(17, 20)) {
     const uint8_t h = isBed ? 7 : 8,

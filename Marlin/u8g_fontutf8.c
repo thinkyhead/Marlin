@@ -174,7 +174,7 @@ static int fontgroup_cb_draw_u8g (void *userdata, const font_t *fnt_current, con
   assert(NULL != userdata);
   if (pdata->fnt_prev != fnt_current) {
     u8g_SetFont(pdata->pu8g, fnt_current);
-    u8g_SetFontPosBottom(pdata->pu8g);
+    //u8g_SetFontPosBottom(pdata->pu8g);
     pdata->fnt_prev = fnt_current;
   }
   if ((pdata->max_length != PIXEL_LEN_NOLIMIT) && (pdata->adv + u8g_GetStrPixelWidth(pdata->pu8g, (char*)msg) > pdata->max_length)) {
