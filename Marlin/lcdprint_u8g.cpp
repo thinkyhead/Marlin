@@ -36,7 +36,7 @@ void lcd_moveto(int col, int row) {
 }
 
 int lcd_print_uchar(wchar_t c, pixel_len_t max_length) {
-  if (c < 128) {
+  if (c < 256) {
     TRACE("draw char: regular %d", (int)c);
     _lcd_write((char)c);
     return u8g_GetFontBBXWidth(pu8g->getU8g());

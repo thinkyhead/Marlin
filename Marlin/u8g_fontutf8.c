@@ -88,7 +88,7 @@ static const font_t* fontgroup_find(font_group_t * root, wchar_t val) {
   uxg_fontinfo_t vcmp = {val / 128, val % 128 + 128, val % 128 + 128, 0, 0};
   size_t idx = 0;
 
-  if (val < 128) return NULL;
+  if (val < 256) return NULL;
 
   if (pf_bsearch_r((void*)root->m_fntifo, root->m_fntinfo_num, pf_bsearch_cb_comp_fntifo_pgm, (void*)&vcmp, &idx) < 0)
     return NULL;
@@ -102,15 +102,14 @@ static void fontgroup_drawwchar(font_group_t *group, const font_t *fnt_default, 
   const font_t * fntpqm = NULL;
 
   TRACE("fontgroup_drawwchar char=%d(0x%X)", (int)val, (int)val);
-  buf[0] = (uint8_t)(val & 0x7F);
   fntpqm = (font_t*)fontgroup_find(group, val);
   if (NULL == fntpqm) {
-    //continue;
-    //buf[0] = '?';
+    buf[0] = (uint8_t)(val & 0xFF);
     fntpqm = fnt_default;
     TRACE("Unknown char %d(0x%X), use default font", (int)val, (int)val);
   }
   if (fnt_default != fntpqm) {
+    buf[0] = (uint8_t)(val & 0x7F);
     buf[0] |= 0x80; // use upper page to avoid 0x00 error in C. you may want to generate the font data
   }
   //TRACE("set font: %p; (default=%p)", fntpqm, UXG_DEFAULT_FONT);

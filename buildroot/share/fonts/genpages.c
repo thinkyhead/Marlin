@@ -171,7 +171,7 @@ utf8_parse (const char* msg, unsigned int len)
             break;
         }
         page = val / 128;
-        if (page > 0) {
+        if (val >= 256) {
             fprintf (stdout, "%d %d ", page, (val % 128));
             for (; pre < p; pre ++) {
                 fprintf (stdout, "%c", *pre);
