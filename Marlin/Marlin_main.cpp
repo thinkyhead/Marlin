@@ -2660,7 +2660,7 @@ void clean_up_after_endstop_or_probe_move() {
    *
    *   buildroot/shared/scripts/MarlinMesh.scad
    */
-  //#define SCAD_MESH_OUTPUT
+  #define SCAD_MESH_OUTPUT
 
   /**
    * Print calibration results for plotting or manual frame adjustment.
