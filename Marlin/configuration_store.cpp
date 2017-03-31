@@ -47,7 +47,7 @@
  *  100  Version                                    (char x4)
  *  104  EEPROM Checksum                            (uint16_t)
  *
- *  106            E_STEPPERS (uint8_t)
+ *  106            E_STEPPERS                       (uint8_t)
  *  107  M92 XYZE  planner.axis_steps_per_mm        (float x4 ... x8)
  *  123  M203 XYZE planner.max_feedrate_mm_s        (float x4 ... x8)
  *  139  M201 XYZE planner.max_acceleration_mm_per_s2 (uint32_t x4 ... x8)
@@ -356,10 +356,12 @@ void Config_Postprocess() {
       for (uint16_t q = grid_max_x * grid_max_y; q--;) EEPROM_WRITE(dummy);
     #endif // AUTO_BED_LEVELING_BILINEAR
 
-    // 9 floats for DELTA / Z_DUAL_ENDSTOPS
+    // 10 floats for DELTA / Z_DUAL_ENDSTOPS
     #if ENABLED(DELTA)
       EEPROM_WRITE(endstop_adj);               // 3 floats
       EEPROM_WRITE(delta_radius);              // 1 float
+      float z_height = DELTA_HEIGHT + home_offset[Z_AXIS]; // AC-version
+      EEPROM_WRITE(z_height);                  // 1 float
       EEPROM_WRITE(delta_diagonal_rod);        // 1 float
       EEPROM_WRITE(delta_segments_per_second); // 1 float
       EEPROM_WRITE(delta_diagonal_rod_trim);   // 3 floats
@@ -692,6 +694,8 @@ void Config_Postprocess() {
       #if ENABLED(DELTA)
         EEPROM_READ(endstop_adj);               // 3 floats
         EEPROM_READ(delta_radius);              // 1 float
+        EEPROM_READ(home_offset[Z_AXIS]);       // 1 float
+        home_offset[Z_AXIS] -= DELTA_HEIGHT;    // AC-version
         EEPROM_READ(delta_diagonal_rod);        // 1 float
         EEPROM_READ(delta_segments_per_second); // 1 float
         EEPROM_READ(delta_diagonal_rod_trim);   // 3 floats
@@ -963,6 +967,7 @@ void Config_ResetDefault() {
                 dta[ABC] = { DELTA_TOWER_ANGLE_TRIM_1, DELTA_TOWER_ANGLE_TRIM_2, DELTA_TOWER_ANGLE_TRIM_3 };
     COPY(endstop_adj, adj);
     delta_radius = DELTA_RADIUS;
+    home_offset[Z_AXIS] = 0; //AC-version
     delta_diagonal_rod = DELTA_DIAGONAL_ROD;
     delta_segments_per_second = DELTA_SEGMENTS_PER_SECOND;
     COPY(delta_diagonal_rod_trim, drt);
@@ -1280,11 +1285,12 @@ void Config_ResetDefault() {
       SERIAL_EOL;
       CONFIG_ECHO_START;
       if (!forReplay) {
-        SERIAL_ECHOLNPGM("Delta settings: L=diagonal rod, R=radius, S=segments-per-second, ABC=diagonal rod trim, IJK=tower angle trim");
+        SERIAL_ECHOLNPGM("Delta settings: L=diagonal_rod, R=radius, H=height, S=segments_per_second, ABC=diagonal_rod_trim_tower_[123]");
         CONFIG_ECHO_START;
       }
       SERIAL_ECHOPAIR("  M665 L", delta_diagonal_rod);
       SERIAL_ECHOPAIR(" R", delta_radius);
+      SERIAL_ECHOPAIR(" H", DELTA_HEIGHT + home_offset[Z_AXIS]); // AC-version
       SERIAL_ECHOPAIR(" S", delta_segments_per_second);
       SERIAL_ECHOPAIR(" A", delta_diagonal_rod_trim[A_AXIS]);
       SERIAL_ECHOPAIR(" B", delta_diagonal_rod_trim[B_AXIS]);
