@@ -36,7 +36,7 @@
  *
  */
 
-#define EEPROM_VERSION "V31"
+#define EEPROM_VERSION "V32"
 
 // Change EEPROM version if these are changed:
 #define EEPROM_OFFSET 100
@@ -44,45 +44,45 @@
 /**
  * V31 EEPROM Layout:
  *
- *  100  Version                                   (char x4)
- *  104  EEPROM Checksum                           (uint16_t)
+ *  100  Version                                    (char x4)
+ *  104  EEPROM Checksum                            (uint16_t)
  *
- *  106            E_STEPPERS (uint8_t)
- *  107  M92 XYZE  planner.axis_steps_per_mm (float x4 ... x7)
- *  123  M203 XYZE planner.max_feedrate_mm_s (float x4 ... x7)
+ *  106            E_STEPPERS                       (uint8_t)
+ *  107  M92 XYZE  planner.axis_steps_per_mm        (float x4 ... x7)
+ *  123  M203 XYZE planner.max_feedrate_mm_s        (float x4 ... x7)
  *  139  M201 XYZE planner.max_acceleration_mm_per_s2 (uint32_t x4 ... x7)
- *  155  M204 P    planner.acceleration (float)
- *  159  M204 R    planner.retract_acceleration (float)
- *  163  M204 T    planner.travel_acceleration (float)
- *  167  M205 S    planner.min_feedrate_mm_s (float)
+ *  155  M204 P    planner.acceleration             (float)
+ *  159  M204 R    planner.retract_acceleration     (float)
+ *  163  M204 T    planner.travel_acceleration      (float)
+ *  167  M205 S    planner.min_feedrate_mm_s        (float)
  *  171  M205 T    planner.min_travel_feedrate_mm_s (float)
- *  175  M205 B    planner.min_segment_time (ulong)
- *  179  M205 X    planner.max_jerk[X_AXIS] (float)
- *  183  M205 Y    planner.max_jerk[Y_AXIS] (float)
- *  187  M205 Z    planner.max_jerk[Z_AXIS] (float)
- *  191  M205 E    planner.max_jerk[E_AXIS] (float)
- *  195  M206 XYZ  home_offset (float x3)
- *  207  M218 XYZ  hotend_offset (float x3 per additional hotend)
+ *  175  M205 B    planner.min_segment_time         (ulong)
+ *  179  M205 X    planner.max_jerk[X_AXIS]         (float)
+ *  183  M205 Y    planner.max_jerk[Y_AXIS]         (float)
+ *  187  M205 Z    planner.max_jerk[Z_AXIS]         (float)
+ *  191  M205 E    planner.max_jerk[E_AXIS]         (float)
+ *  195  M206 XYZ  home_offset                      (float x3)
+ *  207  M218 XYZ  hotend_offset                    (float x3 per additional hotend)
  *
- * Mesh bed leveling:
- *  219  M420 S    from mbl.status (bool)
- *  220            mbl.z_offset (float)
- *  224            MESH_NUM_X_POINTS (uint8 as set in firmware)
- *  225            MESH_NUM_Y_POINTS (uint8 as set in firmware)
- *  226 G29 S3 XYZ z_values[][] (float x9, by default, up to float x 81) +288
+ * Mesh bed leveling:                               43 bytes
+ *  219  M420 S    from mbl.status                  (bool)
+ *  220            mbl.z_offset                     (float)
+ *  224            MESH_NUM_X_POINTS                (uint8_t)
+ *  225            MESH_NUM_Y_POINTS                (uint8_t)
+ *  226 G29 S3 XYZ z_values[][]                     (float x9, up to float x 81) +288
  *
  * AUTO BED LEVELING
  *  262  M851      zprobe_zoffset (float)
  *
- * ABL_PLANAR (or placeholder):                    36 bytes
- *  266            planner.bed_level_matrix        (matrix_3x3 = float x9)
+ * ABL_PLANAR (or placeholder):                     36 bytes
+ *  266            planner.bed_level_matrix         (matrix_3x3 = float x9)
  *
- * AUTO_BED_LEVELING_BILINEAR (or placeholder):    47 bytes
- *  302            ABL_GRID_MAX_POINTS_X           (uint8_t)
- *  303            ABL_GRID_MAX_POINTS_Y           (uint8_t)
- *  304            bilinear_grid_spacing           (int x2)   from G29: (B-F)/X, (R-L)/Y
- *  308  G29 L F   bilinear_start                  (int x2)
- *  312            bed_level_grid[][]              (float x9, up to float x256) +988
+ * AUTO_BED_LEVELING_BILINEAR (or placeholder):     47 bytes
+ *  302            ABL_GRID_MAX_POINTS_X            (uint8_t)
+ *  303            ABL_GRID_MAX_POINTS_Y            (uint8_t)
+ *  304            bilinear_grid_spacing            (int x2)
+ *  308  G29 L F   bilinear_start                   (int x2)
+ *  312            bed_level_grid[][]               (float x9, up to float x256) +988
  *
  * DELTA (if deltabot):                             48 bytes
  *  348  M666 XYZ  endstop_adj                      (float x3)
@@ -96,21 +96,21 @@
  *  388  M665 J    delta_tower_angle_trim[B]        (float)
  *  392  M665 K    delta_tower_angle_trim[C]        (float)
  *
- * Z_DUAL_ENDSTOPS (if not deltabot):              48 bytes
- *  348  M666 Z    z_endstop_adj                   (float)
- *  ---            dummy data                      (float x11)
+ * Z_DUAL_ENDSTOPS (if not deltabot):               48 bytes
+ *  348  M666 Z    z_endstop_adj                    (float)
+ *  ---            dummy data                       (float x11)
  *
- * ULTIPANEL:                                      6 bytes
- *  396  M145 S0 H lcd_preheat_hotend_temp         (int x2)
- *  400  M145 S0 B lcd_preheat_bed_temp            (int x2)
- *  404  M145 S0 F lcd_preheat_fan_speed           (int x2)
+ * ULTIPANEL:                                       6 bytes
+ *  396  M145 S0 H lcd_preheat_hotend_temp          (int x2)
+ *  400  M145 S0 B lcd_preheat_bed_temp             (int x2)
+ *  404  M145 S0 F lcd_preheat_fan_speed            (int x2)
  *
- * PIDTEMP:                                        66 bytes
- *  408  M301 E0 PIDC  Kp[0], Ki[0], Kd[0], Kc[0]  (float x4)
- *  424  M301 E1 PIDC  Kp[1], Ki[1], Kd[1], Kc[1]  (float x4)
- *  440  M301 E2 PIDC  Kp[2], Ki[2], Kd[2], Kc[2]  (float x4)
- *  456  M301 E3 PIDC  Kp[3], Ki[3], Kd[3], Kc[3]  (float x4)
- *  472  M301 L        lpq_len                     (int)
+ * PIDTEMP:                                         66 bytes
+ *  408  M301 E0 PIDC  Kp[0], Ki[0], Kd[0], Kc[0]   (float x4)
+ *  424  M301 E1 PIDC  Kp[1], Ki[1], Kd[1], Kc[1]   (float x4)
+ *  440  M301 E2 PIDC  Kp[2], Ki[2], Kd[2], Kc[2]   (float x4)
+ *  456  M301 E3 PIDC  Kp[3], Ki[3], Kd[3], Kc[3]   (float x4)
+ *  472  M301 L        lpq_len                      (int)
  *
  * PIDTEMPBED:                                      12 bytes
  *  474  M304 PID  thermalManager.bedKp, .bedKi, .bedKd (float x3)
@@ -355,10 +355,12 @@ void Config_Postprocess() {
       for (uint16_t q = grid_max_x * grid_max_y; q--;) EEPROM_WRITE(dummy);
     #endif // AUTO_BED_LEVELING_BILINEAR
 
-    // 9 floats for DELTA / Z_DUAL_ENDSTOPS
+    // 10 floats for DELTA / Z_DUAL_ENDSTOPS
     #if ENABLED(DELTA)
       EEPROM_WRITE(endstop_adj);               // 3 floats
       EEPROM_WRITE(delta_radius);              // 1 float
+      float z_height = DELTA_HEIGHT + home_offset[Z_AXIS]; // AC-version
+      EEPROM_WRITE(z_height);                  // 1 float
       EEPROM_WRITE(delta_diagonal_rod);        // 1 float
       EEPROM_WRITE(delta_segments_per_second); // 1 float
       EEPROM_WRITE(delta_diagonal_rod_trim);   // 3 floats
@@ -691,6 +693,8 @@ void Config_Postprocess() {
       #if ENABLED(DELTA)
         EEPROM_READ(endstop_adj);               // 3 floats
         EEPROM_READ(delta_radius);              // 1 float
+        EEPROM_READ(home_offset[Z_AXIS]);       // 1 float
+        home_offset[Z_AXIS] -= DELTA_HEIGHT;    // AC-version
         EEPROM_READ(delta_diagonal_rod);        // 1 float
         EEPROM_READ(delta_segments_per_second); // 1 float
         EEPROM_READ(delta_diagonal_rod_trim);   // 3 floats
@@ -958,6 +962,7 @@ void Config_ResetDefault() {
                 dta[ABC] = { DELTA_TOWER_ANGLE_TRIM_1, DELTA_TOWER_ANGLE_TRIM_2, DELTA_TOWER_ANGLE_TRIM_3 };
     COPY(endstop_adj, adj);
     delta_radius = DELTA_RADIUS;
+    home_offset[Z_AXIS] = 0; //AC-version
     delta_diagonal_rod = DELTA_DIAGONAL_ROD;
     delta_segments_per_second = DELTA_SEGMENTS_PER_SECOND;
     COPY(delta_diagonal_rod_trim, drt);
@@ -1271,11 +1276,12 @@ void Config_ResetDefault() {
       SERIAL_EOL;
       CONFIG_ECHO_START;
       if (!forReplay) {
-        SERIAL_ECHOLNPGM("Delta settings: L=diagonal rod, R=radius, S=segments-per-second, ABC=diagonal rod trim, IJK=tower angle trim");
+        SERIAL_ECHOLNPGM("Delta settings: L=diagonal_rod, R=radius, H=height, S=segments_per_second, ABC=diagonal_rod_trim_tower_[123]");
         CONFIG_ECHO_START;
       }
       SERIAL_ECHOPAIR("  M665 L", delta_diagonal_rod);
       SERIAL_ECHOPAIR(" R", delta_radius);
+      SERIAL_ECHOPAIR(" H", DELTA_HEIGHT + home_offset[Z_AXIS]); // AC-version
       SERIAL_ECHOPAIR(" S", delta_segments_per_second);
       SERIAL_ECHOPAIR(" A", delta_diagonal_rod_trim[A_AXIS]);
       SERIAL_ECHOPAIR(" B", delta_diagonal_rod_trim[B_AXIS]);
