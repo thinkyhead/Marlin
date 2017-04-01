@@ -501,6 +501,13 @@
 #ifndef MSG_DELTA_AUTO_CALIBRATE
   #define MSG_DELTA_AUTO_CALIBRATE            _UxGT("Auto Calibration")
 #endif
+#ifndef MSG_CHECKING_CALIBRATION
+  #if LCD_WIDTH >= 20
+    #define MSG_DELTA_AUTO_CHECKING           _UxGT("Checking calibration")
+  #else
+    #define MSG_DELTA_AUTO_CHECKING           _UxGT("Checking calib.")
+  #endif
+#endif
 #ifndef MSG_INFO_MENU
   #define MSG_INFO_MENU                       _UxGT("About Printer")
 #endif
