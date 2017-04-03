@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Marlin 3D Printer Firmware
  * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -407,6 +407,22 @@
 #define DIGIPOT_I2C_NUM_CHANNELS 8
 // actual motor currents in Amps, need as many here as DIGIPOT_I2C_NUM_CHANNELS
 #define DIGIPOT_I2C_MOTOR_CURRENTS {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
+
+//===========================================================================
+//============================== Delta Settings =============================
+//===========================================================================
+
+#ifdef ENABLE_DELTA_AUTO_CALIBRATION
+// set the height short (H-10) with M665 Hx.xx
+// set the delta_radius off (R-5, R-10, R+5, R+10) with M665 Rx.xx
+// run G33 Cx V3 with different values (C2, C-2)
+// take the average for r_factor and maximum for h_factor
+// r_factor to low will reduce accuraty, to high will reduce iteration speed
+// run the tests with the default values!!!
+// remove the comments of the folling 2 line to overide default values
+//  #define H_FACTOR  1.02 // 1.0 < H_FACTOR < 1.11, default = 1.00
+//  #define R_FACTOR -3.95 // -6.7 < R_FACTOR < -2.25, default -2.25
+#endif
 
 //===========================================================================
 //=============================Additional Features===========================
