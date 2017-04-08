@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Marlin 3D Printer Firmware
  * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -464,16 +464,14 @@
 
   // G33 Delta Auto-Calibration (Enable EEPROM_SETTINGS to store results)
   #define DELTA_AUTO_CALIBRATION
-  #if ENABLED(DELTA_AUTO_CALIBRATION)
-    #define DELTA_CALIBRATION_RADIUS (DELTA_PRINTABLE_RADIUS - 20) // set the radius for the calibration probe points
-    #define CONVERGENCE_FACTOR 0.75 // <1.00 lower to prevent overshooting solution, higher to speed up convergence
+  #ifdef DELTA_AUTO_CALIBRATION
+    #define DELTA_CALIBRATION_DEFAULT_POINTS 3 // set the default number of probe points : n*n (1-4)
+    #define DELTA_CALIBRATION_RADIUS (DELTA_PRINTABLE_RADIUS - 15) // set the radius for the calibration probe points
   #endif
 
   // Delta calibration menu
   // uncomment to add three points calibration menu option.
   // See http://minow.blogspot.com/index.html#4918805519571907051
-  // If needed, adjust the X, Y, Z calibration coordinates
-  // in ultralcd.cpp@lcd_delta_calibrate_menu()
   #define DELTA_CALIBRATION_MENU
 #endif
 

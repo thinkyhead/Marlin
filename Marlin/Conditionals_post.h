@@ -660,6 +660,14 @@
     #ifndef DELTA_TOWER_ANGLE_TRIM_3
       #define DELTA_TOWER_ANGLE_TRIM_3 0.0
     #endif
+    #ifdef DELTA_AUTO_CALIBRATION  
+      #ifndef H_FACTOR
+        #define H_FACTOR 1.00
+      #endif
+      #ifndef R_FACTOR
+        #define R_FACTOR -2.25
+      #endif
+    #endif
   #endif
 
   /**
