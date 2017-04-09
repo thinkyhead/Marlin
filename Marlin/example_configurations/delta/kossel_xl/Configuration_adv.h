@@ -420,8 +420,9 @@
 // r_factor to low will reduce accuraty, to high will reduce iteration speed
 // run the tests with the default values!!!
 // remove the comments of the folling 2 line to overide default values
-  #define H_FACTOR  1.02 // 1.0 < H_FACTOR < 1.11, default = 1.00
-  #define R_FACTOR -3.95 // -6.7 < R_FACTOR < -2.25, default -2.25
+//  #define DELTA_CALIBRATE_EXPERT_MODE
+//  #define H_FACTOR  1.02 // 1.0 < H_FACTOR < 1.11, default = 1.00
+//  #define R_FACTOR -3.95 // -6.7 < R_FACTOR < -2.25, default -2.25
 #endif
 
 

@@ -4825,7 +4825,6 @@ inline void gcode_G28() {
      *          n=2 setting + probe results 
      *          n=3 expert mode: setting + iteration factors (see configuration_adv.h)
      *              this prematurely stops the iteration process when factors are found
-     *              (experimental - routines will be added at later stage)
      */
     inline void gcode_G33() {
 
@@ -4848,8 +4847,17 @@ inline void gcode_G28() {
       }
       if (code_seen('V')) {
         verbose_level = code_value_int();
-        if (verbose_level < 0 || verbose_level > 2) verbose_level = 1;
+        #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+          if (verbose_level < 0 || verbose_level > 3) verbose_level = 1;
+        #else
+          if (verbose_level == 3)
+            SERIAL_PROTOCOLLNPGM("Enable DELTA_CALIBRATE_EXPERT_MODE in configuration_adv.h");  
+          if (verbose_level < 0 || verbose_level > 2) verbose_level = 1;
+        #endif
         if (verbose_level == 0) zero_std_dev = 0.00; // dry-run mode : forced end
+        #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+          if (verbose_level == 3 && probe_points == 1) verbose_level = 1; // needs at least 4 points
+        #endif
       }
 
       gcode_G28();
@@ -4860,6 +4868,11 @@ inline void gcode_G28() {
             dr_old = delta_radius,
             zh_old = home_offset[Z_AXIS];
       COPY(e_old,endstop_adj);
+      #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+        // expert variables
+        float h_f_old = 1.00, r_f_old = 0.00,
+              h_diff_min = 1.00, r_diff_max = 0.10;
+      #endif
 
       // print settings
 
@@ -4867,6 +4880,10 @@ inline void gcode_G28() {
       SERIAL_PROTOCOLPGM("Checking... AC");
       if (verbose_level == 0)
         SERIAL_PROTOCOLPGM(" - in DRY-RUN mode");
+      #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+        if (verbose_level == 3)
+          SERIAL_PROTOCOLPGM(" - in EXPERT mode");
+      #endif
       SERIAL_EOL;
       LCD_MESSAGEPGM("Checking... AC");
       
@@ -4893,7 +4910,11 @@ inline void gcode_G28() {
 
         setup_for_endstop_or_probe_move();
 
-        test_precision = zero_std_dev;
+        #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+          test_precision = (verbose_level == 3) ? ((zero_std_dev < 0.1) ? 0.0 : zero_std_dev) : zero_std_dev; //expert mode : forced end at std_dev < 0.1
+        #else
+          test_precision = zero_std_dev;
+        #endif
         
         float z_at_pt[13] = { 0 };
 
@@ -4951,6 +4972,11 @@ inline void gcode_G28() {
           zh_old = home_offset[Z_AXIS];
 
           float e_delta[XYZ]= {0.0}, r_delta = 0.0;
+          #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+            // expert variables
+            float h_f_new = 0.0, r_f_new = 0.0 , t_f_new = 0.0,
+                    h_diff = 0.00, r_diff = 0.00;
+          #endif
  
           #define ZP(N,I) ((N) * z_at_pt[I])
           #define Z1000(I) ZP(1.00, I)
@@ -4992,6 +5018,28 @@ inline void gcode_G28() {
             break;
           }
 
+          #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+            //calculate h & r factors
+
+            if (verbose_level == 3) {
+              LOOP_XYZ(axis) h_f_new += (e_delta[axis]) / 3;
+              r_f_new = r_delta;
+              h_diff = (1/H_FACTOR)
+                       *(h_f_old - h_f_new)/h_f_old;
+              if (h_diff < h_diff_min && h_diff > 0.9) h_diff_min = h_diff;
+              if (r_f_old != 0) 
+                r_diff = (0.0042*R_FACTOR*R_FACTOR*R_FACTOR 
+                         +0.0714*R_FACTOR*R_FACTOR 
+                         +0.4316*R_FACTOR +1.1004)
+                         *(r_f_old - r_f_new)/r_f_old;
+              if (r_diff > r_diff_max && r_diff < 0.4444) r_diff_max = r_diff;
+              SERIAL_EOL;
+       
+              h_f_old = h_f_new;
+              r_f_old = r_f_new;
+            }
+          #endif
+
           // adjust delta_height and endstops by the max amount
 
           LOOP_XYZ(axis) endstop_adj[axis] += e_delta[axis];
@@ -5015,6 +5063,16 @@ inline void gcode_G28() {
 
         // print report
 
+        #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+          if (verbose_level == 3) {
+            SERIAL_PROTOCOLPAIR("h_factor:", 1/h_diff_min);
+            SERIAL_PROTOCOLPAIR("              r_factor:",
+                                 178.87*r_diff_max*r_diff_max*r_diff_max 
+                                -211.25*r_diff_max*r_diff_max 
+                                +89.245*r_diff_max -15.885);
+            SERIAL_EOL;         
+          }
+        #endif
         if (verbose_level == 2) {
           SERIAL_PROTOCOLPGM(".     c:");
           if (z_at_pt[0] > 0) SERIAL_CHAR('+');
@@ -5082,9 +5140,16 @@ inline void gcode_G28() {
             SERIAL_PROTOCOLLNPGM("save with M500");
         }
         else { //forced end
-          SERIAL_PROTOCOLPGM("end DRY-RUN                                      std dev:");
-          SERIAL_PROTOCOL_F(zero_std_dev, 3);
-          SERIAL_EOL;
+          #if ENABLED(DELTA_CALIBRATE_EXPERT_MODE)
+            if (verbose_level ==  3)
+              SERIAL_PROTOCOLLNPGM("copy to configuration_adv.h");
+            else
+          #endif
+            {
+              SERIAL_PROTOCOLPGM("end DRY-RUN                                      std dev:");
+              SERIAL_PROTOCOL_F(zero_std_dev, 3);
+              SERIAL_EOL;
+            }
         }
 
         clean_up_after_endstop_or_probe_move();
