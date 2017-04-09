@@ -281,7 +281,15 @@ void Config_Postprocess() {
     #if ENABLED(NO_WORKSPACE_OFFSETS)
       float home_offset[XYZ] = { 0 };
     #endif
-    EEPROM_WRITE(home_offset);
+    #if ENABLED(DELTA)
+      dummy = 0.0;
+      float z_height = DELTA_HEIGHT + home_offset[Z_AXIS];
+      EEPROM_WRITE(dummy);
+      EEPROM_WRITE(dummy);
+      EEPROM_WRITE(z_height);
+    #else
+      EEPROM_WRITE(home_offset);
+    #endif
 
     #if HOTENDS > 1
       // Skip hotend 0 which must be 0
@@ -356,12 +364,10 @@ void Config_Postprocess() {
       for (uint16_t q = grid_max_x * grid_max_y; q--;) EEPROM_WRITE(dummy);
     #endif // AUTO_BED_LEVELING_BILINEAR
 
-    // 10 floats for DELTA / Z_DUAL_ENDSTOPS
+    // 9 floats for DELTA / Z_DUAL_ENDSTOPS
     #if ENABLED(DELTA)
       EEPROM_WRITE(endstop_adj);               // 3 floats
       EEPROM_WRITE(delta_radius);              // 1 float
-      float z_height = DELTA_HEIGHT + home_offset[Z_AXIS]; // AC-version
-      EEPROM_WRITE(z_height);                  // 1 float
       EEPROM_WRITE(delta_diagonal_rod);        // 1 float
       EEPROM_WRITE(delta_segments_per_second); // 1 float
       EEPROM_WRITE(delta_diagonal_rod_trim);   // 3 floats
@@ -458,7 +464,7 @@ void Config_Postprocess() {
       EEPROM_WRITE(dummy);
     }
 
-    // Save TCM2130 Configuration, and placeholder values
+    // Save TMC2130 Configuration, and placeholder values
     uint16_t val;
     #if ENABLED(HAVE_TMC2130)
       #if ENABLED(X_IS_TMC2130)
@@ -517,6 +523,12 @@ void Config_Postprocess() {
       EEPROM_WRITE(val);
       #if ENABLED(E3_IS_TMC2130)
         val = stepperE3.getCurrent();
+      #else
+        val = 0;
+      #endif
+      EEPROM_WRITE(val);
+      #if ENABLED(E4_IS_TMC2130)
+        val = stepperE4.getCurrent();
       #else
         val = 0;
       #endif
@@ -613,6 +625,11 @@ void Config_Postprocess() {
         float home_offset[XYZ];
       #endif
       EEPROM_READ(home_offset);
+      #if ENABLED(DELTA)
+        home_offset[X_AXIS] = 0.0;
+        home_offset[Y_AXIS] = 0.0;
+        home_offset[Z_AXIS] -= DELTA_HEIGHT;
+      #endif
 
       #if HOTENDS > 1
         // Skip hotend 0 which must be 0
@@ -694,8 +711,6 @@ void Config_Postprocess() {
       #if ENABLED(DELTA)
         EEPROM_READ(endstop_adj);               // 3 floats
         EEPROM_READ(delta_radius);              // 1 float
-        EEPROM_READ(home_offset[Z_AXIS]);       // 1 float
-        home_offset[Z_AXIS] -= DELTA_HEIGHT;    // AC-version
         EEPROM_READ(delta_diagonal_rod);        // 1 float
         EEPROM_READ(delta_segments_per_second); // 1 float
         EEPROM_READ(delta_diagonal_rod_trim);   // 3 floats
@@ -967,7 +982,7 @@ void Config_ResetDefault() {
                 dta[ABC] = { DELTA_TOWER_ANGLE_TRIM_1, DELTA_TOWER_ANGLE_TRIM_2, DELTA_TOWER_ANGLE_TRIM_3 };
     COPY(endstop_adj, adj);
     delta_radius = DELTA_RADIUS;
-    home_offset[Z_AXIS] = 0; //AC-version
+    home_offset[Z_AXIS] = 0;
     delta_diagonal_rod = DELTA_DIAGONAL_ROD;
     delta_segments_per_second = DELTA_SEGMENTS_PER_SECOND;
     COPY(delta_diagonal_rod_trim, drt);
@@ -1181,7 +1196,7 @@ void Config_ResetDefault() {
     SERIAL_ECHOPAIR(" E", planner.max_jerk[E_AXIS]);
     SERIAL_EOL;
 
-    #if DISABLED(NO_WORKSPACE_OFFSETS)
+    #if DISABLED(NO_WORKSPACE_OFFSETS) && DISABLED(DELTA_AUTO_CALIBRATION)
       CONFIG_ECHO_START;
       if (!forReplay) {
         SERIAL_ECHOLNPGM("Home offset (mm)");

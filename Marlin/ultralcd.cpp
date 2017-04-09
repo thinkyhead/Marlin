@@ -1644,7 +1644,7 @@ void kill_screen(const char* lcd_msg) {
 
     #endif
 
-    #if DISABLED(NO_WORKSPACE_OFFSETS)
+    #if DISABLED(NO_WORKSPACE_OFFSETS) && DISABLED(DELTA_AUTO_CALIBRATION)
       //
       // Set Home Offsets
       //
@@ -1778,7 +1778,8 @@ void kill_screen(const char* lcd_msg) {
       START_MENU();
       MENU_BACK(MSG_MAIN);
       #if ENABLED(DELTA_AUTO_CALIBRATION)
-        MENU_ITEM(gcode, MSG_DELTA_AUTO_CALIBRATE, PSTR("G33 C")); // AC-version
+        MENU_ITEM(gcode, MSG_DELTA_AUTO_CALIBRATE, PSTR("G33 C"));
+        MENU_ITEM(gcode, MSG_DELTA_HEIGHT_CALIBRATE, PSTR("G33 C1"));
       #endif
       MENU_ITEM(submenu, MSG_AUTO_HOME, _lcd_delta_calibrate_home);
       if (axis_homed[Z_AXIS]) {
