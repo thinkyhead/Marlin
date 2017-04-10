@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Marlin 3D Printer Firmware
  * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -256,6 +256,7 @@
   #define INVERT_X2_VS_X_DIR true
 #endif
 
+
 // Dual Y Steppers
 // Uncomment this option to drive two Y axis motors.
 // The next unused E driver will be assigned to the second Y stepper.
@@ -332,10 +333,10 @@
 // @section homing
 
 //homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
-#define X_HOME_BUMP_MM 2
-#define Y_HOME_BUMP_MM 2
-#define Z_HOME_BUMP_MM 2 // deltas need the same for all three axis
-#define HOMING_BUMP_DIVISOR {2, 2, 4}  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define X_HOME_BUMP_MM 5
+#define Y_HOME_BUMP_MM 5
+#define Z_HOME_BUMP_MM 5 // deltas need the same for all three axis
+#define HOMING_BUMP_DIVISOR {10, 10, 10}  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 //#define QUICK_HOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
 
 // When G28 is called, this option will make Y home before X
@@ -357,7 +358,7 @@
 // Default stepper release if idle. Set to 0 to deactivate.
 // Steppers will shut down DEFAULT_STEPPER_DEACTIVE_TIME seconds after the last move when DISABLE_INACTIVE_? is true.
 // Time can be set by M18 and M84.
-#define DEFAULT_STEPPER_DEACTIVE_TIME 120
+#define DEFAULT_STEPPER_DEACTIVE_TIME 60
 #define DISABLE_INACTIVE_X true
 #define DISABLE_INACTIVE_Y true
 #define DISABLE_INACTIVE_Z true  // set to false if the nozzle will fall down on your printed part when print has finished.
@@ -408,8 +409,8 @@
  *                         known compatible chips: AD5206
  *    DAC_MOTOR_CURRENT_DEFAULT - used by PRINTRBOARD_REVF & RIGIDBOARD_V2
  *                         known compatible chips: MCP4728
- *    DIGIPOT_I2C_MOTOR_CURRENTS - used by 5DPRINT, AZTEEG_X3_PRO, MIGHTYBOARD_REVE
- *                         known compatible chips: MCP4451, MCP4018
+ *    DIGIPOT_I2C_MOTOR_CURRENTS - used by 5DPRINT & AZTEEG_X3_PRO
+ *                         known compatible chips: MCP4451
  *
  *  Motor currents can also be set by M907 - M910 and by the LCD.
  *    M907 - applies to all.
@@ -417,12 +418,12 @@
  *    M909, M910 & LCD - only PRINTRBOARD_REVF & RIGIDBOARD_V2
  */
 //#define PWM_MOTOR_CURRENT {1300, 1300, 1250} // Values in milliamps
-//#define DIGIPOT_MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+#define DIGIPOT_MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 //#define DAC_MOTOR_CURRENT_DEFAULT { 70, 80, 90, 80 } // Default drive percent - X, Y, Z, E axis
 
 // Uncomment to enable an I2C based DIGIPOT like on the Azteeg X3 Pro
 //#define DIGIPOT_I2C
-//#define DIGIPOT_MCP4018
+// Number of channels available for I2C digipot, For Azteeg X3 Pro we have 8
 #define DIGIPOT_I2C_NUM_CHANNELS 8 // 5DPRINT: 4     AZTEEG_X3_PRO: 8
 // Actual motor currents in Amps, need as many here as DIGIPOT_I2C_NUM_CHANNELS
 #define DIGIPOT_I2C_MOTOR_CURRENTS {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}  //  AZTEEG_X3_PRO
@@ -444,8 +445,8 @@
   //#define DELTA_CALIBRATE_EXPERT_MODE
 
   // Remove the comments of the folling 2 lines to overide default values
-  //#define H_FACTOR  1.02 //  1.0 < H_FACTOR <  1.11, default  1.00
-  //#define R_FACTOR -3.95 // -6.7 < R_FACTOR < -2.25, default -2.25
+  #define H_FACTOR  1.02 //  1.0 < H_FACTOR <  1.11, default  1.00
+  #define R_FACTOR -3.95 // -6.7 < R_FACTOR < -2.25, default -2.25
 #endif
 
 //===========================================================================
@@ -466,6 +467,9 @@
 
 // On the Info Screen, display XY with one decimal place when possible
 //#define LCD_DECIMAL_SMALL_XY
+
+// The timeout (in ms) to return to the status screen from sub-menus
+//#define LCD_TIMEOUT_TO_STATUS 15000
 
 #if ENABLED(SDSUPPORT)
 
@@ -686,7 +690,6 @@
 //#define BEZIER_CURVE_SUPPORT
 
 // G38.2 and G38.3 Probe Target
-// ENABLE PROBE_DOUBLE_TOUCH if you want G38 to double touch
 //#define G38_PROBE_TARGET
 #if ENABLED(G38_PROBE_TARGET)
   #define G38_MINIMUM_MOVE 0.0275 // minimum distance in mm that will produce a move (determined using the print statement in check_move)
