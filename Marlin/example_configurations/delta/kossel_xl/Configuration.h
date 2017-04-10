@@ -471,8 +471,8 @@
   // G33 Delta Auto-Calibration (Enable EEPROM_SETTINGS to store results)
   //#define DELTA_AUTO_CALIBRATION
   #if ENABLED(DELTA_AUTO_CALIBRATION)
-    #define DELTA_CALIBRATION_RADIUS (DELTA_PRINTABLE_RADIUS - 10) // set the radius for the calibration probe points
-    #define CONVERGENCE_FACTOR 0.75 // <1.00 lower to prevent overshooting solution, higher to speed up convergence
+    #define DELTA_CALIBRATION_DEFAULT_POINTS 3 // set the default number of probe points : n*n (1-4)
+    #define DELTA_CALIBRATION_RADIUS (DELTA_PRINTABLE_RADIUS - 15) // set the radius for the calibration probe points
   #endif
 
   // After homing move down to a height where XY movement is unconstrained

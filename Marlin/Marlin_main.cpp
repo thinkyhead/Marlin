@@ -4848,7 +4848,7 @@ inline void gcode_G28() {
      *     Cn = (default) = Calibrate endstops, height and delta radius 
      *          n= -2, 1-4 : n*n probe points, default 3*3
      *          n=1 probes center
-     *              sets height only - usefull when calibrated naked bed and tape is added
+     *              sets height only - usefull when z_offset is changed
      *          n=2 probes center and towers
      *              solves 1 '4 point' calibration
      *          n=-2 probes center and opposite the towers
@@ -5188,6 +5188,7 @@ inline void gcode_G28() {
       #if ENABLED(Z_PROBE_SLED)
         RETRACT_PROBE();
       #endif
+
     }
 
   #endif // DELTA_AUTO_CALIBRATION
