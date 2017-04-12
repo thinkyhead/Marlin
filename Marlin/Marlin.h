@@ -222,6 +222,11 @@ inline void reset_stepper_timeout() { previous_move_ms = millis(); }
  */
 extern float feedrate_mm_s;
 extern int16_t feedrate_percentage;
+extern float feedrate_mm_s;
+
+#if ENABLED(PATH_CONTROL_MODES)
+  extern float inverse_time_feedrate; // time to complete given distance
+#endif
 
 #define MMS_SCALED(MM_S) ((MM_S)*feedrate_percentage*0.01f)
 

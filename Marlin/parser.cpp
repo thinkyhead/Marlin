@@ -42,6 +42,10 @@ bool GCodeParser::volumetric_enabled;
   TempUnit GCodeParser::input_temp_units;
 #endif
 
+#if ENABLED(PATH_CONTROL_MODES)
+  PathControlMode GCodeParser::path_control_mode = PCM_UNITS_PER_MINUTE;
+#endif
+
 char *GCodeParser::command_ptr,
      *GCodeParser::string_arg,
      *GCodeParser::value_ptr;
@@ -254,6 +258,30 @@ void GCodeParser::unknown_command_error() {
   SERIAL_CHAR('"');
   SERIAL_EOL();
 }
+
+#if ENABLED(PATH_CONTROL_MODES)
+
+  float GCodeParser::value_feedrate() {
+    const float fr = value_linear_units();
+      switch (path_control_mode) {
+        case PCM_INVERSE_TIME:
+          /**
+           * Finish this move in 1/fr minutes
+           * The fr value here specifies mm-something (mm/m usually)
+           * To calculate this value we need to know the total
+           * length of the move, including G1, G2, and G3.
+           */
+          inverse_time_feedrate = fr;
+          return feedrate_mm_s; // don't alter the global feedrate
+
+        case PCM_UNITS_PER_MINUTE: break; // the usual mode
+
+        case PCM_UNITS_PER_REV: break;
+      }
+    return fr;
+  }
+
+#endif
 
 #if ENABLED(DEBUG_GCODE_PARSER)
 

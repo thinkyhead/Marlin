@@ -381,6 +381,10 @@
   bool G38_endstop_hit = false;
 #endif
 
+#if ENABLED(PATH_CONTROL_MODES)
+  float inverse_time_feedrate;
+#endif
+
 #if ENABLED(AUTO_BED_LEVELING_UBL)
   #include "ubl.h"
 #endif
@@ -6931,6 +6935,14 @@ inline void gcode_G92() {
 
   report_current_position();
 }
+
+#if ENABLED(PATH_CONTROL_MODES)
+
+  inline void gcode_G93() { parser.path_control_mode = PCM_INVERSE_TIME; }
+  inline void gcode_G94() { parser.path_control_mode = PCM_UNITS_PER_MINUTE; }
+  inline void gcode_G95() { parser.path_control_mode = PCM_UNITS_PER_REV; }
+
+#endif // PATH_CONTROL_MODES
 
 #if HAS_RESUME_CONTINUE
 

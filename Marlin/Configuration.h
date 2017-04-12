@@ -2073,6 +2073,9 @@
 // Debug with an oscilloscope
 //#define OSCILLOSCOPE_PIN_A 45
 
+// Enable G93, G94, and G95 to set path control mode
+#define PATH_CONTROL_MODES
+
 /**
  * Pick and Place
  *
