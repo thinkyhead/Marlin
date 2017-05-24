@@ -11126,9 +11126,9 @@ inline void gcode_M502() {
       const float pwm_top = round(count);   // Get the rounded count
 
       ICR5 = (uint16_t)pwm_top - 1;         // Subtract 1 for TOP
-      OCR5A = pwm_top * FABS(dca);          // Update and scale DCs
-      OCR5B = pwm_top * FABS(dcb);
-      OCR5C = pwm_top * FABS(dcc);
+      OCR5A = pwm_top * ABS(dca);          // Update and scale DCs
+      OCR5B = pwm_top * ABS(dcb);
+      OCR5C = pwm_top * ABS(dcc);
       _SET_COM(5, A, dca ? (dca < 0 ? COM_SET_CLEAR : COM_CLEAR_SET) : COM_NORMAL); // Set compare modes
       _SET_COM(5, B, dcb ? (dcb < 0 ? COM_SET_CLEAR : COM_CLEAR_SET) : COM_NORMAL);
       _SET_COM(5, C, dcc ? (dcc < 0 ? COM_SET_CLEAR : COM_CLEAR_SET) : COM_NORMAL);
@@ -11220,6 +11220,52 @@ inline void gcode_M502() {
     serialprintPGM((char*)pgm_read_word(&(tool_strings[tool_type])));
     SERIAL_CHAR(' ');
     SERIAL_ECHOLN((int)(tool_type == TOOL_TYPE_EXTRUDER ? active_extruder : 0));
+  }
+
+  /**
+   * M440: Directly set PWM for Timer 5 testing
+   *
+   *  F<Hz> - Frequency (0 for firmware default)
+   *  A<dc> - Duty cycle for A (D46)
+   *  B<dc> - Duty cycle for B (D45)
+   *  C<dc> - Duty cycle for C (D44)
+   *
+   * Use a negative duty cycle value for Inverted PWM.
+   */
+  inline void gcode_M440() {
+    static uint16_t DCA = 0, DCB = 0, DCC = 0, F = 0;
+    const float freq = parser.seen('F') ? parser.value_float() : NAN,
+                 dca = parser.seen('A') ? parser.value_float() * 0.01 : NAN,
+                 dcb = parser.seen('B') ? parser.value_float() * 0.01 : NAN,
+                 dcc = parser.seen('C') ? parser.value_float() * 0.01 : NAN;
+
+    if (!isnan(freq) || !isnan(dca) || !isnan(dcb) || !isnan(dcc)) {
+      uint8_t err = 0;
+      if (!isnan(freq) && freq > float(F_CPU / 10)) {
+        SERIAL_ERROR_START();
+        SERIAL_ERRORLNPGM("Frequency too high.");
+        ++err;
+      }
+      if ((!isnan(dca) && ABS(dca) > 1.0) || (!isnan(dcb) && ABS(dcb) > 1.0) || (!isnan(dcc) && ABS(dcc) > 1.0)) {
+        SERIAL_ERROR_START();
+        SERIAL_ERRORLNPGM("Set duty cycles between -100 and 100");
+        ++err;
+      }
+      if (err) return;
+
+      if (!isnan(freq)) F = freq;
+      if (!isnan(dca)) DCA = dca;
+      if (!isnan(dcb)) DCB = dcb;
+      if (!isnan(dcc)) DCC = dcc;
+      set_pwm_frequency_hz(F, DCA, DCB, DCC);
+    }
+    else {
+      SERIAL_ECHO_START();
+      SERIAL_ECHOPAIR("Timer 5 F=", isnan(F) ? 0. : F);
+      SERIAL_ECHOPAIR(" DCA=", isnan(DCA) ? 0. : DCA);
+      SERIAL_ECHOPAIR(" DCB=", isnan(DCB) ? 0. : DCB);
+      SERIAL_ECHOLNPAIR(" DCC=", isnan(DCC) ? 0. : DCC);
+    }
   }
 
   /**
@@ -13452,6 +13498,8 @@ void process_parsed_command() {
       #endif
 
       #if ENABLED(MAKERARM_SCARA)
+        case 440: gcode_M440(); break;                            // M440: Set Timer 5 PWM directly
+
         case 450: gcode_M450(); break;                            // M450: Report current tool type
         case 451: gcode_M451(); break;                            // M451: Select FFF printer mode
         case 452: gcode_M452(); break;                            // M452: Select Laser printer mode
