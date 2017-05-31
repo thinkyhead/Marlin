@@ -353,6 +353,13 @@
 #endif
 
 /**
+ * Requirements for FWRETRACT
+ */
+#if ENABLED(FWRETRACT) && EXTRUDERS == 0
+  #error "FWRETRACT requires at least one extruder."
+#endif
+
+/**
  * A dual nozzle x-carriage with switching servo
  */
 #if ENABLED(SWITCHING_NOZZLE)
@@ -849,8 +856,10 @@ static_assert(1 >= 0
   #error "TEMP_0_PIN not defined for this board."
 #elif !PIN_EXISTS(E0_STEP) || !PIN_EXISTS(E0_DIR) || !PIN_EXISTS(E0_ENABLE)
   #error "E0_STEP_PIN, E0_DIR_PIN, or E0_ENABLE_PIN not defined for this board."
-#elif TEMP_SENSOR_0 == 0
-  #error "TEMP_SENSOR_0 is required."
+#elif HOTENDS && TEMP_SENSOR_0 == 0
+  #error "TEMP_SENSOR_0 is required for the 1st extruder."
+#elif HOTENDS > 1 && TEMP_SENSOR_1 == 0
+  #error "TEMP_SENSOR_1 is required for the 2nd extruder."
 #endif
 
 #if HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
@@ -966,35 +975,39 @@ static_assert(1 >= 0
 /**
  * Endstops
  */
-#if DISABLED(USE_XMIN_PLUG) && DISABLED(USE_XMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _XMAX_, _XMIN_))
- #error "You must enable USE_XMIN_PLUG or USE_XMAX_PLUG."
-#elif DISABLED(USE_YMIN_PLUG) && DISABLED(USE_YMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _YMAX_, _YMIN_))
- #error "You must enable USE_YMIN_PLUG or USE_YMAX_PLUG."
-#elif DISABLED(USE_ZMIN_PLUG) && DISABLED(USE_ZMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _ZMAX_, _ZMIN_))
- #error "You must enable USE_ZMIN_PLUG or USE_ZMAX_PLUG."
-#elif ENABLED(Z_DUAL_ENDSTOPS)
-  #if !Z2_USE_ENDSTOP
-    #error "You must set Z2_USE_ENDSTOP with Z_DUAL_ENDSTOPS."
-  #elif Z2_MAX_PIN == 0 && Z2_MIN_PIN == 0
-    #error "Z2_USE_ENDSTOP has been assigned to a nonexistent endstop!"
-  #elif ENABLED(DELTA)
-    #error "Z_DUAL_ENDSTOPS is not compatible with DELTA."
+#if DISABLED(GALVO_XY)
+
+  #if DISABLED(USE_XMIN_PLUG) && DISABLED(USE_XMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _XMAX_, _XMIN_))
+   #error "You must enable USE_XMIN_PLUG or USE_XMAX_PLUG."
+  #elif DISABLED(USE_YMIN_PLUG) && DISABLED(USE_YMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _YMAX_, _YMIN_))
+   #error "You must enable USE_YMIN_PLUG or USE_YMAX_PLUG."
+  #elif DISABLED(USE_ZMIN_PLUG) && DISABLED(USE_ZMAX_PLUG) && !(ENABLED(Z_DUAL_ENDSTOPS) && WITHIN(Z2_USE_ENDSTOP, _ZMAX_, _ZMIN_))
+   #error "You must enable USE_ZMIN_PLUG or USE_ZMAX_PLUG."
+  #elif ENABLED(Z_DUAL_ENDSTOPS)
+    #if !Z2_USE_ENDSTOP
+      #error "You must set Z2_USE_ENDSTOP with Z_DUAL_ENDSTOPS."
+    #elif Z2_MAX_PIN == 0 && Z2_MIN_PIN == 0
+      #error "Z2_USE_ENDSTOP has been assigned to a nonexistent endstop!"
+    #elif ENABLED(DELTA)
+      #error "Z_DUAL_ENDSTOPS is not compatible with DELTA."
+    #endif
+  #elif !IS_SCARA
+    #if X_HOME_DIR < 0 && DISABLED(USE_XMIN_PLUG)
+      #error "Enable USE_XMIN_PLUG when homing X to MIN."
+    #elif X_HOME_DIR > 0 && DISABLED(USE_XMAX_PLUG)
+      #error "Enable USE_XMAX_PLUG when homing X to MAX."
+    #elif Y_HOME_DIR < 0 && DISABLED(USE_YMIN_PLUG)
+      #error "Enable USE_YMIN_PLUG when homing Y to MIN."
+    #elif Y_HOME_DIR > 0 && DISABLED(USE_YMAX_PLUG)
+      #error "Enable USE_YMAX_PLUG when homing Y to MAX."
+    #elif Z_HOME_DIR < 0 && DISABLED(USE_ZMIN_PLUG)
+      #error "Enable USE_ZMIN_PLUG when homing Z to MIN."
+    #elif Z_HOME_DIR > 0 && DISABLED(USE_ZMAX_PLUG)
+      #error "Enable USE_ZMAX_PLUG when homing Z to MAX."
+    #endif
   #endif
-#elif !IS_SCARA
-  #if X_HOME_DIR < 0 && DISABLED(USE_XMIN_PLUG)
-    #error "Enable USE_XMIN_PLUG when homing X to MIN."
-  #elif X_HOME_DIR > 0 && DISABLED(USE_XMAX_PLUG)
-    #error "Enable USE_XMAX_PLUG when homing X to MAX."
-  #elif Y_HOME_DIR < 0 && DISABLED(USE_YMIN_PLUG)
-    #error "Enable USE_YMIN_PLUG when homing Y to MIN."
-  #elif Y_HOME_DIR > 0 && DISABLED(USE_YMAX_PLUG)
-    #error "Enable USE_YMAX_PLUG when homing Y to MAX."
-  #elif Z_HOME_DIR < 0 && DISABLED(USE_ZMIN_PLUG)
-    #error "Enable USE_ZMIN_PLUG when homing Z to MIN."
-  #elif Z_HOME_DIR > 0 && DISABLED(USE_ZMAX_PLUG)
-    #error "Enable USE_ZMAX_PLUG when homing Z to MAX."
-  #endif
-#endif
+
+#endif // !GALVO_XY
 
 /**
  * emergency-command parser

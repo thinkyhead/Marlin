@@ -400,7 +400,7 @@ extern float soft_endstop_min[XYZ], soft_endstop_max[XYZ];
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
 
-#if HAS_TEMP_HOTEND || HAS_TEMP_BED
+#if HOTENDS || HAS_TEMP_BED
   void print_heaterstates();
 #endif
 

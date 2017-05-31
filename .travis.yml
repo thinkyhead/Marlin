@@ -50,6 +50,10 @@ install:
   - git clone https://github.com/teemuatlut/TMC2130Stepper.git
   - sudo mv TMC2130Stepper /usr/local/share/arduino/libraries/TMC2130Stepper
   #
+  # Install: MCP4725 12-bit I2C DAC Driver library
+  - git clone https://github.com/adafruit/Adafruit_MCP4725.git
+  - sudo mv Adafruit_MCP4725 /usr/local/share/arduino/libraries/Adafruit_MCP4725
+  #
 before_script:
   #
   # Change current working directory to the build dir
@@ -67,25 +71,21 @@ script:
   - cp Marlin/Configuration_adv.h Marlin/Configuration_adv.h.backup
   - cp Marlin/pins_RAMPS.h Marlin/pins_RAMPS.h.backup
   #
-  # Build with the default configurations
+  # Build the default configurations
   #
   - build_marlin
   #
-  # Test heated bed temperature sensor
+  # Test Galvos and EXTRUDERS 0
   #
-  - opt_set TEMP_SENSOR_BED 1
-  - build_marlin
-  #
-  # Test 2 extruders on basic RAMPS 1.4
-  #
-  - opt_set MOTHERBOARD BOARD_RAMPS_14_EEB
-  - opt_set EXTRUDERS 2
-  - opt_set TEMP_SENSOR_1 1
+  - opt_set EXTRUDERS 0
+  - opt_set TEMP_SENSOR_0 0
+  - opt_enable GALVO_XY
   - build_marlin
   #
   # Test 5 extruders on AZTEEG_X3_PRO (can use any board with >=5 extruders defined)
   # Include a test for LIN_ADVANCE here also
   #
+  - restore_configs
   - opt_set MOTHERBOARD BOARD_AZTEEG_X3_PRO
   - opt_set EXTRUDERS 5
   - opt_set TEMP_SENSOR_1 1

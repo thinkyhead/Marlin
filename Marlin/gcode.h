@@ -132,7 +132,7 @@ public:
 
     #define SEEN_TEST(L) TEST(codebits[(L - 'A') >> 3], (L - 'A') & 0x7)
 
-  #else
+  #else // !FASTER_GCODE_PARSER
 
     // Code is found in the string. If not found, value_ptr is unchanged.
     // This allows "if (seen('A')||seen('B'))" to use the last-found value.
@@ -147,7 +147,7 @@ public:
 
     #define SEEN_TEST(L) !!strchr(command_args, L)
 
-  #endif // FASTER_GCODE_PARSER
+  #endif // !FASTER_GCODE_PARSER
 
   // Populate all fields by parsing a single line of GCode
   // This uses 54 bytes of SRAM to speed up seen/value

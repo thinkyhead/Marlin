@@ -240,8 +240,9 @@
     #define LCD_STR_FILAM_DIA   "\xf8"
     #define LCD_STR_FILAM_MUL   "\xa4"
   #else
-    /* Custom characters defined in the first 8 characters of the LCD */
-    #define LCD_BEDTEMP_CHAR     0x00  // Print only as a char. This will have 'unexpected' results when used in a string!
+    // Custom characters defined in the first 8 characters of the LCD
+    // Print double-quoted items only as char. They may have 'unexpected' results if used in strings!
+    #define LCD_BEDTEMP_CHAR     0x00
     #define LCD_DEGREE_CHAR      0x01
     #define LCD_STR_THERMOMETER "\x02" // Still used with string concatenation
     #define LCD_UPLEVEL_CHAR     0x03
@@ -294,7 +295,23 @@
    *  TOOL_E_INDEX - Index to use when getting/setting the tool state
    *
    */
-  #if ENABLED(SINGLENOZZLE) || ENABLED(MIXING_EXTRUDER)         // One hotend, one thermistor, no XY offset
+  #define HAS_EXTRUDERS (EXTRUDERS > 0)
+
+  #if !HAS_EXTRUDERS
+    #define HOTENDS       0
+    #undef DISABLE_INACTIVE_EXTRUDER
+    #undef FILAMENT_WIDTH_SENSOR
+    #undef HAS_AUTO_FAN
+    #undef HEATER_0_USES_MAX6675
+    #undef MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED
+    #undef MILLISECONDS_PREHEAT_TIME
+    #undef PIDTEMP
+    #undef PREVENT_COLD_EXTRUSION
+    #undef SHOW_TEMP_ADC_VALUES
+    #undef TEMP_SENSOR_1_AS_REDUNDANT
+    #undef THERMAL_PROTECTION_HOTENDS
+    #undef WATCH_HOTENDS
+  #elif ENABLED(SINGLENOZZLE) || ENABLED(MIXING_EXTRUDER)       // One hotend, one thermistor, no XY offset
     #define HOTENDS       1
     #undef TEMP_SENSOR_1_AS_REDUNDANT
     #undef HOTEND_OFFSET_X

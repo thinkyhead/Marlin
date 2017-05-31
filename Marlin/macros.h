@@ -140,6 +140,7 @@
 #define ARRAY_3(v1, v2, v3, ...)             { v1, v2, v3 }
 #define ARRAY_2(v1, v2, ...)                 { v1, v2 }
 #define ARRAY_1(v1, ...)                     { v1 }
+#define ARRAY_0(...)                         { }
 
 #define _ARRAY_N(N, ...) ARRAY_ ##N(__VA_ARGS__)
 #define ARRAY_N(N, ...) _ARRAY_N(N, __VA_ARGS__)
@@ -175,7 +176,7 @@
 #define PENDING(NOW,SOON) ((long)(NOW-(SOON))<0)
 #define ELAPSED(NOW,SOON) (!PENDING(NOW,SOON))
 
-#define NOOP do{} while(0)
+#define NOOP do{}while(0)
 
 #define CEILING(x,y) (((x) + (y) - 1) / (y))
 

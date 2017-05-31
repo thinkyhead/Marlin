@@ -242,9 +242,9 @@
     #define MAX6675_TMAX 1024
   #elif TEMP_SENSOR_0 == -1
     #define HEATER_0_USES_AD595
-  #elif TEMP_SENSOR_0 == 0
-    #undef HEATER_0_MINTEMP
-    #undef HEATER_0_MAXTEMP
+  //#elif TEMP_SENSOR_0 == 0
+    //#undef HEATER_0_MINTEMP
+    //#undef HEATER_0_MAXTEMP
   #elif TEMP_SENSOR_0 > 0
     #define THERMISTORHEATER_0 TEMP_SENSOR_0
     #define HEATER_0_USES_THERMISTOR
@@ -522,7 +522,6 @@
   #define HAS_TEMP_2 (PIN_EXISTS(TEMP_2) && TEMP_SENSOR_2 != 0 && TEMP_SENSOR_2 > -2)
   #define HAS_TEMP_3 (PIN_EXISTS(TEMP_3) && TEMP_SENSOR_3 != 0 && TEMP_SENSOR_3 > -2)
   #define HAS_TEMP_4 (PIN_EXISTS(TEMP_4) && TEMP_SENSOR_4 != 0 && TEMP_SENSOR_4 > -2)
-  #define HAS_TEMP_HOTEND (HAS_TEMP_0 || ENABLED(HEATER_0_USES_MAX6675))
   #define HAS_TEMP_BED (PIN_EXISTS(TEMP_BED) && TEMP_SENSOR_BED != 0 && TEMP_SENSOR_BED > -2)
 
   // Heaters
@@ -535,11 +534,11 @@
 
   // Thermal protection
   #define HAS_THERMALLY_PROTECTED_BED (ENABLED(THERMAL_PROTECTION_BED) && HAS_TEMP_BED && HAS_HEATER_BED)
-  #define WATCH_HOTENDS (ENABLED(THERMAL_PROTECTION_HOTENDS) && WATCH_TEMP_PERIOD > 0)
+  #define WATCH_HOTENDS (HOTENDS && ENABLED(THERMAL_PROTECTION_HOTENDS) && WATCH_TEMP_PERIOD > 0)
   #define WATCH_THE_BED (HAS_THERMALLY_PROTECTED_BED && WATCH_BED_TEMP_PERIOD > 0)
 
   // Auto fans
-  #define HAS_AUTO_FAN_0 (PIN_EXISTS(E0_AUTO_FAN))
+  #define HAS_AUTO_FAN_0 (HOTENDS > 0 && PIN_EXISTS(E0_AUTO_FAN))
   #define HAS_AUTO_FAN_1 (HOTENDS > 1 && PIN_EXISTS(E1_AUTO_FAN))
   #define HAS_AUTO_FAN_2 (HOTENDS > 2 && PIN_EXISTS(E2_AUTO_FAN))
   #define HAS_AUTO_FAN_3 (HOTENDS > 3 && PIN_EXISTS(E3_AUTO_FAN))
@@ -598,24 +597,26 @@
   /**
    * Helper Macros for heaters and extruder fan
    */
-  #define WRITE_HEATER_0P(v) WRITE(HEATER_0_PIN, v)
-  #if HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
-    #define WRITE_HEATER_1(v) WRITE(HEATER_1_PIN, v)
-    #if HOTENDS > 2
-      #define WRITE_HEATER_2(v) WRITE(HEATER_2_PIN, v)
-      #if HOTENDS > 3
-        #define WRITE_HEATER_3(v) WRITE(HEATER_3_PIN, v)
-        #if HOTENDS > 4
-          #define WRITE_HEATER_4(v) WRITE(HEATER_4_PIN, v)
-        #endif // HOTENDS > 4
-      #endif // HOTENDS > 3
-    #endif // HOTENDS > 2
-  #endif // HOTENDS > 1
-  #if ENABLED(HEATERS_PARALLEL)
-    #define WRITE_HEATER_0(v) { WRITE_HEATER_0P(v); WRITE_HEATER_1(v); }
-  #else
-    #define WRITE_HEATER_0(v) WRITE_HEATER_0P(v)
-  #endif
+  #if HOTENDS
+    #define WRITE_HEATER_0P(v) WRITE(HEATER_0_PIN, v)
+    #if HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
+      #define WRITE_HEATER_1(v) WRITE(HEATER_1_PIN, v)
+      #if HOTENDS > 2
+        #define WRITE_HEATER_2(v) WRITE(HEATER_2_PIN, v)
+        #if HOTENDS > 3
+          #define WRITE_HEATER_3(v) WRITE(HEATER_3_PIN, v)
+          #if HOTENDS > 4
+            #define WRITE_HEATER_4(v) WRITE(HEATER_4_PIN, v)
+          #endif // HOTENDS > 4
+        #endif // HOTENDS > 3
+      #endif // HOTENDS > 2
+    #endif // HOTENDS > 1
+    #if ENABLED(HEATERS_PARALLEL)
+      #define WRITE_HEATER_0(v) { WRITE_HEATER_0P(v); WRITE_HEATER_1(v); }
+    #else
+      #define WRITE_HEATER_0(v) WRITE_HEATER_0P(v)
+    #endif
+  #endif // HOTENDS
   #if HAS_HEATER_BED
     #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN, v)
   #endif
@@ -794,6 +795,11 @@
     #define MAX_PROBE_X ( SCARA_PRINTABLE_RADIUS)
     #define MIN_PROBE_Y (-SCARA_PRINTABLE_RADIUS)
     #define MAX_PROBE_Y ( SCARA_PRINTABLE_RADIUS)
+  #elif ENABLED(GALVO_XY)
+    #define MIN_PROBE_X -(GALVOXY_X_WIDTH) / 2
+    #define MAX_PROBE_X (GALVOXY_X_WIDTH) / 2
+    #define MIN_PROBE_Y -(GALVOXY_Y_WIDTH) / 2
+    #define MAX_PROBE_Y (GALVOXY_Y_WIDTH) / 2
   #else
     // Boundaries for probing based on set limits
     #define MIN_PROBE_X (max(X_MIN_POS, X_MIN_POS + X_PROBE_OFFSET_FROM_EXTRUDER))

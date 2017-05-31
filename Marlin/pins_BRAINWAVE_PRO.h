@@ -54,7 +54,7 @@
  *          click on "Download ZIP" button.
  *       2. Unzip the file, find the "printrboard" directory and then copy it to the
  *          hardware directory in Arduino.  The Arduino hardware directory will probably
- *			be located in a path similar to this: C:\Program Files (x86)\Arduino\hardware.
+ *          be located in a path similar to this: C:\Program Files (x86)\Arduino\hardware.
  *       3. Restart Arduino.
  *       4. Select "Printrboard" from the 'Tools -> Boards' menu.
  *

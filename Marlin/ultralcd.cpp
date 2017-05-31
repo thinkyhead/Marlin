@@ -254,7 +254,7 @@ uint16_t max_display_update_time = 0;
       _skipStatic = false; \
       _MENU_ITEM_PART_1(TYPE, ## __VA_ARGS__); \
       _MENU_ITEM_PART_2(TYPE, LABEL, ## __VA_ARGS__); \
-    } while(0)
+    }while(0)
 
   #define MENU_BACK(LABEL) MENU_ITEM(back, LABEL, 0)
 
@@ -286,13 +286,13 @@ uint16_t max_display_update_time = 0;
         encoderRateMultiplierEnabled = true; \
         lastEncoderMovementMillis = 0; \
         _MENU_ITEM_PART_2(type, label, ## __VA_ARGS__); \
-      } while(0)
+      }while(0)
 
   #else // !ENCODER_RATE_MULTIPLIER
     #define ENCODER_RATE_MULTIPLY(F) NOOP
   #endif // !ENCODER_RATE_MULTIPLIER
 
-  #define MENU_ITEM_DUMMY() do { _thisItemNr++; } while(0)
+  #define MENU_ITEM_DUMMY() do { _thisItemNr++; }while(0)
   #define MENU_ITEM_EDIT(type, label, ...) MENU_ITEM(setting_edit_ ## type, label, PSTR(label), ## __VA_ARGS__)
   #define MENU_ITEM_EDIT_CALLBACK(type, label, ...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label), ## __VA_ARGS__)
   #if ENABLED(ENCODER_RATE_MULTIPLIER)
@@ -1073,7 +1073,7 @@ void kill_screen(const char* lcd_msg) {
   /**
    * Watch temperature callbacks
    */
-  #if HAS_TEMP_HOTEND
+  #if HOTENDS
     #if WATCH_HOTENDS
       #define _WATCH_FUNC(N) thermalManager.start_watching_heater(N)
     #else
@@ -1092,7 +1092,7 @@ void kill_screen(const char* lcd_msg) {
         #endif // HOTENDS > 3
       #endif // HOTENDS > 2
     #endif // HOTENDS > 1
-  #endif // HAS_TEMP_HOTEND
+  #endif // HOTENDS
 
   #if WATCH_THE_BED
     void watch_temp_callback_bed() { thermalManager.start_watching_bed(); }
@@ -1141,7 +1141,7 @@ void kill_screen(const char* lcd_msg) {
     //
     #if HOTENDS == 1
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
-    #else // HOTENDS > 1
+    #elif HOTENDS > 1
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N1, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N2, &thermalManager.target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
       #if HOTENDS > 2
@@ -1188,7 +1188,7 @@ void kill_screen(const char* lcd_msg) {
     //
     #if EXTRUDERS == 1
       MENU_ITEM_EDIT(int3, MSG_FLOW, &flow_percentage[0], 10, 999);
-    #else // EXTRUDERS > 1
+    #elif EXTRUDERS > 1
       MENU_ITEM_EDIT(int3, MSG_FLOW, &flow_percentage[active_extruder], 10, 999);
       MENU_ITEM_EDIT(int3, MSG_FLOW MSG_N1, &flow_percentage[0], 10, 999);
       MENU_ITEM_EDIT(int3, MSG_FLOW MSG_N2, &flow_percentage[1], 10, 999);
@@ -1381,7 +1381,7 @@ void kill_screen(const char* lcd_msg) {
         #else
           MENU_ITEM(function, MSG_PREHEAT_1, lcd_preheat_m1_e0_only);
         #endif
-      #else
+      #elif HOTENDS > 1
         #if TEMP_SENSOR_BED != 0
           MENU_ITEM(function, MSG_PREHEAT_1_N MSG_H1, lcd_preheat_m1_e0);
           MENU_ITEM(function, MSG_PREHEAT_1_END " " MSG_E1, lcd_preheat_m1_e0_only);
@@ -2438,7 +2438,7 @@ void kill_screen(const char* lcd_msg) {
       PGM_P pos_label;
       #if E_MANUAL == 1
         pos_label = PSTR(MSG_MOVE_E);
-      #else
+      #elif E_MANUAL > 1
         switch (eindex) {
           default: pos_label = PSTR(MSG_MOVE_E MSG_MOVE_E1); break;
           case 1: pos_label = PSTR(MSG_MOVE_E MSG_MOVE_E2); break;
@@ -2609,7 +2609,10 @@ void kill_screen(const char* lcd_msg) {
     MENU_BACK(MSG_MAIN);
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
-    MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_filament_menu);
+
+    #if HAS_EXTRUDERS
+      MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_filament_menu);
+    #endif
 
     #if HAS_LCD_CONTRAST
       MENU_ITEM_EDIT_CALLBACK(int3, MSG_CONTRAST, (int*)&lcd_contrast, LCD_CONTRAST_MIN, LCD_CONTRAST_MAX, lcd_callback_set_contrast, true);
@@ -2699,21 +2702,23 @@ void kill_screen(const char* lcd_msg) {
       #define DEFINE_PIDTEMP_FUNCS(N) _DEFINE_PIDTEMP_BASE_FUNCS(N) typedef void _pid_##N##_void
     #endif
 
-    DEFINE_PIDTEMP_FUNCS(0);
-    #if ENABLED(PID_PARAMS_PER_HOTEND)
-      #if HOTENDS > 1
-        DEFINE_PIDTEMP_FUNCS(1);
-        #if HOTENDS > 2
-          DEFINE_PIDTEMP_FUNCS(2);
-          #if HOTENDS > 3
-            DEFINE_PIDTEMP_FUNCS(3);
-            #if HOTENDS > 4
-              DEFINE_PIDTEMP_FUNCS(4);
-            #endif // HOTENDS > 4
-          #endif // HOTENDS > 3
-        #endif // HOTENDS > 2
-      #endif // HOTENDS > 1
-    #endif // PID_PARAMS_PER_HOTEND
+    #if HOTENDS
+      DEFINE_PIDTEMP_FUNCS(0);
+      #if ENABLED(PID_PARAMS_PER_HOTEND)
+        #if HOTENDS > 1
+          DEFINE_PIDTEMP_FUNCS(1);
+          #if HOTENDS > 2
+            DEFINE_PIDTEMP_FUNCS(2);
+            #if HOTENDS > 3
+              DEFINE_PIDTEMP_FUNCS(3);
+              #if HOTENDS > 4
+                DEFINE_PIDTEMP_FUNCS(4);
+              #endif // HOTENDS > 4
+            #endif // HOTENDS > 3
+          #endif // HOTENDS > 2
+        #endif // HOTENDS > 1
+      #endif // PID_PARAMS_PER_HOTEND
+    #endif // HOTENDS
 
   #endif // PIDTEMP
 
@@ -2736,7 +2741,7 @@ void kill_screen(const char* lcd_msg) {
     //
     #if HOTENDS == 1
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
-    #else // HOTENDS > 1
+    #elif HOTENDS > 1
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N1, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N2, &thermalManager.target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
       #if HOTENDS > 2
@@ -2863,14 +2868,14 @@ void kill_screen(const char* lcd_msg) {
     #elif HOTENDS > 1
       #define MINTEMP_ALL min(HEATER_0_MINTEMP, HEATER_1_MINTEMP)
       #define MAXTEMP_ALL max(HEATER_0_MAXTEMP, HEATER_1_MAXTEMP)
-    #else
+    #elif HOTENDS
       #define MINTEMP_ALL HEATER_0_MINTEMP
       #define MAXTEMP_ALL HEATER_0_MAXTEMP
     #endif
     START_MENU();
     MENU_BACK(MSG_TEMPERATURE);
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &lcd_preheat_fan_speed[material], 0, 255);
-    #if TEMP_SENSOR_0 != 0
+    #if HOTENDS && TEMP_SENSOR_0 != 0
       MENU_ITEM_EDIT(int3, MSG_NOZZLE, &lcd_preheat_hotend_temp[material], MINTEMP_ALL, MAXTEMP_ALL - 15);
     #endif
     #if TEMP_SENSOR_BED != 0
@@ -3113,7 +3118,7 @@ void kill_screen(const char* lcd_msg) {
     if (volumetric_enabled) {
       #if EXTRUDERS == 1
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_DIAM, &filament_size[0], 1.5, 3.25, calculate_volumetric_multipliers);
-      #else // EXTRUDERS > 1
+      #elif EXTRUDERS > 1
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_DIAM MSG_DIAM_E1, &filament_size[0], 1.5, 3.25, calculate_volumetric_multipliers);
         MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_DIAM MSG_DIAM_E2, &filament_size[1], 1.5, 3.25, calculate_volumetric_multipliers);
         #if EXTRUDERS > 2
@@ -3268,11 +3273,15 @@ void kill_screen(const char* lcd_msg) {
     void lcd_info_thermistors_menu() {
       if (lcd_clicked) { return lcd_goto_previous_menu(); }
       START_SCREEN();
-      #define THERMISTOR_ID TEMP_SENSOR_0
-      #include "thermistornames.h"
-      STATIC_ITEM("T0: " THERMISTOR_NAME, false, true);
-      STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(HEATER_0_MINTEMP), false);
-      STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(HEATER_0_MAXTEMP), false);
+
+      #if TEMP_SENSOR_0 != 0
+        #undef THERMISTOR_ID
+        #define THERMISTOR_ID TEMP_SENSOR_0
+        #include "thermistornames.h"
+        STATIC_ITEM("T0: " THERMISTOR_NAME, false, true);
+        STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(HEATER_0_MINTEMP), false);
+        STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(HEATER_0_MAXTEMP), false);
+      #endif
 
       #if TEMP_SENSOR_1 != 0
         #undef THERMISTOR_ID
@@ -3380,7 +3389,9 @@ void kill_screen(const char* lcd_msg) {
       MENU_BACK(MSG_MAIN);
       MENU_ITEM(submenu, MSG_INFO_PRINTER_MENU, lcd_info_printer_menu);        // Printer Info >
       MENU_ITEM(submenu, MSG_INFO_BOARD_MENU, lcd_info_board_menu);            // Board Info >
-      MENU_ITEM(submenu, MSG_INFO_THERMISTOR_MENU, lcd_info_thermistors_menu); // Thermistors >
+      #if TEMP_SENSOR_0 != 0 || TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 || TEMP_SENSOR_4 != 0 || TEMP_SENSOR_BED != 0
+        MENU_ITEM(submenu, MSG_INFO_THERMISTOR_MENU, lcd_info_thermistors_menu); // Thermistors >
+      #endif
       #if ENABLED(PRINTCOUNTER)
         MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
       #endif
@@ -3409,7 +3420,7 @@ void kill_screen(const char* lcd_msg) {
         lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NEXT; \
       } \
       ++_thisItemNr; \
-    } while(0)
+    }while(0)
 
     void lcd_advanced_pause_toocold_menu() {
       START_MENU();
