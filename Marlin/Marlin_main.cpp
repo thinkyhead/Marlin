@@ -3481,20 +3481,20 @@ inline void gcode_G4() {
       SERIAL_ECHOPAIR("Probe Offset X:", X_PROBE_OFFSET_FROM_EXTRUDER);
       SERIAL_ECHOPAIR(" Y:", Y_PROBE_OFFSET_FROM_EXTRUDER);
       SERIAL_ECHOPAIR(" Z:", zprobe_zoffset);
-      #if (X_PROBE_OFFSET_FROM_EXTRUDER > 0)
+      #if X_PROBE_OFFSET_FROM_EXTRUDER > 0
         SERIAL_ECHOPGM(" (Right");
-      #elif (X_PROBE_OFFSET_FROM_EXTRUDER < 0)
+      #elif X_PROBE_OFFSET_FROM_EXTRUDER < 0
         SERIAL_ECHOPGM(" (Left");
-      #elif (Y_PROBE_OFFSET_FROM_EXTRUDER != 0)
+      #elif Y_PROBE_OFFSET_FROM_EXTRUDER != 0
         SERIAL_ECHOPGM(" (Middle");
       #else
         SERIAL_ECHOPGM(" (Aligned With");
       #endif
-      #if (Y_PROBE_OFFSET_FROM_EXTRUDER > 0)
+      #if Y_PROBE_OFFSET_FROM_EXTRUDER > 0
         SERIAL_ECHOPGM("-Back");
-      #elif (Y_PROBE_OFFSET_FROM_EXTRUDER < 0)
+      #elif Y_PROBE_OFFSET_FROM_EXTRUDER < 0
         SERIAL_ECHOPGM("-Front");
-      #elif (X_PROBE_OFFSET_FROM_EXTRUDER != 0)
+      #elif X_PROBE_OFFSET_FROM_EXTRUDER != 0
         SERIAL_ECHOPGM("-Center");
       #endif
       if (zprobe_zoffset < 0)
@@ -7624,7 +7624,7 @@ inline void gcode_M18_M84() {
       if (parser.seen('X')) disable_X();
       if (parser.seen('Y')) disable_Y();
       if (parser.seen('Z')) disable_Z();
-      #if ((E0_ENABLE_PIN != X_ENABLE_PIN) && (E1_ENABLE_PIN != Y_ENABLE_PIN)) // Only enable on boards that have seperate ENABLE_PINS
+      #if E0_ENABLE_PIN != X_ENABLE_PIN && E1_ENABLE_PIN != Y_ENABLE_PIN // Only enable on boards that have seperate ENABLE_PINS
         if (parser.seen('E')) disable_e_steppers();
       #endif
     }

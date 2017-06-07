@@ -59,7 +59,7 @@
       #define CORE_AXIS_1 B_AXIS
       #define CORE_AXIS_2 C_AXIS
     #endif
-    #if (ENABLED(COREYX) || ENABLED(COREZX) || ENABLED(COREZY))
+    #if ENABLED(COREYX) || ENABLED(COREZX) || ENABLED(COREZY)
       #define CORESIGN(n) (-(n))
     #else
       #define CORESIGN(n) (n)
@@ -219,10 +219,10 @@
   #ifndef POWER_SUPPLY
     #define POWER_SUPPLY 1
   #endif
-  #if (POWER_SUPPLY == 1)     // 1 = ATX
+  #if POWER_SUPPLY == 1     // 1 = ATX
     #define PS_ON_AWAKE  LOW
     #define PS_ON_ASLEEP HIGH
-  #elif (POWER_SUPPLY == 2)   // 2 = X-Box 360 203W
+  #elif POWER_SUPPLY == 2   // 2 = X-Box 360 203W
     #define PS_ON_AWAKE  HIGH
     #define PS_ON_ASLEEP LOW
   #endif

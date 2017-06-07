@@ -580,7 +580,7 @@ static_assert(1 >= 0
    /**
     * Advanced Pause is required in order to turn the heaters off during probing
     */
-   #if (ENABLED(PROBING_HEATERS_OFF) && DISABLED(ADVANCED_PAUSE_FEATURE))
+   #if ENABLED(PROBING_HEATERS_OFF) && DISABLED(ADVANCED_PAUSE_FEATURE)
      #error "PROBING_HEATERS_OFF requires ADVANCED_PAUSE_FEATURE"
    #endif
 
