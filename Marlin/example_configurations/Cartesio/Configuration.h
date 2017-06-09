@@ -133,7 +133,7 @@
 // @section extruder
 
 // This defines the number of extruders
-// :[1, 2, 3, 4, 5]
+// :[0, 1, 2, 3, 4, 5]
 #define EXTRUDERS 3
 
 // For Cyclops or any "multi-extruder" that shares a single nozzle.
