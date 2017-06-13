@@ -124,6 +124,7 @@ lib/readme.txt
 *.sln
 *.vcxproj
 *.vcxproj.filters
+.vscode
 Marlin/Release/
 Marlin/Debug/
 Marlin/__vm/
