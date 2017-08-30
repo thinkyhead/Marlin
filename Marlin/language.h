@@ -267,6 +267,8 @@
 #define MSG_DEBUG_DRYRUN                    "DRYRUN"
 #define MSG_DEBUG_COMMUNICATION             "COMMUNICATION"
 #define MSG_DEBUG_LEVELING                  "LEVELING"
+#define MSG_DEBUG_SCARA                     "SCARA"
+#define MSG_DEBUG_SCARA2                    "SCARA2"
 
 // LCD Menu Messages
 
