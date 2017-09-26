@@ -345,7 +345,7 @@ void enqueue_and_echo_command_now(const char* cmd) {
  */
 bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
   if (_enqueuecommand(cmd, say_ok)) {
-    SERIAL_ECHO_START;
+    SERIAL_ECHO_START();
     SERIAL_ECHOPGM(MSG_Enqueueing);
     SERIAL_ECHO(cmd);
     SERIAL_ECHOLNPGM("\"");
@@ -436,7 +436,7 @@ void setup() {
 
   MYSERIAL.begin(BAUDRATE);
   SERIAL_PROTOCOLLNPGM("start");
-  SERIAL_ECHO_START;
+  SERIAL_ECHO_START();
 
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
@@ -452,7 +452,7 @@ void setup() {
 
   #ifdef STRING_DISTRIBUTION_DATE
     #ifdef STRING_CONFIG_H_AUTHOR
-      SERIAL_ECHO_START;
+      SERIAL_ECHO_START();
       SERIAL_ECHOPGM(MSG_CONFIGURATION_VER);
       SERIAL_ECHOPGM(STRING_DISTRIBUTION_DATE);
       SERIAL_ECHOPGM(MSG_AUTHOR);
@@ -462,7 +462,7 @@ void setup() {
     #endif // STRING_CONFIG_H_AUTHOR
   #endif // STRING_DISTRIBUTION_DATE
 
-  SERIAL_ECHO_START;
+  SERIAL_ECHO_START();
   SERIAL_ECHOPGM(MSG_FREE_MEMORY);
   SERIAL_ECHO(freeMemory());
   SERIAL_ECHOPGM(MSG_PLANNER_BUFFER_BYTES);
@@ -531,7 +531,7 @@ void loop() {
 }
 
 void gcode_line_error(const char* err, bool doFlush = true) {
-  SERIAL_ERROR_START;
+  SERIAL_ERROR_START();
   serialprintPGM(err);
   SERIAL_ERRORLN(gcode_LastN);
   //Serial.println(gcode_N);
@@ -772,7 +772,7 @@ inline float get_homing_bump_feedrate(AxisEnum axis) {
   int hbd = HOMING_BUMP_DIVISOR;
   if (hbd < 1) {
     hbd = 10;
-    SERIAL_ECHO_START;
+    SERIAL_ECHO_START();
     SERIAL_ECHOLNPGM("Warning: Homing Bump Divisor < 1");
   }
   return homing_feedrate_mm_s / hbd;
@@ -955,7 +955,7 @@ void gcode_get_destination() {
 }
 
 void unknown_command_error() {
-  SERIAL_ECHO_START;
+  SERIAL_ECHO_START();
   SERIAL_ECHOPGM(MSG_UNKNOWN_COMMAND);
   SERIAL_ECHO(current_command);
   SERIAL_ECHOLNPGM("\"");
@@ -1160,7 +1160,7 @@ inline void gcode_M111() {
     #endif
   };
 
-  SERIAL_ECHO_START;
+  SERIAL_ECHO_START();
   SERIAL_ECHOPGM(MSG_DEBUG_PREFIX);
   if (marlin_debug_flags) {
     uint8_t comma = 0;
@@ -1485,7 +1485,7 @@ inline void gcode_M226() {
       i2c.relay(bytes);
     }
     else {
-      SERIAL_ERROR_START;
+      SERIAL_ERROR_START();
       SERIAL_ERRORLN("Bad i2c request");
     }
   }
@@ -1659,7 +1659,7 @@ void process_next_command() {
   current_command = command_queue[cmd_queue_index_r];
 
   if (DEBUGGING(ECHO)) {
-    SERIAL_ECHO_START;
+    SERIAL_ECHO_START();
     SERIAL_ECHOLN(current_command);
   }
 
@@ -2068,7 +2068,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 }
 
 void kill() {
-  SERIAL_ERROR_START;
+  SERIAL_ERROR_START();
   SERIAL_ERRORLNPGM(MSG_ERR_KILLED);
 
   delay(500); // Wait a short time
@@ -2089,7 +2089,7 @@ void stop() {
   if (IsRunning()) {
     Running = false;
     Stopped_gcode_LastN = gcode_LastN; // Save last g_code for restart
-    SERIAL_ERROR_START;
+    SERIAL_ERROR_START();
     SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
   }
 }

@@ -76,7 +76,7 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
     eeprom_write_byte((unsigned char*)pos, *value);
     c = eeprom_read_byte((unsigned char*)pos);
     if (c != *value) {
-      SERIAL_ECHO_START;
+      SERIAL_ECHO_START();
       SERIAL_ECHOLNPGM(MSG_ERR_EEPROM_WRITE);
     }
     eeprom_checksum += c;
@@ -147,7 +147,7 @@ void Config_StoreSettings()  {
   EEPROM_WRITE(final_checksum);
 
   // Report storage size
-  SERIAL_ECHO_START;
+  SERIAL_ECHO_START();
   SERIAL_ECHOPAIR("Settings Stored (", eeprom_size);
   SERIAL_ECHOLNPGM(" bytes)");
 }
@@ -192,13 +192,13 @@ void Config_RetrieveSettings() {
 
     if (eeprom_checksum == stored_checksum) {
       Config_Postprocess();
-      SERIAL_ECHO_START;
+      SERIAL_ECHO_START();
       SERIAL_ECHO(version);
       SERIAL_ECHOPAIR(" stored settings retrieved (", eeprom_index);
       SERIAL_ECHOLNPGM(" bytes)");
     }
     else {
-      SERIAL_ERROR_START;
+      SERIAL_ERROR_START();
       SERIAL_ERRORLNPGM("EEPROM checksum mismatch");
       Config_ResetDefault();
     }
@@ -236,13 +236,13 @@ void Config_ResetDefault() {
 
   Config_Postprocess();
 
-  SERIAL_ECHO_START;
+  SERIAL_ECHO_START();
   SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
 }
 
 #if DISABLED(DISABLE_M503)
 
-#define CONFIG_ECHO_START do{ if (!forReplay) SERIAL_ECHO_START; }while(0)
+#define CONFIG_ECHO_START do{ if (!forReplay) SERIAL_ECHO_START(); }while(0)
 
 /**
  * M503 - Print Configuration

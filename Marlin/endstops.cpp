@@ -119,7 +119,7 @@ void Endstops::report_state() {
       if (TEST(endstop_hit_bits, A ##_MIN) || TEST(endstop_hit_bits, A ##_MAX)) \
         _ENDSTOP_HIT_ECHO(A,C)
 
-    SERIAL_ECHO_START;
+    SERIAL_ECHO_START();
     SERIAL_ECHOPGM(MSG_ENDSTOPS_HIT);
     _ENDSTOP_HIT_TEST(A, 'A');
     _ENDSTOP_HIT_TEST(B, 'B');
