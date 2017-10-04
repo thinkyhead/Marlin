@@ -93,7 +93,7 @@ void st_set_e_position(const long &e);
  * @param axis	 axis
  * @return current position in steps
  *****************************************************************************/
-long st_get_position(uint8_t axis);
+long st_get_position(const AxisEnum axis);
 
 
 /**

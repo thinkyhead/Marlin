@@ -23,7 +23,7 @@ void spi_init(void);
  * @param		csPin		chip select
  * @return		status
  *****************************************************************************/
-uint32_t spi_readRegister(uint8_t address, uint8_t slave);
+uint32_t spi_readRegister(const uint8_t address, const uint8_t slave);
 
 
 /**
@@ -33,7 +33,7 @@ uint32_t spi_readRegister(uint8_t address, uint8_t slave);
  * @param		csPin		chip select
  * @return	status
  *****************************************************************************/
-uint8_t spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave);
+uint8_t spi_writeRegister(const uint8_t address, uint32_t data, const uint8_t slave);
 
 
 /**
@@ -41,8 +41,6 @@ uint8_t spi_writeRegister(uint8_t address, uint32_t data, uint8_t slave);
  * @param		csPin		chip select
  * @return	status
  *****************************************************************************/
-uint8_t spi_readStatus(uint8_t slave);
-
-
+uint8_t spi_readStatus(const uint8_t slave);
 
 #endif //TMC_SPI_H
