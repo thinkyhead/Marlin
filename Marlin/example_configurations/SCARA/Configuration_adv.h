@@ -345,11 +345,11 @@
       #error BABYSTEPPING only implemented for Z axis on deltabots.
     #endif
   #endif
-  
+
   #ifdef SCARA
     #error BABYSTEPPING not implemented for SCARA yet.
   #endif
-  
+
 #endif
 
 // extruder advance constant (s2/mm3)

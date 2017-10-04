@@ -5,7 +5,7 @@
 # based on: http://hydraraptor.blogspot.com/2007/10/measuring-temperature-easy-way.html
 """Thermistor Value Lookup Table Generator
 
-Generates lookup to temperature values for use in a microcontroller in C format based on: 
+Generates lookup to temperature values for use in a microcontroller in C format based on:
 http://hydraraptor.blogspot.com/2007/10/measuring-temperature-easy-way.html
 
 The main use is for Arduino programs that read data from the circuit board described here:
@@ -95,14 +95,14 @@ def main(argv):
     t3 = 250;
     r3 = 226.15;
     num_temps = int(36);
-    
+
     try:
         opts, args = getopt.getopt(argv, "h", ["help", "rp=", "t1=", "t2=", "t3=", "num-temps="])
     except getopt.GetoptError as err:
         print  str(err)
         usage()
         sys.exit(2)
-        
+
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             usage()
@@ -128,7 +128,7 @@ def main(argv):
     min_temp = 0
     max_temp = 350
     increment = int(max_adc/(num_temps-1));
-            
+
     t = Thermistor(rp, t1, r1, t2, r2, t3, r3)
     tmp = (min_temp - max_temp) / (num_temps-1)
     print tmp
@@ -148,7 +148,7 @@ def main(argv):
         else:
             print "   {(short)(%.2f*OVERSAMPLENR), %s}, // v=%s r=%s res=%s C/count" % ((t.adc(temp)), temp, t.v(t.adc(temp)), t.r(t.adc(temp)),t.res(t.adc(temp)))
     print "};"
-    
+
 def usage():
     print __doc__
 

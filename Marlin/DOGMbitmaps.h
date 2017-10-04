@@ -68,10 +68,10 @@ const unsigned char start_bmp[574] PROGMEM = { //AVR-GCC, WinAVR
 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xF0
 };
 
-// Here comes a compile-time operation to match the extruder symbols 
+// Here comes a compile-time operation to match the extruder symbols
 // on the info screen to the set number of extruders in configuration.h
-// 
-// When only one extruder is selected, the "1" on the symbol will not 
+//
+// When only one extruder is selected, the "1" on the symbol will not
 // be displayed.
 
 #if EXTRUDERS == 1
@@ -224,6 +224,6 @@ const unsigned char start_bmp[574] PROGMEM = { //AVR-GCC, WinAVR
 	0x1E,0x00,0x00,0x0F,0x00,0x00,0x0F,0x00,0x01,0xFF,0xFF,0x80,0x7F,0xFF,0xE0,
 	0x0C,0x00,0x00,0x06,0x00,0x00,0x06,0x00,0x01,0xFF,0xFF,0x80,0x00,0x00,0x00
 	};
-#endif // Extruders 
+#endif // Extruders
 
 

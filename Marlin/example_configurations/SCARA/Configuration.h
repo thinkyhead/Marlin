@@ -15,16 +15,16 @@
 // QHARLEYS Autobedlevelling has not been ported, because Marlin has now Bed-levelling
 // You might need Z-Min endstop on SCARA-Printer to use this feature. Actually untested!
 // Uncomment to use Morgan scara mode
-#define SCARA  
+#define SCARA
 #define scara_segments_per_second 200 //careful, two much will decrease performance...
 // Length of inner support arm
 #define Linkage_1 150 //mm      Preprocessor cannot handle decimal point...
-// Length of outer support arm     Measure arm lengths precisely and enter 
-#define Linkage_2 150 //mm    
+// Length of outer support arm     Measure arm lengths precisely and enter
+#define Linkage_2 150 //mm
 
-// SCARA tower offset (position of Tower relative to bed zero position) 
+// SCARA tower offset (position of Tower relative to bed zero position)
 // This needs to be reasonably accurate as it defines the printbed position in the SCARA space.
-#define SCARA_offset_x 100 //mm   
+#define SCARA_offset_x 100 //mm
 #define SCARA_offset_y -56 //mm
 #define SCARA_RAD2DEG 57.2957795  // to convert RAD to degrees
 
@@ -177,13 +177,13 @@
   //  #define  DEFAULT_Kp 22.2
   //  #define  DEFAULT_Ki 1.08
    // #define  DEFAULT_Kd 114
-  
- // Jhead MK5: From Autotune  
+
+ // Jhead MK5: From Autotune
   //  #define  DEFAULT_Kp 20.92
    // #define  DEFAULT_Ki 1.51
   //  #define  DEFAULT_Kd 72.34
-    
- //Merlin Hotend: From Autotune  
+
+ //Merlin Hotend: From Autotune
     #define  DEFAULT_Kp 24.5
     #define  DEFAULT_Ki 1.72
     #define  DEFAULT_Kd 87.73
@@ -237,7 +237,7 @@
     #define  DEFAULT_bedKp 630.14
     #define  DEFAULT_bedKi 121.71
     #define  DEFAULT_bedKd 815.64
-    
+
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
 
@@ -261,15 +261,15 @@ The issue: If a thermistor come off, it will read a lower temperature than actua
 The system will turn the heater on forever, burning up the filament and anything
 else around.
 
-After the temperature reaches the target for the first time, this feature will 
-start measuring for how long the current temperature stays below the target 
+After the temperature reaches the target for the first time, this feature will
+start measuring for how long the current temperature stays below the target
 minus _HYSTERESIS (set_temperature - THERMAL_RUNAWAY_PROTECTION_HYSTERESIS).
 
 If it stays longer than _PERIOD, it means the thermistor temperature
 cannot catch up with the target, so something *may be* wrong. Then, to be on the
 safe side, the system will he halt.
 
-Bear in mind the count down will just start AFTER the first time the 
+Bear in mind the count down will just start AFTER the first time the
 thermistor temperature is over the target, so you will have no problem if
 your extruder heater takes 2 minutes to hit the target on heating.
 
@@ -760,9 +760,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
  * Support for a filament diameter sensor
  * Also allows adjustment of diameter at print time (vs  at slicing)
  * Single extruder only at this point (extruder 0)
- * 
+ *
  * Motherboards
- * 34 - RAMPS1.4 - uses Analog input 5 on the AUX2 connector 
+ * 34 - RAMPS1.4 - uses Analog input 5 on the AUX2 connector
  * 81 - Printrboard - Uses Analog input 2 on the Exp1 connector (version B,C,D,E)
  * 301 - Rambo  - uses Analog input 3
  * Note may require analog pins to be defined for different motherboards
@@ -779,7 +779,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define MAX_MEASUREMENT_DELAY     20  //delay buffer size in bytes (1 byte = 1cm)- limits maximum measurement delay allowable (must be larger than MEASUREMENT_DELAY_CM  and lower number saves RAM)
 
 //defines used in the code
-#define DEFAULT_MEASURED_FILAMENT_DIA  DEFAULT_NOMINAL_FILAMENT_DIA  //set measured to nominal initially 
+#define DEFAULT_MEASURED_FILAMENT_DIA  DEFAULT_NOMINAL_FILAMENT_DIA  //set measured to nominal initially
 
 //When using an LCD, uncomment the line below to display the Filament sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define FILAMENT_LCD_DISPLAY
