@@ -4,25 +4,7 @@
 #ifndef MARLIN_H
 #define MARLIN_H
 
-#define  FORCE_INLINE __attribute__((always_inline)) inline
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-
-#include <util/delay.h>
-#include <avr/pgmspace.h>
-#include <avr/eeprom.h>
-#include <avr/interrupt.h>
-
-
-#include "fastio.h"
-#include "Configuration.h"
-#include "pins.h"
-
-#define nop() asm volatile("nop")
+#include "MarlinConfig.h"
 
 #ifndef AT90USB
 #define  HardwareSerial_h // trick to disable the standard HWserial
@@ -41,14 +23,6 @@
 #endif
 
 #include "MarlinSerial.h"
-
-#ifndef cbi
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
-
 #include "WString.h"
 
 #ifdef AT90USB
@@ -168,10 +142,6 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define enable_e2()  /* nothing */
   #define disable_e2() /* nothing */
 #endif
-
-
-enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
-
 
 void FlushSerialRequestResend();
 void ClearToSend();
