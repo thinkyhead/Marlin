@@ -44,58 +44,76 @@
   #define REV_E_DIR() WRITE(E0_DIR_PIN, INVERT_E0_DIR)
 #endif
 
-#ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
-extern bool abort_on_endstop_hit;
-#endif
-
-// Initialize and start the stepper motor subsystem
-void st_init();
-
-// Block until all buffered steps are executed
-void st_synchronize();
-
-// Set current position in steps
-void st_set_position(const long &x, const long &y, const long &z, const long &e);
-void st_set_e_position(const long &e);
-
-// Get current position in steps
-long st_get_position(uint8_t axis);
-
-#ifdef ENABLE_AUTO_BED_LEVELING
-// Get current position in mm
-float st_get_position_mm(uint8_t axis);
-#endif  //ENABLE_AUTO_BED_LEVELING
-
-// The stepper subsystem goes to sleep when it runs out of things to execute. Call this
-// to notify the subsystem that it is time to go to work.
-void st_wake_up();
-
-
-void checkHitEndstops(); //call from somewhere to create an serial error message with the locations the endstops where hit, in case they were triggered
-void endstops_hit_on_purpose(); //avoid creation of the message, i.e. after homing and before a routine call of checkHitEndstops();
-
-void enable_endstops(bool check); // Enable/disable endstop checking
-
-void checkStepperErrors(); //Print errors detected by the stepper
-
-void finishAndDisableSteppers();
 
 extern block_t *current_block;  // A pointer to the block currently being traced
 
-void quickStop();
 
-void digitalPotWrite(int address, int value);
-void microstep_ms(uint8_t driver, int8_t ms1, int8_t ms2);
-void microstep_mode(uint8_t driver, uint8_t stepping);
-void digipot_init();
-void digipot_current(uint8_t driver, int current);
-void microstep_init();
-void microstep_readings();
-
-#ifdef BABYSTEPPING
-  void babystep(const uint8_t axis,const bool direction); // perform a short step with a single stepper motor, outside of any convention
-#endif
+/**
+ * @brief Initialize the endstops, pullups and timer configurations.
+ * @return none
+ *****************************************************************************/
+void st_init(void);
 
 
+/**
+ * @brief Block until all buffered steps are executed
+ * @return none
+ *****************************************************************************/
+void st_synchronize(void);
+
+/**
+ * @brief Pre-calculates the parameters for the current block, in order to save time. Hence, in the interrupt function
+ * there is no processing, only sending the data via SPI
+ * @return none
+ *****************************************************************************/
+void st_calculate(void);
+
+
+/**
+ * @brief Set current position in steps
+ * @param &x		position for x axis
+ * @param &y		position for y axis
+ * @param &z		position for z axis
+ * @param &e		position for e axis
+ * @return none
+ *****************************************************************************/
+void st_set_position(const long &x, const long &y, const long &z, const long &e);
+
+
+/**
+ * @brief Set current position in steps
+ * @param &e		position for e axis
+ * @return none
+ *****************************************************************************/
+void st_set_e_position(const long &e);
+
+
+/**
+ * @brief Get current position in steps
+ * @param axis	 axis
+ * @return current position in steps
+ *****************************************************************************/
+long st_get_position(uint8_t axis);
+
+
+/**
+ * @brief Enables timer interrupt
+ * @return none
+ *****************************************************************************/
+void st_wake_up(void);
+
+
+/**
+ * @brief Disable all drivers
+ * @return none
+ *****************************************************************************/
+void finishAndDisableSteppers(void);
+
+
+/**
+ * @brief  Returns the number of queued blocks
+ * @return	number of queued blocks
+ *****************************************************************************/
+unsigned char blocks_in_motion_queue();
 
 #endif

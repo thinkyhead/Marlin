@@ -22,6 +22,8 @@
 #include "Configuration.h"
 #include "pins.h"
 
+#define nop() asm volatile("nop")
+
 #ifndef AT90USB
 #define  HardwareSerial_h // trick to disable the standard HWserial
 #endif

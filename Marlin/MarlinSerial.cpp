@@ -32,7 +32,8 @@
   ring_buffer rx_buffer  =  { { 0 }, 0, 0 };
 #endif
 
-FORCE_INLINE void store_char(unsigned char c)
+//Not FORCE_INLINE so that is reachable from other files
+void store_char(unsigned char c)
 {
   int i = (unsigned int)(rx_buffer.head + 1) % RX_BUFFER_SIZE;
 

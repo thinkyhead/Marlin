@@ -84,6 +84,14 @@ struct ring_buffer
   extern ring_buffer rx_buffer;
 #endif
 
+// Access the reception buffer from Trinamic Motion Queue
+void store_char(unsigned char c);
+//check if new data received
+FORCE_INLINE void st_check_UART_rx(void){
+	if(M_UCSRxA & (1<<7))
+		store_char(M_UDRx);
+}
+
 class MarlinSerial //: public Stream
 {
 

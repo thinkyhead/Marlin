@@ -68,7 +68,8 @@ typedef struct {
   unsigned long valve_pressure;
   unsigned long e_to_p_pressure;
   #endif
-  volatile char busy;
+  volatile char busy;//todo not needed
+  //volatile char ready;//todo not needed								 // The interrupt waits until the calculation of current block finishes
 } block_t;
 
 #ifdef ENABLE_AUTO_BED_LEVELING
@@ -153,6 +154,14 @@ FORCE_INLINE block_t *plan_get_current_block()
 
 // Returns true if the buffer has a queued block, false otherwise
 FORCE_INLINE bool blocks_queued() { return (block_buffer_head != block_buffer_tail); }
+
+FORCE_INLINE unsigned char blocks_in_queue() {
+  char temp = block_buffer_head - block_buffer_tail;
+  if(temp < 0)
+    temp += BLOCK_BUFFER_SIZE;
+  return temp;
+}
+
 
 #ifdef PREVENT_DANGEROUS_EXTRUDE
 void set_extrude_min_temp(float temp);

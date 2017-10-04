@@ -187,7 +187,8 @@ void calculate_trapezoid_for_block(block_t *block, float entry_factor, float exi
     initial_rate=120;
   }
   if(final_rate < 120) {
-    final_rate=120;
+	//Trinamic: changed from 120 to 0
+    final_rate=0;
   }
 
   long acceleration = block->acceleration_st;
@@ -544,6 +545,8 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
     manage_heater();
     manage_inactivity();
     lcd_update();
+	//Trinamic: calculate data for next blocks while waiting
+    st_calculate();
   }
 
 #ifdef ENABLE_AUTO_BED_LEVELING
@@ -877,10 +880,13 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     // Limit acceleration per axis
     if(((float)block->acceleration_st * (float)block->steps_x / (float)block->step_event_count) > axis_steps_per_sqr_second[X_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[X_AXIS];
+
     if(((float)block->acceleration_st * (float)block->steps_y / (float)block->step_event_count) > axis_steps_per_sqr_second[Y_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[Y_AXIS];
+
     if(((float)block->acceleration_st * (float)block->steps_e / (float)block->step_event_count) > axis_steps_per_sqr_second[E_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[E_AXIS];
+
     if(((float)block->acceleration_st * (float)block->steps_z / (float)block->step_event_count ) > axis_steps_per_sqr_second[Z_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[Z_AXIS];
   }
