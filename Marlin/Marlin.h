@@ -163,8 +163,8 @@ extern const char axis_codes[XYZE];
 #endif // !MIXING_EXTRUDER
 
 #if ENABLED(G38_PROBE_TARGET)
-  extern bool G38_move,        // flag to tell the interrupt handler that a G38 command is being run
-              G38_endstop_hit; // flag from the interrupt handler to indicate if the endstop went active
+  extern int8_t G38_move;      // For the endstop handler, a G38 command is being run if 1 or -1
+  extern bool G38_endstop_hit; // Flag from the endstop handler to indicate if the endstop changed
 #endif
 
 void enable_all_steppers();

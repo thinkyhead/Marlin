@@ -355,8 +355,8 @@
 #endif
 
 #if ENABLED(G38_PROBE_TARGET)
-  bool G38_move = false,
-       G38_endstop_hit = false;
+  int8_t G38_move = 0;
+  bool G38_endstop_hit = false;
 #endif
 
 #if ENABLED(AUTO_BED_LEVELING_UBL)
@@ -6201,7 +6201,14 @@ void home_all_axes() { gcode_G28(true); }
 
 #if ENABLED(G38_PROBE_TARGET)
 
-  static bool G38_run_probe() {
+  static bool G38_run_probe(
+    #if ENABLED(G38_PROBE_AWAY)
+      , const bool probe_away
+    #endif
+  ) {
+    #if DISABLED(G38_PROBE_AWAY)
+      constexpr bool probe_away = false;
+    #endif
 
     bool G38_pass_fail = false;
 
@@ -6217,11 +6224,11 @@ void home_all_axes() { gcode_G28(true); }
     // Move until destination reached or target hit
     planner.synchronize();
     endstops.enable(true);
-    G38_move = true;
+    G38_move = probe_away ? -1 : 1;
     G38_endstop_hit = false;
     prepare_move_to_destination();
     planner.synchronize();
-    G38_move = false;
+    G38_move = 0;
 
     endstops.hit_on_purpose();
     set_current_from_steppers_for_axis(ALL_AXES);
@@ -6263,10 +6270,16 @@ void home_all_axes() { gcode_G28(true); }
   /**
    * G38.2 - probe toward workpiece, stop on contact, signal error if failure
    * G38.3 - probe toward workpiece, stop on contact
+   * G38.4 - probe away from workpiece, stop on loss of contact, signal error if failure
+   * G38.5 - probe away from workpiece, stop on loss of contact
    *
    * Like G28 except uses Z min probe for all axes
    */
-  inline void gcode_G38(bool is_38_2) {
+  inline void gcode_G38(const bool signal_on_fail
+    #if ENABLED(G38_PROBE_AWAY)
+      , const bool probe_away
+    #endif
+  ) {
     // Get X Y Z E F
     gcode_get_destination();
 
@@ -6276,8 +6289,13 @@ void home_all_axes() { gcode_G28(true); }
     LOOP_XYZ(i)
       if (ABS(destination[i] - current_position[i]) >= G38_MINIMUM_MOVE) {
         if (!parser.seenval('F')) feedrate_mm_s = homing_feedrate((AxisEnum)i);
-        // If G38.2 fails throw an error
-        if (!G38_run_probe() && is_38_2) {
+        // If G38.2 or G38.4 fails throw an error
+        if (!G38_run_probe(
+            #if ENABLED(G38_PROBE_AWAY)
+              probe_away
+            #endif
+          ) && signal_on_fail
+        ) {
           SERIAL_ERROR_START();
           SERIAL_ERRORLNPGM("Failed to reach target");
         }
@@ -12287,8 +12305,14 @@ void process_parsed_command() {
 
       #if ENABLED(G38_PROBE_TARGET)
         case 38:
-          if (parser.subcode == 2 || parser.subcode == 3)
-            gcode_G38(parser.subcode == 2);                       // G38.2, G38.3: Probe towards object
+          #if ENABLED(G38_PROBE_AWAY)
+            if (WITHIN(parser.subcode, 2, 5))
+              gcode_G38(!TEST(parser.subcode, 0),                 // G38.2-G38.5: Probe towards/away from target
+                        !TEST(parser.subcode, 2));
+          #else
+            if (parser.subcode == 2 || parser.subcode == 3)
+              gcode_G38(parser.subcode == 2);                     // G38.2, G38.3: Probe towards target
+          #endif
           break;
       #endif
 

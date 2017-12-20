@@ -378,6 +378,7 @@ void Endstops::update() {
   #define COPY_LIVE_STATE(SRC_BIT, DST_BIT) SET_BIT_TO(live_state, DST_BIT, TEST(live_state, SRC_BIT))
 
   #if ENABLED(G38_PROBE_TARGET) && PIN_EXISTS(Z_MIN_PROBE) && !(CORE_IS_XY || CORE_IS_XZ)
+
     // If G38 command is active check Z_MIN_PROBE for ALL movement
     if (G38_move) UPDATE_ENDSTOP_BIT(Z, MIN_PROBE);
   #endif
@@ -548,15 +549,34 @@ void Endstops::update() {
   }while(0)
 
   #if ENABLED(G38_PROBE_TARGET) && PIN_EXISTS(Z_MIN_PROBE) && !(CORE_IS_XY || CORE_IS_XZ)
+
     // If G38 command is active check Z_MIN_PROBE for ALL movement
     if (G38_move) {
-      if (TEST_ENDSTOP(_ENDSTOP(Z, MIN_PROBE))) {
+      const bool state = TEST_ENDSTOP(_ENDSTOP(Z, MIN_PROBE));
+      if (
+        #if ENABLED(G38_PROBE_AWAY)
+          G38_move > 0 &&
+        #endif
+        state
+      ) {
         if      (stepper.axis_is_moving(X_AXIS)) { _ENDSTOP_HIT(X, MIN); planner.endstop_triggered(X_AXIS); }
         else if (stepper.axis_is_moving(Y_AXIS)) { _ENDSTOP_HIT(Y, MIN); planner.endstop_triggered(Y_AXIS); }
         else if (stepper.axis_is_moving(Z_AXIS)) { _ENDSTOP_HIT(Z, MIN); planner.endstop_triggered(Z_AXIS); }
         G38_endstop_hit = true;
       }
+
+      #if ENABLED(G38_PROBE_AWAY)
+
+        else if (G38_move < 0 && !state) {
+          if      (stepper.axis_is_moving(X_AXIS)) planner.endstop_triggered(X_AXIS);
+          else if (stepper.axis_is_moving(Y_AXIS)) planner.endstop_triggered(Y_AXIS);
+          else if (stepper.axis_is_moving(Z_AXIS)) planner.endstop_triggered(Z_AXIS);
+          G38_endstop_hit = true;
+        }
+
+      #endif // G38_PROBE_AWAY
     }
+
   #endif
 
   // Now, we must signal, after validation, if an endstop limit is pressed or not
