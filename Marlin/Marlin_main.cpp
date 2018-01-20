@@ -6513,6 +6513,11 @@ inline void gcode_M17() {
       return false; // unable to reach safe temperature
     }
 
+    #if ENABLED(ULTIPANEL)
+      if (show_lcd && unload_length) // Show "wait for start..." message
+        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT);
+    #endif
+
     // Indicate that the printer is paused
     ++did_pause_print;
 
