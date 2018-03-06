@@ -3561,7 +3561,22 @@ inline void gcode_G0_G1(
     #endif // FWRETRACT
 
     #if IS_SCARA
-      fast_move ? prepare_uninterpolated_move_to_destination() : prepare_move_to_destination();
+      if (fast_move) {
+        // Determine an appropriate feedrate
+        inverse_kinematics(current_position);
+        const float mm_of_travel = SQRT(
+                        sq(destination[X_AXIS] - current_position[X_AXIS])
+                      + sq(destination[Y_AXIS] - current_position[Y_AXIS])
+                      + sq(destination[Z_AXIS] - current_position[Z_AXIS])
+                    ),
+                    move_time = mm_of_travel / feedrate_mm_s,
+                    oldA = delta[A_AXIS], oldB = delta[B_AXIS];
+        inverse_kinematics(destination);
+        const float deg_delta = HYPOT(delta[A_AXIS] - oldA, delta[B_AXIS] - oldB);
+        prepare_uninterpolated_move_to_destination(deg_delta / move_time);
+      }
+      else
+        prepare_move_to_destination();
     #else
       prepare_move_to_destination();
     #endif
