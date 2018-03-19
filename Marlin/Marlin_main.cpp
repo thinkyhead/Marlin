@@ -3185,7 +3185,7 @@ static void homeaxis(const AxisEnum axis) {
 
   #if IS_SCARA
     // Only Z homing (with probe) is permitted
-    if (axis != Z_AXIS) { BUZZ(100, 880); return; }
+    if (axis != Z_AXIS) goto SCARA_SKIP_XY;
   #else
     #define CAN_HOME(A) \
       (axis == _AXIS(A) && ((A##_MIN_PIN > -1 && A##_HOME_DIR < 0) || (A##_MAX_PIN > -1 && A##_HOME_DIR > 0)))
@@ -3333,6 +3333,7 @@ static void homeaxis(const AxisEnum axis) {
 
   #if IS_SCARA
 
+    SCARA_SKIP_XY:
     set_axis_is_at_home(axis);
     SYNC_PLAN_POSITION_KINEMATIC();
 
@@ -4058,7 +4059,7 @@ inline void gcode_G4() {
   }
 #endif // NOZZLE_PARK_FEATURE
 
-#if ENABLED(QUICK_HOME)
+#if ENABLED(QUICK_HOME) && IS_CARTESIAN
 
   static void quick_home_xy() {
 
@@ -4312,7 +4313,81 @@ inline void gcode_G4() {
     #endif
   }
 
-#endif // DELTA
+#elif IS_SCARA
+
+  /**
+   * A SCARA homes each arm segment
+   * Endstops should already be set to interrupt the move.
+   */
+
+  constexpr float SCARA_HOME_ANGLE_A = 180.0,
+                  SCARA_HOME_ANGLE_B = 147.5;
+
+  inline bool home_scara_ab(const bool homeA, const bool homeB) {
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+      if (DEBUGGING(LEVELING)) DEBUG_POS(">>> home_scara_ab", current_position);
+    #endif
+
+    // A and B home in the negative
+
+    // Start the angles at A-180 B0
+    if (homeA) stepper.set_position(A_AXIS, -130 * X_HOME_DIR);
+    if (homeB) stepper.set_position(B_AXIS, -155 * Y_HOME_DIR);
+
+    // Move A and B as far as they can go
+    float target[ABCE] = {
+      homeA ? 260 * X_HOME_DIR : planner.get_axis_position_degrees(A_AXIS),
+      homeB ? 155 * Y_HOME_DIR : planner.get_axis_position_degrees(B_AXIS),
+      current_position[Z_AXIS], current_position[E_AXIS]
+    };
+
+    // Move A and/or B until an endstop is hit.
+    feedrate_mm_s = homing_feedrate(A_AXIS);
+    plan_direct_stepper_move(target);
+    planner.synchronize();
+
+    // Get cartesian from steppers and tell the planner
+    set_current_from_steppers_for_axis(ALL_AXES);
+    SYNC_PLAN_POSITION_KINEMATIC();
+
+    // After a move interruption we need to reset the
+    //target[A_AXIS] = planner.get_axis_position_degrees(A_AXIS);
+    //target[B_AXIS] = planner.get_axis_position_degrees(B_AXIS);
+
+    // If only one was triggered, finish the other
+    const uint8_t hits = endstops.trigger_state();
+    if (homeA && homeB && TEST(hits, X_MAX) != TEST(hits, Y_MAX)) {
+      const AxisEnum axis = TEST(hits, X_MAX) ? A_AXIS : B_AXIS;
+      target[axis] = planner.get_axis_position_degrees(axis); // hit axis stays still
+      plan_direct_stepper_move(target);
+    }
+
+    endstops.hit_on_purpose();
+
+    if (homeA) {
+      SBI(axis_homed, A_AXIS);
+      SBI(axis_known_position, A_AXIS);
+      stepper.set_position(A_AXIS, SCARA_HOME_ANGLE_A * planner.axis_steps_per_mm[A_AXIS]);
+    }
+    if (homeB) {
+      SBI(axis_homed, B_AXIS);
+      SBI(axis_known_position, B_AXIS);
+      stepper.set_position(B_AXIS, SCARA_HOME_ANGLE_B * planner.axis_steps_per_mm[B_AXIS]);
+    }
+
+    // Work backward from known home angles to Cartesian XYZ
+    arm_orientation = Y_HOME_DIR > 0 ? RIGHT_ARM : LEFT_ARM;
+    set_current_from_steppers_for_axis(ALL_AXES);
+    SYNC_PLAN_POSITION_KINEMATIC();
+
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+      if (DEBUGGING(LEVELING)) DEBUG_POS("<<< home_scara_ab", current_position);
+    #endif
+
+    return true;
+  }
+
+#endif
 
 #ifdef Z_AFTER_PROBING
   void move_z_after_probing() {
@@ -4489,6 +4564,26 @@ inline void gcode_G28(const bool always_home_all) {
 
     home_delta();
     UNUSED(always_home_all);
+
+  #elif ENABLED(MAKERARM_SCARA)
+
+    const bool homeA = always_home_all || parser.seen('X') || parser.seen('A'),
+               homeB = always_home_all || parser.seen('Y') || parser.seen('B'),
+               homeZ = always_home_all || parser.seen('Z'),
+               home_all = (!homeA && !homeB && !homeZ) || (homeA && homeB && homeZ);
+
+    // SCARA should always home Z first
+    if (home_all || homeZ) {
+      #if ENABLED(Z_SAFE_HOMING)
+        home_z_safely();
+      #else
+        homeaxis(Z_AXIS);
+      #endif
+    }
+
+    #if (HAS_X_MIN || HAS_X_MAX) && (HAS_Y_MIN || HAS_Y_MAX)
+      home_scara_ab(home_all || homeA, home_all || homeB);
+    #endif
 
   #else // NOT DELTA
 
