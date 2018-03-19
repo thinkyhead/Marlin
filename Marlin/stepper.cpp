@@ -2105,6 +2105,10 @@ void Stepper::endstop_triggered(const AxisEnum axis) {
   // Discard the rest of the move if there is a current block
   quick_stop();
 
+  #if ENABLED(IR_PROBE)
+    //endstops.ir_set_threshold(); // To clear "triggered" state
+  #endif
+
   if (was_enabled) ENABLE_STEPPER_DRIVER_INTERRUPT();
 }
 

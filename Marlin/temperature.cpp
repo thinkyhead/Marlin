@@ -1047,7 +1047,6 @@ void Temperature::updateTemperaturesFromRawValues() {
   temp_meas_ready = false;
 }
 
-
 #if ENABLED(FILAMENT_WIDTH_SENSOR)
 
   // Convert raw Filament Width to millimeters

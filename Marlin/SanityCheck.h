@@ -735,6 +735,11 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
   #error "Please enable only one probe option: PROBE_MANUALLY, FIX_MOUNTED_PROBE, BLTOUCH, SOLENOID_PROBE, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, or Z Servo."
 #endif
 
+// IR Probe is a Fix Mounted Probe!
+#if ENABLED(IR_PROBE) && DISABLED(FIX_MOUNTED_PROBE)
+  #error "IR_PROBE requires FIX_MOUNTED_PROBE. Update your Configuration.h."
+#endif
+
 #if HAS_BED_PROBE
 
   /**

@@ -31,6 +31,10 @@
 
 #define VALIDATE_HOMING_ENDSTOPS
 
+#if ENABLED(IR_PROBE)
+  #include <VCNL4020.h>
+#endif
+
 enum EndstopEnum : char {
   X_MIN,
   Y_MIN,
@@ -159,6 +163,17 @@ class Endstops {
     #if HAS_BED_PROBE
       static volatile bool z_probe_enabled;
       static void enable_z_probe(const bool onoff=true);
+
+      #if ENABLED(IR_PROBE)
+        static VCNL4020 vcnl;
+        static constexpr uint16_t rr = 9950;
+        static void ir_probe_init();
+        static void ir_set_enabled(const bool enabled);
+        static void ir_set_threshold();
+        static void ir_reset_threshold();
+        static void ir_report_state();
+      #endif
+
     #endif
 
     // Debugging of endstops

@@ -2332,6 +2332,8 @@ void clean_up_after_endstop_or_probe_move() {
     // Deploy BLTouch at the start of any probe
     #if ENABLED(BLTOUCH)
       if (set_bltouch_deployed(true)) return true;
+    #elif ENABLED(IR_PROBE)
+      endstops.ir_set_enabled(true);
     #endif
 
     #if QUIET_PROBING
@@ -2357,6 +2359,8 @@ void clean_up_after_endstop_or_probe_move() {
     // Retract BLTouch immediately after a probe if it was triggered
     #if ENABLED(BLTOUCH)
       if (probe_triggered && set_bltouch_deployed(false)) return true;
+    #elif ENABLED(IR_PROBE)
+      endstops.ir_set_enabled(false);
     #endif
 
     endstops.hit_on_purpose();
@@ -2432,6 +2436,10 @@ void clean_up_after_endstop_or_probe_move() {
       for (uint8_t p = MULTIPLE_PROBING + 1; --p;) {
     #endif
 
+        // #if ENABLED(IR_PROBE)
+        //   endstops.ir_set_enabled(true);
+        // #endif
+
         // move down slowly to find bed
         if (do_probe_move(z_probe_low_point, MMM_TO_MMS(Z_PROBE_SPEED_SLOW))) {
           #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -2442,6 +2450,10 @@ void clean_up_after_endstop_or_probe_move() {
           #endif
           return NAN;
         }
+
+        // #if ENABLED(IR_PROBE)
+        //   endstops.ir_set_enabled(false);
+        // #endif
 
     #if MULTIPLE_PROBING > 2
         probes_total += current_position[Z_AXIS];
@@ -3094,9 +3106,16 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
 
   if (is_home_dir) {
 
-    #if HOMING_Z_WITH_PROBE && QUIET_PROBING
-      if (axis == Z_AXIS) probing_pause(true);
-    #endif
+    if (axis == Z_AXIS) {
+      #if HOMING_Z_WITH_PROBE
+        #if ENABLED(IR_PROBE)
+          endstops.ir_set_enabled(true);
+        #endif
+        #if QUIET_PROBING
+          probing_pause(true);
+        #endif
+      #endif
+    }
 
     // Disable stealthChop if used. Enable diag1 pin on driver.
     #if ENABLED(SENSORLESS_HOMING)
@@ -3123,9 +3142,16 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
 
   if (is_home_dir) {
 
-    #if HOMING_Z_WITH_PROBE && QUIET_PROBING
-      if (axis == Z_AXIS) probing_pause(false);
-    #endif
+    if (axis == Z_AXIS) {
+      #if HOMING_Z_WITH_PROBE
+        #if QUIET_PROBING
+          probing_pause(false);
+        #endif
+        #if ENABLED(IR_PROBE)
+          endstops.ir_set_enabled(false);
+        #endif
+      #endif
+    }
 
     endstops.validate_homing_move();
 
@@ -3240,6 +3266,10 @@ static void homeaxis(const AxisEnum axis) {
           , axis == Z_AXIS ? MMM_TO_MMS(Z_PROBE_SPEED_FAST) : 0.00
         #endif
       );
+
+      // #if ENABLED(IR_PROBE)
+      //   endstops.ir_set_enabled(true); // Clear state for next probe
+      // #endif
 
       // Slow move towards endstop until triggered
       #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -4910,6 +4940,10 @@ void home_all_axes() { gcode_G28(true); }
    *
    */
   inline void gcode_G29() {
+
+    #if ENABLED(IR_PROBE)
+      endstops.ir_report_state();
+    #endif
 
     #if ENABLED(DEBUG_LEVELING_FEATURE) || ENABLED(PROBE_MANUALLY)
       const bool seenQ = parser.seen('Q');
@@ -11990,6 +12024,10 @@ inline void gcode_M502() {
 
 #endif // HAS_TRINAMIC
 
+#if ENABLED(IR_PROBE)
+  inline void gcode_M123() { endstops.ir_report_state(); }
+#endif
+
 /**
  * M907: Set digital trimpot motor current using axis codes X, Y, Z, E, B, S
  */
@@ -13300,6 +13338,10 @@ void process_parsed_command() {
         #if ENABLED(TMC_Z_CALIBRATION)
           case 915: gcode_M915(); break;                          // M915: TMC Z axis calibration routine
         #endif
+      #endif
+
+      #if ENABLED(IR_PROBE)
+        case 123: gcode_M123(); break;                            // M123: IR Probe Report
       #endif
 
       case 999: gcode_M999(); break;                              // M999: Restart after being Stopped

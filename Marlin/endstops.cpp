@@ -35,6 +35,11 @@
   #include "endstop_interrupts.h"
 #endif
 
+#if ENABLED(IR_PROBE)
+  #include <Wire.h>
+  #include "hex_print_routines.h"
+#endif
+
 Endstops endstops;
 
 // public:
@@ -187,6 +192,10 @@ void Endstops::init() {
     #endif
   );
 
+  #if ENABLED(IR_PROBE)
+    ir_probe_init();
+  #endif
+
 } // Endstops::init
 
 // Called at ~1KHz from Temperature ISR: Poll endstop state if required
@@ -244,6 +253,10 @@ void Endstops::not_homing() {
 
     #if ENABLED(ENDSTOP_INTERRUPTS_FEATURE)
       update();
+    #endif
+
+    #if ENABLED(IR_PROBE)
+      ir_set_enabled(onoff);
     #endif
   }
 #endif
@@ -359,6 +372,84 @@ void Endstops::M119() {
     SERIAL_PROTOCOLLN(((READ(FIL_RUNOUT_PIN)^FIL_RUNOUT_INVERTING) ? MSG_ENDSTOP_HIT : MSG_ENDSTOP_OPEN));
   #endif
 } // Endstops::M119
+
+#if ENABLED(IR_PROBE)
+
+  VCNL4020 Endstops::vcnl;
+
+  void Endstops::ir_set_threshold() {
+    const uint8_t InterruptStatus = vcnl.ReadInterruptStatus();
+    if (InterruptStatus & INTERRUPT_MASK_THRES_HI) {
+      if (vcnl.readProximity() < 9700){
+        vcnl.SetLowThreshold(0);
+        vcnl.SetHighThreshold(9700);
+        //vcnl.SetCommandRegister(COMMAND_PROX_ENABLE | COMMAND_SELFTIMED_MODE_ENABLE);
+        vcnl.SetInterruptStatus(InterruptStatus); // Clear bits by sending bits to clear
+      }
+    }
+    vcnl.SetCommandRegister(COMMAND_PROX_ENABLE | COMMAND_SELFTIMED_MODE_ENABLE);
+  }
+
+  void Endstops::ir_reset_threshold() { }
+
+  void Endstops::ir_probe_init() {
+    vcnl.SetCommandRegister(COMMAND_ALL_DISABLE);
+    if (vcnl.begin())
+      SERIAL_ECHOLNPGM("IR IS FOUND");
+    else
+      SERIAL_ECHOLNPGM("IR NOT FOUND");
+    ir_set_enabled(false);
+  }
+
+  /**
+   * Turn OFF IR probe
+   *   - Clear the command mode
+   *   - Set thresholds to out-of-range value like 20000
+   *   - Turn off IR LED
+   *   - Slow read rate to minimum
+   *   - Turn off interrupts
+   *   - Clear the interrupt event bit
+   *
+   * Turn ON IR probe
+   *   - Clear the command mode
+   *   - Set thresholds to desired range (0-9700)
+   *   - Turn on IR LED to max power!
+   *   - Set a fast read rate
+   *   - Turn on interrupts
+   *   - Set command mode to continuous proximity reading
+   *   - Clear the interrupt event bit
+   *
+   * Probing:
+   *   - Turn off probe and move to ready position
+   *   - Turn on IR probe
+   *   - Move down until probe is triggered
+   *   - Take a reading of triggered height
+   *   - Raise up to between height
+   *   - Turn off IR probe (above)
+   */
+
+  void Endstops::ir_set_enabled(const bool enabled) {
+    vcnl.SetCommandRegister(COMMAND_ALL_DISABLE);
+    vcnl.SetProximityRate(enabled ? PROX_MEASUREMENT_RATE_62 : PROX_MEASUREMENT_RATE_2);
+    vcnl.SetLowThreshold(0);
+    vcnl.SetHighThreshold(enabled ? 9700 : 20000);
+    vcnl.setLEDcurrent(enabled ? 20 : 0);
+    vcnl.SetInterruptControl(enabled ? INTERRUPT_THRES_SEL_PROX | INTERRUPT_THRES_ENABLE | INTERRUPT_COUNT_EXCEED_1 : 0x00);
+    if (enabled) vcnl.SetCommandRegister(COMMAND_PROX_ENABLE | COMMAND_SELFTIMED_MODE_ENABLE);
+    vcnl.SetInterruptStatus(INTERRUPT_STATUS_THRES_HI); // Clear the threshold bit
+  }
+
+  void Endstops::ir_report_state() {
+    uint8_t current_command = vcnl.ReadCommandRegister();
+    SERIAL_ECHOPAIR("INT:0x", hex_byte(vcnl.ReadInterruptControl()));
+    SERIAL_ECHOPAIR("  CMD:0x", hex_byte(current_command));
+    SERIAL_ECHOPAIR("  INTStatus:0x", hex_byte(vcnl.ReadInterruptStatus()));
+    SERIAL_ECHOLNPAIR("  PROXValue:", vcnl.readProximity()); // This will clear the COMMAND_MASK_PROX_DATA_READY bit
+                                                           // (maybe COMMAND_SELFTIMED_MODE_ENABLE and COMMAND_PROX_ENABLE too?)
+    vcnl.SetCommandRegister(current_command);
+  }
+
+#endif // IR_PROBE
 
 // The following routines are called from an ISR context. It could be the temperature ISR, the
 // endstop ISR or the Stepper ISR.
