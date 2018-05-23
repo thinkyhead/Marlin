@@ -20,27 +20,31 @@
  *
  */
 
-#ifdef __PLAT_X86_64__
+#ifdef __PLAT_LINUX__
 
-#include "../../inc/MarlinConfig.h"
+#include "IOLoggerCSV.h"
 
-#if ENABLED(USE_WATCHDOG)
-
-#include "watchdog.h"
-
-void watchdog_init(void) {}
-
-void HAL_clear_reset_source(void) {}
-
-uint8_t HAL_get_reset_source(void) {
-  return RST_POWER_ON;
+IOLoggerCSV::IOLoggerCSV(std::string filename) {
+  file.open(filename);
 }
 
-void watchdog_reset() {}
+IOLoggerCSV::~IOLoggerCSV() {
+  file.close();
+}
 
-#else
-  void HAL_clear_reset_source(void) {}
-  uint8_t HAL_get_reset_source(void) { return RST_POWER_ON; }
-#endif // USE_WATCHDOG
+void IOLoggerCSV::log(GpioEvent ev) {
+  std::lock_guard<std::mutex> lock(vector_lock);
+  events.push_back(ev); //minimal impact to signal handler
+}
 
-#endif // __PLAT_X86_64__
+void IOLoggerCSV::flush() {
+  { std::lock_guard<std::mutex> lock(vector_lock);
+    while (!events.empty()) {
+      file << events.front().timestamp << ", "<< events.front().pin_id << ", " << events.front().event << std::endl;
+      events.pop_front();
+    }
+  }
+  file.flush();
+}
+
+#endif // __PLAT_LINUX__

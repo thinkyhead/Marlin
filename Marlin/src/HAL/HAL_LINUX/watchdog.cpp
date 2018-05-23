@@ -20,42 +20,27 @@
  *
  */
 
-#ifdef __PLAT_X86_64__
+#ifdef __PLAT_LINUX__
 
-#include "Clock.h"
-#include <stdio.h>
-#include "../../../inc/MarlinConfig.h"
+#include "../../inc/MarlinConfig.h"
 
-#include "Heater.h"
+#if ENABLED(USE_WATCHDOG)
 
-Heater::Heater(pin_t heater, pin_t adc) {
-  heater_state = 0;
-  room_temp_raw = 150;
-  last = Clock::micros();
-  heater_pin = heater;
-  adc_pin = adc;
-  heat = 0.0;
+#include "watchdog.h"
+
+void watchdog_init(void) {}
+
+void HAL_clear_reset_source(void) {}
+
+uint8_t HAL_get_reset_source(void) {
+  return RST_POWER_ON;
 }
 
-Heater::~Heater() {
-}
+void watchdog_reset() {}
 
-void Heater::update() {
-  // crude pwm read and cruder heat simulation
-  auto now = Clock::micros();
-  double delta = (now - last);
-  if (delta > 1000 ) {
-    heater_state = pwmcap.update(0xFFFF * Gpio::pin_map[heater_pin].value);
-    last = now;
-    heat += (heater_state - heat) * (delta / 1000000000.0);
+#else
+  void HAL_clear_reset_source(void) {}
+  uint8_t HAL_get_reset_source(void) { return RST_POWER_ON; }
+#endif // USE_WATCHDOG
 
-    if (heat < room_temp_raw) heat = room_temp_raw;
-    Gpio::pin_map[analogInputToDigitalPin(adc_pin)].value = 0xFFFF - (uint16_t)heat;
-  }
-}
-
-void Heater::interrupt(GpioEvent ev) {
-  // ununsed
-}
-
-#endif // __PLAT_X86_64__
+#endif // __PLAT_LINUX__
