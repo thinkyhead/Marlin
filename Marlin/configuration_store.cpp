@@ -73,6 +73,10 @@
   #include "fwretract.h"
 #endif
 
+#if ENABLED(MAKERARM_SCARA)
+  void refresh_tool_offset_factors();
+#endif
+
 #if ENABLED(PID_EXTRUSION_SCALING)
   #define LPQ_LEN thermalManager.lpq_len
 #endif
@@ -135,6 +139,11 @@ typedef struct SettingsDataStruct {
   // HAS_BED_PROBE
   //
   float zprobe_zoffset;                                 // M851 Z
+
+  //
+  // MAKERARM_SCARA
+  //
+  float tool_offset[XYZ];                               // G10 X Y Z
 
   //
   // ABL_PLANAR
@@ -327,6 +336,11 @@ void MarlinSettings::postprocess() {
   // and init stepper.count[], planner.position[] with current_position
   planner.refresh_positioning();
 
+  #if ENABLED(MAKERARM_SCARA)
+    refresh_tool_offset_factors();
+    set_current_from_steppers_for_axis(ALL_AXES);
+  #endif
+
   // Various factors can change the current position
   if (memcmp(oldpos, current_position, sizeof(oldpos)))
     report_current_position();
@@ -495,6 +509,14 @@ void MarlinSettings::postprocess() {
       const float zprobe_zoffset = 0;
     #endif
     EEPROM_WRITE(zprobe_zoffset);
+
+    //
+    // Tool Offset
+    //
+    #if DISABLED(MAKERARM_SCARA)
+      const float tool_offset[XYZ] = { 0 };
+    #endif
+    EEPROM_WRITE(tool_offset);
 
     //
     // Planar Bed Leveling matrix
@@ -1099,6 +1121,14 @@ void MarlinSettings::postprocess() {
         float zprobe_zoffset;
       #endif
       EEPROM_READ(zprobe_zoffset);
+
+      //
+      // Tool Offset
+      //
+      #if DISABLED(MAKERARM_SCARA)
+        float tool_offset[XYZ] = { 0 };
+      #endif
+      EEPROM_READ(tool_offset);
 
       //
       // Planar Bed Leveling matrix
@@ -1739,6 +1769,11 @@ void MarlinSettings::reset() {
 
   #if HAS_HOME_OFFSET
     ZERO(home_offset);
+  #endif
+
+  #if IS_SCARA
+    constexpr float default_tool_offset[XYZ] = DEFAULT_TOOL_OFFSET;
+    COPY(tool_offset, default_tool_offset);
   #endif
 
   #if HOTENDS > 1
@@ -2399,6 +2434,18 @@ void MarlinSettings::reset() {
       }
       CONFIG_ECHO_START;
       SERIAL_ECHOLNPAIR("  M851 Z", LINEAR_UNIT(zprobe_zoffset));
+    #endif
+
+    #if ENABLED(MAKERARM_SCARA)
+      if (!forReplay) {
+        CONFIG_ECHO_START;
+        SERIAL_ECHOPGM("Tool Offset");
+        say_units(true);
+      }
+      CONFIG_ECHO_START;
+      SERIAL_ECHOPAIR("  G10 X", LINEAR_UNIT(tool_offset[X_AXIS]));
+      SERIAL_ECHOPAIR(" Y", LINEAR_UNIT(tool_offset[Y_AXIS]));
+      SERIAL_ECHOLNPAIR(" Z", LINEAR_UNIT(tool_offset[Z_AXIS]));
     #endif
 
     /**

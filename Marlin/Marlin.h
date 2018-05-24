@@ -313,6 +313,8 @@ void  home_all_axes();
 
 void report_current_position();
 
+void set_current_from_steppers_for_axis(const AxisEnum axis);
+
 #if IS_KINEMATIC
   extern float delta[ABC];
 #endif
@@ -416,6 +418,7 @@ void report_current_position();
 
 #if ENABLED(MAKERARM_SCARA)
   extern ToolType tool_type;
+  extern float tool_offset[XYZ];      // The offset of the tool relative to the arm end
   uint16_t set_pwm_frequency_hz(const float &hz, const float dca=0.0, const float dcb=0.0, const float dcc=0.0);
 #endif
 

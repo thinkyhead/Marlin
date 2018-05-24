@@ -307,6 +307,8 @@
   #error "MAX7219_DEBUG_STEPPER_TAIL is now MAX7219_DEBUG_PLANNER_TAIL. Please update your configuration."
 #elif defined(MAX7219_DEBUG_STEPPER_QUEUE)
   #error "MAX7219_DEBUG_STEPPER_QUEUE is now MAX7219_DEBUG_PLANNER_QUEUE. Please update your configuration."
+#elif ENABLED(MAKERARM_SCARA) && ENABLED(FWRETRACT)
+  #error "MakerArm is incompatible with FWRETRACT because G10 sets the tool offset."
 #endif
 
 #define BOARD_MKS_13     -47
