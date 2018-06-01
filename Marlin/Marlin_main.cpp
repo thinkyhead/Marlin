@@ -692,8 +692,9 @@ float cartes[XYZ] = { 0 };
   // The offset of the tool relative to the arm end
   float tool_offset[XYZ],           // init in configuration_store.cpp
         tool_offset_angle = 0.0,
-        tool_offset_length = 0.0;
-
+        tool_offset_length = 0.0,
+        toolbit_z_offset,
+        toolbit_radius;
 #endif
 
 #if ENABLED(FILAMENT_WIDTH_SENSOR)

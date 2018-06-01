@@ -418,7 +418,9 @@ void set_current_from_steppers_for_axis(const AxisEnum axis);
 
 #if ENABLED(MAKERARM_SCARA)
   extern ToolType tool_type;
-  extern float tool_offset[XYZ];      // The offset of the tool relative to the arm end
+  extern float tool_offset[XYZ],      // The offset of the tool relative to the arm end
+               toolbit_z_offset,      // Changeable tool length offset
+               toolbit_radius;        // Changeable tool radius, to help generate inner/outer paths
   uint16_t set_pwm_frequency_hz(const float &hz, const float dca=0.0, const float dcb=0.0, const float dcc=0.0);
 #endif
 
