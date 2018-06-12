@@ -26,10 +26,10 @@
 #include "boards.h"
 #include "macros.h"
 #include "Version.h"
-#include "Configuration.h"
+#include "MakerArm/Configuration.h"
 #include "Conditionals_LCD.h"
 #include "drivers.h"
-#include "Configuration_adv.h"
+#include "MakerArm/Configuration_adv.h"
 
 #if USE_MARLINSERIAL
   #define HardwareSerial_h // trick to disable the standard HWserial
