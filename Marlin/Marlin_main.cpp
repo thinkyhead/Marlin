@@ -15265,7 +15265,10 @@ void prepare_move_to_destination() {
     delta[A_AXIS] = DEGREES(ATAN2(sy, sx) + (arm_orientation ? angA - angB : angB - angA));
     delta[B_AXIS] = DEGREES(arm_orientation ? angB : -angB);
 
-    if (tool_offset_angle && !probe_y_offset) delta[B_AXIS] += tool_offset_angle;
+    if (tool_offset_angle && !probe_y_offset) {
+      delta[B_AXIS] += tool_offset_angle;
+      delta[A_AXIS] -= tool_offset_angle;
+    }
 
     // Only allow A angles from -90 to +270
     if (delta[A_AXIS] < 0) delta[A_AXIS] += 360.0;
