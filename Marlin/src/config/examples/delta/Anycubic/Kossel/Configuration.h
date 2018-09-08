@@ -331,9 +331,9 @@
 #define TEMP_SENSOR_4 0
 
 #if ANYCUBIC_KOSSEL_ENABLE_BED > 0
-   #define TEMP_SENSOR_BED 0
+   #define TEMP_SENSOR_BED 5
 #else
-  #define TEMP_SENSOR_BED 5
+  #define TEMP_SENSOR_BED 0
 #endif
 
 #define TEMP_SENSOR_CHAMBER 0
