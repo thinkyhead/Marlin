@@ -6,7 +6,7 @@ These configurations activate many of the new advanced features of the Marlin fi
  * Auto Bed Leveling
  * Pause & Filament Change
 
-**Important**: Before doing anything else after updating the firmware, go to `Configuration > Advanced Settings > Initialize EEPROM` to get rid of old configurations
+**Important**: Before doing anything else after updating the firmware, go to `Configuration > Advanced Settings > Initialize EEPROM` to get rid of old configurations.
 
 After that you should connect the Z-Probe and start `Configuration > Delta Calibration > Auto Calibration`. When it's done don't forget to also do `Configuration > Delta Calibration > Store Settings` to make it permanent.
 
@@ -14,7 +14,7 @@ You should also do a `Motion > Bed Leveling > Level bed` followed by `Store Sett
 
 Please do a manual paper test (moving the nozzle slowly down to Z0 and checking with a piece of paper). If it's not perfect, use `Configuration > Advanced Settings > Probe Z Offset` to correct the difference and execute the calibration again.
 
-**Also Important**: if you value your Z-Probe do NOT execute `Configuration > Delta Configuration > Probe Z-offset` - This can destroy the Z-Probe, see issue [#11337](https://github.com/MarlinFirmware/Marlin/issues/11337)
+**Also Important**: if you value your Z-Probe do NOT execute `Configuration > Delta Configuration > Probe Z-offset` - This can destroy the Z-Probe, see issue [#11337](https://github.com/MarlinFirmware/Marlin/issues/11337).
 
 # Select the Configuration
 
@@ -39,14 +39,12 @@ Typically the probes for the Anycubic Delta Kossel printers come in two differen
 
     ![Version 2 Probe](images/Version2Probe.jpg)
 
-Additionally, there is a configuration version available for the Kossel (Linear or Pulley) without Z-Probe and without heated bed. 
-It is very important to follow the correct procedure to set it up after flashing the firmware, 
-otherwise you might damage the printer by ramming the nozzle into the buildplate:
+Additionally, there's a configuration version available for the Kossel (Linear or Pulley) without Z-Probe and without heated bed. It's very important to follow the correct procedure to set it up after flashing the firmware, otherwise you might damage the printer by ramming the nozzle into the buildplate:
 
 * Configuration >Advanced Settings > Initialize EEPROM
 * Motion > Move Axis > Soft Endstops : Off
-* Auto Home and slowly move the nozzle down until it barely touches the bed (do the paper test: a normal sheet of paper should just feel the drag of the nozzle) and note this number
-* subtract this number from the value in Configuration > Delta Calibration > Delta Settings > Height (if it's negative, add it)
-* save and try the paper test again to verify your height
+* Auto Home and slowly move the nozzle down until it barely touches the bed (do the paper test: a normal sheet of paper should just feel the drag of the nozzle) and note this number.
+* Subtract this number from the value in Configuration > Delta Calibration > Delta Settings > Height. (If it's negative, add it).
+* Save and try the paper test again to verify your height.
 * Configuration > Store Settings
 * Motion > Bed Leveling (using paper test)
