@@ -60,6 +60,9 @@
 #define ENABLE_TEMPERATURE_INTERRUPT() HAL_timer_enable_interrupt(TEMP_TIMER_NUM)
 #define DISABLE_TEMPERATURE_INTERRUPT() HAL_timer_disable_interrupt(TEMP_TIMER_NUM)
 
+#define STEPPER_ISR_ENABLED() HAL_timer_interrupt_enabled(STEP_TIMER_NUM)
+#define TEMP_ISR_ENABLED() HAL_timer_interrupt_enabled(TEMP_TIMER_NUM)
+
 extern void Step_Handler(stimer_t *htim);
 extern void Temp_Handler(stimer_t *htim);
 #define HAL_STEP_TIMER_ISR void Step_Handler(stimer_t *htim)
