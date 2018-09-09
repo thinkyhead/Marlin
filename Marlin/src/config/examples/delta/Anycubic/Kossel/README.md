@@ -41,10 +41,10 @@ Typically the probes for the Anycubic Delta Kossel printers come in two differen
 
 Additionally, there's a configuration version available for the Kossel (Linear or Pulley) without Z-Probe and without heated bed. It's very important to follow the correct procedure to set it up after flashing the firmware, otherwise you might damage the printer by ramming the nozzle into the buildplate:
 
-* Configuration >Advanced Settings > Initialize EEPROM
-* Motion > Move Axis > Soft Endstops : Off
-* Auto Home and slowly move the nozzle down until it barely touches the bed (do the paper test: a normal sheet of paper should just feel the drag of the nozzle) and note this number.
-* Subtract this number from the value in Configuration > Delta Calibration > Delta Settings > Height. (If it's negative, add it).
+* `Configuration > Advanced Settings > Initialize EEPROM`
+* `Motion > Move Axis > Soft Endstops` : `Off`
+* Auto Home and slowly move the nozzle down until it barely touches the bed. (Do a paper-test: A normal sheet of paper should just feel the drag of the nozzle) and note this number.
+* Subtract this number from the value in `Configuration > Delta Calibration > Delta Settings > Height`. (If it's negative, add it).
 * Save and try the paper test again to verify your height.
-* Configuration > Store Settings
+* `Configuration > Store Settings`
 * Motion > Bed Leveling (using paper test)
