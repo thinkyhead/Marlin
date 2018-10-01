@@ -70,6 +70,10 @@ extern fil_change_settings_t fc_settings[EXTRUDERS];
 
 extern uint8_t did_pause_print;
 
+#if ENABLED(DYNAMIC_TOOL_MIGRATION)
+  extern uint8_t dtm_last_usable_extruder;
+#endif
+
 #if ENABLED(DUAL_X_CARRIAGE)
   #define DXC_PARAMS , const int8_t DXC_ext=-1
   #define DXC_ARGS   , const int8_t DXC_ext

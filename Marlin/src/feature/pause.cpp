@@ -111,6 +111,9 @@ static bool ensure_safe_temperature(const AdvancedPauseMode mode=ADVANCED_PAUSE_
   return thermalManager.wait_for_hotend(active_extruder);
 }
 
+/**
+ * Move E by an absolute number of mm
+ */
 void do_pause_e_move(const float &length, const float &fr) {
   current_position[E_AXIS] += length / planner.e_factor[active_extruder];
   planner.buffer_line(current_position, fr, active_extruder);
