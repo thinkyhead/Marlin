@@ -20,8 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-#ifdef STM32F7xx
+#if defined STM32F0xx || defined STM32F1xx || defined STM32F4xx || defined STM32F7xx
 
 // --------------------------------------------------------------------------
 // Includes
@@ -157,4 +156,4 @@ void spiSendBlock(uint8_t token, const uint8_t* buf) {
 
 #endif // SOFTWARE_SPI
 
-#endif // STM32F7xx
+#endif // STM32F0xx || STM32F1xx || STM32F4xx || STM32F7xx

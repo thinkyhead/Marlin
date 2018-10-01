@@ -74,12 +74,12 @@
   #include "../HAL_TEENSY35_36/HAL_Servo_Teensy.h"
 #elif defined(TARGET_LPC1768)
   #include "../HAL_LPC1768/LPC1768_Servo.h"
-#elif defined(STM32F1) || defined(STM32F1xx)
+#elif defined(STM32F1) && !defined(STM32F1xx)
   #include "../HAL_STM32F1/HAL_Servo_STM32F1.h"
-#elif defined(STM32F4) || defined(STM32F4xx)
+#elif defined(STM32F4) && !defined(STM32F4xx)
   #include "../HAL_STM32F4/HAL_Servo_STM32F4.h"
-#elif defined(STM32F7xx)
-  #include "../HAL_STM32F7xx/HAL_Servo_STM32F7.h"
+#elif defined(STM32F0xx) || defined(STM32F1xx) || defined(STM32F4xx) || defined(STM32F7xx)
+  #include "../HAL_STM32/HAL_Servo_STM32.h"
 #else
   #include <stdint.h>
 

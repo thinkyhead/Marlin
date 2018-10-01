@@ -20,13 +20,13 @@
  *
  */
 
-#ifdef STM32F7xx
+#if defined STM32F0xx || defined STM32F1xx || defined STM32F4xx || defined STM32F7xx
 
 #include "../../inc/MarlinConfig.h"
 
 #if ENABLED(USE_WATCHDOG)
 
-  #include "watchdog_STM32F7.h"
+  #include "watchdog_STM32.h"
   #include <IWatchdog.h>
 
   void watchdog_init() {
@@ -38,5 +38,4 @@
   }
 
 #endif // USE_WATCHDOG
-
-#endif // STM32F7xx
+#endif // STM32F0xx || STM32F1xx || STM32F4xx || STM32F7xx
