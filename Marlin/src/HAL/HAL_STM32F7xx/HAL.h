@@ -37,9 +37,9 @@
 
 #include "Arduino.h"
 
-//#ifdef USBCON
-//  #include <USBSerial.h>
-//#endif
+#ifdef USBCON
+  #include <USBSerial.h>
+#endif
 
 #include "../shared/math_32bit.h"
 #include "../shared/HAL_SPI.h"
@@ -63,7 +63,7 @@
   #error "SERIAL_PORT must be from -1 to 6"
 #endif
 #if SERIAL_PORT == -1
-  #define MYSERIAL0 Serial0 // TODO Once CDC is supported
+  #define MYSERIAL0 SerialUSB
 #elif SERIAL_PORT == 1
   #define MYSERIAL0 Serial1
 #elif SERIAL_PORT == 2
