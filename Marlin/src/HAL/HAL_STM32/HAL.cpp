@@ -21,7 +21,7 @@
  *
  */
 
-#if defined(STM32F0xx) || defined(STM32F1xx) || defined(STM32F4xx) || defined(STM32F7xx)
+#ifdef ARDUINO_ARCH_STM32
 
 // --------------------------------------------------------------------------
 // Includes
@@ -123,4 +123,4 @@ uint16_t HAL_adc_get_result(void) {
   return HAL_adc_result;
 }
 
-#endif // STM32F0xx || STM32F1xx || STM32F4xx || STM32F7xx
+#endif // ARDUINO_ARCH_STM32

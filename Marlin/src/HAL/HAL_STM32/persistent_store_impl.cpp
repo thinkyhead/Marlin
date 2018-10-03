@@ -20,7 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#if defined(STM32F0xx) || defined(STM32F1xx) || defined(STM32F4xx) || defined(STM32F7xx)
+#ifdef ARDUINO_ARCH_STM32
 
 #include "../../inc/MarlinConfig.h"
 
@@ -100,4 +100,4 @@ size_t PersistentStore::capacity() {
 }
 
 #endif // EEPROM_SETTINGS
-#endif // STM32F0xx || STM32F1xx || STM32F4xx || STM32F7xx
+#endif // ARDUINO_ARCH_STM32
