@@ -21,7 +21,7 @@
  *
  */
 
-#if defined STM32F0xx || defined STM32F1xx || defined STM32F4xx || defined STM32F7xx
+#if defined(STM32F0xx) || defined(STM32F1xx) || defined(STM32F4xx) || defined(STM32F7xx)
 
 // --------------------------------------------------------------------------
 // Includes
@@ -30,11 +30,11 @@
 #include "HAL.h"
 
 #if ENABLED(EEPROM_EMULATED_WITH_SRAM)
-#if STM32F7xx
-#include "stm32f7xx_ll_pwr.h"
-#else
-#error "EEPROM_EMULATED_WITH_SRAM is currently only supported for STM32F7xx"
-#endif
+  #if STM32F7xx
+    #include "stm32f7xx_ll_pwr.h"
+  #else
+    #error "EEPROM_EMULATED_WITH_SRAM is currently only supported for STM32F7xx"
+  #endif
 #endif // EEPROM_EMULATED_WITH_SRAM
 
 // --------------------------------------------------------------------------

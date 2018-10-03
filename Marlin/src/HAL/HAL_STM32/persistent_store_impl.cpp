@@ -20,7 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#if defined STM32F0xx || defined STM32F1xx || defined STM32F4xx || defined STM32F7xx
+#if defined(STM32F0xx) || defined(STM32F1xx) || defined(STM32F4xx) || defined(STM32F7xx)
 
 #include "../../inc/MarlinConfig.h"
 

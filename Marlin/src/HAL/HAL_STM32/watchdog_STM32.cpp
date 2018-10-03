@@ -20,7 +20,7 @@
  *
  */
 
-#if defined STM32F0xx || defined STM32F1xx || defined STM32F4xx || defined STM32F7xx
+#if defined(STM32F0xx) || defined(STM32F1xx) || defined(STM32F4xx) || defined(STM32F7xx)
 
 #include "../../inc/MarlinConfig.h"
 
@@ -29,13 +29,9 @@
   #include "watchdog_STM32.h"
   #include <IWatchdog.h>
 
-  void watchdog_init() {
-	IWatchdog.begin(4000000); // 4 sec timeout
-  }
+  void watchdog_init() { IWatchdog.begin(4000000); } // 4 sec timeout
 
-  void watchdog_reset() {
-	IWatchdog.reload();
-  }
+  void watchdog_reset() { IWatchdog.reload(); }
 
 #endif // USE_WATCHDOG
 #endif // STM32F0xx || STM32F1xx || STM32F4xx || STM32F7xx

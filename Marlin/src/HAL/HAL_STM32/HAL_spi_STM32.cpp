@@ -20,7 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#if defined STM32F0xx || defined STM32F1xx || defined STM32F4xx || defined STM32F7xx
+#if defined(STM32F0xx) || defined(STM32F1xx) || defined(STM32F4xx) || defined(STM32F7xx)
 
 // --------------------------------------------------------------------------
 // Includes
@@ -48,7 +48,7 @@ static SPISettings spiConfig;
   // --------------------------------------------------------------------------
   // Software SPI
   // --------------------------------------------------------------------------
-  #error "Software SPI not supported for STM32F7. Use hardware SPI."
+  #error "Software SPI not supported for STM32F7. Use Hardware SPI."
 
 #else
 
@@ -69,7 +69,7 @@ static SPISettings spiConfig;
  */
 void spiBegin(void) {
   #if !PIN_EXISTS(SS)
-    #error SS_PIN not defined!
+    #error "SS_PIN not defined!"
   #endif
 
   SET_OUTPUT(SS_PIN);
