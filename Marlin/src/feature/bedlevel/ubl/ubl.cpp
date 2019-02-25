@@ -64,10 +64,10 @@
   #if ENABLED(UBL_DEVEL_DEBUGGING)
 
     static void debug_echo_axis(const AxisEnum axis) {
-      if (current_position[axis] == destination[axis])
+      if (tool.position[axis] == tool.destination[axis])
         SERIAL_ECHOPGM("-------------");
       else
-        SERIAL_ECHO_F(destination[X_AXIS], 6);
+        SERIAL_ECHO_F(tool.destination[X_AXIS], 6);
     }
 
     void debug_current_and_destination(PGM_P title) {
@@ -76,22 +76,22 @@
       // ignore the status of the g26_debug_flag
       if (*title != '!' && !g26_debug_flag) return;
 
-      const float de = destination[E_AXIS] - current_position[E_AXIS];
+      const float de = tool.destination[E_AXIS] - tool.position[E_AXIS];
 
       if (de == 0.0) return; // Printing moves only
 
-      const float dx = destination[X_AXIS] - current_position[X_AXIS],
-                  dy = destination[Y_AXIS] - current_position[Y_AXIS],
+      const float dx = tool.destination[X_AXIS] - tool.position[X_AXIS],
+                  dy = tool.destination[Y_AXIS] - tool.position[Y_AXIS],
                   xy_dist = HYPOT(dx, dy);
 
       if (xy_dist == 0.0) return;
 
       const float fpmm = de / xy_dist;
       SERIAL_ECHOPAIR_F("   fpmm=", fpmm, 6);
-      SERIAL_ECHOPAIR_F("    current=( ", current_position[X_AXIS], 6);
-      SERIAL_ECHOPAIR_F(", ", current_position[Y_AXIS], 6);
-      SERIAL_ECHOPAIR_F(", ", current_position[Z_AXIS], 6);
-      SERIAL_ECHOPAIR_F(", ", current_position[E_AXIS], 6);
+      SERIAL_ECHOPAIR_F("    current=( ", tool.position[X_AXIS], 6);
+      SERIAL_ECHOPAIR_F(", ", tool.position[Y_AXIS], 6);
+      SERIAL_ECHOPAIR_F(", ", tool.position[Z_AXIS], 6);
+      SERIAL_ECHOPAIR_F(", ", tool.position[E_AXIS], 6);
       SERIAL_ECHOPGM(" )   destination=( "); debug_echo_axis(X_AXIS);
       SERIAL_ECHOPGM(", "); debug_echo_axis(Y_AXIS);
       SERIAL_ECHOPGM(", "); debug_echo_axis(Z_AXIS);
@@ -198,8 +198,8 @@
       serialprintPGM(csv ? PSTR("CSV:\n") : PSTR("LCD:\n"));
     }
 
-    const float current_xi = get_cell_index_x(current_position[X_AXIS] + (MESH_X_DIST) / 2.0),
-                current_yi = get_cell_index_y(current_position[Y_AXIS] + (MESH_Y_DIST) / 2.0);
+    const float current_xi = get_cell_index_x(tool.position[X_AXIS] + (MESH_X_DIST) / 2.0),
+                current_yi = get_cell_index_y(tool.position[Y_AXIS] + (MESH_Y_DIST) / 2.0);
 
     if (!lcd) SERIAL_EOL();
     for (int8_t j = GRID_MAX_POINTS_Y - 1; j >= 0; j--) {

@@ -223,19 +223,19 @@ void move_to(const float &rx, const float &ry, const float &z, const float &e_de
   float feed_value;
   static float last_z = -999.99;
 
-  bool has_xy_component = (rx != current_position[X_AXIS] || ry != current_position[Y_AXIS]); // Check if X or Y is involved in the movement.
+  bool has_xy_component = (rx != tool.position[X_AXIS] || ry != tool.position[Y_AXIS]); // Check if X or Y is involved in the movement.
 
   if (z != last_z) {
     last_z = z;
     feed_value = planner.settings.max_feedrate_mm_s[Z_AXIS]/(2.0);  // Base the feed rate off of the configured Z_AXIS feed rate
 
-    destination[X_AXIS] = current_position[X_AXIS];
-    destination[Y_AXIS] = current_position[Y_AXIS];
-    destination[Z_AXIS] = z;                          // We know the last_z!=z or we wouldn't be in this block of code.
-    destination[E_AXIS] = current_position[E_AXIS];
+    tool.destination[X_AXIS] = tool.position[X_AXIS];
+    tool.destination[Y_AXIS] = tool.position[Y_AXIS];
+    tool.destination[Z_AXIS] = z;                          // We know the last_z!=z or we wouldn't be in this block of code.
+    tool.destination[E_AXIS] = tool.position[E_AXIS];
 
     G26_line_to_destination(feed_value);
-    set_destination_from_current();
+    tool.sync_destination();
   }
 
   // Check if X or Y is involved in the movement.
@@ -244,12 +244,12 @@ void move_to(const float &rx, const float &ry, const float &z, const float &e_de
 
   if (g26_debug_flag) SERIAL_ECHOLNPAIR("in move_to() feed_value for XY:", feed_value);
 
-  destination[X_AXIS] = rx;
-  destination[Y_AXIS] = ry;
-  destination[E_AXIS] += e_delta;
+  tool.destination[X_AXIS] = rx;
+  tool.destination[Y_AXIS] = ry;
+  tool.destination[E_AXIS] += e_delta;
 
   G26_line_to_destination(feed_value);
-  set_destination_from_current();
+  tool.sync_destination();
 }
 
 FORCE_INLINE void move_to(const float (&where)[XYZE], const float &de) { move_to(where[X_AXIS], where[Y_AXIS], where[Z_AXIS], de); }
@@ -284,12 +284,12 @@ void recover_filament(const float (&where)[XYZE]) {
  * cases where the optimization comes into play.
  */
 void print_line_from_here_to_there(const float &sx, const float &sy, const float &sz, const float &ex, const float &ey, const float &ez) {
-  const float dx_s = current_position[X_AXIS] - sx,   // find our distance from the start of the actual line segment
-              dy_s = current_position[Y_AXIS] - sy,
+  const float dx_s = tool.position[X_AXIS] - sx,   // find our distance from the start of the actual line segment
+              dy_s = tool.position[Y_AXIS] - sy,
               dist_start = HYPOT2(dx_s, dy_s),        // We don't need to do a sqrt(), we can compare the distance^2
                                                       // to save computation time
-              dx_e = current_position[X_AXIS] - ex,   // find our distance from the end of the actual line segment
-              dy_e = current_position[Y_AXIS] - ey,
+              dx_e = tool.position[X_AXIS] - ex,   // find our distance from the end of the actual line segment
+              dy_e = tool.position[Y_AXIS] - ey,
               dist_end = HYPOT2(dx_e, dy_e),
 
               line_length = HYPOT(ex - sx, ey - sy);
@@ -302,9 +302,9 @@ void print_line_from_here_to_there(const float &sx, const float &sy, const float
   // Decide whether to retract & bump
 
   if (dist_start > 2.0) {
-    retract_filament(destination);
+    retract_filament(tool.destination);
     //todo:  parameterize the bump height with a define
-    move_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 0.500, 0.0);  // Z bump to minimize scraping
+    move_to(tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS] + 0.500, 0.0);  // Z bump to minimize scraping
     move_to(sx, sy, sz + 0.500, 0.0); // Get to the starting point with no extrusion while bumped
   }
 
@@ -312,7 +312,7 @@ void print_line_from_here_to_there(const float &sx, const float &sy, const float
 
   const float e_pos_delta = line_length * g26_e_axis_feedrate * g26_extrusion_multiplier;
 
-  recover_filament(destination);
+  recover_filament(tool.destination);
   move_to(ex, ey, ez, e_pos_delta);  // Get to the ending point with an appropriate amount of extrusion
 }
 
@@ -438,10 +438,10 @@ inline bool turn_on_heaters() {
     ui.set_status_P(PSTR("G26 Heating Nozzle."), 99);
     ui.quick_feedback();
   #endif
-  thermalManager.setTargetHotend(g26_hotend_temp, active_extruder);
+  thermalManager.setTargetHotend(g26_hotend_temp, tool.index);
 
   // Wait for the temperature to stabilize
-  if (!thermalManager.wait_for_hotend(active_extruder, true
+  if (!thermalManager.wait_for_hotend(tool.index, true
       #if G26_CLICK_CAN_CANCEL
         , true
       #endif
@@ -472,19 +472,19 @@ inline bool prime_nozzle() {
       ui.set_status_P(PSTR("User-Controlled Prime"), 99);
       ui.chirp();
 
-      set_destination_from_current();
+      tool.sync_destination();
 
-      recover_filament(destination); // Make sure G26 doesn't think the filament is retracted().
+      recover_filament(tool.destination); // Make sure G26 doesn't think the filament is retracted().
 
       while (!ui.button_pressed()) {
         ui.chirp();
-        destination[E_AXIS] += 0.25;
+        tool.destination[E_AXIS] += 0.25;
         #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
           Total_Prime += 0.25;
           if (Total_Prime >= EXTRUDE_MAXLENGTH) return G26_ERR;
         #endif
         G26_line_to_destination(planner.settings.max_feedrate_mm_s[E_AXIS] / 15.0);
-        set_destination_from_current();
+        tool.sync_destination();
         planner.synchronize();    // Without this synchronize, the purge is more consistent,
                                   // but because the planner has a buffer, we won't be able
                                   // to stop as quickly. So we put up with the less smooth
@@ -504,11 +504,11 @@ inline bool prime_nozzle() {
       ui.set_status_P(PSTR("Fixed Length Prime."), 99);
       ui.quick_feedback();
     #endif
-    set_destination_from_current();
-    destination[E_AXIS] += g26_prime_length;
+    tool.sync_destination();
+    tool.destination[E_AXIS] += g26_prime_length;
     G26_line_to_destination(planner.settings.max_feedrate_mm_s[E_AXIS] / 15.0);
-    set_destination_from_current();
-    retract_filament(destination);
+    tool.sync_destination();
+    retract_filament(tool.destination);
   }
 
   return G26_OK;
@@ -670,8 +670,8 @@ void GcodeSuite::G26() {
     return;
   }
 
-  g26_x_pos = parser.seenval('X') ? RAW_X_POSITION(parser.value_linear_units()) : current_position[X_AXIS];
-  g26_y_pos = parser.seenval('Y') ? RAW_Y_POSITION(parser.value_linear_units()) : current_position[Y_AXIS];
+  g26_x_pos = parser.seenval('X') ? RAW_X_POSITION(parser.value_linear_units()) : tool.position[X_AXIS];
+  g26_y_pos = parser.seenval('Y') ? RAW_Y_POSITION(parser.value_linear_units()) : tool.position[Y_AXIS];
   if (!position_is_reachable(g26_x_pos, g26_y_pos)) {
     SERIAL_ECHOLNPGM("?Specified X,Y coordinate out of bounds.");
     return;
@@ -682,14 +682,14 @@ void GcodeSuite::G26() {
    */
   set_bed_leveling_enabled(!parser.seen('D'));
 
-  if (current_position[Z_AXIS] < Z_CLEARANCE_BETWEEN_PROBES) {
+  if (tool.position[Z_AXIS] < Z_CLEARANCE_BETWEEN_PROBES) {
     do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
-    set_current_from_destination();
+    tool.set_position_from_destination();
   }
 
   if (turn_on_heaters() != G26_OK) goto LEAVE;
 
-  current_position[E_AXIS] = 0.0;
+  tool.position[E_AXIS] = 0.0;
   sync_plan_position_e();
 
   if (g26_prime_flag && prime_nozzle() != G26_OK) goto LEAVE;
@@ -709,10 +709,10 @@ void GcodeSuite::G26() {
   ZERO(vertical_mesh_line_flags);
 
   // Move nozzle to the specified height for the first layer
-  set_destination_from_current();
-  destination[Z_AXIS] = g26_layer_height;
-  move_to(destination, 0.0);
-  move_to(destination, g26_ooze_amount);
+  tool.sync_destination();
+  tool.destination[Z_AXIS] = g26_layer_height;
+  move_to(tool.destination, 0.0);
+  move_to(tool.destination, g26_ooze_amount);
 
   #if HAS_LCD_MENU
     ui.capture();
@@ -743,7 +743,7 @@ void GcodeSuite::G26() {
   mesh_index_pair location;
   do {
      location = g26_continue_with_closest
-      ? find_closest_circle_to_print(current_position[X_AXIS], current_position[Y_AXIS])
+      ? find_closest_circle_to_print(tool.position[X_AXIS], tool.position[Y_AXIS])
       : find_closest_circle_to_print(g26_x_pos, g26_y_pos); // Find the closest Mesh Intersection to where we are now.
 
     if (location.x_index >= 0 && location.y_index >= 0) {
@@ -798,25 +798,25 @@ void GcodeSuite::G26() {
           circle_y - sy
         };
 
-        const float dx_s = current_position[X_AXIS] - sx,   // find our distance from the start of the actual circle
-                    dy_s = current_position[Y_AXIS] - sy,
+        const float dx_s = tool.position[X_AXIS] - sx,   // find our distance from the start of the actual circle
+                    dy_s = tool.position[Y_AXIS] - sy,
                     dist_start = HYPOT2(dx_s, dy_s);
         const float endpoint[XYZE] = {
           ex, ey,
           g26_layer_height,
-          current_position[E_AXIS] + (arc_length * g26_e_axis_feedrate * g26_extrusion_multiplier)
+          tool.position[E_AXIS] + (arc_length * g26_e_axis_feedrate * g26_extrusion_multiplier)
         };
 
         if (dist_start > 2.0) {
-          retract_filament(destination);
+          retract_filament(tool.destination);
           //todo:  parameterize the bump height with a define
-          move_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + 0.500, 0.0);  // Z bump to minimize scraping
+          move_to(tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS] + 0.500, 0.0);  // Z bump to minimize scraping
           move_to(sx, sy, g26_layer_height + 0.500, 0.0); // Get to the starting point with no extrusion while bumped
         }
 
         move_to(sx, sy, g26_layer_height, 0.0); // Get to the starting point with no extrusion / un-Z bump
 
-        recover_filament(destination);
+        recover_filament(tool.destination);
         const float save_feedrate = feedrate_mm_s;
         feedrate_mm_s = PLANNER_XY_FEEDRATE() / 10.0;
 
@@ -825,16 +825,16 @@ void GcodeSuite::G26() {
           SERIAL_ECHOPAIR(", ey=", endpoint[Y_AXIS]);
           SERIAL_ECHOPAIR(", ez=", endpoint[Z_AXIS]);
           SERIAL_ECHOPAIR(", len=", arc_length);
-          SERIAL_ECHOPAIR(") -> (ex=", current_position[X_AXIS]);
-          SERIAL_ECHOPAIR(", ey=", current_position[Y_AXIS]);
-          SERIAL_ECHOPAIR(", ez=", current_position[Z_AXIS]);
+          SERIAL_ECHOPAIR(") -> (ex=", tool.position[X_AXIS]);
+          SERIAL_ECHOPAIR(", ey=", tool.position[Y_AXIS]);
+          SERIAL_ECHOPAIR(", ez=", tool.position[Z_AXIS]);
           SERIAL_CHAR(')');
           SERIAL_EOL();
         }
 
         plan_arc(endpoint, arc_offset, false);  // Draw a counter-clockwise arc
         feedrate_mm_s = save_feedrate;
-        set_destination_from_current();
+        tool.sync_destination();
         #if HAS_LCD_MENU
           if (user_canceled()) goto LEAVE; // Check if the user wants to stop the Mesh Validation
         #endif
@@ -896,18 +896,18 @@ void GcodeSuite::G26() {
   LEAVE:
   ui.set_status_P(PSTR("Leaving G26"), -1);
 
-  retract_filament(destination);
-  destination[Z_AXIS] = Z_CLEARANCE_BETWEEN_PROBES;
+  retract_filament(tool.destination);
+  tool.destination[Z_AXIS] = Z_CLEARANCE_BETWEEN_PROBES;
 
   //debug_current_and_destination(PSTR("ready to do Z-Raise."));
-  move_to(destination, 0); // Raise the nozzle
+  move_to(tool.destination, 0); // Raise the nozzle
   //debug_current_and_destination(PSTR("done doing Z-Raise."));
 
-  destination[X_AXIS] = g26_x_pos;                            // Move back to the starting position
-  destination[Y_AXIS] = g26_y_pos;
-  //destination[Z_AXIS] = Z_CLEARANCE_BETWEEN_PROBES;         // Keep the nozzle where it is
+  tool.destination[X_AXIS] = g26_x_pos;                            // Move back to the starting position
+  tool.destination[Y_AXIS] = g26_y_pos;
+  //tool.destination[Z_AXIS] = Z_CLEARANCE_BETWEEN_PROBES;         // Keep the nozzle where it is
 
-  move_to(destination, 0);                                    // Move back to the starting position
+  move_to(tool.destination, 0);                                    // Move back to the starting position
   //debug_current_and_destination(PSTR("done doing X/Y move."));
 
   #if HAS_LCD_MENU
@@ -918,7 +918,7 @@ void GcodeSuite::G26() {
     #if HAS_HEATED_BED
       thermalManager.setTargetBed(0);
     #endif
-    thermalManager.setTargetHotend(active_extruder, 0);
+    thermalManager.setTargetHotend(tool.index, 0);
   }
 }
 

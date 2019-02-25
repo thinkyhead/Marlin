@@ -197,7 +197,7 @@ void cubic_b_spline(const float position[NUM_AXIS], const float target[NUM_AXIS]
       const float (&pos)[XYZE] = bez_target;
     #endif
 
-    if (!planner.buffer_line(pos, fr_mm_s, active_extruder, step))
+    if (!planner.buffer_line(pos, fr_mm_s, tool.index, step))
       break;
   }
 }

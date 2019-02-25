@@ -35,7 +35,7 @@
 
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
     #include "../feature/pause.h"
-    #include "../module/motion.h" // for active_extruder
+    #include "../module/motion.h" // for tool.index
   #endif
 
   enum LCDViewAction : uint8_t {
@@ -80,7 +80,7 @@
     #if ENABLED(ADVANCED_PAUSE_FEATURE)
       void lcd_advanced_pause_show_message(const AdvancedPauseMessage message,
                                            const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_SAME,
-                                           const uint8_t extruder=active_extruder);
+                                           const uint8_t extruder=tool.index);
     #endif
 
     #if ENABLED(AUTO_BED_LEVELING_UBL)

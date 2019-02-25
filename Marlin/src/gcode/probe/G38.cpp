@@ -39,7 +39,7 @@ static bool G38_run_probe() {
     // Get direction of move and retract
     float retract_mm[XYZ];
     LOOP_XYZ(i) {
-      const float dist = destination[i] - current_position[i];
+      const float dist = tool.destination[i] - tool.position[i];
       retract_mm[i] = ABS(dist) < G38_MINIMUM_MOVE ? 0 : home_bump_mm((AxisEnum)i) * (dist > 0 ? -1 : 1);
     }
   #endif
@@ -64,8 +64,8 @@ static bool G38_run_probe() {
 
     #if MULTIPLE_PROBING > 1
       // Move away by the retract distance
-      set_destination_from_current();
-      LOOP_XYZ(i) destination[i] += retract_mm[i];
+      tool.sync_destination();
+      LOOP_XYZ(i) tool.destination[i] += retract_mm[i];
       endstops.enable(false);
       prepare_move_to_destination();
       planner.synchronize();
@@ -73,7 +73,7 @@ static bool G38_run_probe() {
       feedrate_mm_s /= 4;
 
       // Bump the target more slowly
-      LOOP_XYZ(i) destination[i] -= retract_mm[i] * 2;
+      LOOP_XYZ(i) tool.destination[i] -= retract_mm[i] * 2;
 
       endstops.enable(true);
       G38_move = true;
@@ -105,7 +105,7 @@ void GcodeSuite::G38(const bool is_38_2) {
 
   // If any axis has enough movement, do the move
   LOOP_XYZ(i)
-    if (ABS(destination[i] - current_position[i]) >= G38_MINIMUM_MOVE) {
+    if (ABS(tool.destination[i] - tool.position[i]) >= G38_MINIMUM_MOVE) {
       if (!parser.seenval('F')) feedrate_mm_s = homing_feedrate((AxisEnum)i);
       // If G38.2 fails throw an error
       if (!G38_run_probe() && is_38_2) SERIAL_ERROR_MSG("Failed to reach target");

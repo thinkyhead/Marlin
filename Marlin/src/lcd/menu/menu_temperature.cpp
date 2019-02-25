@@ -56,7 +56,7 @@ void _lcd_preheat(const int16_t endnum, const int16_t temph, const int16_t tempb
   #endif
   #if FAN_COUNT > 0
     #if FAN_COUNT > 1
-      thermalManager.set_fan_speed(active_extruder < FAN_COUNT ? active_extruder : 0, fan);
+      thermalManager.set_fan_speed(tool.index < FAN_COUNT ? tool.index : 0, fan);
     #else
       thermalManager.set_fan_speed(0, fan);
     #endif
@@ -373,7 +373,7 @@ void menu_temperature() {
   #endif // HOTENDS > 1
 
   #if ENABLED(SINGLENOZZLE)
-    MENU_MULTIPLIER_ITEM_EDIT(uint16_3, MSG_NOZZLE_STANDBY, &singlenozzle_temp[active_extruder ? 0 : 1], 0, HEATER_0_MAXTEMP - 15);
+    MENU_MULTIPLIER_ITEM_EDIT(uint16_3, MSG_NOZZLE_STANDBY, &singlenozzle_temp[tool.index ? 0 : 1], 0, HEATER_0_MAXTEMP - 15);
   #endif
 
   //

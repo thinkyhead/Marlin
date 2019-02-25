@@ -29,10 +29,10 @@
 #include "../../module/temperature.h"
 
 #if ENABLED(SINGLENOZZLE)
-  #define _ALT_P active_extruder
+  #define _ALT_P tool.index
   #define _CNT_P EXTRUDERS
 #else
-  #define _ALT_P MIN(active_extruder, FAN_COUNT - 1)
+  #define _ALT_P MIN(tool.index, FAN_COUNT - 1)
   #define _CNT_P MIN(EXTRUDERS, FAN_COUNT)
 #endif
 

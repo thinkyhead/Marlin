@@ -25,7 +25,7 @@
 #if ENABLED(PHOTO_GCODE)
 
 #include "../../gcode.h"
-#include "../../../module/motion.h" // for active_extruder and current_position
+#include "../../../module/motion.h" // for tool.index and tool.position
 
 #if PIN_EXISTS(CHDK)
   millis_t chdk_timeout; // = 0
@@ -44,12 +44,12 @@
 
   #ifdef PHOTO_RETRACT_MM
     inline void e_move_m240(const float length, const float fr_mm_s) {
-      if (length && thermalManager.hotEnoughToExtrude(active_extruder)) {
+      if (length && thermalManager.hotEnoughToExtrude(tool.index)) {
         #if ENABLED(ADVANCED_PAUSE_FEATURE)
           do_pause_e_move(length, fr_mm_s);
         #else
-          current_position[E_AXIS] += length / planner.e_factor[active_extruder];
-          planner.buffer_line(current_position, fr_mm_s, active_extruder);
+          tool.position[E_AXIS] += length / planner.e_factor[tool.index];
+          planner.buffer_line(tool.position, fr_mm_s, tool.index);
         #endif
       }
     }
@@ -98,9 +98,9 @@ void GcodeSuite::M240() {
     if (axis_unhomed_error()) return;
 
     const float old_pos[XYZ] = {
-      current_position[X_AXIS] + parser.linearval('A'),
-      current_position[Y_AXIS] + parser.linearval('B'),
-      current_position[Z_AXIS]
+      tool.position[X_AXIS] + parser.linearval('A'),
+      tool.position[Y_AXIS] + parser.linearval('B'),
+      tool.position[Z_AXIS]
     };
 
     #ifdef PHOTO_RETRACT_MM
@@ -125,7 +125,7 @@ void GcodeSuite::M240() {
     float raw[XYZ] = {
        parser.seenval('X') ? RAW_X_POSITION(parser.value_linear_units()) : photo_position[X_AXIS],
        parser.seenval('Y') ? RAW_Y_POSITION(parser.value_linear_units()) : photo_position[Y_AXIS],
-      (parser.seenval('Z') ? parser.value_linear_units() : photo_position[Z_AXIS]) + current_position[Z_AXIS]
+      (parser.seenval('Z') ? parser.value_linear_units() : photo_position[Z_AXIS]) + tool.position[Z_AXIS]
     };
     clamp_to_software_endstops(raw);
     do_blocking_move_to(raw, fr_mm_s);

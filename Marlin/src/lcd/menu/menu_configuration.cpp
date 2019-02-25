@@ -122,9 +122,9 @@ static void lcd_factory_settings() {
   #include "../../gcode/queue.h"
 
   void _recalc_IDEX_settings() {
-    if (active_extruder) {                      // For the 2nd extruder re-home so the next tool-change gets the new offsets.
+    if (tool.index) {                      // For the 2nd extruder re-home so the next tool-change gets the new offsets.
       enqueue_and_echo_commands_P(PSTR("G28")); // In future, we can babystep the 2nd extruder (if active), making homing unnecessary.
-      active_extruder = 0;
+      tool.index = 0;
     }
   }
 
@@ -143,9 +143,9 @@ static void lcd_factory_settings() {
     //  : PSTR("M605 S1\nT0\nM605 S2 X200\nG28 X\nG1 X100\nM605 S3 X200")
     //);
     MENU_ITEM(gcode, MSG_IDEX_MODE_FULL_CTRL, PSTR("M605 S0\nG28 X"));
-    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float52, MSG_IDEX_X_OFFSET , &hotend_offset[X_AXIS][1], MIN(X2_HOME_POS, X2_MAX_POS) - 25.0, MAX(X2_HOME_POS, X2_MAX_POS) + 25.0, _recalc_IDEX_settings);
-    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float52, MSG_IDEX_Y_OFFSET , &hotend_offset[Y_AXIS][1], -10.0, 10.0, _recalc_IDEX_settings);
-    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float52, MSG_IDEX_Z_OFFSET , &hotend_offset[Z_AXIS][1], -10.0, 10.0, _recalc_IDEX_settings);
+    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float52, MSG_IDEX_X_OFFSET , &tool.offset[X_AXIS][1], MIN(X2_HOME_POS, X2_MAX_POS) - 25.0, MAX(X2_HOME_POS, X2_MAX_POS) + 25.0, _recalc_IDEX_settings);
+    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float52, MSG_IDEX_Y_OFFSET , &tool.offset[Y_AXIS][1], -10.0, 10.0, _recalc_IDEX_settings);
+    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float52, MSG_IDEX_Z_OFFSET , &tool.offset[Z_AXIS][1], -10.0, 10.0, _recalc_IDEX_settings);
     MENU_ITEM(gcode, MSG_IDEX_SAVE_OFFSETS, PSTR("M500"));
     END_MENU();
   }

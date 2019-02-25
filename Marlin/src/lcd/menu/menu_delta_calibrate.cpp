@@ -58,7 +58,7 @@ void _man_probe_pt(const float &rx, const float &ry) {
     while (wait_for_user) idle();
     KEEPALIVE_STATE(IN_HANDLER);
     ui.goto_previous_screen_no_defer();
-    return current_position[Z_AXIS];
+    return tool.position[Z_AXIS];
   }
 
 #endif

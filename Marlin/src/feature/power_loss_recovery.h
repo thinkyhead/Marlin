@@ -40,7 +40,7 @@ typedef struct {
   uint8_t valid_head;
 
   // Machine state
-  float current_position[NUM_AXIS];
+  float tool.position[NUM_AXIS];
 
   uint16_t feedrate;
 

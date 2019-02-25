@@ -50,7 +50,7 @@ void GcodeSuite::T(const uint8_t tool_index) {
       SERIAL_ECHOPAIR(">>> T(", tool_index);
       SERIAL_CHAR(')');
       SERIAL_EOL();
-      DEBUG_POS("BEFORE", current_position);
+      DEBUG_POS("BEFORE", tool.position);
     }
   #endif
 
@@ -70,14 +70,14 @@ void GcodeSuite::T(const uint8_t tool_index) {
     tool_change(
       tool_index,
       MMM_TO_MMS(parser.linearval('F')),
-      (tool_index == active_extruder) || parser.boolval('S')
+      (tool_index == tool.index) || parser.boolval('S')
     );
 
   #endif
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
-      DEBUG_POS("AFTER", current_position);
+      DEBUG_POS("AFTER", tool.position);
       SERIAL_ECHOLNPGM("<<< T()");
     }
   #endif

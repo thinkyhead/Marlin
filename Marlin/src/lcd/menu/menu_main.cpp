@@ -198,7 +198,7 @@ void menu_main() {
 
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
     #if E_STEPPERS == 1 && DISABLED(FILAMENT_LOAD_UNLOAD_GCODES)
-      if (thermalManager.targetHotEnoughToExtrude(active_extruder))
+      if (thermalManager.targetHotEnoughToExtrude(tool.index))
         MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600 B0"));
       else
         MENU_ITEM(submenu, MSG_FILAMENTCHANGE, menu_temp_e0_filament_change);

@@ -36,7 +36,7 @@ float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
 
 void scara_set_axis_is_at_home(const AxisEnum axis) {
   if (axis == Z_AXIS)
-    current_position[Z_AXIS] = Z_HOME_POS;
+    tool.position[Z_AXIS] = Z_HOME_POS;
   else {
 
     /**
@@ -55,10 +55,10 @@ void scara_set_axis_is_at_home(const AxisEnum axis) {
     inverse_kinematics(homeposition);
     forward_kinematics_SCARA(delta[A_AXIS], delta[B_AXIS]);
 
-    // SERIAL_ECHOPAIR("Cartesian X:", cartes[X_AXIS]);
-    // SERIAL_ECHOLNPAIR(" Y:", cartes[Y_AXIS]);
+    // SERIAL_ECHOPAIR("Cartesian X:", tool.cartes[X_AXIS]);
+    // SERIAL_ECHOLNPAIR(" Y:", tool.cartes[Y_AXIS]);
 
-    current_position[axis] = cartes[axis];
+    tool.position[axis] = tool.cartes[axis];
 
     update_software_endstops(axis);
   }
@@ -76,8 +76,8 @@ void forward_kinematics_SCARA(const float &a, const float &b) {
               b_sin = sin(RADIANS(b)) * L2,
               b_cos = cos(RADIANS(b)) * L2;
 
-  cartes[X_AXIS] = a_cos + b_cos + SCARA_OFFSET_X;  //theta
-  cartes[Y_AXIS] = a_sin + b_sin + SCARA_OFFSET_Y;  //theta+phi
+  tool.cartes[X_AXIS] = a_cos + b_cos + SCARA_OFFSET_X;  //theta
+  tool.cartes[Y_AXIS] = a_sin + b_sin + SCARA_OFFSET_Y;  //theta+phi
 
   /*
     SERIAL_ECHOPAIR("SCARA FK Angle a=", a);
@@ -86,8 +86,8 @@ void forward_kinematics_SCARA(const float &a, const float &b) {
     SERIAL_ECHOPAIR(" a_cos=", a_cos);
     SERIAL_ECHOPAIR(" b_sin=", b_sin);
     SERIAL_ECHOLNPAIR(" b_cos=", b_cos);
-    SERIAL_ECHOPAIR(" cartes[X_AXIS]=", cartes[X_AXIS]);
-    SERIAL_ECHOLNPAIR(" cartes[Y_AXIS]=", cartes[Y_AXIS]);
+    SERIAL_ECHOPAIR(" cartes[X_AXIS]=", tool.cartes[X_AXIS]);
+    SERIAL_ECHOLNPAIR(" cartes[Y_AXIS]=", tool.cartes[Y_AXIS]);
   //*/
 }
 

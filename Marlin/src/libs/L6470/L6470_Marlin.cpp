@@ -337,10 +337,10 @@ bool L6470_Marlin::get_user_input(uint8_t &driver_count, uint8_t axis_index[3], 
   //
 
   const float center[] = {
-    LOGICAL_X_POSITION(current_position[X_AXIS]),
-    LOGICAL_Y_POSITION(current_position[Y_AXIS]),
-    LOGICAL_Z_POSITION(current_position[Z_AXIS]),
-    current_position[E_AXIS]
+    LOGICAL_X_POSITION(tool.position[X_AXIS]),
+    LOGICAL_Y_POSITION(tool.position[Y_AXIS]),
+    LOGICAL_Z_POSITION(tool.position[Z_AXIS]),
+    tool.position[E_AXIS]
   };
 
   switch (axis_mon[0][0]) {

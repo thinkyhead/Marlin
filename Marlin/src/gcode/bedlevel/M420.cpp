@@ -81,7 +81,7 @@ void GcodeSuite::M420() {
   // (Don't disable for just M420 or M420 V)
   if (seen_S && !to_enable) set_bed_leveling_enabled(false);
 
-  const float oldpos[] = { current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] };
+  const float oldpos[] = { tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS] };
 
   #if ENABLED(AUTO_BED_LEVELING_UBL)
 
@@ -237,7 +237,7 @@ void GcodeSuite::M420() {
   #endif
 
   // Report change in position
-  if (memcmp(oldpos, current_position, sizeof(oldpos)))
+  if (memcmp(oldpos, tool.position, sizeof(oldpos)))
     report_current_position();
 }
 

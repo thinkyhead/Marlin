@@ -28,8 +28,8 @@
 #include "../../module/planner_bezier.h"
 
 void plan_cubic_move(const float (&cart)[XYZE], const float (&offset)[4]) {
-  cubic_b_spline(current_position, cart, offset, MMS_SCALED(feedrate_mm_s), active_extruder);
-  COPY(current_position, cart);
+  cubic_b_spline(tool.position, cart, offset, MMS_SCALED(feedrate_mm_s), tool.index);
+  COPY(tool.position, cart);
 }
 
 /**
@@ -64,7 +64,7 @@ void GcodeSuite::G5() {
       parser.linearval('Q')
     };
 
-    plan_cubic_move(destination, offset);
+    plan_cubic_move(tool.destination, offset);
   }
 }
 

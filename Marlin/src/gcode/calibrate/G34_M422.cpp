@@ -115,7 +115,7 @@ void GcodeSuite::G34() {
 
     // Always home with tool 0 active
     #if HOTENDS > 1
-      const uint8_t old_tool_index = active_extruder;
+      const uint8_t old_tool_index = tool.index;
       tool_change(0, 0, true);
     #endif
 
@@ -162,7 +162,7 @@ void GcodeSuite::G34() {
       if (err_break) break;
 
       // Remember the current z position to return to
-      float z_original_position = current_position[Z_AXIS];
+      float z_original_position = tool.position[Z_AXIS];
 
       // Iterations can stop early if all corrections are below required accuracy
       bool success_break = true;
@@ -206,7 +206,7 @@ void GcodeSuite::G34() {
         }
 
         // This will lose home position and require re-homing
-        do_blocking_move_to_z(z_auto_align_amplification * z_align_move + current_position[Z_AXIS]);
+        do_blocking_move_to_z(z_auto_align_amplification * z_align_move + tool.position[Z_AXIS]);
       }
 
       if (err_break) break;

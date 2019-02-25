@@ -45,7 +45,7 @@ void GcodeSuite::M104() {
   #if ENABLED(MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
     constexpr int8_t target_extruder = 0;
   #else
-    const int8_t target_extruder = get_target_extruder_from_command();
+    const int8_t target_extruder = get_target_tool_from_command();
     if (target_extruder < 0) return;
   #endif
 
@@ -53,7 +53,7 @@ void GcodeSuite::M104() {
     const int16_t temp = parser.value_celsius();
     #if ENABLED(SINGLENOZZLE)
       singlenozzle_temp[target_extruder] = temp;
-      if (target_extruder != active_extruder) return;
+      if (target_extruder != tool.index) return;
     #endif
     thermalManager.setTargetHotend(temp, target_extruder);
 
@@ -92,7 +92,7 @@ void GcodeSuite::M109() {
   #if ENABLED(MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
     constexpr int8_t target_extruder = 0;
   #else
-    const int8_t target_extruder = get_target_extruder_from_command();
+    const int8_t target_extruder = get_target_tool_from_command();
     if (target_extruder < 0) return;
   #endif
 
@@ -102,7 +102,7 @@ void GcodeSuite::M109() {
     const int16_t temp = parser.value_celsius();
     #if ENABLED(SINGLENOZZLE)
       singlenozzle_temp[target_extruder] = temp;
-      if (target_extruder != active_extruder) return;
+      if (target_extruder != tool.index) return;
     #endif
     thermalManager.setTargetHotend(temp, target_extruder);
 

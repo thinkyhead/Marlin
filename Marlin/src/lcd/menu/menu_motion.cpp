@@ -54,7 +54,7 @@ extern int8_t manual_move_axis;
 #endif
 
 //
-// Tell ui.update() to start a move to current_position" after a short delay.
+// Tell ui.update() to start a move to tool.position" after a short delay.
 //
 inline void manual_move_to_current(AxisEnum axis
   #if E_MANUAL > 1
@@ -62,7 +62,7 @@ inline void manual_move_to_current(AxisEnum axis
   #endif
 ) {
   #if E_MANUAL > 1
-    if (axis == E_AXIS) ui.manual_move_e_index = eindex >= 0 ? eindex : active_extruder;
+    if (axis == E_AXIS) ui.manual_move_e_index = eindex >= 0 ? eindex : tool.index;
   #endif
   manual_move_start_time = millis() + (move_menu_scale < 0.99f ? 0UL : 250UL); // delay for bigger moves
   manual_move_axis = (int8_t)axis;
@@ -78,8 +78,8 @@ static void _lcd_move_xyz(PGM_P name, AxisEnum axis) {
   if (ui.encoderPosition && !ui.processing_manual_move) {
 
     // Start with no limits to movement
-    float min = current_position[axis] - 1000,
-          max = current_position[axis] + 1000;
+    float min = tool.position[axis] - 1000,
+          max = tool.position[axis] + 1000;
 
     // Limit to software endstops, if enabled
     #if HAS_SOFTWARE_ENDSTOPS
@@ -115,7 +115,7 @@ static void _lcd_move_xyz(PGM_P name, AxisEnum axis) {
     // This assumes the center is 0,0
     #if ENABLED(DELTA)
       if (axis != Z_AXIS) {
-        max = SQRT(sq((float)(DELTA_PRINTABLE_RADIUS)) - sq(current_position[Y_AXIS - axis])); // (Y_AXIS - axis) == the other axis
+        max = SQRT(sq((float)(DELTA_PRINTABLE_RADIUS)) - sq(tool.position[Y_AXIS - axis])); // (Y_AXIS - axis) == the other axis
         min = -max;
       }
     #endif
@@ -125,15 +125,15 @@ static void _lcd_move_xyz(PGM_P name, AxisEnum axis) {
     #if IS_KINEMATIC
       manual_move_offset += diff;
       if ((int32_t)ui.encoderPosition < 0)
-        NOLESS(manual_move_offset, min - current_position[axis]);
+        NOLESS(manual_move_offset, min - tool.position[axis]);
       else
-        NOMORE(manual_move_offset, max - current_position[axis]);
+        NOMORE(manual_move_offset, max - tool.position[axis]);
     #else
-      current_position[axis] += diff;
+      tool.position[axis] += diff;
       if ((int32_t)ui.encoderPosition < 0)
-        NOLESS(current_position[axis], min);
+        NOLESS(tool.position[axis], min);
       else
-        NOMORE(current_position[axis], max);
+        NOMORE(tool.position[axis], max);
     #endif
 
     manual_move_to_current(axis);
@@ -141,7 +141,7 @@ static void _lcd_move_xyz(PGM_P name, AxisEnum axis) {
   }
   ui.encoderPosition = 0;
   if (ui.should_draw()) {
-    const float pos = NATIVE_TO_LOGICAL(ui.processing_manual_move ? destination[axis] : current_position[axis]
+    const float pos = NATIVE_TO_LOGICAL(ui.processing_manual_move ? destination[axis] : tool.position[axis]
       #if IS_KINEMATIC
         + manual_move_offset
       #endif
@@ -165,7 +165,7 @@ static void _lcd_move_e(
       #if IS_KINEMATIC
         manual_move_offset += diff;
       #else
-        current_position[E_AXIS] += diff;
+        tool.position[E_AXIS] += diff;
       #endif
       manual_move_to_current(E_AXIS
         #if E_MANUAL > 1
@@ -199,7 +199,7 @@ static void _lcd_move_e(
       }
     #endif // E_MANUAL > 1
 
-    draw_edit_screen(pos_label, ftostr41sign(current_position[E_AXIS]
+    draw_edit_screen(pos_label, ftostr41sign(tool.position[E_AXIS]
       #if IS_KINEMATIC
         + manual_move_offset
       #endif
@@ -253,14 +253,14 @@ void _menu_move_distance(const AxisEnum axis, const screenFunc_t func, const int
       case Z_AXIS: STATIC_ITEM(MSG_MOVE_Z, true, true); break;
       default:
         #if ENABLED(MANUAL_E_MOVES_RELATIVE)
-          manual_move_e_origin = current_position[E_AXIS];
+          manual_move_e_origin = tool.position[E_AXIS];
         #endif
         STATIC_ITEM(MSG_MOVE_E, true, true);
         break;
     }
   }
   #if ENABLED(PREVENT_COLD_EXTRUSION)
-    if (axis == E_AXIS && thermalManager.tooColdToExtrude(eindex >= 0 ? eindex : active_extruder))
+    if (axis == E_AXIS && thermalManager.tooColdToExtrude(eindex >= 0 ? eindex : tool.index))
       MENU_BACK(MSG_HOTEND_TOO_COLD);
     else
   #endif
@@ -317,7 +317,7 @@ void menu_move() {
   ) {
     if (
       #if ENABLED(DELTA)
-        current_position[Z_AXIS] <= delta_clip_start_height
+        tool.position[Z_AXIS] <= delta_clip_start_height
       #else
         true
       #endif
@@ -338,7 +338,7 @@ void menu_move() {
   #if ENABLED(SWITCHING_EXTRUDER) || ENABLED(SWITCHING_NOZZLE)
 
     #if EXTRUDERS == 6
-      switch (active_extruder) {
+      switch (tool.index) {
         case 0: MENU_ITEM(gcode, MSG_SELECT " " MSG_E2, PSTR("T1")); break;
         case 1: MENU_ITEM(gcode, MSG_SELECT " " MSG_E1, PSTR("T0")); break;
         case 2: MENU_ITEM(gcode, MSG_SELECT " " MSG_E4, PSTR("T3")); break;
@@ -347,21 +347,21 @@ void menu_move() {
         case 5: MENU_ITEM(gcode, MSG_SELECT " " MSG_E5, PSTR("T4")); break;
       }
     #elif EXTRUDERS == 5 || EXTRUDERS == 4
-      switch (active_extruder) {
+      switch (tool.index) {
         case 0: MENU_ITEM(gcode, MSG_SELECT " " MSG_E2, PSTR("T1")); break;
         case 1: MENU_ITEM(gcode, MSG_SELECT " " MSG_E1, PSTR("T0")); break;
         case 2: MENU_ITEM(gcode, MSG_SELECT " " MSG_E4, PSTR("T3")); break;
         case 3: MENU_ITEM(gcode, MSG_SELECT " " MSG_E3, PSTR("T2")); break;
       }
     #elif EXTRUDERS == 3
-      if (active_extruder < 2) {
-        if (active_extruder)
+      if (tool.index < 2) {
+        if (tool.index)
           MENU_ITEM(gcode, MSG_SELECT " " MSG_E1, PSTR("T0"));
         else
           MENU_ITEM(gcode, MSG_SELECT " " MSG_E2, PSTR("T1"));
       }
     #else
-      if (active_extruder)
+      if (tool.index)
         MENU_ITEM(gcode, MSG_SELECT " " MSG_E1, PSTR("T0"));
       else
         MENU_ITEM(gcode, MSG_SELECT " " MSG_E2, PSTR("T1"));
@@ -369,7 +369,7 @@ void menu_move() {
 
   #elif ENABLED(DUAL_X_CARRIAGE)
 
-    if (active_extruder)
+    if (tool.index)
       MENU_ITEM(gcode, MSG_SELECT " " MSG_E1, PSTR("T0"));
     else
       MENU_ITEM(gcode, MSG_SELECT " " MSG_E2, PSTR("T1"));

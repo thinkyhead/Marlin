@@ -70,9 +70,9 @@
         }
         scaled_duplication_mode = true;
         stepper.set_directions();
-        float x_jog = current_position[X_AXIS] - .1;
+        float x_jog = tool.position[X_AXIS] - .1;
         for (uint8_t i = 2; --i;) {
-          planner.buffer_line(x_jog, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate_mm_s, 0);
+          planner.buffer_line(x_jog, tool.position[Y_AXIS], tool.position[Z_AXIS], tool.position[E_AXIS], feedrate_mm_s, 0);
           x_jog += .1;
         }
         return;
@@ -85,7 +85,7 @@
         case DXC_DUPLICATION_MODE:
           if (parser.seen('X')) duplicate_extruder_x_offset = MAX(parser.value_linear_units(), X2_MIN_POS - x_home_pos(0));
           if (parser.seen('R')) duplicate_extruder_temp_offset = parser.value_celsius_diff();
-          if (active_extruder != 0) tool_change(0);
+          if (tool.index != 0) tool_change(0);
           break;
         default:
           dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
@@ -110,10 +110,10 @@
           case DXC_DUPLICATION_MODE:        SERIAL_ECHOPGM("DXC_DUPLICATION_MODE");        break;
           case DXC_SCALED_DUPLICATION_MODE: SERIAL_ECHOPGM("DXC_SCALED_DUPLICATION_MODE"); break;
         }
-        SERIAL_ECHOPAIR("\nActive Ext: ", int(active_extruder));
+        SERIAL_ECHOPAIR("\nActive Ext: ", int(tool.index));
         if (!active_extruder_parked) SERIAL_ECHOPGM(" NOT ");
         SERIAL_ECHOPGM(" parked.");
-        SERIAL_ECHOPAIR("\nactive_extruder_x_pos: ", current_position[X_AXIS]);
+        SERIAL_ECHOPAIR("\ncurrent_tool_x_pos: ", tool.position[X_AXIS]);
         SERIAL_ECHOPAIR("\ninactive_extruder_x_pos: ", inactive_extruder_x_pos);
         SERIAL_ECHOPAIR("\nextruder_duplication_enabled: ", int(extruder_duplication_enabled));
         SERIAL_ECHOPAIR("\nduplicate_extruder_x_offset: ", duplicate_extruder_x_offset);
@@ -135,10 +135,10 @@
         for (uint8_t i = 0; i < 2; i++) {
           SERIAL_ECHOPAIR(" nozzle:", int(i));
           LOOP_XYZ(j) {
-            SERIAL_ECHOPGM("    hotend_offset[");
+            SERIAL_ECHOPGM("    tool.offset[");
             SERIAL_CHAR(axis_codes[j]);
             SERIAL_ECHOPAIR("_AXIS][", int(i));
-            SERIAL_ECHOPAIR("]=", hotend_offset[j][i]);
+            SERIAL_ECHOPAIR("]=", tool.offset[j][i]);
           }
           SERIAL_EOL();
         }

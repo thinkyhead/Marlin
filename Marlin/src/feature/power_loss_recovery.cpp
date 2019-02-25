@@ -134,7 +134,7 @@ void PrintJobRecovery::save(const bool force/*=false*/, const bool save_queue/*=
         || ELAPSED(ms, next_save_ms)
       #endif
       // Save every time Z is higher than the last call
-      || current_position[Z_AXIS] > info.current_position[Z_AXIS]
+      || tool.position[Z_AXIS] > info.tool.position[Z_AXIS]
     #endif
   ) {
 
@@ -148,11 +148,11 @@ void PrintJobRecovery::save(const bool force/*=false*/, const bool save_queue/*=
     info.valid_foot = info.valid_head;
 
     // Machine state
-    COPY(info.current_position, current_position);
+    COPY(info.tool.position, tool.position);
     info.feedrate = uint16_t(feedrate_mm_s * 60.0f);
 
     #if HOTENDS > 1
-      info.active_hotend = active_extruder;
+      info.active_hotend = tool.index;
     #endif
 
     COPY(info.target_temperature, thermalManager.target_temperature);
@@ -314,8 +314,8 @@ void PrintJobRecovery::resume() {
   #endif
 
   // Restore Z (plus raise) and E positions with G92.0
-  dtostrf(info.current_position[Z_AXIS] + RECOVERY_ZRAISE, 1, 3, str_1);
-  dtostrf(info.current_position[E_AXIS]
+  dtostrf(info.tool.position[Z_AXIS] + RECOVERY_ZRAISE, 1, 3, str_1);
+  dtostrf(info.tool.position[E_AXIS]
     #if ENABLED(SAVE_EACH_CMD_MODE)
       - 5 // Extra extrusion on restart
     #endif
@@ -325,13 +325,13 @@ void PrintJobRecovery::resume() {
   gcode.process_subcommands_now(cmd);
 
   // Move back to the saved XY
-  dtostrf(info.current_position[X_AXIS], 1, 3, str_1);
-  dtostrf(info.current_position[Y_AXIS], 1, 3, str_2);
+  dtostrf(info.tool.position[X_AXIS], 1, 3, str_1);
+  dtostrf(info.tool.position[Y_AXIS], 1, 3, str_2);
   sprintf_P(cmd, PSTR("G1 X%s Y%s F3000"), str_1, str_2);
   gcode.process_subcommands_now(cmd);
 
   // Move back to the saved Z
-  dtostrf(info.current_position[Z_AXIS], 1, 3, str_1);
+  dtostrf(info.tool.position[Z_AXIS], 1, 3, str_1);
   sprintf_P(cmd, PSTR("G1 Z%s F200"), str_1);
   gcode.process_subcommands_now(cmd);
 
@@ -361,9 +361,9 @@ void PrintJobRecovery::resume() {
     SERIAL_ECHOLNPAIR(" valid_foot:", int(info.valid_foot));
     if (info.valid_head) {
       if (info.valid_head == info.valid_foot) {
-        SERIAL_ECHOPGM("current_position: ");
+        SERIAL_ECHOPGM("tool.position: ");
         LOOP_XYZE(i) {
-          SERIAL_ECHO(info.current_position[i]);
+          SERIAL_ECHO(info.tool.position[i]);
           if (i < E_AXIS) SERIAL_CHAR(',');
         }
         SERIAL_EOL();

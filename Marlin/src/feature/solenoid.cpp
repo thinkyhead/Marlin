@@ -26,7 +26,7 @@
 
 #include "solenoid.h"
 
-#include "../module/motion.h" // for active_extruder
+#include "../module/motion.h" // for tool.index
 
 #if ENABLED(MANUAL_SOLENOID_CONTROL)
   #define HAS_SOLENOID(N) HAS_SOLENOID_##N
@@ -74,7 +74,7 @@ static void set_solenoid(const uint8_t num, const bool active) {
 
 void enable_solenoid(const uint8_t num) { set_solenoid(num, true); }
 void disable_solenoid(const uint8_t num) { set_solenoid(num, false); }
-void enable_solenoid_on_active_extruder() { enable_solenoid(active_extruder); }
+void enable_solenoid_on_current_tool() { enable_solenoid(tool.index); }
 
 void disable_all_solenoids() {
   disable_solenoid(0);

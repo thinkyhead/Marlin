@@ -34,7 +34,8 @@
   #include "../../../module/configuration_store.h"
   #include "../../../lcd/ultralcd.h"
   #include "../../../module/stepper.h"
-  #include "../../../module/planner.h"
+  #include "../../../module/stepper.h"
+  #include "../../../module/motion.h"
   #include "../../../module/probe.h"
   #include "../../../gcode/gcode.h"
   #include "../../../core/serial.h"
@@ -49,8 +50,6 @@
   #include <math.h>
 
   #define UBL_G29_P31
-
-  extern float destination[XYZE], current_position[XYZE];
 
   #if HAS_LCD_MENU
     void _lcd_ubl_output_map_lcd();
@@ -310,7 +309,7 @@
     if (may_move) {
       if (axis_unhomed_error()) gcode.home_all_axes();
       #if ENABLED(DUAL_X_CARRIAGE)
-        if (active_extruder != 0) tool_change(0);
+        if (tool.index != 0) tool_change(0);
       #endif
     }
 
@@ -786,7 +785,7 @@
         idle();
         gcode.reset_stepper_timeout(); // Keep steppers powered
         if (encoder_diff) {
-          do_blocking_move_to_z(current_position[Z_AXIS] + float(encoder_diff) * multiplier);
+          do_blocking_move_to_z(tool.position[Z_AXIS] + float(encoder_diff) * multiplier);
           encoder_diff = 0;
         }
       }
@@ -796,7 +795,7 @@
       KEEPALIVE_STATE(PAUSED_FOR_USER);
       move_z_with_encoder(0.01f);
       KEEPALIVE_STATE(IN_HANDLER);
-      return current_position[Z_AXIS];
+      return tool.position[Z_AXIS];
     }
 
     static void echo_and_take_a_measurement() { SERIAL_ECHOLNPGM(" and take a measurement."); }
@@ -815,7 +814,7 @@
       echo_and_take_a_measurement();
 
       const float z1 = measure_point_with_encoder();
-      do_blocking_move_to_z(current_position[Z_AXIS] + SIZE_OF_LITTLE_RAISE);
+      do_blocking_move_to_z(tool.position[Z_AXIS] + SIZE_OF_LITTLE_RAISE);
       planner.synchronize();
 
       SERIAL_ECHOPGM("Remove shim");
@@ -824,7 +823,7 @@
 
       const float z2 = measure_point_with_encoder();
 
-      do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES);
+      do_blocking_move_to_z(tool.position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES);
 
       const float thickness = ABS(z1 - z2);
 
@@ -854,7 +853,7 @@
       ui.capture();
 
       save_ubl_active_state_and_disable();  // No bed level correction so only raw data is obtained
-      do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], z_clearance);
+      do_blocking_move_to(tool.position[X_AXIS], tool.position[Y_AXIS], z_clearance);
 
       ui.return_to_status();
 
@@ -895,7 +894,7 @@
           return;
         }
 
-        z_values[location.x_index][location.y_index] = current_position[Z_AXIS] - thick;
+        z_values[location.x_index][location.y_index] = tool.position[Z_AXIS] - thick;
         if (g29_verbose_level > 2)
           SERIAL_ECHOLNPAIR_F("Mesh Point Measured at: ", z_values[location.x_index][location.y_index], 6);
         SERIAL_FLUSH(); // Prevent host M105 buffer overrun.
@@ -1034,9 +1033,9 @@
     g29_repetition_cnt = 0;
 
     g29_x_flag = parser.seenval('X');
-    g29_x_pos = g29_x_flag ? parser.value_float() : current_position[X_AXIS];
+    g29_x_pos = g29_x_flag ? parser.value_float() : tool.position[X_AXIS];
     g29_y_flag = parser.seenval('Y');
-    g29_y_pos = g29_y_flag ? parser.value_float() : current_position[Y_AXIS];
+    g29_y_pos = g29_y_flag ? parser.value_float() : tool.position[Y_AXIS];
 
     if (parser.seen('R')) {
       g29_repetition_cnt = parser.has_value() ? parser.value_int() : GRID_MAX_POINTS;
@@ -1271,7 +1270,7 @@
 
           // factor in the distance from the current location for the normal case
           // so the nozzle isn't running all over the bed.
-          distance += HYPOT(current_position[X_AXIS] - mx, current_position[Y_AXIS] - my) * 0.1f;
+          distance += HYPOT(tool.position[X_AXIS] - mx, tool.position[Y_AXIS] - my) * 0.1f;
           if (distance < best_so_far) {
             best_so_far = distance;   // We found a closer location with
             out_mesh.x_index = i;     // the specified type of mesh value.

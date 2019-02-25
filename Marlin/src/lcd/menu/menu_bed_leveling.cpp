@@ -120,7 +120,7 @@
     // Encoder knob or keypad buttons adjust the Z position
     //
     if (ui.encoderPosition) {
-      const float z = current_position[Z_AXIS] + float((int32_t)ui.encoderPosition) * (MESH_EDIT_Z_STEP);
+      const float z = tool.position[Z_AXIS] + float((int32_t)ui.encoderPosition) * (MESH_EDIT_Z_STEP);
       line_to_z(constrain(z, -(LCD_PROBE_Z_RANGE) * 0.5f, (LCD_PROBE_Z_RANGE) * 0.5f));
       ui.refresh(LCDVIEW_CALL_REDRAW_NEXT);
       ui.encoderPosition = 0;
@@ -130,7 +130,7 @@
     // Draw on first display, then only on Z change
     //
     if (ui.should_draw()) {
-      const float v = current_position[Z_AXIS];
+      const float v = tool.position[Z_AXIS];
       draw_edit_screen(PSTR(MSG_MOVE_Z), ftostr43sign(v + (v < 0 ? -0.0001f : 0.0001f), '+'));
     }
   }

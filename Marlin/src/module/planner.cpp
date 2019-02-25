@@ -1072,7 +1072,7 @@ void Planner::recalculate_trapezoids() {
             calculate_trapezoid_for_block(current, current_entry_speed * nomr, next_entry_speed * nomr);
             #if ENABLED(LIN_ADVANCE)
               if (current->use_advance_lead) {
-                const float comp = current->e_D_ratio * extruder_advance_K[active_extruder] * settings.axis_steps_per_mm[E_AXIS];
+                const float comp = current->e_D_ratio * extruder_advance_K[tool.index] * settings.axis_steps_per_mm[E_AXIS];
                 current->max_adv_steps = current_nominal_speed * comp;
                 current->final_adv_steps = next_entry_speed * comp;
               }
@@ -1111,7 +1111,7 @@ void Planner::recalculate_trapezoids() {
       calculate_trapezoid_for_block(next, next_entry_speed * nomr, float(MINIMUM_PLANNER_SPEED) * nomr);
       #if ENABLED(LIN_ADVANCE)
         if (next->use_advance_lead) {
-          const float comp = next->e_D_ratio * extruder_advance_K[active_extruder] * settings.axis_steps_per_mm[E_AXIS];
+          const float comp = next->e_D_ratio * extruder_advance_K[tool.index] * settings.axis_steps_per_mm[E_AXIS];
           next->max_adv_steps = next_nominal_speed * comp;
           next->final_adv_steps = (MINIMUM_PLANNER_SPEED) * comp;
         }
@@ -1445,12 +1445,12 @@ void Planner::check_axes_activity() {
    */
   void Planner::apply_retract(float &rz, float &e) {
     rz += fwretract.current_hop;
-    e -= fwretract.current_retract[active_extruder];
+    e -= fwretract.current_retract[tool.index];
   }
 
   void Planner::unapply_retract(float &rz, float &e) {
     rz -= fwretract.current_hop;
-    e += fwretract.current_retract[active_extruder];
+    e += fwretract.current_retract[tool.index];
   }
 
 #endif
@@ -2266,12 +2266,12 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
        *
        * esteps             : This is a print move, because we checked for A, B, C steps before.
        *
-       * extruder_advance_K[active_extruder] : There is an advance factor set for this extruder.
+       * extruder_advance_K[tool.index] : There is an advance factor set for this extruder.
        *
        * de > 0             : Extruder is running forward (e.g., for "Wipe while retracting" (Slic3r) or "Combing" (Cura) moves)
        */
       block->use_advance_lead =  esteps
-                              && extruder_advance_K[active_extruder]
+                              && extruder_advance_K[tool.index]
                               && de > 0;
 
       if (block->use_advance_lead) {
@@ -2290,7 +2290,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
         if (block->e_D_ratio > 3.0f)
           block->use_advance_lead = false;
         else {
-          const uint32_t max_accel_steps_per_s2 = MAX_E_JERK / (extruder_advance_K[active_extruder] * block->e_D_ratio) * steps_per_mm;
+          const uint32_t max_accel_steps_per_s2 = MAX_E_JERK / (extruder_advance_K[tool.index] * block->e_D_ratio) * steps_per_mm;
           #if ENABLED(LA_DEBUG)
             if (accel > max_accel_steps_per_s2) SERIAL_ECHOLNPGM("Acceleration limited.");
           #endif
@@ -2326,9 +2326,9 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   #endif
   #if ENABLED(LIN_ADVANCE)
     if (block->use_advance_lead) {
-      block->advance_speed = (STEPPER_TIMER_RATE) / (extruder_advance_K[active_extruder] * block->e_D_ratio * block->acceleration * settings.axis_steps_per_mm[E_AXIS_N(extruder)]);
+      block->advance_speed = (STEPPER_TIMER_RATE) / (extruder_advance_K[tool.index] * block->e_D_ratio * block->acceleration * settings.axis_steps_per_mm[E_AXIS_N(extruder)]);
       #if ENABLED(LA_DEBUG)
-        if (extruder_advance_K[active_extruder] * block->e_D_ratio * block->acceleration * 2 < SQRT(block->nominal_speed_sqr) * block->e_D_ratio)
+        if (extruder_advance_K[tool.index] * block->e_D_ratio * block->acceleration * 2 < SQRT(block->nominal_speed_sqr) * block->e_D_ratio)
           SERIAL_ECHOLNPGM("More than 2 steps per eISR loop executed.");
         if (block->advance_speed < 200)
           SERIAL_ECHOLNPGM("eISR running at > 10kHz.");
@@ -2796,12 +2796,12 @@ bool Planner::buffer_line(const float &rx, const float &ry, const float &rz, con
 
 void Planner::set_machine_position_mm(const float &a, const float &b, const float &c, const float &e) {
   #if ENABLED(DISTINCT_E_FACTORS)
-    last_extruder = active_extruder;
+    last_extruder = tool.index;
   #endif
   position[A_AXIS] = LROUND(a * settings.axis_steps_per_mm[A_AXIS]);
   position[B_AXIS] = LROUND(b * settings.axis_steps_per_mm[B_AXIS]);
   position[C_AXIS] = LROUND(c * settings.axis_steps_per_mm[C_AXIS]);
-  position[E_AXIS] = LROUND(e * settings.axis_steps_per_mm[E_AXIS_N(active_extruder)]);
+  position[E_AXIS] = LROUND(e * settings.axis_steps_per_mm[E_AXIS_N(tool.index)]);
   #if HAS_POSITION_FLOAT
     position_float[A_AXIS] = a;
     position_float[B_AXIS] = b;
@@ -2843,12 +2843,12 @@ void Planner::set_position_mm(const float &rx, const float &ry, const float &rz,
  * Setters for planner position (also setting stepper position).
  */
 void Planner::set_e_position_mm(const float &e) {
-  const uint8_t axis_index = E_AXIS_N(active_extruder);
+  const uint8_t axis_index = E_AXIS_N(tool.index);
   #if ENABLED(DISTINCT_E_FACTORS)
-    last_extruder = active_extruder;
+    last_extruder = tool.index;
   #endif
   #if ENABLED(FWRETRACT)
-    float e_new = e - fwretract.current_retract[active_extruder];
+    float e_new = e - fwretract.current_retract[tool.index];
   #else
     const float e_new = e;
   #endif
@@ -2868,7 +2868,7 @@ void Planner::set_e_position_mm(const float &e) {
 // Recalculate the steps/s^2 acceleration rates, based on the mm/s^2
 void Planner::reset_acceleration_rates() {
   #if ENABLED(DISTINCT_E_FACTORS)
-    #define AXIS_CONDITION (i < E_AXIS || i == E_AXIS_N(active_extruder))
+    #define AXIS_CONDITION (i < E_AXIS || i == E_AXIS_N(tool.index))
   #else
     #define AXIS_CONDITION true
   #endif
@@ -2886,7 +2886,7 @@ void Planner::reset_acceleration_rates() {
 // Recalculate position, steps_to_mm if settings.axis_steps_per_mm changes!
 void Planner::refresh_positioning() {
   LOOP_XYZE_N(i) steps_to_mm[i] = 1.0f / settings.axis_steps_per_mm[i];
-  set_position_mm(current_position);
+  set_position_mm(tool.position);
   reset_acceleration_rates();
 }
 

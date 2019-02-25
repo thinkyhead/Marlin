@@ -47,16 +47,49 @@ constexpr float slop = 0.0001;
 
 extern bool relative_mode;
 
-extern float current_position[XYZE],  // High-level current tool position
-             destination[XYZE];       // Destination for a move
+class MarlinTool {
+public:
+  // The active tool as set with T<tool>
+  #if EXTRUDERS > 1
+    static uint8_t index;
+  #else
+    static constexpr uint8_t index = 0;
+  #endif
 
-// Scratch space for a cartesian result
-extern float cartes[XYZ];
+  static float position[XYZE],    // High-level current tool position
+               destination[XYZE], // Destination for a move
+               cartes[XYZ];       // Cartesian conversion result
 
-// Until kinematics.cpp is created, declare this here
-#if IS_KINEMATIC
-  extern float delta[ABC];
-#endif
+  #if IS_KINEMATIC
+    static float delta[ABC];      // Kinematic conversion result
+  #endif
+
+  #if HAS_HOTEND_OFFSET
+    static float offset[XYZ][HOTENDS];
+  #endif
+
+  static inline void set_position(const float &x, const float &y, const float &z) {
+    position[X_AXIS] = x; position[Y_AXIS] = y; position[Z_AXIS] = z;
+  }
+  static inline void set_position(const float &x, const float &y, const float &z, const float &e) {
+    position[X_AXIS] = x; position[Y_AXIS] = y; position[Z_AXIS] = z; position[E_AXIS] = e;
+  }
+  static inline void set_destination(const float &x, const float &y, const float &z) {
+    destination[X_AXIS] = x; destination[Y_AXIS] = y; destination[Z_AXIS] = z;
+  }
+  static inline void set_destination(const float &x, const float &y, const float &z, const float &e) {
+    destination[X_AXIS] = x; destination[Y_AXIS] = y; destination[Z_AXIS] = z; destination[E_AXIS] = e;
+  }
+  static inline void set_cartes(const float &x, const float &y, const float &z) {
+    cartes[X_AXIS] = x; cartes[Y_AXIS] = y; cartes[Z_AXIS] = z;
+  }
+
+  static inline void set_position_from_destination() { COPY(position, destination); }
+  static inline void sync_destination() { COPY(destination, position); }
+
+};
+
+extern MarlinTool tool;
 
 #if HAS_ABL_NOT_UBL
   extern float xy_probe_feedrate_mm_s;
@@ -82,17 +115,6 @@ extern float feedrate_mm_s;
  */
 extern int16_t feedrate_percentage;
 #define MMS_SCALED(MM_S) ((MM_S)*feedrate_percentage*0.01f)
-
-// The active extruder (tool). Set with T<extruder> command.
-#if EXTRUDERS > 1
-  extern uint8_t active_extruder;
-#else
-  constexpr uint8_t active_extruder = 0;
-#endif
-
-#if HAS_HOTEND_OFFSET
-  extern float hotend_offset[XYZ][HOTENDS];
-#endif
 
 FORCE_INLINE float pgm_read_any(const float *p) { return pgm_read_float(p); }
 FORCE_INLINE signed char pgm_read_any(const signed char *p) { return pgm_read_byte(p); }
@@ -130,16 +152,13 @@ XYZ_DEFS(signed char, home_dir, HOME_DIR);
 
 void report_current_position();
 
-inline void set_current_from_destination() { COPY(current_position, destination); }
-inline void set_destination_from_current() { COPY(destination, current_position); }
-
 void get_cartesian_from_steppers();
 void set_current_from_steppers_for_axis(const AxisEnum axis);
 
 /**
  * sync_plan_position
  *
- * Set the planner/stepper positions directly from current_position with
+ * Set the planner/stepper positions directly from tool.position with
  * no kinematic translation. Used for homing axes and cartesian/core syncing.
  */
 void sync_plan_position();
@@ -288,7 +307,7 @@ void homeaxis(const AxisEnum axis);
   inline bool position_is_reachable(const float &rx, const float &ry) {
     if (!WITHIN(ry, Y_MIN_POS - slop, Y_MAX_POS + slop)) return false;
     #if ENABLED(DUAL_X_CARRIAGE)
-      if (active_extruder)
+      if (tool.index)
         return WITHIN(rx, X2_MIN_POS - slop, X2_MAX_POS + slop);
       else
         return WITHIN(rx, X1_MIN_POS - slop, X1_MAX_POS + slop);

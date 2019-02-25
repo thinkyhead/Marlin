@@ -144,7 +144,7 @@ void menu_temp_e0_filament_unload()  { _menu_temp_filament_op(ADVANCED_PAUSE_MOD
     // Change filament
     #if E_STEPPERS == 1
       PGM_P msg0 = PSTR(MSG_FILAMENTCHANGE);
-      if (thermalManager.targetTooColdToExtrude(active_extruder))
+      if (thermalManager.targetTooColdToExtrude(tool.index))
         MENU_ITEM_P(submenu, msg0, menu_temp_e0_filament_change);
       else
         MENU_ITEM_P(gcode, msg0, PSTR("M600 B0"));
@@ -194,7 +194,7 @@ void menu_temp_e0_filament_unload()  { _menu_temp_filament_op(ADVANCED_PAUSE_MOD
         // Load filament
         #if E_STEPPERS == 1
           PGM_P msg0 = PSTR(MSG_FILAMENTLOAD);
-          if (thermalManager.targetTooColdToExtrude(active_extruder))
+          if (thermalManager.targetTooColdToExtrude(tool.index))
             MENU_ITEM_P(submenu, msg0, menu_temp_e0_filament_load);
           else
             MENU_ITEM_P(gcode, msg0, PSTR("M701"));
@@ -241,7 +241,7 @@ void menu_temp_e0_filament_unload()  { _menu_temp_filament_op(ADVANCED_PAUSE_MOD
 
         // Unload filament
         #if E_STEPPERS == 1
-          if (thermalManager.targetHotEnoughToExtrude(active_extruder))
+          if (thermalManager.targetHotEnoughToExtrude(tool.index))
             MENU_ITEM(gcode, MSG_FILAMENTUNLOAD, PSTR("M702"));
           else
             MENU_ITEM(submenu, MSG_FILAMENTUNLOAD, menu_temp_e0_filament_unload);
@@ -508,7 +508,7 @@ FORCE_INLINE screenFunc_t ap_message_screen(const AdvancedPauseMessage message) 
 void lcd_advanced_pause_show_message(
   const AdvancedPauseMessage message,
   const AdvancedPauseMode mode/*=ADVANCED_PAUSE_MODE_SAME*/,
-  const uint8_t extruder/*=active_extruder*/
+  const uint8_t extruder/*=tool.index*/
 ) {
   if (mode != ADVANCED_PAUSE_MODE_SAME) advanced_pause_mode = mode;
   hotend_status_extruder = extruder;

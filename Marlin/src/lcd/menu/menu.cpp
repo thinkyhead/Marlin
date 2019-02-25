@@ -334,8 +334,8 @@ void MarlinUI::completion_feedback(const bool good/*=true*/) {
 #if HAS_LINE_TO_Z
 
   void line_to_z(const float &z) {
-    current_position[Z_AXIS] = z;
-    planner.buffer_line(current_position, MMM_TO_MMS(manual_feedrate_mm_m[Z_AXIS]), active_extruder);
+    tool.position[Z_AXIS] = z;
+    planner.buffer_line(tool.position, MMM_TO_MMS(manual_feedrate_mm_m[Z_AXIS]), tool.index);
   }
 
 #endif
@@ -346,7 +346,7 @@ void MarlinUI::completion_feedback(const bool good/*=true*/) {
     if (ui.use_click()) return ui.goto_previous_screen_no_defer();
     ui.defer_status_screen(true);
     #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
-      const bool do_probe = (active_extruder == 0);
+      const bool do_probe = (tool.index == 0);
     #else
       constexpr bool do_probe = true;
     #endif
@@ -359,7 +359,7 @@ void MarlinUI::completion_feedback(const bool good/*=true*/) {
                   new_probe_offset = zprobe_zoffset + diff,
                   new_offs =
                     #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
-                      do_probe ? new_probe_offset : hotend_offset[Z_AXIS][active_extruder] - diff
+                      do_probe ? new_probe_offset : tool.offset[Z_AXIS][tool.index] - diff
                     #else
                       new_probe_offset
                     #endif
@@ -370,7 +370,7 @@ void MarlinUI::completion_feedback(const bool good/*=true*/) {
 
         if (do_probe) zprobe_zoffset = new_offs;
         #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
-          else hotend_offset[Z_AXIS][active_extruder] = new_offs;
+          else tool.offset[Z_AXIS][tool.index] = new_offs;
         #endif
 
         ui.refresh(LCDVIEW_CALL_REDRAW_NEXT);
@@ -379,7 +379,7 @@ void MarlinUI::completion_feedback(const bool good/*=true*/) {
     if (ui.should_draw()) {
       #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
         if (!do_probe)
-          draw_edit_screen(PSTR(MSG_IDEX_Z_OFFSET), ftostr43sign(hotend_offset[Z_AXIS][active_extruder]));
+          draw_edit_screen(PSTR(MSG_IDEX_Z_OFFSET), ftostr43sign(tool.offset[Z_AXIS][tool.index]));
         else
       #endif
           draw_edit_screen(PSTR(MSG_ZPROBE_ZOFFSET), ftostr43sign(zprobe_zoffset));

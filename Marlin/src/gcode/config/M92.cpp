@@ -58,7 +58,7 @@ void report_M92(const bool echo=true, const int8_t e=-1) {
  */
 void GcodeSuite::M92() {
 
-  const int8_t target_extruder = get_target_extruder_from_command();
+  const int8_t target_extruder = get_target_tool_from_command();
   if (target_extruder < 0) return;
 
   // No arguments? Show M92 report.

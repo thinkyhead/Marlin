@@ -36,10 +36,10 @@
 void GcodeSuite::M900() {
 
   #if EXTRUDERS < 2
-    constexpr uint8_t tmp_extruder = 0;
+    constexpr uint8_t tmp_tool = 0;
   #else
-    const uint8_t tmp_extruder = parser.seenval('T') ? parser.value_int() : active_extruder;
-    if (tmp_extruder >= EXTRUDERS) {
+    const uint8_t tmp_tool = parser.seenval('T') ? parser.value_int() : tool.index;
+    if (tmp_tool >= EXTRUDERS) {
       SERIAL_ECHOLNPGM("?T value out of range.");
       return;
     }
@@ -49,7 +49,7 @@ void GcodeSuite::M900() {
     const float newK = parser.floatval('K');
     if (WITHIN(newK, 0, 10)) {
       planner.synchronize();
-      planner.extruder_advance_K[tmp_extruder] = newK;
+      planner.extruder_advance_K[tmp_tool] = newK;
     }
     else
       SERIAL_ECHOLNPGM("?K value out of range (0-10).");

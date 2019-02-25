@@ -34,7 +34,7 @@
    */
   void GcodeSuite::M200() {
 
-    const int8_t target_extruder = get_target_extruder_from_command();
+    const int8_t target_extruder = get_target_tool_from_command();
     if (target_extruder < 0) return;
 
     if (parser.seen('D')) {
@@ -56,7 +56,7 @@
  */
 void GcodeSuite::M201() {
 
-  const int8_t target_extruder = get_target_extruder_from_command();
+  const int8_t target_extruder = get_target_tool_from_command();
   if (target_extruder < 0) return;
 
   LOOP_XYZE(i) {
@@ -76,7 +76,7 @@ void GcodeSuite::M201() {
  */
 void GcodeSuite::M203() {
 
-  const int8_t target_extruder = get_target_extruder_from_command();
+  const int8_t target_extruder = get_target_tool_from_command();
   if (target_extruder < 0) return;
 
   LOOP_XYZE(i)

@@ -431,9 +431,9 @@ void _lcd_ubl_map_lcd_edit_cmd() {
  * UBL LCD Map Movement
  */
 void ubl_map_move_to_xy() {
-  current_position[X_AXIS] = pgm_read_float(&ubl._mesh_index_to_xpos[x_plot]);
-  current_position[Y_AXIS] = pgm_read_float(&ubl._mesh_index_to_ypos[y_plot]);
-  planner.buffer_line(current_position, MMM_TO_MMS(XY_PROBE_SPEED), active_extruder);
+  tool.position[X_AXIS] = pgm_read_float(&ubl._mesh_index_to_xpos[x_plot]);
+  tool.position[Y_AXIS] = pgm_read_float(&ubl._mesh_index_to_ypos[y_plot]);
+  planner.buffer_line(tool.position, MMM_TO_MMS(XY_PROBE_SPEED), tool.index);
 }
 
 /**
@@ -444,10 +444,8 @@ void sync_plan_position();
 
 void _lcd_do_nothing() {}
 void _lcd_hard_stop() {
-  const screenFunc_t old_screen = ui.currentScreen;
-  ui.currentScreen = _lcd_do_nothing;
+  REMEMBER(scr, ui.currentScreen, _lcd_do_nothing);
   planner.quick_stop();
-  ui.currentScreen = old_screen;
   set_current_from_steppers_for_axis(ALL_AXES);
   sync_plan_position();
 }

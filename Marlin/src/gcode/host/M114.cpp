@@ -51,16 +51,16 @@
 
     SERIAL_ECHOPGM("\nLogical:");
     const float logical[XYZ] = {
-      LOGICAL_X_POSITION(current_position[X_AXIS]),
-      LOGICAL_Y_POSITION(current_position[Y_AXIS]),
-      LOGICAL_Z_POSITION(current_position[Z_AXIS])
+      LOGICAL_X_POSITION(tool.position[X_AXIS]),
+      LOGICAL_Y_POSITION(tool.position[Y_AXIS]),
+      LOGICAL_Z_POSITION(tool.position[Z_AXIS])
     };
     report_xyz(logical);
 
     SERIAL_ECHOPGM("Raw:    ");
-    report_xyz(current_position);
+    report_xyz(tool.position);
 
-    float leveled[XYZ] = { current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] };
+    float leveled[XYZ] = { tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS] };
 
     #if HAS_LEVELING
       SERIAL_ECHOPGM("Leveled:");
@@ -161,14 +161,14 @@
 
     SERIAL_ECHOPGM("FromStp:");
     get_cartesian_from_steppers();  // writes cartes[XYZ] (with forward kinematics)
-    const float from_steppers[XYZE] = { cartes[X_AXIS], cartes[Y_AXIS], cartes[Z_AXIS], planner.get_axis_position_mm(E_AXIS) };
+    const float from_steppers[XYZE] = { tool.cartes[X_AXIS], tool.cartes[Y_AXIS], tool.cartes[Z_AXIS], planner.get_axis_position_mm(E_AXIS) };
     report_xyze(from_steppers);
 
     const float diff[XYZE] = {
       from_steppers[X_AXIS] - leveled[X_AXIS],
       from_steppers[Y_AXIS] - leveled[Y_AXIS],
       from_steppers[Z_AXIS] - leveled[Z_AXIS],
-      from_steppers[E_AXIS] - current_position[E_AXIS]
+      from_steppers[E_AXIS] - tool.position[E_AXIS]
     };
     SERIAL_ECHOPGM("Differ: ");
     report_xyze(diff);

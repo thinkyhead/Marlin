@@ -524,7 +524,7 @@ void MMU2::toolChange(uint8_t index) {
 
     command(MMU_CMD_C0);
     extruder = index; //filament change is finished
-    active_extruder = 0;
+    tool.index = 0;
 
     enable_E0();
 
@@ -560,7 +560,7 @@ void MMU2::toolChange(const char* special) {
     switch (*special) {
       case '?': {
         uint8_t index = mmu2_chooseFilament();
-        while (!thermalManager.wait_for_hotend(active_extruder, false)) safe_delay(100);
+        while (!thermalManager.wait_for_hotend(tool.index, false)) safe_delay(100);
         loadFilamentToNozzle(index);
       } break;
 
@@ -575,11 +575,11 @@ void MMU2::toolChange(const char* special) {
 
         enable_E0();
         extruder = index;
-        active_extruder = 0;
+        tool.index = 0;
       } break;
 
       case 'c': {
-        while (!thermalManager.wait_for_hotend(active_extruder, false)) safe_delay(100);
+        while (!thermalManager.wait_for_hotend(tool.index, false)) safe_delay(100);
         executeExtruderSequence((const E_Step *)loadToNozzle_sequence, COUNT(loadToNozzle_sequence));
       } break;
     }
@@ -644,13 +644,13 @@ void MMU2::manageResponse(bool move_axes, bool turn_off_nozzle) {
 
         SERIAL_ECHOLNPGM("MMU not responding");
 
-        resume_hotend_temp = thermalManager.degTargetHotend(active_extruder);
-        COPY(resume_position, current_position);
+        resume_hotend_temp = thermalManager.degTargetHotend(tool.index);
+        COPY(resume_position, tool.position);
 
         if (move_axes && all_axes_homed())
           Nozzle::park(2, park_point /*= NOZZLE_PARK_POINT*/);
 
-        if (turn_off_nozzle) thermalManager.setTargetHotend(0, active_extruder);
+        if (turn_off_nozzle) thermalManager.setTargetHotend(0, tool.index);
 
         LCD_MESSAGEPGM(MSG_MMU2_NOT_RESPONDING);
         BUZZ(100, 659);
@@ -667,11 +667,11 @@ void MMU2::manageResponse(bool move_axes, bool turn_off_nozzle) {
       KEEPALIVE_STATE(IN_HANDLER);
 
       if (turn_off_nozzle && resume_hotend_temp) {
-        thermalManager.setTargetHotend(resume_hotend_temp, active_extruder);
+        thermalManager.setTargetHotend(resume_hotend_temp, tool.index);
         LCD_MESSAGEPGM(MSG_HEATING);
         BUZZ(200, 40);
 
-        while (!thermalManager.wait_for_hotend(active_extruder, false)) safe_delay(1000);
+        while (!thermalManager.wait_for_hotend(tool.index, false)) safe_delay(1000);
       }
 
       if (move_axes && all_axes_homed()) {
@@ -731,7 +731,7 @@ void MMU2::filamentRunout() {
 
     if (!enabled) return false;
 
-    if (thermalManager.tooColdToExtrude(active_extruder)) {
+    if (thermalManager.tooColdToExtrude(tool.index)) {
       BUZZ(200, 404);
       LCD_ALERTMESSAGEPGM(MSG_HOTEND_TOO_COLD);
       return false;
@@ -745,7 +745,7 @@ void MMU2::filamentRunout() {
       mmuLoop();
 
       extruder = index;
-      active_extruder = 0;
+      tool.index = 0;
 
       loadToNozzle();
 
@@ -773,7 +773,7 @@ void MMU2::filamentRunout() {
 
     if (!enabled) return false;
 
-    if (thermalManager.tooColdToExtrude(active_extruder)) {
+    if (thermalManager.tooColdToExtrude(tool.index)) {
       BUZZ(200, 404);
       LCD_ALERTMESSAGEPGM(MSG_HOTEND_TOO_COLD);
       return false;
@@ -781,12 +781,11 @@ void MMU2::filamentRunout() {
 
     KEEPALIVE_STATE(IN_HANDLER);
     LCD_MESSAGEPGM(MSG_MMU2_EJECTING_FILAMENT);
-    const bool saved_e_relative_mode = gcode.axis_relative_modes[E_AXIS];
-    gcode.axis_relative_modes[E_AXIS] = true;
+    REMEMBER(rel, gcode.axis_relative_modes[E_AXIS], true)
 
     enable_E0();
-    current_position[E_AXIS] -= MMU2_FILAMENTCHANGE_EJECT_FEED;
-    planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 2500 / 60, active_extruder);
+    tool.position[E_AXIS] -= MMU2_FILAMENTCHANGE_EJECT_FEED;
+    planner.buffer_line(tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS], tool.position[E_AXIS], 2500 / 60, tool.index);
     planner.synchronize();
     command(MMU_CMD_E0 + index);
     manageResponse(false, false);
@@ -817,8 +816,6 @@ void MMU2::filamentRunout() {
 
     KEEPALIVE_STATE(NOT_BUSY);
 
-    gcode.axis_relative_modes[E_AXIS] = saved_e_relative_mode;
-
     disable_E0();
 
     return true;
@@ -833,7 +830,7 @@ void MMU2::filamentRunout() {
 
     if (!enabled) return false;
 
-    if (thermalManager.tooColdToExtrude(active_extruder)) {
+    if (thermalManager.tooColdToExtrude(tool.index)) {
       BUZZ(200, 404);
       LCD_ALERTMESSAGEPGM(MSG_HOTEND_TOO_COLD);
       return false;
@@ -870,8 +867,7 @@ void MMU2::filamentRunout() {
     planner.synchronize();
     enable_E0();
 
-    const bool saved_e_relative_mode = gcode.axis_relative_modes[E_AXIS];
-    gcode.axis_relative_modes[E_AXIS] = true;
+    REMEMBER(rel, gcode.axis_relative_modes[E_AXIS], true);
 
     const E_Step* step = sequence;
 
@@ -886,15 +882,13 @@ void MMU2::filamentRunout() {
         SERIAL_ECHOLN(fr);
       #endif
 
-      current_position[E_AXIS] += es;
-      planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],
-                          current_position[E_AXIS], MMM_TO_MMS(fr), active_extruder);
+      tool.position[E_AXIS] += es;
+      planner.buffer_line(tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS],
+                          tool.position[E_AXIS], MMM_TO_MMS(fr), tool.index);
       planner.synchronize();
 
       step++;
     }
-
-    gcode.axis_relative_modes[E_AXIS] = saved_e_relative_mode;
 
     disable_E0();
   }

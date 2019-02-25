@@ -54,12 +54,12 @@
   static void quick_home_xy() {
 
     // Pretend the current position is 0,0
-    current_position[X_AXIS] = current_position[Y_AXIS] = 0.0;
+    tool.position[X_AXIS] = tool.position[Y_AXIS] = 0.0;
     sync_plan_position();
 
     const int x_axis_home_dir =
       #if ENABLED(DUAL_X_CARRIAGE)
-        x_home_dir(active_extruder)
+        x_home_dir(tool.index)
       #else
         home_dir(X_AXIS)
       #endif
@@ -86,7 +86,7 @@
 
     endstops.validate_homing_move();
 
-    current_position[X_AXIS] = current_position[Y_AXIS] = 0.0;
+    tool.position[X_AXIS] = tool.position[Y_AXIS] = 0.0;
 
     #if ENABLED(SENSORLESS_HOMING)
       tmc_disable_stallguard(stepperX, stealth_states.x);
@@ -122,19 +122,19 @@
     /**
      * Move the Z probe (or just the nozzle) to the safe homing point
      */
-    destination[X_AXIS] = Z_SAFE_HOMING_X_POINT;
-    destination[Y_AXIS] = Z_SAFE_HOMING_Y_POINT;
-    destination[Z_AXIS] = current_position[Z_AXIS]; // Z is already at the right height
+    tool.destination[X_AXIS] = Z_SAFE_HOMING_X_POINT;
+    tool.destination[Y_AXIS] = Z_SAFE_HOMING_Y_POINT;
+    tool.destination[Z_AXIS] = tool.position[Z_AXIS]; // Z is already at the right height
 
     #if HOMING_Z_WITH_PROBE
-      destination[X_AXIS] -= X_PROBE_OFFSET_FROM_EXTRUDER;
-      destination[Y_AXIS] -= Y_PROBE_OFFSET_FROM_EXTRUDER;
+      tool.destination[X_AXIS] -= X_PROBE_OFFSET_FROM_EXTRUDER;
+      tool.destination[Y_AXIS] -= Y_PROBE_OFFSET_FROM_EXTRUDER;
     #endif
 
-    if (position_is_reachable(destination[X_AXIS], destination[Y_AXIS])) {
+    if (position_is_reachable(tool.destination[X_AXIS], tool.destination[Y_AXIS])) {
 
       #if ENABLED(DEBUG_LEVELING_FEATURE)
-        if (DEBUGGING(LEVELING)) DEBUG_POS("Z_SAFE_HOMING", destination);
+        if (DEBUGGING(LEVELING)) DEBUG_POS("Z_SAFE_HOMING", tool.destination);
       #endif
 
       // This causes the carriage on Dual X to unpark
@@ -146,7 +146,7 @@
         safe_delay(500); // Short delay needed to settle
       #endif
 
-      do_blocking_move_to_xy(destination[X_AXIS], destination[Y_AXIS]);
+      do_blocking_move_to_xy(tool.destination[X_AXIS], tool.destination[Y_AXIS]);
       homeaxis(Z_AXIS);
     }
     else {
@@ -253,7 +253,7 @@ void GcodeSuite::G28(const bool always_home_all) {
   // Always home with tool 0 active
   #if HOTENDS > 1
     #if DISABLED(DELTA) || ENABLED(DELTA_HOME_TO_SAFE_ZONE)
-      const uint8_t old_tool_index = active_extruder;
+      const uint8_t old_tool_index = tool.index;
     #endif
     tool_change(0, 0, true);
   #endif
@@ -278,7 +278,7 @@ void GcodeSuite::G28(const bool always_home_all) {
                homeZ = always_home_all || parser.seen('Z'),
                home_all = (!homeX && !homeY && !homeZ) || (homeX && homeY && homeZ);
 
-    set_destination_from_current();
+    tool.sync_destination();
 
     #if Z_HOME_DIR > 0  // If homing away from BED do Z first
 
@@ -295,15 +295,15 @@ void GcodeSuite::G28(const bool always_home_all) {
 
     if (z_homing_height && (home_all || homeX || homeY)) {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
-      destination[Z_AXIS] = z_homing_height;
-      if (destination[Z_AXIS] > current_position[Z_AXIS]) {
+      tool.destination[Z_AXIS] = z_homing_height;
+      if (tool.destination[Z_AXIS] > tool.position[Z_AXIS]) {
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
           if (DEBUGGING(LEVELING))
-            SERIAL_ECHOLNPAIR("Raise Z (before homing) to ", destination[Z_AXIS]);
+            SERIAL_ECHOLNPAIR("Raise Z (before homing) to ", tool.destination[Z_AXIS]);
         #endif
 
-        do_blocking_move_to_z(destination[Z_AXIS]);
+        do_blocking_move_to_z(tool.destination[Z_AXIS]);
       }
     }
 
@@ -334,18 +334,18 @@ void GcodeSuite::G28(const bool always_home_all) {
       #if ENABLED(DUAL_X_CARRIAGE)
 
         // Always home the 2nd (right) extruder first
-        active_extruder = 1;
+        tool.index = 1;
         homeaxis(X_AXIS);
 
         // Remember this extruder's position for later tool change
-        inactive_extruder_x_pos = current_position[X_AXIS];
+        inactive_extruder_x_pos = tool.position[X_AXIS];
 
         // Home the 1st (left) extruder
-        active_extruder = 0;
+        tool.index = 0;
         homeaxis(X_AXIS);
 
         // Consider the active extruder to be parked
-        COPY(raised_parked_position, current_position);
+        COPY(raised_parked_position, tool.position);
         delayed_move_time = 0;
         active_extruder_parked = true;
 
@@ -392,18 +392,18 @@ void GcodeSuite::G28(const bool always_home_all) {
     if (dxc_is_duplicating()) {
 
       // Always home the 2nd (right) extruder first
-      active_extruder = 1;
+      tool.index = 1;
       homeaxis(X_AXIS);
 
       // Remember this extruder's position for later tool change
-      inactive_extruder_x_pos = current_position[X_AXIS];
+      inactive_extruder_x_pos = tool.position[X_AXIS];
 
       // Home the 1st (left) extruder
-      active_extruder = 0;
+      tool.index = 0;
       homeaxis(X_AXIS);
 
       // Consider the active extruder to be parked
-      COPY(raised_parked_position, current_position);
+      COPY(raised_parked_position, tool.position);
       delayed_move_time = 0;
       active_extruder_parked = true;
       extruder_duplication_enabled = IDEX_saved_duplication_state;

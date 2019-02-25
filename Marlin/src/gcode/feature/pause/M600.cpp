@@ -58,7 +58,7 @@
 void GcodeSuite::M600() {
   point_t park_point = NOZZLE_PARK_POINT;
 
-  const int8_t target_extruder = get_target_extruder_from_command();
+  const int8_t target_extruder = get_target_tool_from_command();
   if (target_extruder < 0) return;
 
   #if ENABLED(DUAL_X_CARRIAGE)
@@ -69,7 +69,7 @@ void GcodeSuite::M600() {
         if (dxc_is_duplicating())
           DXC_ext = (READ(FIL_RUNOUT2_PIN) == FIL_RUNOUT_INVERTING) ? 1 : 0;
       #else
-        DXC_ext = active_extruder;
+        DXC_ext = tool.index;
       #endif
     }
   #endif
@@ -86,9 +86,9 @@ void GcodeSuite::M600() {
 
   #if EXTRUDERS > 1
     // Change toolhead if specified
-    const uint8_t active_extruder_before_filament_change = active_extruder;
+    const uint8_t current_tool_before_filament_change = tool.index;
     if (
-      active_extruder != target_extruder
+      tool.index != target_extruder
       #if ENABLED(DUAL_X_CARRIAGE)
         && dual_x_carriage_mode != DXC_DUPLICATION_MODE && dual_x_carriage_mode != DXC_SCALED_DUPLICATION_MODE
       #endif
@@ -110,8 +110,8 @@ void GcodeSuite::M600() {
   if (parser.seenval('Y')) park_point.y = parser.linearval('Y');
 
   #if HAS_HOTEND_OFFSET && DISABLED(DUAL_X_CARRIAGE) && DISABLED(DELTA)
-    park_point.x += (active_extruder ? hotend_offset[X_AXIS][active_extruder] : 0);
-    park_point.y += (active_extruder ? hotend_offset[Y_AXIS][active_extruder] : 0);
+    park_point.x += (tool.index ? tool.offset[X_AXIS][tool.index] : 0);
+    park_point.y += (tool.index ? tool.offset[Y_AXIS][tool.index] : 0);
   #endif
 
   #if ENABLED(MMU2_MENUS)
@@ -122,14 +122,14 @@ void GcodeSuite::M600() {
   #else
     // Unload filament
     const float unload_length = -ABS(parser.seen('U') ? parser.value_axis_units(E_AXIS)
-                                                      : fc_settings[active_extruder].unload_length);
+                                                      : fc_settings[tool.index].unload_length);
 
     // Slow load filament
     constexpr float slow_load_length = FILAMENT_CHANGE_SLOW_LOAD_LENGTH;
 
     // Fast load filament
     const float fast_load_length = ABS(parser.seen('L') ? parser.value_axis_units(E_AXIS)
-                                                        : fc_settings[active_extruder].load_length);
+                                                        : fc_settings[tool.index].load_length);
   #endif
 
   const int beep_count = parser.intval('B',
@@ -152,8 +152,8 @@ void GcodeSuite::M600() {
 
   #if EXTRUDERS > 1
     // Restore toolhead if it was changed
-    if (active_extruder_before_filament_change != active_extruder)
-      tool_change(active_extruder_before_filament_change, 0, false);
+    if (current_tool_before_filament_change != tool.index)
+      tool_change(current_tool_before_filament_change, 0, false);
   #endif
 }
 

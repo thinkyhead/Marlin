@@ -196,17 +196,17 @@ namespace ExtUI {
   }
 
   float getAxisPosition_mm(const axis_t axis) {
-    return flags.manual_motion ? destination[axis] : current_position[axis];
+    return flags.manual_motion ? tool.destination[axis] : tool.position[axis];
   }
 
   float getAxisPosition_mm(const extruder_t extruder) {
-    return flags.manual_motion ? destination[E_AXIS] : current_position[E_AXIS];
+    return flags.manual_motion ? tool.destination[E_AXIS] : tool.position[E_AXIS];
   }
 
   void setAxisPosition_mm(const float position, const axis_t axis) {
     // Start with no limits to movement
-    float min = current_position[axis] - 1000,
-          max = current_position[axis] + 1000;
+    float min = tool.position[axis] - 1000,
+          max = tool.position[axis] + 1000;
 
     // Limit to software endstops, if enabled
     #if HAS_SOFTWARE_ENDSTOPS
@@ -242,14 +242,14 @@ namespace ExtUI {
     // This assumes the center is 0,0
     #if ENABLED(DELTA)
       if (axis != Z_AXIS) {
-        max = SQRT(sq((float)(DELTA_PRINTABLE_RADIUS)) - sq(current_position[Y_AXIS - axis])); // (Y_AXIS - axis) == the other axis
+        max = SQRT(sq((float)(DELTA_PRINTABLE_RADIUS)) - sq(tool.position[Y_AXIS - axis])); // (Y_AXIS - axis) == the other axis
         min = -max;
       }
     #endif
 
     if (!flags.manual_motion)
-      set_destination_from_current();
-    destination[axis] = clamp(position, min, max);
+      tool.sync_destination();
+    tool.destination[axis] = clamp(position, min, max);
     flags.manual_motion = true;
   }
 
@@ -257,8 +257,8 @@ namespace ExtUI {
     setActiveTool(extruder, true);
 
     if (!flags.manual_motion)
-      set_destination_from_current();
-    destination[E_AXIS] = position;
+      tool.sync_destination();
+    tool.destination[E_AXIS] = position;
     flags.manual_motion = true;
   }
 
@@ -269,25 +269,27 @@ namespace ExtUI {
 
     if (flags.manual_motion && planner.movesplanned() < segments_to_buffer) {
       float saved_destination[XYZ];
-      COPY(saved_destination, destination);
-      // Compute direction vector from current_position towards destination.
-      destination[X_AXIS] -= current_position[X_AXIS];
-      destination[Y_AXIS] -= current_position[Y_AXIS];
-      destination[Z_AXIS] -= current_position[Z_AXIS];
-      const float inv_length = RSQRT(sq(destination[X_AXIS]) + sq(destination[Y_AXIS]) + sq(destination[Z_AXIS]));
+      COPY(saved_destination, tool.destination);
+      // Compute direction vector from tool.position towards destination.
+      tool.destination[X_AXIS] -= tool.position[X_AXIS];
+      tool.destination[Y_AXIS] -= tool.position[Y_AXIS];
+      tool.destination[Z_AXIS] -= tool.position[Z_AXIS];
+      const float inv_length = RSQRT(sq(tool.destination[X_AXIS]) + sq(tool.destination[Y_AXIS]) + sq(tool.destination[Z_AXIS]));
       // Find move segment length so that all segments can execute in less time than max_response_lag
       const float scale = inv_length * feedrate_mm_s * max_response_lag / segments_to_buffer;
       if (scale < 1) {
         // Move a small bit towards the destination.
-        destination[X_AXIS] = scale * destination[X_AXIS] + current_position[X_AXIS];
-        destination[Y_AXIS] = scale * destination[Y_AXIS] + current_position[Y_AXIS];
-        destination[Z_AXIS] = scale * destination[Z_AXIS] + current_position[Z_AXIS];
+        tool.set_destination(
+          scale * tool.destination[X_AXIS] + tool.position[X_AXIS],
+          scale * tool.destination[Y_AXIS] + tool.position[Y_AXIS],
+          scale * tool.destination[Z_AXIS] + tool.position[Z_AXIS]
+        );
         prepare_move_to_destination();
-        COPY(destination, saved_destination);
+        COPY(tool.destination, saved_destination);
       }
       else {
         // We are close enough to finish off the move.
-        COPY(destination, saved_destination);
+        COPY(tool.destination, saved_destination);
         prepare_move_to_destination();
         flags.manual_motion = false;
       }
@@ -298,15 +300,15 @@ namespace ExtUI {
     #if EXTRUDERS > 1
       const uint8_t e = extruder - E0;
       #if DO_SWITCH_EXTRUDER || ENABLED(SWITCHING_NOZZLE) || ENABLED(PARKING_EXTRUDER)
-        if (e != active_extruder)
+        if (e != tool.index)
           tool_change(e, 0, no_move);
       #endif
-      active_extruder = e;
+      tool.index = e;
     #endif
   }
 
   extruder_t getActiveTool() {
-    switch (active_extruder) {
+    switch (tool.index) {
       case 5:  return E5;
       case 4:  return E4;
       case 3:  return E3;
@@ -483,7 +485,7 @@ namespace ExtUI {
         // Make it so babystepping in Z adjusts the Z probe offset.
         if (axis == Z
           #if EXTRUDERS > 1
-            && (linked_nozzles || active_extruder == 0)
+            && (linked_nozzles || tool.index == 0)
           #endif
         ) zprobe_zoffset += mm;
       #endif
@@ -496,8 +498,8 @@ namespace ExtUI {
          */
         if (!linked_nozzles) {
           HOTEND_LOOP()
-            if (e != active_extruder)
-              hotend_offset[axis][e] += mm;
+            if (e != tool.index)
+              tool.offset[axis][e] += mm;
 
           normalizeNozzleOffset(X);
           normalizeNozzleOffset(Y);
@@ -534,12 +536,12 @@ namespace ExtUI {
 
     float getNozzleOffset_mm(const axis_t axis, const extruder_t extruder) {
       if (extruder - E0 >= HOTENDS) return 0;
-      return hotend_offset[axis][extruder - E0];
+      return tool.offset[axis][extruder - E0];
     }
 
     void setNozzleOffset_mm(const float value, const axis_t axis, const extruder_t extruder) {
       if (extruder - E0 >= HOTENDS) return;
-      hotend_offset[axis][extruder - E0] = value;
+      tool.offset[axis][extruder - E0] = value;
     }
 
     /**
@@ -548,8 +550,8 @@ namespace ExtUI {
      * user to edit the offset the first nozzle).
      */
     void normalizeNozzleOffset(const axis_t axis) {
-      const float offs = hotend_offset[axis][0];
-      HOTEND_LOOP() hotend_offset[axis][e] -= offs;
+      const float offs = tool.offset[axis][0];
+      HOTEND_LOOP() tool.offset[axis][e] -= offs;
     }
 
   #endif // HOTENDS > 1

@@ -64,7 +64,7 @@ enum CalEnum : char {                        // the 7 main calibration points - 
 #define LOOP_CAL_ACT(VAR, _4P, _OP) LOOP_CAL_PT(VAR, _OP ? _AB : __A, _4P ? _4P_STEP : _7P_STEP)
 
 #if HOTENDS > 1
-  const uint8_t old_tool_index = active_extruder;
+  const uint8_t old_tool_index = tool.index;
   #define AC_CLEANUP() ac_cleanup(old_tool_index)
 #else
   #define AC_CLEANUP() ac_cleanup()

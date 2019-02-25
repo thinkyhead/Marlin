@@ -854,11 +854,11 @@ void MarlinUI::draw_status_screen() {
 
           #else
 
-            _draw_axis_value(X_AXIS, ftostr4sign(LOGICAL_X_POSITION(current_position[X_AXIS])), blink);
+            _draw_axis_value(X_AXIS, ftostr4sign(LOGICAL_X_POSITION(tool.position[X_AXIS])), blink);
 
             lcd_put_wchar(' ');
 
-            _draw_axis_value(Y_AXIS, ftostr4sign(LOGICAL_Y_POSITION(current_position[Y_AXIS])), blink);
+            _draw_axis_value(Y_AXIS, ftostr4sign(LOGICAL_Y_POSITION(tool.position[Y_AXIS])), blink);
 
           #endif
 
@@ -867,7 +867,7 @@ void MarlinUI::draw_status_screen() {
       #endif // LCD_WIDTH >= 20
 
       lcd_moveto(LCD_WIDTH - 8, 1);
-      _draw_axis_value(Z_AXIS, ftostr52sp(LOGICAL_Z_POSITION(current_position[Z_AXIS])), blink);
+      _draw_axis_value(Z_AXIS, ftostr52sp(LOGICAL_Z_POSITION(tool.position[Z_AXIS])), blink);
 
       #if HAS_LEVELING && !HAS_HEATED_BED
         lcd_put_wchar(planner.leveling_active || blink ? '_' : ' ');
@@ -935,7 +935,7 @@ void MarlinUI::draw_status_screen() {
     // Z Coordinate
     //
     lcd_moveto(LCD_WIDTH - 9, 0);
-    _draw_axis_value(Z_AXIS, ftostr52sp(LOGICAL_Z_POSITION(current_position[Z_AXIS])), blink);
+    _draw_axis_value(Z_AXIS, ftostr52sp(LOGICAL_Z_POSITION(tool.position[Z_AXIS])), blink);
 
     #if HAS_LEVELING && (HOTENDS > 1 || !HAS_HEATED_BED)
       lcd_moveto(LCD_WIDTH - 1, 0);

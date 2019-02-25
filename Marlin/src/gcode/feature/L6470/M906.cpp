@@ -180,7 +180,7 @@ void GcodeSuite::M906() {
         #endif
         break;
       case E_AXIS: {
-        const int8_t target_extruder = get_target_extruder_from_command();
+        const int8_t target_extruder = get_target_tool_from_command();
         if (target_extruder < 0) return;
         switch (target_extruder) {
           #if AXIS_DRIVER_TYPE_E0(L6470)

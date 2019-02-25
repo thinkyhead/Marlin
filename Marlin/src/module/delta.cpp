@@ -110,8 +110,8 @@ void inverse_kinematics(const float (&raw)[XYZ]) {
   #if HAS_HOTEND_OFFSET
     // Delta hotend offsets must be applied in Cartesian space with no "spoofing"
     const float pos[XYZ] = {
-      raw[X_AXIS] - hotend_offset[X_AXIS][active_extruder],
-      raw[Y_AXIS] - hotend_offset[Y_AXIS][active_extruder],
+      raw[X_AXIS] - tool.offset[X_AXIS][tool.index],
+      raw[Y_AXIS] - tool.offset[Y_AXIS][tool.index],
       raw[Z_AXIS]
     };
     DELTA_IK(pos);
@@ -206,9 +206,11 @@ void forward_kinematics_DELTA(const float &z1, const float &z2, const float &z3)
   // Start from the origin of the old coordinates and add vectors in the
   // old coords that represent the Xnew, Ynew and Znew to find the point
   // in the old system.
-  cartes[X_AXIS] = delta_tower[A_AXIS][X_AXIS] + ex[0] * Xnew + ey[0] * Ynew - ez[0] * Znew;
-  cartes[Y_AXIS] = delta_tower[A_AXIS][Y_AXIS] + ex[1] * Xnew + ey[1] * Ynew - ez[1] * Znew;
-  cartes[Z_AXIS] =                          z1 + ex[2] * Xnew + ey[2] * Ynew - ez[2] * Znew;
+  tool.set_cartes(
+    delta_tower[A_AXIS][X_AXIS] + ex[0] * Xnew + ey[0] * Ynew - ez[0] * Znew,
+    delta_tower[A_AXIS][Y_AXIS] + ex[1] * Xnew + ey[1] * Ynew - ez[1] * Znew,
+                             z1 + ex[2] * Xnew + ey[2] * Ynew - ez[2] * Znew
+  );
 }
 
 /**
@@ -217,11 +219,11 @@ void forward_kinematics_DELTA(const float &z1, const float &z2, const float &z3)
  */
 void home_delta() {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
-    if (DEBUGGING(LEVELING)) DEBUG_POS(">>> home_delta", current_position);
+    if (DEBUGGING(LEVELING)) DEBUG_POS(">>> home_delta", tool.position);
   #endif
   // Init the current position of all carriages to 0,0,0
-  ZERO(current_position);
-  ZERO(destination);
+  ZERO(tool.position);
+  ZERO(tool.destination);
   sync_plan_position();
 
   // Disable stealthChop if used. Enable diag1 pin on driver.
@@ -233,7 +235,7 @@ void home_delta() {
   #endif
 
   // Move all carriages together linearly until an endstop is hit.
-  destination[Z_AXIS] = (delta_height
+  tool.destination[Z_AXIS] = (delta_height
     #if HAS_BED_PROBE
       - zprobe_zoffset
     #endif
@@ -265,7 +267,7 @@ void home_delta() {
   sync_plan_position();
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
-    if (DEBUGGING(LEVELING)) DEBUG_POS("<<< home_delta", current_position);
+    if (DEBUGGING(LEVELING)) DEBUG_POS("<<< home_delta", tool.position);
   #endif
 }
 

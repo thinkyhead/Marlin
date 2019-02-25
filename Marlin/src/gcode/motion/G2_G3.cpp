@@ -51,7 +51,7 @@
  */
 void plan_arc(
   const float (&cart)[XYZE],  // Destination position
-  const float (&offset)[2],   // Center of rotation relative to current_position
+  const float (&offset)[2],   // Center of rotation relative to tool.position
   const uint8_t clockwise     // Clockwise?
 ) {
   #if ENABLED(CNC_WORKSPACE_PLANES)
@@ -71,14 +71,14 @@ void plan_arc(
 
   const float radius = HYPOT(r_P, r_Q),
               #if ENABLED(AUTO_BED_LEVELING_UBL)
-                start_L  = current_position[l_axis],
+                start_L  = tool.position[l_axis],
               #endif
-              center_P = current_position[p_axis] - r_P,
-              center_Q = current_position[q_axis] - r_Q,
+              center_P = tool.position[p_axis] - r_P,
+              center_Q = tool.position[q_axis] - r_Q,
               rt_X = cart[p_axis] - center_P,
               rt_Y = cart[q_axis] - center_Q,
-              linear_travel = cart[l_axis] - current_position[l_axis],
-              extruder_travel = cart[E_AXIS] - current_position[E_AXIS];
+              linear_travel = cart[l_axis] - tool.position[l_axis],
+              extruder_travel = cart[E_AXIS] - tool.position[E_AXIS];
 
   // CCW angle of rotation between position and target from the circle center. Only one atan2() trig computation required.
   float angular_travel = ATAN2(r_P * rt_Y - r_Q * rt_X, r_P * rt_X + r_Q * rt_Y);
@@ -86,7 +86,7 @@ void plan_arc(
   if (clockwise) angular_travel -= RADIANS(360);
 
   // Make a circle if the angular rotation is 0 and the target is current position
-  if (angular_travel == 0 && current_position[p_axis] == cart[p_axis] && current_position[q_axis] == cart[q_axis])
+  if (angular_travel == 0 && tool.position[p_axis] == cart[p_axis] && tool.position[q_axis] == cart[q_axis])
     angular_travel = RADIANS(360);
 
   const float flat_mm = radius * angular_travel,
@@ -131,10 +131,10 @@ void plan_arc(
               cos_T = 1 - 0.5f * sq(theta_per_segment); // Small angle approximation
 
   // Initialize the linear axis
-  raw[l_axis] = current_position[l_axis];
+  raw[l_axis] = tool.position[l_axis];
 
   // Initialize the extruder axis
-  raw[E_AXIS] = current_position[E_AXIS];
+  raw[E_AXIS] = tool.position[E_AXIS];
 
   const float fr_mm_s = MMS_SCALED(feedrate_mm_s);
 
@@ -196,7 +196,7 @@ void plan_arc(
       planner.apply_leveling(raw);
     #endif
 
-    if (!planner.buffer_line(raw, fr_mm_s, active_extruder, MM_PER_ARC_SEGMENT
+    if (!planner.buffer_line(raw, fr_mm_s, tool.index, MM_PER_ARC_SEGMENT
       #if ENABLED(SCARA_FEEDRATE_SCALING)
         , inv_duration
       #endif
@@ -214,7 +214,7 @@ void plan_arc(
     planner.apply_leveling(raw);
   #endif
 
-  planner.buffer_line(raw, fr_mm_s, active_extruder, MM_PER_ARC_SEGMENT
+  planner.buffer_line(raw, fr_mm_s, tool.index, MM_PER_ARC_SEGMENT
     #if ENABLED(SCARA_FEEDRATE_SCALING)
       , inv_duration
     #endif
@@ -223,7 +223,7 @@ void plan_arc(
   #if ENABLED(AUTO_BED_LEVELING_UBL)
     raw[l_axis] = start_L;
   #endif
-  COPY(current_position, raw);
+  COPY(tool.position, raw);
 } // plan_arc
 
 /**
@@ -269,8 +269,8 @@ void GcodeSuite::G2_G3(const bool clockwise) {
     float arc_offset[2] = { 0, 0 };
     if (parser.seenval('R')) {
       const float r = parser.value_linear_units(),
-                  p1 = current_position[X_AXIS], q1 = current_position[Y_AXIS],
-                  p2 = destination[X_AXIS], q2 = destination[Y_AXIS];
+                  p1 = tool.position[X_AXIS], q1 = tool.position[Y_AXIS],
+                  p2 = tool.destination[X_AXIS], q2 = tool.destination[Y_AXIS];
       if (r && (p2 != p1 || q2 != q1)) {
         const float e = clockwise ^ (r < 0) ? -1 : 1,            // clockwise -1/1, counterclockwise 1/-1
                     dx = p2 - p1, dy = q2 - q1,                  // X and Y differences
@@ -298,11 +298,11 @@ void GcodeSuite::G2_G3(const bool clockwise) {
           SERIAL_ERROR_MSG(MSG_ERR_ARC_ARGS);
 
         while (circles_to_do--)
-          plan_arc(current_position, arc_offset, clockwise);
+          plan_arc(tool.position, arc_offset, clockwise);
       #endif
 
       // Send the arc to the planner
-      plan_arc(destination, arc_offset, clockwise);
+      plan_arc(tool.destination, arc_offset, clockwise);
       reset_stepper_timeout();
     }
     else

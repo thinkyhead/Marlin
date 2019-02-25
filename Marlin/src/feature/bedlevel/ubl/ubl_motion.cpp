@@ -36,9 +36,9 @@
 #include <math.h>
 
 #if AVR_AT90USB1286_FAMILY  // Teensyduino & Printrboard IDE extensions have compile errors without this
-  inline void set_current_from_destination() { COPY(current_position, destination); }
+  inline void tool.set_position_from_destination() { COPY(tool.position, tool.destination); }
 #else
-  extern void set_current_from_destination();
+  extern void tool.set_position_from_destination();
 #endif
 
 #if !UBL_SEGMENTED
@@ -50,13 +50,13 @@
      * just do the required Z-Height correction, call the Planner's buffer_line() routine, and leave
      */
     #if HAS_POSITION_MODIFIERS
-      float start[XYZE] = { current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS] },
-            end[XYZE] = { destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS] };
+      float start[XYZE] = { tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS], tool.position[E_AXIS] },
+            end[XYZE] = { tool.destination[X_AXIS], tool.destination[Y_AXIS], tool.destination[Z_AXIS], tool.destination[E_AXIS] };
       planner.apply_modifiers(start);
       planner.apply_modifiers(end);
     #else
-      const float (&start)[XYZE] = current_position,
-                    (&end)[XYZE] = destination;
+      const float (&start)[XYZE] = tool.position,
+                    (&end)[XYZE] = tool.destination;
     #endif
 
     const int cell_start_xi = get_cell_index_x(start[X_AXIS]),
@@ -65,10 +65,10 @@
               cell_dest_yi  = get_cell_index_y(end[Y_AXIS]);
 
     if (g26_debug_flag) {
-      SERIAL_ECHOPAIR(" ubl.line_to_destination_cartesian(xe=", destination[X_AXIS]);
-      SERIAL_ECHOPAIR(", ye=", destination[Y_AXIS]);
-      SERIAL_ECHOPAIR(", ze=", destination[Z_AXIS]);
-      SERIAL_ECHOPAIR(", ee=", destination[E_AXIS]);
+      SERIAL_ECHOPAIR(" ubl.line_to_destination_cartesian(xe=", tool.destination[X_AXIS]);
+      SERIAL_ECHOPAIR(", ye=", tool.destination[Y_AXIS]);
+      SERIAL_ECHOPAIR(", ze=", tool.destination[Z_AXIS]);
+      SERIAL_ECHOPAIR(", ee=", tool.destination[E_AXIS]);
       SERIAL_CHAR(')');
       SERIAL_EOL();
       debug_current_and_destination(PSTR("Start of ubl.line_to_destination_cartesian()"));
@@ -90,7 +90,7 @@
           #endif
         ;
         planner.buffer_segment(end[X_AXIS], end[Y_AXIS], end[Z_AXIS] + z_raise, end[E_AXIS], feed_rate, extruder);
-        set_current_from_destination();
+        tool.set_position_from_destination();
 
         if (g26_debug_flag)
           debug_current_and_destination(PSTR("out of bounds in ubl.line_to_destination_cartesian()"));
@@ -121,7 +121,7 @@
       if (g26_debug_flag)
         debug_current_and_destination(PSTR("FINAL_MOVE in ubl.line_to_destination_cartesian()"));
 
-      set_current_from_destination();
+      tool.set_position_from_destination();
       return;
     }
 
@@ -218,10 +218,10 @@
         debug_current_and_destination(PSTR("vertical move done in ubl.line_to_destination_cartesian()"));
 
       // At the final destination? Usually not, but when on a Y Mesh Line it's completed.
-      if (current_position[X_AXIS] != end[X_AXIS] || current_position[Y_AXIS] != end[Y_AXIS])
+      if (tool.position[X_AXIS] != end[X_AXIS] || tool.position[Y_AXIS] != end[Y_AXIS])
         goto FINAL_MOVE;
 
-      set_current_from_destination();
+      tool.set_position_from_destination();
       return;
     }
 
@@ -269,10 +269,10 @@
       if (g26_debug_flag)
         debug_current_and_destination(PSTR("horizontal move done in ubl.line_to_destination_cartesian()"));
 
-      if (current_position[X_AXIS] != end[X_AXIS] || current_position[Y_AXIS] != end[Y_AXIS])
+      if (tool.position[X_AXIS] != end[X_AXIS] || tool.position[Y_AXIS] != end[Y_AXIS])
         goto FINAL_MOVE;
 
-      set_current_from_destination();
+      tool.set_position_from_destination();
       return;
     }
 
@@ -355,10 +355,10 @@
     if (g26_debug_flag)
       debug_current_and_destination(PSTR("generic move done in ubl.line_to_destination_cartesian()"));
 
-    if (current_position[X_AXIS] != end[X_AXIS] || current_position[Y_AXIS] != end[Y_AXIS])
+    if (tool.position[X_AXIS] != end[X_AXIS] || tool.position[Y_AXIS] != end[Y_AXIS])
       goto FINAL_MOVE;
 
-    set_current_from_destination();
+    tool.set_position_from_destination();
   }
 
 #else // UBL_SEGMENTED
@@ -378,19 +378,19 @@
   /**
    * Prepare a segmented linear move for DELTA/SCARA/CARTESIAN with UBL and FADE semantics.
    * This calls planner.buffer_segment multiple times for small incremental moves.
-   * Returns true if did NOT move, false if moved (requires current_position update).
+   * Returns true if did NOT move, false if moved (requires tool.position update).
    */
 
   bool _O2 unified_bed_leveling::prepare_segmented_line_to(const float (&rtarget)[XYZE], const float &feedrate) {
 
     if (!position_is_reachable(rtarget[X_AXIS], rtarget[Y_AXIS]))  // fail if moving outside reachable boundary
-      return true; // did not move, so current_position still accurate
+      return true; // did not move, so tool.position still accurate
 
     const float total[XYZE] = {
-      rtarget[X_AXIS] - current_position[X_AXIS],
-      rtarget[Y_AXIS] - current_position[Y_AXIS],
-      rtarget[Z_AXIS] - current_position[Z_AXIS],
-      rtarget[E_AXIS] - current_position[E_AXIS]
+      rtarget[X_AXIS] - tool.position[X_AXIS],
+      rtarget[Y_AXIS] - tool.position[Y_AXIS],
+      rtarget[Z_AXIS] - tool.position[Z_AXIS],
+      rtarget[E_AXIS] - tool.position[E_AXIS]
     };
 
     const float cartesian_xy_mm = HYPOT(total[X_AXIS], total[Y_AXIS]);  // total horizontal xy distance
@@ -423,28 +423,28 @@
     // changes for each segment, but small enough to ignore.
 
     float raw[XYZE] = {
-      current_position[X_AXIS],
-      current_position[Y_AXIS],
-      current_position[Z_AXIS],
-      current_position[E_AXIS]
+      tool.position[X_AXIS],
+      tool.position[Y_AXIS],
+      tool.position[Z_AXIS],
+      tool.position[E_AXIS]
     };
 
     // Only compute leveling per segment if ubl active and target below z_fade_height.
     if (!planner.leveling_active || !planner.leveling_active_at_z(rtarget[Z_AXIS])) {   // no mesh leveling
       while (--segments) {
         LOOP_XYZE(i) raw[i] += diff[i];
-        planner.buffer_line(raw, feedrate, active_extruder, segment_xyz_mm
+        planner.buffer_line(raw, feedrate, tool.index, segment_xyz_mm
           #if ENABLED(SCARA_FEEDRATE_SCALING)
             , inv_duration
           #endif
         );
       }
-      planner.buffer_line(rtarget, feedrate, active_extruder, segment_xyz_mm
+      planner.buffer_line(rtarget, feedrate, tool.index, segment_xyz_mm
         #if ENABLED(SCARA_FEEDRATE_SCALING)
           , inv_duration
         #endif
       );
-      return false; // moved but did not set_current_from_destination();
+      return false; // moved but did not tool.set_position_from_destination();
     }
 
     // Otherwise perform per-segment leveling
@@ -519,7 +519,7 @@
 
         const float z = raw[Z_AXIS];
         raw[Z_AXIS] += z_cxcy;
-        planner.buffer_line(raw, feedrate, active_extruder, segment_xyz_mm
+        planner.buffer_line(raw, feedrate, tool.index, segment_xyz_mm
           #if ENABLED(SCARA_FEEDRATE_SCALING)
             , inv_duration
           #endif
@@ -527,7 +527,7 @@
         raw[Z_AXIS] = z;
 
         if (segments == 0)                        // done with last segment
-          return false;                           // did not set_current_from_destination()
+          return false;                           // did not tool.set_position_from_destination()
 
         LOOP_XYZE(i) raw[i] += diff[i];
 
@@ -546,7 +546,7 @@
       } // segment loop
     } // cell loop
 
-    return false; // caller will update current_position
+    return false; // caller will update tool.position
   }
 
 #endif // UBL_SEGMENTED

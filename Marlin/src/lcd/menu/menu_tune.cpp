@@ -45,7 +45,7 @@
 // Refresh the E factor after changing flow
 void _lcd_refresh_e_factor_0() { planner.refresh_e_factor(0); }
 #if EXTRUDERS > 1
-  void _lcd_refresh_e_factor() { planner.refresh_e_factor(active_extruder); }
+  void _lcd_refresh_e_factor() { planner.refresh_e_factor(tool.index); }
   void _lcd_refresh_e_factor_1() { planner.refresh_e_factor(1); }
   #if EXTRUDERS > 2
     void _lcd_refresh_e_factor_2() { planner.refresh_e_factor(2); }
@@ -134,7 +134,7 @@ void menu_tune() {
   #endif // HOTENDS > 1
 
   #if ENABLED(SINGLENOZZLE)
-    MENU_MULTIPLIER_ITEM_EDIT(uint16_3, MSG_NOZZLE_STANDBY, &singlenozzle_temp[active_extruder ? 0 : 1], 0, HEATER_0_MAXTEMP - 15);
+    MENU_MULTIPLIER_ITEM_EDIT(uint16_3, MSG_NOZZLE_STANDBY, &singlenozzle_temp[tool.index ? 0 : 1], 0, HEATER_0_MAXTEMP - 15);
   #endif
 
   //
@@ -175,7 +175,7 @@ void menu_tune() {
   #if EXTRUDERS == 1
     MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW, &planner.flow_percentage[0], 10, 999, _lcd_refresh_e_factor_0);
   #else // EXTRUDERS > 1
-    MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW, &planner.flow_percentage[active_extruder], 10, 999, _lcd_refresh_e_factor);
+    MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW, &planner.flow_percentage[tool.index], 10, 999, _lcd_refresh_e_factor);
     #define EDIT_FLOW(N) MENU_ITEM_EDIT_CALLBACK(int3, MSG_FLOW MSG_LCD_N##N, &planner.flow_percentage[N], 10, 999, _lcd_refresh_e_factor_##N)
     EDIT_FLOW(0);
     EDIT_FLOW(1);

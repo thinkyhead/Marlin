@@ -25,6 +25,9 @@
  */
 
 #include "motion.h"
+
+MarlinTool tool;
+
 #include "endstops.h"
 #include "stepper.h"
 #include "planner.h"
@@ -88,24 +91,24 @@ bool relative_mode; // = false;
  *   Used by 'buffer_line_to_current_position' to do a move after changing it.
  *   Used by 'sync_plan_position' to update 'planner.position'.
  */
-float current_position[XYZE] = { 0 };
+float MarlinTool::position[XYZE] = { 0 };
 
 /**
  * Cartesian Destination
  *   The destination for a move, filled in by G-code movement commands,
  *   and expected by functions like 'prepare_move_to_destination'.
- *   Set with 'get_destination_from_command' or 'set_destination_from_current'.
+ *   Set with 'get_destination_from_command' or 'tool.sync_destination'.
  */
-float destination[XYZE] = { 0 };
+float MarlinTool::destination[XYZE] = { 0 };
 
-// The active extruder (tool). Set with T<extruder> command.
+// The active tool as set with T<tool>
 #if EXTRUDERS > 1
-  uint8_t active_extruder; // = 0
+  uint8_t MarlinTool::index; // = 0
 #endif
 
 // Extruder offsets
 #if HAS_HOTEND_OFFSET
-  float hotend_offset[XYZ][HOTENDS]; // Initialized by settings.load()
+  float MarlinTool::offset[XYZ][HOTENDS]; // Initialized by settings.load()
 #endif
 
 // The feedrate for the current move, often used as the default if
@@ -126,11 +129,10 @@ const float homing_feedrate_mm_s[XYZ] PROGMEM = {
   MMM_TO_MMS(HOMING_FEEDRATE_Z)
 };
 
-// Cartesian conversion result goes here:
-float cartes[XYZ];
+float MarlinTool::cartes[XYZ];      // Cartesian conversion result
 
 #if IS_KINEMATIC
-  float delta[ABC];
+  float MarlinTool::delta[ABC];     // Kinematic conversion result
 #endif
 
 #if HAS_SCARA_OFFSET
@@ -163,10 +165,10 @@ float cartes[XYZ];
  * Output the current position to serial
  */
 void report_current_position() {
-  SERIAL_ECHOPAIR("X:", LOGICAL_X_POSITION(current_position[X_AXIS]));
-  SERIAL_ECHOPAIR(" Y:", LOGICAL_Y_POSITION(current_position[Y_AXIS]));
-  SERIAL_ECHOPAIR(" Z:", LOGICAL_Z_POSITION(current_position[Z_AXIS]));
-  SERIAL_ECHOPAIR(" E:", current_position[E_AXIS]);
+  SERIAL_ECHOPAIR("X:", LOGICAL_X_POSITION(tool.position[X_AXIS]));
+  SERIAL_ECHOPAIR(" Y:", LOGICAL_Y_POSITION(tool.position[Y_AXIS]));
+  SERIAL_ECHOPAIR(" Z:", LOGICAL_Z_POSITION(tool.position[Z_AXIS]));
+  SERIAL_ECHOPAIR(" E:", tool.position[E_AXIS]);
 
   stepper.report_positions();
 
@@ -178,17 +180,17 @@ void report_current_position() {
 /**
  * sync_plan_position
  *
- * Set the planner/stepper positions directly from current_position with
+ * Set the planner/stepper positions directly from tool.position with
  * no kinematic translation. Used for homing axes and cartesian/core syncing.
  */
 void sync_plan_position() {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
-    if (DEBUGGING(LEVELING)) DEBUG_POS("sync_plan_position", current_position);
+    if (DEBUGGING(LEVELING)) DEBUG_POS("sync_plan_position", tool.position);
   #endif
-  planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+  planner.set_position_mm(tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS], tool.position[E_AXIS]);
 }
 
-void sync_plan_position_e() { planner.set_e_position_mm(current_position[E_AXIS]); }
+void sync_plan_position_e() { planner.set_e_position_mm(tool.position[E_AXIS]); }
 
 /**
  * Get the stepper positions in the cartes[] array.
@@ -197,7 +199,7 @@ void sync_plan_position_e() { planner.set_e_position_mm(current_position[E_AXIS]
  * The result is in the current coordinate space with
  * leveling applied. The coordinates need to be run through
  * unapply_leveling to obtain the "ideal" coordinates
- * suitable for current_position, etc.
+ * suitable for tool.position, etc.
  */
 void get_cartesian_from_steppers() {
   #if ENABLED(DELTA)
@@ -212,16 +214,15 @@ void get_cartesian_from_steppers() {
         planner.get_axis_position_degrees(A_AXIS),
         planner.get_axis_position_degrees(B_AXIS)
       );
+      tool.cartes[Z_AXIS] = planner.get_axis_position_mm(Z_AXIS);
     #else
-      cartes[X_AXIS] = planner.get_axis_position_mm(X_AXIS);
-      cartes[Y_AXIS] = planner.get_axis_position_mm(Y_AXIS);
+      tool.set_cartes(planner.get_axis_position_mm(X_AXIS), planner.get_axis_position_mm(Y_AXIS), planner.get_axis_position_mm(Z_AXIS));
     #endif
-    cartes[Z_AXIS] = planner.get_axis_position_mm(Z_AXIS);
   #endif
 }
 
 /**
- * Set the current_position for an axis based on
+ * Set the tool.position for an axis based on
  * the stepper positions, removing any leveling that
  * may have been applied.
  *
@@ -229,24 +230,25 @@ void get_cartesian_from_steppers() {
  * sync_plan_position after updating axes with this.
  *
  * To keep hosts in sync, always call report_current_position
- * after updating the current_position.
+ * after updating the tool.position.
  */
 void set_current_from_steppers_for_axis(const AxisEnum axis) {
   get_cartesian_from_steppers();
 
   #if HAS_POSITION_MODIFIERS
-    float pos[XYZE] = { cartes[X_AXIS], cartes[Y_AXIS], cartes[Z_AXIS], current_position[E_AXIS] };
+    float pos[XYZ] = { tool.cartes[X_AXIS], tool.cartes[Y_AXIS], tool.cartes[Z_AXIS] };
     planner.unapply_modifiers(pos
       #if HAS_LEVELING
         , true
       #endif
     );
-    const float (&cartes)[XYZE] = pos;
+  #else
+    const float (&pos)[XYZ] = tool.cartes;
   #endif
   if (axis == ALL_AXES)
-    COPY(current_position, cartes);
+    COPY(tool.position, pos);
   else
-    current_position[axis] = cartes[axis];
+    tool.position[axis] = pos[axis];
 }
 
 /**
@@ -254,7 +256,7 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
  * (or from wherever it has been told it is located).
  */
 void line_to_current_position(const float &fr_mm_s/*=feedrate_mm_s*/) {
-  planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], fr_mm_s, active_extruder);
+  planner.buffer_line(tool.position, fr_mm_s, tool.index);
 }
 
 /**
@@ -262,39 +264,39 @@ void line_to_current_position(const float &fr_mm_s/*=feedrate_mm_s*/) {
  * used by G0/G1/G2/G3/G5 and many other functions to set a destination.
  */
 void buffer_line_to_destination(const float fr_mm_s) {
-  planner.buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], fr_mm_s, active_extruder);
+  planner.buffer_line(tool.destination, fr_mm_s, tool.index);
 }
 
 #if IS_KINEMATIC
 
   /**
-   * Calculate delta, start a line, and set current_position to destination
+   * Calculate delta, start a line, and set tool.position to destination
    */
   void prepare_uninterpolated_move_to_destination(const float &fr_mm_s/*=0.0*/) {
     #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("prepare_uninterpolated_move_to_destination", destination);
+      if (DEBUGGING(LEVELING)) DEBUG_POS("prepare_uninterpolated_move_to_destination", tool.destination);
     #endif
 
     #if UBL_SEGMENTED
       // ubl segmented line will do z-only moves in single segment
       ubl.prepare_segmented_line_to(destination, MMS_SCALED(fr_mm_s ? fr_mm_s : feedrate_mm_s));
     #else
-      if ( current_position[X_AXIS] == destination[X_AXIS]
-        && current_position[Y_AXIS] == destination[Y_AXIS]
-        && current_position[Z_AXIS] == destination[Z_AXIS]
-        && current_position[E_AXIS] == destination[E_AXIS]
+      if ( tool.position[X_AXIS] == tool.destination[X_AXIS]
+        && tool.position[Y_AXIS] == tool.destination[Y_AXIS]
+        && tool.position[Z_AXIS] == tool.destination[Z_AXIS]
+        && tool.position[E_AXIS] == tool.destination[E_AXIS]
       ) return;
 
-      planner.buffer_line(destination, MMS_SCALED(fr_mm_s ? fr_mm_s : feedrate_mm_s), active_extruder);
+      planner.buffer_line(tool.destination, MMS_SCALED(fr_mm_s ? fr_mm_s : feedrate_mm_s), tool.index);
     #endif
 
-    set_current_from_destination();
+    tool.set_position_from_destination();
   }
 
 #endif // IS_KINEMATIC
 
 /**
- * Plan a move to (X, Y, Z) and set the current_position
+ * Plan a move to (X, Y, Z) and set the tool.position
  */
 void do_blocking_move_to(const float rx, const float ry, const float rz, const float &fr_mm_s/*=0.0*/) {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -310,51 +312,49 @@ void do_blocking_move_to(const float rx, const float ry, const float rz, const f
 
     REMEMBER(fr, feedrate_mm_s, xy_feedrate);
 
-    set_destination_from_current();          // sync destination at the start
+    tool.sync_destination();          // sync destination at the start
 
     #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("set_destination_from_current", destination);
+      if (DEBUGGING(LEVELING)) DEBUG_POS("tool.sync_destination", destination);
     #endif
 
     // when in the danger zone
-    if (current_position[Z_AXIS] > delta_clip_start_height) {
+    if (tool.position[Z_AXIS] > delta_clip_start_height) {
       if (rz > delta_clip_start_height) {   // staying in the danger zone
-        destination[X_AXIS] = rx;           // move directly (uninterpolated)
-        destination[Y_AXIS] = ry;
-        destination[Z_AXIS] = rz;
-        prepare_uninterpolated_move_to_destination(); // set_current_from_destination()
+        tool.set_destination(rx, ry, rz);   // move directly (uninterpolated)
+        prepare_uninterpolated_move_to_destination(); // tool.set_position_from_destination()
         #if ENABLED(DEBUG_LEVELING_FEATURE)
-          if (DEBUGGING(LEVELING)) DEBUG_POS("danger zone move", current_position);
+          if (DEBUGGING(LEVELING)) DEBUG_POS("danger zone move", tool.position);
         #endif
         return;
       }
-      destination[Z_AXIS] = delta_clip_start_height;
-      prepare_uninterpolated_move_to_destination(); // set_current_from_destination()
+      tool.destination[Z_AXIS] = delta_clip_start_height;
+      prepare_uninterpolated_move_to_destination(); // tool.set_position_from_destination()
       #if ENABLED(DEBUG_LEVELING_FEATURE)
-        if (DEBUGGING(LEVELING)) DEBUG_POS("zone border move", current_position);
+        if (DEBUGGING(LEVELING)) DEBUG_POS("zone border move", tool.position);
       #endif
     }
 
-    if (rz > current_position[Z_AXIS]) {    // raising?
-      destination[Z_AXIS] = rz;
-      prepare_uninterpolated_move_to_destination(z_feedrate);   // set_current_from_destination()
+    if (rz > tool.position[Z_AXIS]) {    // raising?
+      tool.destination[Z_AXIS] = rz;
+      prepare_uninterpolated_move_to_destination(z_feedrate);   // tool.set_position_from_destination()
       #if ENABLED(DEBUG_LEVELING_FEATURE)
-        if (DEBUGGING(LEVELING)) DEBUG_POS("z raise move", current_position);
+        if (DEBUGGING(LEVELING)) DEBUG_POS("z raise move", tool.position);
       #endif
     }
 
-    destination[X_AXIS] = rx;
-    destination[Y_AXIS] = ry;
-    prepare_move_to_destination();         // set_current_from_destination()
+    tool.destination[X_AXIS] = rx;
+    tool.destination[Y_AXIS] = ry;
+    prepare_move_to_destination();         // tool.set_position_from_destination()
     #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("xy move", current_position);
+      if (DEBUGGING(LEVELING)) DEBUG_POS("xy move", tool.position);
     #endif
 
-    if (rz < current_position[Z_AXIS]) {    // lowering?
-      destination[Z_AXIS] = rz;
-      prepare_uninterpolated_move_to_destination(z_feedrate);   // set_current_from_destination()
+    if (rz < tool.position[Z_AXIS]) {    // lowering?
+      tool.destination[Z_AXIS] = rz;
+      prepare_uninterpolated_move_to_destination(z_feedrate);   // tool.set_position_from_destination()
       #if ENABLED(DEBUG_LEVELING_FEATURE)
-        if (DEBUGGING(LEVELING)) DEBUG_POS("z lower move", current_position);
+        if (DEBUGGING(LEVELING)) DEBUG_POS("z lower move", tool.position);
       #endif
     }
 
@@ -362,39 +362,39 @@ void do_blocking_move_to(const float rx, const float ry, const float rz, const f
 
     if (!position_is_reachable(rx, ry)) return;
 
-    set_destination_from_current();
+    tool.sync_destination();
 
     // If Z needs to raise, do it before moving XY
-    if (destination[Z_AXIS] < rz) {
-      destination[Z_AXIS] = rz;
+    if (tool.destination[Z_AXIS] < rz) {
+      tool.destination[Z_AXIS] = rz;
       prepare_uninterpolated_move_to_destination(z_feedrate);
     }
 
-    destination[X_AXIS] = rx;
-    destination[Y_AXIS] = ry;
+    tool.destination[X_AXIS] = rx;
+    tool.destination[Y_AXIS] = ry;
     prepare_uninterpolated_move_to_destination(xy_feedrate);
 
     // If Z needs to lower, do it after moving XY
-    if (destination[Z_AXIS] > rz) {
-      destination[Z_AXIS] = rz;
+    if (tool.destination[Z_AXIS] > rz) {
+      tool.destination[Z_AXIS] = rz;
       prepare_uninterpolated_move_to_destination(z_feedrate);
     }
 
   #else
 
     // If Z needs to raise, do it before moving XY
-    if (current_position[Z_AXIS] < rz) {
-      current_position[Z_AXIS] = rz;
+    if (tool.position[Z_AXIS] < rz) {
+      tool.position[Z_AXIS] = rz;
       line_to_current_position(z_feedrate);
     }
 
-    current_position[X_AXIS] = rx;
-    current_position[Y_AXIS] = ry;
+    tool.position[X_AXIS] = rx;
+    tool.position[Y_AXIS] = ry;
     line_to_current_position(xy_feedrate);
 
     // If Z needs to lower, do it after moving XY
-    if (current_position[Z_AXIS] > rz) {
-      current_position[Z_AXIS] = rz;
+    if (tool.position[Z_AXIS] > rz) {
+      tool.position[Z_AXIS] = rz;
       line_to_current_position(z_feedrate);
     }
 
@@ -407,13 +407,13 @@ void do_blocking_move_to(const float rx, const float ry, const float rz, const f
   planner.synchronize();
 }
 void do_blocking_move_to_x(const float &rx, const float &fr_mm_s/*=0.0*/) {
-  do_blocking_move_to(rx, current_position[Y_AXIS], current_position[Z_AXIS], fr_mm_s);
+  do_blocking_move_to(rx, tool.position[Y_AXIS], tool.position[Z_AXIS], fr_mm_s);
 }
 void do_blocking_move_to_z(const float &rz, const float &fr_mm_s/*=0.0*/) {
-  do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], rz, fr_mm_s);
+  do_blocking_move_to(tool.position[X_AXIS], tool.position[Y_AXIS], rz, fr_mm_s);
 }
 void do_blocking_move_to_xy(const float &rx, const float &ry, const float &fr_mm_s/*=0.0*/) {
-  do_blocking_move_to(rx, ry, current_position[Z_AXIS], fr_mm_s);
+  do_blocking_move_to(rx, ry, tool.position[Z_AXIS], fr_mm_s);
 }
 
 //
@@ -496,10 +496,10 @@ void clean_up_after_endstop_or_probe_move() {
 
       if (axis == X_AXIS) {
 
-        // In Dual X mode hotend_offset[X] is T1's home position
-        const float dual_max_x = MAX(hotend_offset[X_AXIS][1], X2_MAX_POS);
+        // In Dual X mode tool.offset[X] is T1's home position
+        const float dual_max_x = MAX(tool.offset[X_AXIS][1], X2_MAX_POS);
 
-        if (active_extruder != 0) {
+        if (tool.index != 0) {
           // T1 can move from X2_MIN_POS to X2_MAX_POS or X2 home position (whichever is larger)
           soft_endstop_min[X_AXIS] = X2_MIN_POS;
           soft_endstop_max[X_AXIS] = dual_max_x;
@@ -593,21 +593,21 @@ void clean_up_after_endstop_or_probe_move() {
     // Get the top feedrate of the move in the XY plane
     const float _feedrate_mm_s = MMS_SCALED(feedrate_mm_s);
 
-    const float xdiff = rtarget[X_AXIS] - current_position[X_AXIS],
-                ydiff = rtarget[Y_AXIS] - current_position[Y_AXIS];
+    const float xdiff = rtarget[X_AXIS] - tool.position[X_AXIS],
+                ydiff = rtarget[Y_AXIS] - tool.position[Y_AXIS];
 
     // If the move is only in Z/E don't split up the move
     if (!xdiff && !ydiff) {
-      planner.buffer_line(rtarget, _feedrate_mm_s, active_extruder);
-      return false; // caller will update current_position
+      planner.buffer_line(rtarget, _feedrate_mm_s, tool.index);
+      return false; // caller will update tool.position
     }
 
     // Fail if attempting move outside printable radius
     if (!position_is_reachable(rtarget[X_AXIS], rtarget[Y_AXIS])) return true;
 
     // Remaining cartesian distances
-    const float zdiff = rtarget[Z_AXIS] - current_position[Z_AXIS],
-                ediff = rtarget[E_AXIS] - current_position[E_AXIS];
+    const float zdiff = rtarget[Z_AXIS] - tool.position[Z_AXIS],
+                ediff = rtarget[E_AXIS] - tool.position[E_AXIS];
 
     // Get the linear distance in XYZ
     float cartesian_mm = SQRT(sq(xdiff) + sq(ydiff) + sq(zdiff));
@@ -657,7 +657,7 @@ void clean_up_after_endstop_or_probe_move() {
 
     // Get the current position as starting point
     float raw[XYZE];
-    COPY(raw, current_position);
+    COPY(raw, tool.position);
 
     // Calculate and execute the segments
     while (--segments) {
@@ -671,7 +671,7 @@ void clean_up_after_endstop_or_probe_move() {
 
       LOOP_XYZE(i) raw[i] += segment_distance[i];
 
-      if (!planner.buffer_line(raw, _feedrate_mm_s, active_extruder, cartesian_segment_mm
+      if (!planner.buffer_line(raw, _feedrate_mm_s, tool.index, cartesian_segment_mm
         #if ENABLED(SCARA_FEEDRATE_SCALING)
           , inv_duration
         #endif
@@ -680,13 +680,13 @@ void clean_up_after_endstop_or_probe_move() {
     }
 
     // Ensure last segment arrives at target location.
-    planner.buffer_line(rtarget, _feedrate_mm_s, active_extruder, cartesian_segment_mm
+    planner.buffer_line(rtarget, _feedrate_mm_s, tool.index, cartesian_segment_mm
       #if ENABLED(SCARA_FEEDRATE_SCALING)
         , inv_duration
       #endif
     );
 
-    return false; // caller will update current_position
+    return false; // caller will update tool.position
   }
 
 #else // !IS_KINEMATIC
@@ -702,18 +702,18 @@ void clean_up_after_endstop_or_probe_move() {
      */
     inline void segmented_line_to_destination(const float &fr_mm_s, const float segment_size=LEVELED_SEGMENT_LENGTH) {
 
-      const float xdiff = destination[X_AXIS] - current_position[X_AXIS],
-                  ydiff = destination[Y_AXIS] - current_position[Y_AXIS];
+      const float xdiff = tool.destination[X_AXIS] - tool.position[X_AXIS],
+                  ydiff = tool.destination[Y_AXIS] - tool.position[Y_AXIS];
 
       // If the move is only in Z/E don't split up the move
       if (!xdiff && !ydiff) {
-        planner.buffer_line(destination, fr_mm_s, active_extruder);
+        planner.buffer_line(tool.destination, fr_mm_s, tool.index);
         return;
       }
 
       // Remaining cartesian distances
-      const float zdiff = destination[Z_AXIS] - current_position[Z_AXIS],
-                  ediff = destination[E_AXIS] - current_position[E_AXIS];
+      const float zdiff = tool.destination[Z_AXIS] - tool.position[Z_AXIS],
+                  ediff = tool.destination[E_AXIS] - tool.position[E_AXIS];
 
       // Get the linear distance in XYZ
       // If the move is very short, check the E move distance
@@ -747,7 +747,7 @@ void clean_up_after_endstop_or_probe_move() {
 
       // Get the raw current position as starting point
       float raw[XYZE];
-      COPY(raw, current_position);
+      COPY(raw, tool.position);
 
       // Calculate and execute the segments
       while (--segments) {
@@ -758,7 +758,7 @@ void clean_up_after_endstop_or_probe_move() {
           idle();
         }
         LOOP_XYZE(i) raw[i] += segment_distance[i];
-        if (!planner.buffer_line(raw, fr_mm_s, active_extruder, cartesian_segment_mm
+        if (!planner.buffer_line(raw, fr_mm_s, tool.index, cartesian_segment_mm
           #if ENABLED(SCARA_FEEDRATE_SCALING)
             , inv_duration
           #endif
@@ -768,7 +768,7 @@ void clean_up_after_endstop_or_probe_move() {
 
       // Since segment_distance is only approximate,
       // the final move must be to the exact destination.
-      planner.buffer_line(destination, fr_mm_s, active_extruder, cartesian_segment_mm
+      planner.buffer_line(tool.destination, fr_mm_s, tool.index, cartesian_segment_mm
         #if ENABLED(SCARA_FEEDRATE_SCALING)
           , inv_duration
         #endif
@@ -783,23 +783,23 @@ void clean_up_after_endstop_or_probe_move() {
    * When a mesh-based leveling system is active, moves are segmented
    * according to the configuration of the leveling system.
    *
-   * Returns true if current_position[] was set to destination[]
+   * Returns true if tool.position[] was set to tool.destination[]
    */
   inline bool prepare_move_to_destination_cartesian() {
     #if HAS_MESH
-      if (planner.leveling_active && planner.leveling_active_at_z(destination[Z_AXIS])) {
+      if (planner.leveling_active && planner.leveling_active_at_z(tool.destination[Z_AXIS])) {
         #if ENABLED(AUTO_BED_LEVELING_UBL)
-          ubl.line_to_destination_cartesian(MMS_SCALED(feedrate_mm_s), active_extruder);  // UBL's motion routine needs to know about
+          ubl.line_to_destination_cartesian(MMS_SCALED(feedrate_mm_s), tool.index);  // UBL's motion routine needs to know about
           return true;                                                                    // all moves, including Z-only moves.
         #elif ENABLED(SEGMENT_LEVELED_MOVES)
           segmented_line_to_destination(MMS_SCALED(feedrate_mm_s));
-          return false; // caller will update current_position
+          return false; // caller will update tool.position
         #else
           /**
            * For MBL and ABL-BILINEAR only segment moves when X or Y are involved.
            * Otherwise fall through to do a direct single move.
            */
-          if (current_position[X_AXIS] != destination[X_AXIS] || current_position[Y_AXIS] != destination[Y_AXIS]) {
+          if (tool.position[X_AXIS] != tool.destination[X_AXIS] || tool.position[Y_AXIS] != tool.destination[Y_AXIS]) {
             #if ENABLED(MESH_BED_LEVELING)
               mbl.line_to_destination(MMS_SCALED(feedrate_mm_s));
             #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
@@ -812,7 +812,7 @@ void clean_up_after_endstop_or_probe_move() {
     #endif // HAS_MESH
 
     buffer_line_to_destination(MMS_SCALED(feedrate_mm_s));
-    return false; // caller will update current_position
+    return false; // caller will update tool.position
   }
 
 #endif // !IS_KINEMATIC
@@ -843,13 +843,13 @@ void clean_up_after_endstop_or_probe_move() {
        * This allows soft recalibration of the second extruder home position
        * without firmware reflash (through the M218 command).
        */
-      return hotend_offset[X_AXIS][1] > 0 ? hotend_offset[X_AXIS][1] : X2_HOME_POS;
+      return tool.offset[X_AXIS][1] > 0 ? tool.offset[X_AXIS][1] : X2_HOME_POS;
   }
 
   /**
    * Prepare a linear move in a dual X axis setup
    *
-   * Return true if current_position[] was set to destination[]
+   * Return true if tool.position[] was set to destination[]
    */
   inline bool dual_x_carriage_unpark() {
     if (active_extruder_parked) {
@@ -857,30 +857,30 @@ void clean_up_after_endstop_or_probe_move() {
         case DXC_FULL_CONTROL_MODE:
           break;
         case DXC_AUTO_PARK_MODE:
-          if (current_position[E_AXIS] == destination[E_AXIS]) {
+          if (tool.position[E_AXIS] == tool.destination[E_AXIS]) {
             // This is a travel move (with no extrusion)
             // Skip it, but keep track of the current position
             // (so it can be used as the start of the next non-travel move)
             if (delayed_move_time != 0xFFFFFFFFUL) {
-              set_current_from_destination();
-              NOLESS(raised_parked_position[Z_AXIS], destination[Z_AXIS]);
+              tool.set_position_from_destination();
+              NOLESS(raised_parked_position[Z_AXIS], tool.destination[Z_AXIS]);
               delayed_move_time = millis();
               return true;
             }
           }
           // unpark extruder: 1) raise, 2) move into starting XY position, 3) lower
 
-            #define CUR_X    current_position[X_AXIS]
-            #define CUR_Y    current_position[Y_AXIS]
-            #define CUR_Z    current_position[Z_AXIS]
-            #define CUR_E    current_position[E_AXIS]
+            #define CUR_X    tool.position[X_AXIS]
+            #define CUR_Y    tool.position[Y_AXIS]
+            #define CUR_Z    tool.position[Z_AXIS]
+            #define CUR_E    tool.position[E_AXIS]
             #define RAISED_X raised_parked_position[X_AXIS]
             #define RAISED_Y raised_parked_position[Y_AXIS]
             #define RAISED_Z raised_parked_position[Z_AXIS]
 
-            if (  planner.buffer_line(RAISED_X, RAISED_Y, RAISED_Z, CUR_E, planner.settings.max_feedrate_mm_s[Z_AXIS], active_extruder))
-              if (planner.buffer_line(   CUR_X,    CUR_Y, RAISED_Z, CUR_E, PLANNER_XY_FEEDRATE(),             active_extruder))
-                  planner.buffer_line(   CUR_X,    CUR_Y,    CUR_Z, CUR_E, planner.settings.max_feedrate_mm_s[Z_AXIS], active_extruder);
+            if (  planner.buffer_line(RAISED_X, RAISED_Y, RAISED_Z, CUR_E, planner.settings.max_feedrate_mm_s[Z_AXIS], tool.index))
+              if (planner.buffer_line(   CUR_X,    CUR_Y, RAISED_Z, CUR_E, PLANNER_XY_FEEDRATE(),             tool.index))
+                  planner.buffer_line(   CUR_X,    CUR_Y,    CUR_Z, CUR_E, planner.settings.max_feedrate_mm_s[Z_AXIS], tool.index);
           delayed_move_time = 0;
           active_extruder_parked = false;
           #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -889,19 +889,19 @@ void clean_up_after_endstop_or_probe_move() {
           break;
         case DXC_SCALED_DUPLICATION_MODE:
         case DXC_DUPLICATION_MODE:
-          if (active_extruder == 0) {
+          if (tool.index == 0) {
             #if ENABLED(DEBUG_LEVELING_FEATURE)
               if (DEBUGGING(LEVELING)) {
                 SERIAL_ECHOPAIR("Set planner X", inactive_extruder_x_pos);
-                SERIAL_ECHOLNPAIR(" ... Line to X", current_position[X_AXIS] + duplicate_extruder_x_offset);
+                SERIAL_ECHOLNPAIR(" ... Line to X", tool.position[X_AXIS] + duplicate_extruder_x_offset);
               }
             #endif
             // move duplicate extruder into correct duplication position.
-            planner.set_position_mm(inactive_extruder_x_pos, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+            planner.set_position_mm(inactive_extruder_x_pos, tool.position[Y_AXIS], tool.position[Z_AXIS], tool.position[E_AXIS]);
 
             if (!planner.buffer_line(
-                dual_x_carriage_mode == DXC_DUPLICATION_MODE ? duplicate_extruder_x_offset + current_position[X_AXIS] : inactive_extruder_x_pos,
-                current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS],
+                dual_x_carriage_mode == DXC_DUPLICATION_MODE ? duplicate_extruder_x_offset + tool.position[X_AXIS] : inactive_extruder_x_pos,
+                tool.position[Y_AXIS], tool.position[Z_AXIS], tool.position[E_AXIS],
                 planner.settings.max_feedrate_mm_s[X_AXIS], 1
               )
             ) break;
@@ -933,25 +933,25 @@ void clean_up_after_endstop_or_probe_move() {
  * This may result in several calls to planner.buffer_line to
  * do smaller moves for DELTA, SCARA, mesh moves, etc.
  *
- * Make sure current_position[E] and destination[E] are good
+ * Make sure tool.position[E] and destination[E] are good
  * before calling or cold/lengthy extrusion may get missed.
  */
 void prepare_move_to_destination() {
-  clamp_to_software_endstops(destination);
+  clamp_to_software_endstops(tool.destination);
 
   #if ENABLED(PREVENT_COLD_EXTRUSION) || ENABLED(PREVENT_LENGTHY_EXTRUDE)
 
     if (!DEBUGGING(DRYRUN)) {
-      if (destination[E_AXIS] != current_position[E_AXIS]) {
+      if (tool.destination[E_AXIS] != tool.position[E_AXIS]) {
         #if ENABLED(PREVENT_COLD_EXTRUSION)
-          if (thermalManager.tooColdToExtrude(active_extruder)) {
-            current_position[E_AXIS] = destination[E_AXIS]; // Behave as if the move really took place, but ignore E part
+          if (thermalManager.tooColdToExtrude(tool.index)) {
+            tool.position[E_AXIS] = tool.destination[E_AXIS]; // Behave as if the move really took place, but ignore E part
             SERIAL_ECHO_MSG(MSG_ERR_COLD_EXTRUDE_STOP);
           }
         #endif // PREVENT_COLD_EXTRUSION
         #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
-          if (ABS(destination[E_AXIS] - current_position[E_AXIS]) * planner.e_factor[active_extruder] > (EXTRUDE_MAXLENGTH)) {
-            current_position[E_AXIS] = destination[E_AXIS]; // Behave as if the move really took place, but ignore E part
+          if (ABS(tool.destination[E_AXIS] - tool.position[E_AXIS]) * planner.e_factor[tool.index] > (EXTRUDE_MAXLENGTH)) {
+            tool.position[E_AXIS] = tool.destination[E_AXIS]; // Behave as if the move really took place, but ignore E part
             SERIAL_ECHO_MSG(MSG_ERR_LONG_EXTRUDE_STOP);
           }
         #endif // PREVENT_LENGTHY_EXTRUDE
@@ -966,20 +966,20 @@ void prepare_move_to_destination() {
 
   if (
     #if UBL_SEGMENTED
-      //ubl.prepare_segmented_line_to(destination, MMS_SCALED(feedrate_mm_s))   // This doesn't seem to work correctly on UBL.
+      //ubl.prepare_segmented_line_to(tool.destination, MMS_SCALED(feedrate_mm_s))   // This doesn't seem to work correctly on UBL.
       #if IS_KINEMATIC                                                          // Use Kinematic / Cartesian cases as a workaround for now.
-        ubl.prepare_segmented_line_to(destination, MMS_SCALED(feedrate_mm_s))
+        ubl.prepare_segmented_line_to(tool.destination, MMS_SCALED(feedrate_mm_s))
       #else
         prepare_move_to_destination_cartesian()
       #endif
     #elif IS_KINEMATIC
-      prepare_kinematic_move_to(destination)
+      prepare_kinematic_move_to(tool.destination)
     #else
       prepare_move_to_destination_cartesian()
     #endif
   ) return;
 
-  set_current_from_destination();
+  tool.set_position_from_destination();
 }
 
 #if HAS_AXIS_UNHOMED_ERR
@@ -1166,7 +1166,7 @@ void do_homing_move(const AxisEnum axis, const float distance, const float fr_mm
   // Only do some things when moving towards an endstop
   const int8_t axis_home_dir =
     #if ENABLED(DUAL_X_CARRIAGE)
-      (axis == X_AXIS) ? x_home_dir(active_extruder) :
+      (axis == X_AXIS) ? x_home_dir(tool.index) :
     #endif
     home_dir(axis);
   const bool is_home_dir = (axis_home_dir > 0) == (distance > 0);
@@ -1189,10 +1189,10 @@ void do_homing_move(const AxisEnum axis, const float distance, const float fr_mm
 
   #if IS_SCARA
     // Tell the planner the axis is at 0
-    current_position[axis] = 0;
+    tool.position[axis] = 0;
     sync_plan_position();
-    current_position[axis] = distance;
-    planner.buffer_line(current_position, fr_mm_s ? fr_mm_s : homing_feedrate(axis), active_extruder);
+    tool.position[axis] = distance;
+    planner.buffer_line(tool.position, fr_mm_s ? fr_mm_s : homing_feedrate(axis), tool.index);
   #else
     float target[ABCE] = { planner.get_axis_position_mm(A_AXIS), planner.get_axis_position_mm(B_AXIS), planner.get_axis_position_mm(C_AXIS), planner.get_axis_position_mm(E_AXIS) };
     target[axis] = 0;
@@ -1208,7 +1208,7 @@ void do_homing_move(const AxisEnum axis, const float distance, const float fr_mm
       #if IS_KINEMATIC && ENABLED(JUNCTION_DEVIATION)
         , delta_mm_cart
       #endif
-      , fr_mm_s ? fr_mm_s : homing_feedrate(axis), active_extruder
+      , fr_mm_s ? fr_mm_s : homing_feedrate(axis), tool.index
     );
   #endif
 
@@ -1244,13 +1244,13 @@ void do_homing_move(const AxisEnum axis, const float distance, const float fr_mm
  * individual axis has been homed.
  *
  * DELTA should wait until all homing is done before setting the XYZ
- * current_position to home, because homing is a single operation.
+ * tool.position to home, because homing is a single operation.
  * In the case where the axis positions are already known and previously
  * homed, DELTA could home to X or Y individually by moving either one
  * to the center. However, homing Z always homes XY and Z.
  *
  * SCARA should wait until all XY homing is done before setting the XY
- * current_position to home, because neither X nor Y is at home until
+ * tool.position to home, because neither X nor Y is at home until
  * both are at home. Z can however be homed individually.
  *
  * Callers must sync the planner position after calling this!
@@ -1273,8 +1273,8 @@ void set_axis_is_at_home(const AxisEnum axis) {
   #endif
 
   #if ENABLED(DUAL_X_CARRIAGE)
-    if (axis == X_AXIS && (active_extruder == 1 || dual_x_carriage_mode == DXC_DUPLICATION_MODE)) {
-      current_position[X_AXIS] = x_home_pos(active_extruder);
+    if (axis == X_AXIS && (tool.index == 1 || dual_x_carriage_mode == DXC_DUPLICATION_MODE)) {
+      tool.position[X_AXIS] = x_home_pos(tool.index);
       return;
     }
   #endif
@@ -1282,13 +1282,13 @@ void set_axis_is_at_home(const AxisEnum axis) {
   #if ENABLED(MORGAN_SCARA)
     scara_set_axis_is_at_home(axis);
   #elif ENABLED(DELTA)
-    current_position[axis] = (axis == Z_AXIS ? delta_height
+    tool.position[axis] = (axis == Z_AXIS ? delta_height
     #if HAS_BED_PROBE
       - zprobe_zoffset
     #endif
     : base_home_pos(axis));
   #else
-    current_position[axis] = base_home_pos(axis);
+    tool.position[axis] = base_home_pos(axis);
   #endif
 
   /**
@@ -1298,7 +1298,7 @@ void set_axis_is_at_home(const AxisEnum axis) {
     if (axis == Z_AXIS) {
       #if HOMING_Z_WITH_PROBE
 
-        current_position[Z_AXIS] -= zprobe_zoffset;
+        tool.position[Z_AXIS] -= zprobe_zoffset;
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
           if (DEBUGGING(LEVELING)) {
@@ -1321,7 +1321,7 @@ void set_axis_is_at_home(const AxisEnum axis) {
         SERIAL_ECHOPAIR("> home_offset[", axis_codes[axis]);
         SERIAL_ECHOLNPAIR("] = ", home_offset[axis]);
       #endif
-      DEBUG_POS("", current_position);
+      DEBUG_POS("", tool.position);
       SERIAL_ECHOPAIR("<<< set_axis_is_at_home(", axis_codes[axis]);
       SERIAL_CHAR(')');
       SERIAL_EOL();
@@ -1393,7 +1393,7 @@ void homeaxis(const AxisEnum axis) {
 
   const int axis_home_dir = (
     #if ENABLED(DUAL_X_CARRIAGE)
-      axis == X_AXIS ? x_home_dir(active_extruder) :
+      axis == X_AXIS ? x_home_dir(tool.index) :
     #endif
     home_dir(axis)
   );
@@ -1604,10 +1604,10 @@ void homeaxis(const AxisEnum axis) {
     set_axis_is_at_home(axis);
     sync_plan_position();
 
-    destination[axis] = current_position[axis];
+    tool.destination[axis] = tool.position[axis];
 
     #if ENABLED(DEBUG_LEVELING_FEATURE)
-      if (DEBUGGING(LEVELING)) DEBUG_POS("> AFTER set_axis_is_at_home", current_position);
+      if (DEBUGGING(LEVELING)) DEBUG_POS("> AFTER set_axis_is_at_home", tool.position);
     #endif
 
   #endif

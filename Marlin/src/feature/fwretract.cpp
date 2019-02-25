@@ -99,14 +99,14 @@ void FWRetract::retract(const bool retracting
   #endif
 ) {
   // Prevent two retracts or recovers in a row
-  if (retracted[active_extruder] == retracting) return;
+  if (retracted[tool.index] == retracting) return;
 
   // Prevent two swap-retract or recovers in a row
   #if EXTRUDERS > 1
     // Allow G10 S1 only after G10
-    if (swapping && retracted_swap[active_extruder] == retracting) return;
+    if (swapping && retracted_swap[tool.index] == retracting) return;
     // G11 priority to recover the long retract if activated
-    if (!retracting) swapping = retracted_swap[active_extruder];
+    if (!retracting) swapping = retracted_swap[tool.index];
   #else
     constexpr bool swapping = false;
   #endif
@@ -114,7 +114,7 @@ void FWRetract::retract(const bool retracting
   /* // debugging
     SERIAL_ECHOLNPAIR("retracting ", retracting);
     SERIAL_ECHOLNPAIR("swapping ", swapping);
-    SERIAL_ECHOLNPAIR("active extruder ", active_extruder);
+    SERIAL_ECHOLNPAIR("active tool ", tool.index);
     for (uint8_t i = 0; i < EXTRUDERS; ++i) {
       SERIAL_ECHOPAIR("retracted[", i);
       SERIAL_ECHOLNPAIR("] ", retracted[i]);
@@ -123,13 +123,13 @@ void FWRetract::retract(const bool retracting
         SERIAL_ECHOLNPAIR("] ", retracted_swap[i]);
       #endif
     }
-    SERIAL_ECHOLNPAIR("current_position[z] ", current_position[Z_AXIS]);
-    SERIAL_ECHOLNPAIR("current_position[e] ", current_position[E_AXIS]);
+    SERIAL_ECHOLNPAIR("tool.position[z] ", tool.position[Z_AXIS]);
+    SERIAL_ECHOLNPAIR("tool.position[e] ", tool.position[E_AXIS]);
     SERIAL_ECHOLNPAIR("current_hop ", current_hop);
   //*/
 
   const float old_feedrate_mm_s = feedrate_mm_s,
-              unscale_e = RECIPROCAL(planner.e_factor[active_extruder]),
+              unscale_e = RECIPROCAL(planner.e_factor[tool.index]),
               unscale_fr = 100.0 / feedrate_percentage, // Disable feedrate scaling for retract moves
               base_retract = (
                 (swapping ? settings.swap_retract_length : settings.retract_length)
@@ -139,7 +139,7 @@ void FWRetract::retract(const bool retracting
               );
 
   // The current position will be the destination for E and Z moves
-  set_destination_from_current();
+  tool.sync_destination();
 
   #if ENABLED(RETRACT_SYNC_MIXING)
     const uint8_t old_mixing_tool = mixer.get_current_vtool();
@@ -154,7 +154,7 @@ void FWRetract::retract(const bool retracting
         * (MIXING_STEPPERS)
       #endif
     );
-    current_retract[active_extruder] = base_retract * unscale_e;
+    current_retract[tool.index] = base_retract * unscale_e;
     prepare_move_to_destination();                        // set_current_to_destination
     planner.synchronize();                                // Wait for move to complete
 
@@ -177,11 +177,11 @@ void FWRetract::retract(const bool retracting
 
     const float extra_recover = swapping ? settings.swap_retract_recover_length : settings.retract_recover_length;
     if (extra_recover != 0.0) {
-      current_position[E_AXIS] -= extra_recover;          // Adjust the current E position by the extra amount to recover
+      tool.position[E_AXIS] -= extra_recover;          // Adjust the current E position by the extra amount to recover
       sync_plan_position_e();                             // Sync the planner position so the extra amount is recovered
     }
 
-    current_retract[active_extruder] = 0.0;
+    current_retract[tool.index] = 0.0;
     feedrate_mm_s = (
       (swapping ? settings.swap_retract_recover_feedrate_mm_s : settings.retract_recover_feedrate_mm_s) * unscale_fr
       #if ENABLED(RETRACT_SYNC_MIXING)
@@ -197,17 +197,17 @@ void FWRetract::retract(const bool retracting
   #endif
 
   feedrate_mm_s = old_feedrate_mm_s;                      // Restore original feedrate
-  retracted[active_extruder] = retracting;                // Active extruder now retracted / recovered
+  retracted[tool.index] = retracting;                // Active extruder now retracted / recovered
 
   // If swap retract/recover update the retracted_swap flag too
   #if EXTRUDERS > 1
-    if (swapping) retracted_swap[active_extruder] = retracting;
+    if (swapping) retracted_swap[tool.index] = retracting;
   #endif
 
   /* // debugging
     SERIAL_ECHOLNPAIR("retracting ", retracting);
     SERIAL_ECHOLNPAIR("swapping ", swapping);
-    SERIAL_ECHOLNPAIR("active_extruder ", active_extruder);
+    SERIAL_ECHOLNPAIR("tool.index ", tool.index);
     for (uint8_t i = 0; i < EXTRUDERS; ++i) {
       SERIAL_ECHOPAIR("retracted[", i);
       SERIAL_ECHOLNPAIR("] ", retracted[i]);
@@ -216,8 +216,8 @@ void FWRetract::retract(const bool retracting
         SERIAL_ECHOLNPAIR("] ", retracted_swap[i]);
       #endif
     }
-    SERIAL_ECHOLNPAIR("current_position[z] ", current_position[Z_AXIS]);
-    SERIAL_ECHOLNPAIR("current_position[e] ", current_position[E_AXIS]);
+    SERIAL_ECHOLNPAIR("tool.position[z] ", tool.position[Z_AXIS]);
+    SERIAL_ECHOLNPAIR("tool.position[e] ", tool.position[E_AXIS]);
     SERIAL_ECHOLNPAIR("current_hop ", current_hop);
   //*/
 }

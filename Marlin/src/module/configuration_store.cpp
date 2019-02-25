@@ -130,7 +130,7 @@ typedef struct SettingsDataStruct {
   float home_offset[XYZ];                               // M206 XYZ / M665 TPZ
 
   #if HAS_HOTEND_OFFSET
-    float hotend_offset[XYZ][HOTENDS - 1];              // M218 XYZ
+    float tool.offset[XYZ][HOTENDS - 1];              // M218 XYZ
   #endif
 
   //
@@ -296,7 +296,7 @@ uint16_t MarlinSettings::datasize() { return sizeof(SettingsData); }
 #endif
 
 void MarlinSettings::postprocess() {
-  const float oldpos[XYZE] = { current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS] };
+  const float oldpos[XYZE] = { tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS], tool.position[E_AXIS] };
 
   // steps per s2 needs to be updated to agree with units per s2
   planner.reset_acceleration_rates();
@@ -345,11 +345,11 @@ void MarlinSettings::postprocess() {
   #endif
 
   // Refresh steps_to_mm with the reciprocal of axis_steps_per_mm
-  // and init stepper.count[], planner.position[] with current_position
+  // and init stepper.count[], planner.position[] with tool.position
   planner.refresh_positioning();
 
   // Various factors can change the current position
-  if (memcmp(oldpos, current_position, sizeof(oldpos)))
+  if (memcmp(oldpos, tool.position, sizeof(oldpos)))
     report_current_position();
 }
 
@@ -510,7 +510,7 @@ void MarlinSettings::postprocess() {
       #if HAS_HOTEND_OFFSET
         // Skip hotend 0 which must be 0
         for (uint8_t e = 1; e < HOTENDS; e++)
-          LOOP_XYZ(i) EEPROM_WRITE(hotend_offset[i][e]);
+          LOOP_XYZ(i) EEPROM_WRITE(tool.offset[i][e]);
       #endif
     }
 
@@ -1235,7 +1235,7 @@ void MarlinSettings::postprocess() {
         #if HAS_HOTEND_OFFSET
           // Skip hotend 0 which must be 0
           for (uint8_t e = 1; e < HOTENDS; e++)
-            LOOP_XYZ(i) EEPROM_READ(hotend_offset[i][e]);
+            LOOP_XYZ(i) EEPROM_READ(tool.offset[i][e]);
         #endif
       }
 
@@ -2055,9 +2055,9 @@ void MarlinSettings::reset() {
       tmp4[X_AXIS][0] == 0 && tmp4[Y_AXIS][0] == 0 && tmp4[Z_AXIS][0] == 0,
       "Offsets for the first hotend must be 0.0."
     );
-    LOOP_XYZ(i) HOTEND_LOOP() hotend_offset[i][e] = tmp4[i][e];
+    LOOP_XYZ(i) HOTEND_LOOP() tool.offset[i][e] = tmp4[i][e];
     #if ENABLED(DUAL_X_CARRIAGE)
-      hotend_offset[X_AXIS][1] = MAX(X2_HOME_POS, X2_MAX_POS);
+      tool.offset[X_AXIS][1] = MAX(X2_HOME_POS, X2_MAX_POS);
     #endif
   #endif
 
@@ -2533,9 +2533,9 @@ void MarlinSettings::reset() {
       CONFIG_ECHO_START();
       for (uint8_t e = 1; e < HOTENDS; e++) {
         SERIAL_ECHOPAIR("  M218 T", (int)e);
-        SERIAL_ECHOPAIR(" X", LINEAR_UNIT(hotend_offset[X_AXIS][e]));
-        SERIAL_ECHOPAIR(" Y", LINEAR_UNIT(hotend_offset[Y_AXIS][e]));
-        SERIAL_ECHOLNPAIR_F(" Z", LINEAR_UNIT(hotend_offset[Z_AXIS][e]), 3);
+        SERIAL_ECHOPAIR(" X", LINEAR_UNIT(tool.offset[X_AXIS][e]));
+        SERIAL_ECHOPAIR(" Y", LINEAR_UNIT(tool.offset[Y_AXIS][e]));
+        SERIAL_ECHOLNPAIR_F(" Z", LINEAR_UNIT(tool.offset[Z_AXIS][e]), 3);
       }
     #endif
 

@@ -38,7 +38,7 @@
   FORCE_INLINE void mod_zprobe_zoffset(const float &offs) {
     if (true
       #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
-        && active_extruder == 0
+        && tool.index == 0
       #endif
     ) {
       zprobe_zoffset += offs;
@@ -47,9 +47,9 @@
     }
     #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
       else {
-        hotend_offset[Z_AXIS][active_extruder] -= offs;
+        tool.offset[Z_AXIS][tool.index] -= offs;
         SERIAL_ECHO_START();
-        SERIAL_ECHOLNPAIR(MSG_IDEX_Z_OFFSET ": ", hotend_offset[Z_AXIS][active_extruder]);
+        SERIAL_ECHOLNPAIR(MSG_IDEX_Z_OFFSET ": ", tool.offset[Z_AXIS][tool.index]);
       }
     #endif
   }

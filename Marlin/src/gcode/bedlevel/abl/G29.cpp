@@ -159,7 +159,7 @@ G29_TYPE GcodeSuite::G29() {
     const uint8_t old_debug_flags = marlin_debug_flags;
     if (seenQ) marlin_debug_flags |= MARLIN_DEBUG_LEVELING;
     if (DEBUGGING(LEVELING)) {
-      DEBUG_POS(">>> G29", current_position);
+      DEBUG_POS(">>> G29", tool.position);
       log_machine_info();
     }
     marlin_debug_flags = old_debug_flags;
@@ -279,7 +279,7 @@ G29_TYPE GcodeSuite::G29() {
   if (!g29_in_progress) {
 
     #if ENABLED(DUAL_X_CARRIAGE)
-      if (active_extruder != 0) tool_change(0);
+      if (tool.index != 0) tool_change(0);
     #endif
 
     #if ENABLED(PROBE_MANUALLY) || ENABLED(AUTO_BED_LEVELING_LINEAR)
@@ -297,7 +297,7 @@ G29_TYPE GcodeSuite::G29() {
           G29_RETURN(false);
         }
 
-        const float rz = parser.seenval('Z') ? RAW_Z_POSITION(parser.value_linear_units()) : current_position[Z_AXIS];
+        const float rz = parser.seenval('Z') ? RAW_Z_POSITION(parser.value_linear_units()) : tool.position[Z_AXIS];
         if (!WITHIN(rz, -10, 10)) {
           SERIAL_ERROR_MSG("Bad Z value");
           G29_RETURN(false);
@@ -529,7 +529,7 @@ G29_TYPE GcodeSuite::G29() {
 
       // For G29 after adjusting Z.
       // Save the previous Z before going to the next point
-      measured_z = current_position[Z_AXIS];
+      measured_z = tool.position[Z_AXIS];
 
       #if ENABLED(AUTO_BED_LEVELING_LINEAR)
 
@@ -782,7 +782,7 @@ G29_TYPE GcodeSuite::G29() {
   //
 
   #if ENABLED(DEBUG_LEVELING_FEATURE)
-    if (DEBUGGING(LEVELING)) DEBUG_POS("> probing complete", current_position);
+    if (DEBUGGING(LEVELING)) DEBUG_POS("> probing complete", tool.position);
   #endif
 
   #if ENABLED(PROBE_MANUALLY)
@@ -921,21 +921,21 @@ G29_TYPE GcodeSuite::G29() {
         //
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
-          if (DEBUGGING(LEVELING)) DEBUG_POS("G29 uncorrected XYZ", current_position);
+          if (DEBUGGING(LEVELING)) DEBUG_POS("G29 uncorrected XYZ", tool.position);
         #endif
 
         float converted[XYZ];
-        COPY(converted, current_position);
+        COPY(converted, tool.position);
 
         planner.leveling_active = true;
         planner.unapply_leveling(converted); // use conversion machinery
         planner.leveling_active = false;
 
         // Use the last measured distance to the bed, if possible
-        if ( NEAR(current_position[X_AXIS], xProbe - (X_PROBE_OFFSET_FROM_EXTRUDER))
-          && NEAR(current_position[Y_AXIS], yProbe - (Y_PROBE_OFFSET_FROM_EXTRUDER))
+        if ( NEAR(tool.position[X_AXIS], xProbe - (X_PROBE_OFFSET_FROM_EXTRUDER))
+          && NEAR(tool.position[Y_AXIS], yProbe - (Y_PROBE_OFFSET_FROM_EXTRUDER))
         ) {
-          const float simple_z = current_position[Z_AXIS] - measured_z;
+          const float simple_z = tool.position[Z_AXIS] - measured_z;
           #if ENABLED(DEBUG_LEVELING_FEATURE)
             if (DEBUGGING(LEVELING)) {
               SERIAL_ECHOPAIR("Z from Probe:", simple_z);
@@ -946,11 +946,11 @@ G29_TYPE GcodeSuite::G29() {
           converted[Z_AXIS] = simple_z;
         }
 
-        // The rotated XY and corrected Z are now current_position
-        COPY(current_position, converted);
+        // The rotated XY and corrected Z are now tool.position
+        COPY(tool.position, converted);
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
-          if (DEBUGGING(LEVELING)) DEBUG_POS("G29 corrected XYZ", current_position);
+          if (DEBUGGING(LEVELING)) DEBUG_POS("G29 corrected XYZ", tool.position);
         #endif
       }
 
@@ -958,15 +958,15 @@ G29_TYPE GcodeSuite::G29() {
 
       if (!dryrun) {
         #if ENABLED(DEBUG_LEVELING_FEATURE)
-          if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR("G29 uncorrected Z:", current_position[Z_AXIS]);
+          if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR("G29 uncorrected Z:", tool.position[Z_AXIS]);
         #endif
 
         // Unapply the offset because it is going to be immediately applied
         // and cause compensation movement in Z
-        current_position[Z_AXIS] -= bilinear_z_offset(current_position);
+        tool.position[Z_AXIS] -= bilinear_z_offset(tool.position);
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
-          if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR(" corrected Z:", current_position[Z_AXIS]);
+          if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR(" corrected Z:", tool.position[Z_AXIS]);
         #endif
       }
 

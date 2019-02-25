@@ -61,10 +61,10 @@ bool GcodeSuite::axis_relative_modes[] = AXIS_RELATIVE_MODES;
 #endif
 
 /**
- * Get the target extruder from the T parameter or the active_extruder
+ * Get the target extruder from the T parameter or the tool.index
  * Return -1 if the T parameter is out of range
  */
-int8_t GcodeSuite::get_target_extruder_from_command() {
+int8_t GcodeSuite::get_target_tool_from_command() {
   if (parser.seenval('T')) {
     const int8_t e = parser.value_byte();
     if (e >= EXTRUDERS) {
@@ -75,7 +75,7 @@ int8_t GcodeSuite::get_target_extruder_from_command() {
     }
     return e;
   }
-  return active_extruder;
+  return tool.index;
 }
 
 /**
@@ -89,12 +89,12 @@ void GcodeSuite::get_destination_from_command() {
   LOOP_XYZE(i) {
     if (parser.seen(axis_codes[i])) {
       const float v = parser.value_axis_units((AxisEnum)i);
-      destination[i] = (axis_relative_modes[i] || relative_mode)
-        ? current_position[i] + v
+      tool.destination[i] = (axis_relative_modes[i] || relative_mode)
+        ? tool.position[i] + v
         : (i == E_AXIS) ? v : LOGICAL_TO_NATIVE(v, i);
     }
     else
-      destination[i] = current_position[i];
+      tool.destination[i] = tool.position[i];
   }
 
   if (parser.linearval('F') > 0)
@@ -102,7 +102,7 @@ void GcodeSuite::get_destination_from_command() {
 
   #if ENABLED(PRINTCOUNTER)
     if (!DEBUGGING(DRYRUN))
-      print_job_timer.incFilamentUsed(destination[E_AXIS] - current_position[E_AXIS]);
+      print_job_timer.incFilamentUsed(tool.destination[E_AXIS] - tool.position[E_AXIS]);
   #endif
 
   // Get ABCDHI mixing factors
@@ -595,7 +595,7 @@ void GcodeSuite::process_parsed_command(
       #endif
 
       #if HAS_M206_COMMAND
-        case 428: M428(); break;                                  // M428: Apply current_position to home_offset
+        case 428: M428(); break;                                  // M428: Apply tool.position to home_offset
       #endif
 
       case 500: M500(); break;                                    // M500: Store settings in EEPROM

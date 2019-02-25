@@ -160,7 +160,7 @@ int16_t Temperature::current_temperature_raw[HOTENDS], // = { 0 }
     NOMORE(speed, 255U);
 
     #if ENABLED(SINGLENOZZLE)
-      if (target != active_extruder) {
+      if (target != tool.index) {
         if (target < EXTRUDERS) singlenozzle_fan_speed[target] = speed;
         return;
       }
@@ -502,7 +502,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
       // Report heater states every 2 seconds
       if (ELAPSED(ms, next_temp_ms)) {
         #if HAS_TEMP_SENSOR
-          print_heater_states(heater >= 0 ? heater : active_extruder);
+          print_heater_states(heater >= 0 ? heater : tool.index);
           SERIAL_EOL();
         #endif
         next_temp_ms = ms + 2000UL;
@@ -706,7 +706,7 @@ float Temperature::get_pid_output(const int8_t e) {
     UNUSED(e);
     #define _HOTEND_TEST true
   #else
-    #define _HOTEND_TEST (e == active_extruder)
+    #define _HOTEND_TEST (e == tool.index)
   #endif
   float pid_output;
   #if ENABLED(PIDTEMP)
@@ -2586,7 +2586,7 @@ void Temperature::isr() {
     void Temperature::auto_report_temperatures() {
       if (auto_report_temp_interval && ELAPSED(millis(), next_temp_report_ms)) {
         next_temp_report_ms = millis() + 1000UL * auto_report_temp_interval;
-        print_heater_states(active_extruder);
+        print_heater_states(tool.index);
         SERIAL_EOL();
       }
     }
@@ -2628,7 +2628,7 @@ void Temperature::isr() {
       #endif
 
       #if DISABLED(BUSY_WHILE_HEATING) && ENABLED(HOST_KEEPALIVE_FEATURE)
-        const GcodeSuite::MarlinBusyState old_busy_state = gcode.busy_state;
+        REMEMBER(busy, gcode.busy_state);
         KEEPALIVE_STATE(NOT_BUSY);
       #endif
 
@@ -2717,10 +2717,6 @@ void Temperature::isr() {
         #endif
       }
 
-      #if DISABLED(BUSY_WHILE_HEATING) && ENABLED(HOST_KEEPALIVE_FEATURE)
-        gcode.busy_state = old_busy_state;
-      #endif
-
       return wait_for_heatup;
     }
 
@@ -2755,7 +2751,7 @@ void Temperature::isr() {
       millis_t now, next_temp_ms = 0, next_cool_check_ms = 0;
 
       #if DISABLED(BUSY_WHILE_HEATING) && ENABLED(HOST_KEEPALIVE_FEATURE)
-        const GcodeSuite::MarlinBusyState old_busy_state = gcode.busy_state;
+        REMEMBER(busy, gcode.busy_state);
         KEEPALIVE_STATE(NOT_BUSY);
       #endif
 
@@ -2777,7 +2773,7 @@ void Temperature::isr() {
         now = millis();
         if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
           next_temp_ms = now + 1000UL;
-          print_heater_states(active_extruder);
+          print_heater_states(tool.index);
           #if TEMP_BED_RESIDENCY_TIME > 0
             SERIAL_ECHOPGM(" W:");
             if (residency_start_ms)
@@ -2834,10 +2830,6 @@ void Temperature::isr() {
       } while (wait_for_heatup && TEMP_BED_CONDITIONS);
 
       if (wait_for_heatup) ui.reset_status();
-
-      #if DISABLED(BUSY_WHILE_HEATING) && ENABLED(HOST_KEEPALIVE_FEATURE)
-        gcode.busy_state = old_busy_state;
-      #endif
 
       return wait_for_heatup;
     }

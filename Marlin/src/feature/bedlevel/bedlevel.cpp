@@ -83,14 +83,14 @@ void set_bed_leveling_enabled(const bool enable/*=true*/) {
     #endif
 
     if (planner.leveling_active) {      // leveling from on to off
-      // change unleveled current_position to physical current_position without moving steppers.
-      planner.apply_leveling(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]);
+      // change unleveled tool.position to physical tool.position without moving steppers.
+      planner.apply_leveling(tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS]);
       planner.leveling_active = false;  // disable only AFTER calling apply_leveling
     }
     else {                              // leveling from off to on
       planner.leveling_active = true;   // enable BEFORE calling unapply_leveling, otherwise ignored
-      // change physical current_position to unleveled current_position without moving steppers.
-      planner.unapply_leveling(current_position);
+      // change physical tool.position to unleveled tool.position without moving steppers.
+      planner.unapply_leveling(tool.position);
     }
 
     sync_plan_position();
@@ -109,9 +109,9 @@ void set_bed_leveling_enabled(const bool enable/*=true*/) {
     planner.set_z_fade_height(zfh);
 
     if (leveling_was_active) {
-      const float oldpos[] = { current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] };
+      const float oldpos[] = { tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS] };
       set_bed_leveling_enabled(true);
-      if (do_report && memcmp(oldpos, current_position, sizeof(oldpos)))
+      if (do_report && memcmp(oldpos, tool.position, sizeof(oldpos)))
         report_current_position();
     }
   }
@@ -222,15 +222,15 @@ void reset_bed_level() {
         do_blocking_move_to(rx, ry, MAX(0,MANUAL_PROBE_START_Z));
       #endif
     #elif MANUAL_PROBE_HEIGHT > 0
-      const float prev_z = current_position[Z_AXIS];
+      const float prev_z = tool.position[Z_AXIS];
       do_blocking_move_to(rx, ry, MANUAL_PROBE_HEIGHT);
       do_blocking_move_to_z(prev_z);
     #else
       do_blocking_move_to_xy(rx, ry);
     #endif
 
-    current_position[X_AXIS] = rx;
-    current_position[Y_AXIS] = ry;
+    tool.position[X_AXIS] = rx;
+    tool.position[Y_AXIS] = ry;
 
     #if ENABLED(LCD_BED_LEVELING)
       ui.wait_for_bl_move = false;

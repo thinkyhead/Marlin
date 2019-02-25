@@ -157,7 +157,7 @@ static void say_stealth_status() {
  */
 void GcodeSuite::M569() {
   if (parser.seen('S'))
-    set_stealth_status(parser.value_bool(), get_target_extruder_from_command());
+    set_stealth_status(parser.value_bool(), get_target_tool_from_command());
   else
     say_stealth_status();
 }

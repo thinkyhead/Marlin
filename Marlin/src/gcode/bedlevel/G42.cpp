@@ -44,12 +44,12 @@ void GcodeSuite::G42() {
       return;
     }
 
-    set_destination_from_current();
-    if (hasI) destination[X_AXIS] = _GET_MESH_X(ix);
-    if (hasJ) destination[Y_AXIS] = _GET_MESH_Y(iy);
+    tool.sync_destination();
+    if (hasI) tool.destination[X_AXIS] = _GET_MESH_X(ix);
+    if (hasJ) tool.destination[Y_AXIS] = _GET_MESH_Y(iy);
     if (parser.boolval('P')) {
-      if (hasI) destination[X_AXIS] -= X_PROBE_OFFSET_FROM_EXTRUDER;
-      if (hasJ) destination[Y_AXIS] -= Y_PROBE_OFFSET_FROM_EXTRUDER;
+      if (hasI) tool.destination[X_AXIS] -= X_PROBE_OFFSET_FROM_EXTRUDER;
+      if (hasJ) tool.destination[Y_AXIS] -= Y_PROBE_OFFSET_FROM_EXTRUDER;
     }
 
     const float fval = parser.linearval('F');

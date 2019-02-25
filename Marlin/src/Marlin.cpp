@@ -331,7 +331,7 @@ void disable_all_steppers() {
     #if ENABLED(HOST_PROMPT_SUPPORT) || ENABLED(HOST_ACTION_COMMANDS)
       const char tool = '0'
         #if NUM_RUNOUT_SENSORS > 1
-          + active_extruder
+          + tool.index
         #endif
       ;
     #endif
@@ -532,13 +532,13 @@ void manage_inactivity(const bool ignore_stepper_queue/*=false*/) {
   #endif
 
   #if ENABLED(EXTRUDER_RUNOUT_PREVENT)
-    if (thermalManager.degHotend(active_extruder) > EXTRUDER_RUNOUT_MINTEMP
+    if (thermalManager.degHotend(tool.index) > EXTRUDER_RUNOUT_MINTEMP
       && ELAPSED(ms, gcode.previous_move_ms + (EXTRUDER_RUNOUT_SECONDS) * 1000UL)
       && !planner.has_blocks_queued()
     ) {
       #if ENABLED(SWITCHING_EXTRUDER)
         bool oldstatus;
-        switch (active_extruder) {
+        switch (tool.index) {
           default: oldstatus = E0_ENABLE_READ; enable_E0(); break;
           #if E_STEPPERS > 1
             case 2: case 3: oldstatus = E1_ENABLE_READ; enable_E1(); break;
@@ -549,7 +549,7 @@ void manage_inactivity(const bool ignore_stepper_queue/*=false*/) {
         }
       #else // !SWITCHING_EXTRUDER
         bool oldstatus;
-        switch (active_extruder) {
+        switch (tool.index) {
           default: oldstatus = E0_ENABLE_READ; enable_E0(); break;
           #if E_STEPPERS > 1
             case 1: oldstatus = E1_ENABLE_READ; enable_E1(); break;
@@ -569,15 +569,15 @@ void manage_inactivity(const bool ignore_stepper_queue/*=false*/) {
         }
       #endif // !SWITCHING_EXTRUDER
 
-      const float olde = current_position[E_AXIS];
-      current_position[E_AXIS] += EXTRUDER_RUNOUT_EXTRUDE;
-      planner.buffer_line(current_position, MMM_TO_MMS(EXTRUDER_RUNOUT_SPEED), active_extruder);
-      current_position[E_AXIS] = olde;
+      const float olde = tool.position[E_AXIS];
+      tool.position[E_AXIS] += EXTRUDER_RUNOUT_EXTRUDE;
+      planner.buffer_line(tool.position, MMM_TO_MMS(EXTRUDER_RUNOUT_SPEED), tool.index);
+      tool.position[E_AXIS] = olde;
       planner.set_e_position_mm(olde);
       planner.synchronize();
 
       #if ENABLED(SWITCHING_EXTRUDER)
-        switch (active_extruder) {
+        switch (tool.index) {
           default: oldstatus = E0_ENABLE_WRITE(oldstatus); break;
           #if E_STEPPERS > 1
             case 2: case 3: oldstatus = E1_ENABLE_WRITE(oldstatus); break;
@@ -587,7 +587,7 @@ void manage_inactivity(const bool ignore_stepper_queue/*=false*/) {
           #endif // E_STEPPERS > 1
         }
       #else // !SWITCHING_EXTRUDER
-        switch (active_extruder) {
+        switch (tool.index) {
           case 0: E0_ENABLE_WRITE(oldstatus); break;
           #if E_STEPPERS > 1
             case 1: E1_ENABLE_WRITE(oldstatus); break;
@@ -616,7 +616,7 @@ void manage_inactivity(const bool ignore_stepper_queue/*=false*/) {
     if (delayed_move_time && ELAPSED(ms, delayed_move_time + 1000UL) && IsRunning()) {
       // travel moves have been received so enact them
       delayed_move_time = 0xFFFFFFFFUL; // force moves to be done
-      set_destination_from_current();
+      tool.sync_destination();
       prepare_move_to_destination();
     }
   #endif
@@ -906,12 +906,12 @@ void setup() {
 
   #if HAS_M206_COMMAND
     // Initialize current position based on home_offset
-    COPY(current_position, home_offset);
+    COPY(tool.position, home_offset);
   #else
-    ZERO(current_position);
+    ZERO(tool.position);
   #endif
 
-  // Vital to init stepper/planner equivalent for current_position
+  // Vital to init stepper/planner equivalent for tool.position
   sync_plan_position();
 
   thermalManager.init();    // Initialize temperature loop

@@ -773,7 +773,7 @@ void ST7920_Lite_Status_Screen::update_indicators(const bool forceUpdate) {
 }
 
 bool ST7920_Lite_Status_Screen::position_changed() {
-  const float x_pos = current_position[X_AXIS], y_pos = current_position[Y_AXIS], z_pos = current_position[Z_AXIS];
+  const float x_pos = tool.position[X_AXIS], y_pos = tool.position[Y_AXIS], z_pos = tool.position[Z_AXIS];
   const uint8_t checksum = uint8_t(x_pos) ^ uint8_t(y_pos) ^ uint8_t(z_pos);
   static uint8_t last_checksum = 0, changed = last_checksum != checksum;
   if (changed) last_checksum = checksum;
@@ -855,7 +855,7 @@ void ST7920_Lite_Status_Screen::update_status_or_position(bool forceUpdate) {
         blink_changed()
       #endif
     )) {
-      draw_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],
+      draw_position(tool.position[X_AXIS], tool.position[Y_AXIS], tool.position[Z_AXIS],
         #if ENABLED(DISABLE_REDUCED_ACCURACY_WARNING)
           true
         #else

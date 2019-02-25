@@ -251,8 +251,8 @@ class FilamentSensorBase {
       static inline void block_completed(const block_t* const b) { UNUSED(b); }
 
       static inline void run() {
-        const bool out = poll_runout_state(active_extruder);
-        if (!out) filament_present(active_extruder);
+        const bool out = poll_runout_state(tool.index);
+        if (!out) filament_present(tool.index);
         #ifdef FILAMENT_RUNOUT_SENSOR_DEBUG
           static bool was_out = false;
           if (out != was_out) {
@@ -301,7 +301,7 @@ class FilamentSensorBase {
       }
 
       static inline bool has_run_out() {
-        return runout_mm_countdown[active_extruder] < 0;
+        return runout_mm_countdown[tool.index] < 0;
       }
 
       static inline void filament_present(const uint8_t extruder) {
