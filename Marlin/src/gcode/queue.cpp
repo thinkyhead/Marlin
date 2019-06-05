@@ -239,7 +239,7 @@ void GCodeQueue::ok_to_send() {
   #if ENABLED(ADVANCED_OK)
     char* p = buffer[index_r];
     if (*p == 'N') {
-      SERIAL_ECHO(' ');
+      SERIAL_CHAR(' ');
       SERIAL_ECHO(*p++);
       while (NUMERIC_SIGNED(*p))
         SERIAL_ECHO(*p++);

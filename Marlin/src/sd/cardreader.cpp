@@ -319,7 +319,7 @@ void CardReader::printFilename() {
     #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
       getfilename(0, dosFilename);
       if (longFilename[0]) {
-        SERIAL_ECHO(' ');
+        SERIAL_CHAR(' ');
         SERIAL_ECHO(longFilename);
       }
     #endif
