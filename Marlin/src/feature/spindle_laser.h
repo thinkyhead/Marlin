@@ -46,6 +46,7 @@
 class SpindleLaser {
 public:
   static cutter_power_t power;
+  static bool is_ramped_power;
 
   static void init();
 
