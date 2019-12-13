@@ -104,6 +104,10 @@ public:
   static bool fileExists(const char * const name);
   static void removeFile(const char * const name);
 
+  #if ENABLED(MACHINE_COMMAND_MACROS)
+    static void runMacro(const char * const path);
+  #endif
+
   static inline char* longest_filename() { return longFilename[0] ? longFilename : filename; }
   #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
     static void printLongPath(char * const path);   // Used by M33

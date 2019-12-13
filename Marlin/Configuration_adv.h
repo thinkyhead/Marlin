@@ -1367,6 +1367,10 @@
    */
   //#define SDCARD_CONNECTION LCD
 
+  // Emulate RepRapFirmware with macro files stored in /sys and /macros
+  // Provide the M98 command to run a macro file as a sub-program
+  //#define MACHINE_COMMAND_MACROS
+
 #endif // SDSUPPORT
 
 /**
