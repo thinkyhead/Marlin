@@ -1,0 +1,8 @@
+# Add '@domain/core' label to any change within the 'core' package
+enhancement:
+  - .github
+
+# Add 'test' label to any change to *.spec.js files within the source dir
+motion:
+  - src/module/planner.*
+  - src/module/stepper.*
