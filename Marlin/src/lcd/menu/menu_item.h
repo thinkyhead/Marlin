@@ -491,3 +491,19 @@ class MenuItem_bool : public MenuEditItemBase {
   #endif
 
 #endif // HAS_FAN
+
+// Macros to catch a bad value range
+#define MENU_ASSERT(...) NOOP
+#define MENU_ASSERT_EDIT(TYPE,LBL,REF,LO,HI...) static_assert((HI-(LO))/MenuItemInfo_##TYPE::scale <= 65535, "Bad edit range for " STRINGIFY(TYPE))
+
+#define MENU_ASSERT_bool_edit(V...)    NOOP
+#define MENU_ASSERT_percent_edit(V...) MENU_ASSERT_EDIT(V)
+#define MENU_ASSERT_int3_edit(V...)    MENU_ASSERT_EDIT(V)
+#define MENU_ASSERT_uint8_edit(V...)   MENU_ASSERT_EDIT(V)
+#define MENU_ASSERT_float43_edit(V...) MENU_ASSERT_EDIT(V)
+#define MENU_ASSERT_gcode(V...)        NOOP
+#define MENU_ASSERT_function(V...)     NOOP
+#define MENU_ASSERT_submenu(V...)      NOOP
+#define MENU_ASSERT_back(V...)         NOOP
+#define MENU_ASSERT_sdfolder(V...)     NOOP
+#define MENU_ASSERT_sdfile(V...)       NOOP
