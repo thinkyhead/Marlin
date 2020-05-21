@@ -81,7 +81,6 @@ public:
   static void mount();
   static void release();
   static inline bool isMounted() { return flag.mounted; }
-  static void ls();
 
   // Handle media insert/remove
   static void manage_media();
@@ -130,23 +129,42 @@ public:
   static inline bool isPaused() { return isFileOpen() && !flag.sdprinting; }
   static inline bool isPrinting() { return flag.sdprinting; }
   #if HAS_PRINT_PROGRESS_PERMYRIAD
-    static inline uint16_t permyriadDone() { return (isFileOpen() && filesize) ? sdpos / ((filesize + 9999) / 10000) : 0; }
+    static inline uint16_t permyriadDone() {
+      return (isFileOpen() && filesize) ? sdpos / ((filesize + 9999) / 10000) : 0;
+    }
   #endif
-  static inline uint8_t percentDone() { return (isFileOpen() && filesize) ? sdpos / ((filesize + 99) / 100) : 0; }
+  static inline uint8_t percentDone() {
+    return (isFileOpen() && filesize) ? sdpos / ((filesize + 99) / 100) : 0;
+  }
 
-  // Helper for open and remove
-  static const char* diveToFile(const bool update_cwd, SdFile*& curDir, const char * const path, const bool echo=false);
+  /**
+   * Dive down to a relative or absolute path.
+   * Relative paths apply to the workDir.
+   *
+   * update_cwd: Pass 'true' to update the workDir on success.
+   *   inDirPtr: On exit your pointer points to the target SdFile.
+   *             A nullptr indicates failure.
+   *       path: Start with '/' for abs path. End with '/' to get a folder ref.
+   *       echo: Set 'true' to print the path throughout the loop.
+   */
+  static const char* diveToFile(const bool update_cwd, SdFile*& inDirPtr, const char * const path, const bool echo=false);
 
   #if ENABLED(SDCARD_SORT_ALPHA)
     static void presort();
     static void getfilename_sorted(const uint16_t nr);
     #if ENABLED(SDSORT_GCODE)
-      FORCE_INLINE static void setSortOn(bool b) { sort_alpha = b; presort(); }
-      FORCE_INLINE static void setSortFolders(int i) { sort_folders = i; presort(); }
+      FORCE_INLINE static void setSortOn(bool b)        { sort_alpha   = b; presort(); }
+      FORCE_INLINE static void setSortFolders(int i)    { sort_folders = i; presort(); }
       //FORCE_INLINE static void setSortReverse(bool b) { sort_reverse = b; }
     #endif
   #else
     FORCE_INLINE static void getfilename_sorted(const uint16_t nr) { selectFileByIndex(nr); }
+  #endif
+
+  static void ls();
+
+  #if ENABLED(RRF_GCODE_DIALECT)
+    static void lsJSON(const uint8_t depth, SdFile parent);
   #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
@@ -160,6 +178,7 @@ public:
   static inline uint32_t getFileSize() { return filesize; }
   static inline bool eof() { return sdpos >= filesize; }
   static inline void setIndex(const uint32_t index) { sdpos = index; file.seekSet(index); }
+  static inline SdFile& getWorkDir() { return workDir.isOpen() ? workDir : root; }
   static inline char* getWorkDirName() { workDir.getDosName(filename); return filename; }
   static inline int16_t get() { sdpos = file.curPosition(); return (int16_t)file.read(); }
   static inline int16_t read(void* buf, uint16_t nbyte) { return file.isOpen() ? file.read(buf, nbyte) : -1; }
@@ -274,6 +293,10 @@ private:
   static void selectByIndex(SdFile dir, const uint8_t index);
   static void selectByName(SdFile dir, const char * const match);
   static void printListing(SdFile parent, const char * const prepend=nullptr);
+
+  #if ENABLED(RRF_GCODE_DIALECT)
+    static void printListingJSON(const uint8_t depth, SdFile parent);
+  #endif
 
   #if ENABLED(SDCARD_SORT_ALPHA)
     static void flush_presort();
