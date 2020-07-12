@@ -19,48 +19,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+#ifdef __PLAT_NATIVE_SIM__
 
-/**
- * sd/SdFatUtil.cpp
- *
- * Arduino SdFat Library
- * Copyright (c) 2008 by William Greiman
- *
- * This file is part of the Arduino Sd2Card Library
- */
+#include "../../inc/MarlinConfig.h"
 
-#include "../inc/MarlinConfig.h"
+#if ENABLED(USE_WATCHDOG)
 
-#if ENABLED(SDSUPPORT)
+#include "watchdog.h"
 
-#include "SdFatUtil.h"
-#include <string.h>
+#define WDT_TIMEOUT_US TERN(WATCHDOG_DURATION_8S, 8000000, 4000000) // 4 or 8 second timeout
 
-/**
- * Amount of free RAM
- * \return The number of free bytes.
- */
-#ifdef __arm__
-
-  extern "C" char* sbrk(int incr);
-  int SdFatUtil::FreeRam() {
-    char top;
-    return &top - reinterpret_cast<char*>(sbrk(0));
-  }
-
-#elif __PLAT_NATIVE_SIM__
-  int SdFatUtil::FreeRam() {
-    return 0xFFFFFFFF;
-  }
-#else
-
-  extern char* __brkval;
-  extern char __bss_end;
-  int SdFatUtil::FreeRam() {
-    char top;
-    return __brkval ? &top - __brkval : &top - &__bss_end;
-  }
+void watchdog_init() {}
+void HAL_watchdog_refresh() {}
 
 #endif
 
-#endif // SDSUPPORT
+#endif // __PLAT_NATIVE_SIM__

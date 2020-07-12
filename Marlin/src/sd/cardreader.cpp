@@ -870,7 +870,7 @@ const char* CardReader::diveToFile(const bool update_cwd, SdFile*& diveDir, cons
 
   while (item_name_adr) {
     // Find next subdirectory delimiter
-    char * const name_end = strchr(item_name_adr, '/');
+    const char * const name_end = strchr(item_name_adr, '/');
 
     // Last atom in the path? Item found.
     if (name_end <= item_name_adr) break;

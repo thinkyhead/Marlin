@@ -15,6 +15,8 @@ def get_envs_for_board(board):
 			mbs = r.findall(line)
 			if mbs:
 				board_found = board if board in re.split(r",\s*", mbs[0]) else ""
+			if board == 'LINUX_RAMPS':
+				line = line.replace('lin:', 'env:').replace('win:', 'env:').replace('mac:', 'env:').replace('uni:', 'env:')
 			if board_found and "#include " in line and "env:" in line:
 				return re.findall(r"env:\w+", line)
 	return []
