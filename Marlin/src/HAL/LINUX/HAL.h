@@ -25,7 +25,6 @@
 
 #define F_CPU 100000000
 #define SystemCoreClock F_CPU
-#include <iostream>
 #include <stdint.h>
 #include <stdarg.h>
 
@@ -33,6 +32,7 @@
 #undef max
 
 #include <algorithm>
+#include "pinmapping.h"
 
 void _printf (const  char *format, ...);
 void _putc(uint8_t c);

@@ -61,6 +61,28 @@ public:
 };
 
 struct pin_data {
+  enum Mode {
+    GPIO,
+    ADC,
+    SPI,
+    I2C,
+    UART
+  };
+  enum Direction {
+    INPUT,
+    OUTPUT
+  };
+  enum Pull {
+    NONE,
+    PULLUP,
+    PULLDOWN,
+    TRISTATE
+  };
+  enum State {
+    LOW,
+    HIGH
+  };
+  uint8_t pull;
   uint8_t dir;
   uint8_t mode;
   uint16_t value;
@@ -89,7 +111,7 @@ public:
     if (pin_map[pin].cb != nullptr) {
       pin_map[pin].cb->interrupt(evt);
     }
-    if (Gpio::logger != nullptr) Gpio::logger->log(evt);
+    if (Gpio::logger != nullptr && evt.event != GpioEvent::NOP) Gpio::logger->log(evt); //filter NOPs
   }
 
   static uint16_t get(pin_type pin) {
@@ -103,10 +125,18 @@ public:
 
   static void setMode(pin_type pin, uint8_t value) {
     if (!valid_pin(pin)) return;
-    pin_map[pin].mode = value;
+    pin_map[pin].mode = pin_data::Mode::GPIO;
+
     GpioEvent evt(Clock::nanos(), pin, GpioEvent::Type::SETM);
-    if (pin_map[pin].cb != nullptr) pin_map[pin].cb->interrupt(evt);
+    //if (pin_map[pin].cb != nullptr) pin_map[pin].cb->interrupt(evt);
     if (Gpio::logger != nullptr) Gpio::logger->log(evt);
+
+    if (value != 1) setDir(pin, pin_data::Direction::INPUT);
+    else setDir(pin, pin_data::Direction::OUTPUT);
+
+    pin_map[pin].pull = value == 2 ? pin_data::Pull::PULLUP : value == 3 ? pin_data::Pull::PULLDOWN : pin_data::Pull::NONE;
+    if (pin_map[pin].pull == pin_data::Pull::PULLUP) set(pin, pin_data::State::HIGH);
+
   }
 
   static uint8_t getMode(pin_type pin) {

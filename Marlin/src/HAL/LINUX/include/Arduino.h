@@ -24,7 +24,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <math.h>
+
 #include <cstring>
+#include <binary.h>
 
 #include <pinmapping.h>
 
@@ -81,7 +83,6 @@ extern "C" void GpioDisableInt(uint32_t port, uint32_t pin);
 #define pgm_read_word(addr)       pgm_read_word_near(addr)
 #define pgm_read_dword(addr)      pgm_read_dword_near(addr)
 
-using std::memcpy;
 #define memcpy_P memcpy
 #define sprintf_P sprintf
 #define strstr_P strstr
@@ -90,6 +91,7 @@ using std::memcpy;
 #define strcpy_P strcpy
 #define snprintf_P snprintf
 #define strlen_P strlen
+#define strchr_P strchr
 
 // Time functions
 extern "C" {

@@ -88,7 +88,7 @@ void simulation_loop() {
 
     #ifdef GPIO_LOGGING
       if (x_axis.position != x || y_axis.position != y || z_axis.position != z) {
-        uint64_t update = MAX3(x_axis.last_update, y_axis.last_update, z_axis.last_update);
+        uint64_t update = std::max({x_axis.last_update, y_axis.last_update, z_axis.last_update});
         position_log << update << ", " << x_axis.position << ", " << y_axis.position << ", " << z_axis.position << std::endl;
         position_log.flush();
         x = x_axis.position;
