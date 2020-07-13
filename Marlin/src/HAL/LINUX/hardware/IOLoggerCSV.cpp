@@ -32,6 +32,7 @@ IOLoggerCSV::~IOLoggerCSV() {
 }
 
 void IOLoggerCSV::log(GpioEvent ev) {
+  // todo: fix isr stalling waiting for lock
   std::lock_guard<std::mutex> lock(vector_lock);
   events.push_back(ev); //minimal impact to signal handler
 }

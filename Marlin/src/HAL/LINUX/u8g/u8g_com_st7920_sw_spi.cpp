@@ -63,7 +63,7 @@
 #include "../../shared/Delay.h"
 
 #undef SPI_SPEED
-#define SPI_SPEED 3  // About 1 MHz
+#define SPI_SPEED 0  // About 1 MHz
 
 static pin_t SCK_pin_ST7920_HAL, MOSI_pin_ST7920_HAL_HAL;
 static uint8_t SPI_speed = 0;
@@ -96,8 +96,8 @@ static uint8_t swSpiTransfer(uint8_t b, const uint8_t spi_speed, const pin_t sck
 }
 
 static uint8_t swSpiInit(const uint8_t spiRate, const pin_t sck_pin, const pin_t mosi_pin) {
- WRITE_PIN(mosi_pin, HIGH);
- WRITE_PIN(sck_pin, LOW);
+  WRITE_PIN(mosi_pin, HIGH);
+  WRITE_PIN(sck_pin, LOW);
   return spiRate;
 }
 
