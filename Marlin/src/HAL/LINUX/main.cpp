@@ -48,9 +48,12 @@ bool finished = false;
 
 // simple stdout / stdin implementation for fake serial port
 void write_serial_thread() {
+  char buffer[129] = {};
   while (!finished) {
-    for (std::size_t i = usb_serial.transmit_buffer.available(); i > 0; i--) {
-      fputc(usb_serial.transmit_buffer.read(), stdout);
+    if (usb_serial.transmit_buffer.available()) {
+      auto count = usb_serial.transmit_buffer.read((uint8_t*)buffer, usb_serial.transmit_buffer.available());
+      buffer[count] = '\0';
+      fputs(buffer, stdout);
     }
     std::this_thread::yield();
   }
@@ -61,8 +64,7 @@ void read_serial_thread() {
   while (!finished) {
     std::size_t len = _MIN(usb_serial.receive_buffer.free(), 254U);
     if (fgets(buffer, len, stdin))
-      for (std::size_t i = 0; i < strlen(buffer); i++)
-        usb_serial.receive_buffer.write(buffer[i]);
+        usb_serial.receive_buffer.write((uint8_t*)buffer, strlen(buffer));
     std::this_thread::yield();
   }
 }
@@ -113,7 +115,7 @@ void simulation_loop() {
       // flush the logger
       logger.flush();
     #endif
-
+    DELAY_US(1);
     std::this_thread::yield();
   }
 }
@@ -126,7 +128,7 @@ int main() {
   pthread_getschedparam(pthread_self(), &policy, &sch);
   sch.sched_priority = sched_get_priority_max(SCHED_FIFO);
   if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &sch)) {
-      std::cout << "Unable to increase thread priority: " << std::strerror(errno) << '\n';
+      std::cout << "Unable to change thread scheduler priority (" << std::strerror(errno) << ")\n";
   }
 
   std::thread write_serial (write_serial_thread);
@@ -154,6 +156,7 @@ int main() {
   setup();
   while (!finished) {
     loop();
+    DELAY_US(1);
     std::this_thread::yield();
   }
 

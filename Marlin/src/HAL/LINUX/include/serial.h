@@ -35,44 +35,75 @@
  * S size of the buffer (must be power of 2)
  *
  */
-template <typename T, uint32_t S> class RingBuffer {
+template <typename T, std::size_t S> class RingBuffer {
 public:
-  RingBuffer() { index_read = index_write = 0; }
-  uint32_t available() volatile { return index_write - index_read; }
-  uint32_t free() volatile      { return buffer_size - available(); }
-  bool empty() volatile         { return index_read == index_write; }
-  bool full() volatile          { return available() == buffer_size; }
-  void clear() volatile         { index_read = index_write = 0; }
+  RingBuffer() {index_read = index_write = 0;}
 
-  bool peek(T *value) volatile {
-    if (value == 0 || available() == 0)
-      return false;
-    *value = buffer[mask(index_read)];
+  std::size_t available() const {return mask(index_write - index_read);}
+  std::size_t free() const {return size() - available();}
+  bool empty() const {return index_read == index_write;}
+  bool full() const {return next(index_write) == index_read;}
+  void clear() {index_read = index_write = 0;}
+
+  bool peek(T *const value) const {
+    if (value == nullptr || empty()) return false;
+    *value = buffer[index_read];
     return true;
   }
 
-  int read() volatile {
-    if (empty()) return -1;
-    return buffer[mask(index_read++)];
+  [[gnu::always_inline, gnu::optimize("O3")]] inline std::size_t read(T* dst, std::size_t length) {
+    length = std::min(length, available());
+    const std::size_t length1 = std::min(length, buffer_size - index_read);
+    memcpy(dst, (char*)buffer + index_read, length1);
+    memcpy(dst + length1, (char*)buffer, length - length1);
+    index_read = mask(index_read + length);
+    return length;
   }
 
-  bool write(T value) volatile {
-    if (full()) return false;
-    buffer[mask(index_write++)] = value;
-    return true;
+  [[gnu::always_inline, gnu::optimize("O3")]] inline std::size_t write(T* src, std::size_t length) {
+    length = std::min(length, free());
+    const std::size_t length1 = std::min(length, buffer_size - index_write);
+    memcpy((char*)buffer + index_write, src, length1);
+    memcpy((char*)buffer, src + length1, length - length1);
+    index_write = mask(index_write + length);
+    return length;
+  }
+
+  std::size_t read(T *const value) {
+    if (value == nullptr || empty()) return 0;
+    *value = buffer[index_read];
+    index_read = next(index_read);
+    return 1;
+  }
+
+  std::size_t write(const T value) {
+    std::size_t next_head = next(index_write);
+    if (next_head == index_read) return 0;     // buffer full
+    buffer[index_write] = value;
+    index_write = next_head;
+    return 1;
+  }
+
+  constexpr std::size_t size() const {
+    return buffer_size - 1;
   }
 
 private:
-  uint32_t mask(uint32_t val) volatile {
-    return buffer_mask & val;
+  inline std::size_t mask(std::size_t val) const {
+    return val & buffer_mask;
   }
 
-  static const uint32_t buffer_size = S;
-  static const uint32_t buffer_mask = buffer_size - 1;
+  inline std::size_t next(std::size_t val) const {
+    return mask(val + 1);
+  }
+
+  static const std::size_t buffer_size = S;
+  static const std::size_t buffer_mask = buffer_size - 1;
   volatile T buffer[buffer_size];
-  volatile uint32_t index_write;
-  volatile uint32_t index_read;
+  volatile std::size_t index_write;
+  volatile std::size_t index_read;
 };
+
 
 class HalSerial {
 public:
@@ -92,7 +123,11 @@ public:
     return receive_buffer.peek(&value) ? value : -1;
   }
 
-  int read() { return receive_buffer.read(); }
+  int16_t read() {
+    uint8_t value;
+    uint32_t ret = receive_buffer.read(&value);
+    return (ret ? value : -1);
+  }
 
   size_t write(char c) {
     if (!host_connected) return 0;
@@ -202,7 +237,7 @@ public:
   void println(double value, int round = 6) { printf("%f\n" , value); }
   void println() { print('\n'); }
 
-  volatile RingBuffer<uint8_t, 128> receive_buffer;
-  volatile RingBuffer<uint8_t, 128> transmit_buffer;
+  RingBuffer<uint8_t, 128> receive_buffer;
+  RingBuffer<uint8_t, 128> transmit_buffer;
   volatile bool host_connected;
 };

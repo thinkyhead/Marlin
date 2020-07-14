@@ -1,10 +1,16 @@
 #ifdef __PLAT_LINUX__
 
+#include <fstream>
 #include <cmath>
 #include "Clock.h"
 #include "Gpio.h"
 
 #include "ST7920Device.h"
+
+#include "serial.h"
+extern HalSerial usb_serial;
+
+std::ifstream input_file;
 
 ST7920Device::ST7920Device(pin_type clk, pin_type mosi, pin_type cs,  pin_type beeper, pin_type enc1, pin_type enc2, pin_type enc_but, pin_type kill)
   : clk_pin(clk), mosi_pin(mosi), cs_pin(cs), beeper_pin(beeper), enc1_pin(enc1), enc2_pin(enc2), enc_but_pin(enc_but), kill_pin(kill) {
@@ -94,6 +100,13 @@ void ST7920Device::update() {
     SDL_FreeSurface(optimizedSurface);
   }
 
+  if (input_file.is_open() && usb_serial.receive_buffer.free()) {
+    uint8_t buffer[128]{};
+    auto count = input_file.readsome((char*)buffer, usb_serial.receive_buffer.free());
+    usb_serial.receive_buffer.write(buffer, count);
+    if(count == 0) input_file.close();
+  }
+
   window_update();
 
 }
@@ -137,46 +150,60 @@ void ST7920Device::window_create() {
 void ST7920Device::window_update() {
   SDL_Event e;
   while( SDL_PollEvent( &e ) != 0 ) {
-    if( e.type == SDL_QUIT ) {
-      close_request = true;
-    } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
-      switch(e.key.keysym.sym) {
-        case SDLK_k : {
-          Gpio::set(kill_pin, e.type == SDL_KEYDOWN ? 0 : 1);
-          break;
+    switch (e.type) {
+      case SDL_QUIT: {
+        close_request = true;
+        break;
+      }
+      case SDL_KEYDOWN: case SDL_KEYUP: {
+        switch(e.key.keysym.sym) {
+          case SDLK_k : {
+            Gpio::set(kill_pin, e.type == SDL_KEYDOWN ? 0 : 1);
+            break;
+          }
+          case SDLK_SPACE: {
+            Gpio::set(enc_but_pin, e.type == SDL_KEYDOWN ? 0 : 1);
+            break;
+          }
+          case SDLK_UP: {
+            encoder_rotate_cw();
+            Clock::delayMicros(500);
+            encoder_rotate_cw();
+            break;
+          }
+          case SDLK_DOWN: {
+            encoder_rotate_ccw();
+            Clock::delayMicros(500);
+            encoder_rotate_ccw();
+            break;
+          }
+          default:
+            break;
         }
-        case SDLK_SPACE: {
-          Gpio::set(enc_but_pin, e.type == SDL_KEYDOWN ? 0 : 1);
-          break;
-        }
-        case SDLK_UP: {
+      }
+      case SDL_MOUSEWHEEL: {
+        if (e.wheel.y > 0 ){
           encoder_rotate_cw();
           Clock::delayMicros(500);
           encoder_rotate_cw();
-          break;
-        }
-        case SDLK_DOWN: {
+        } else {
           encoder_rotate_ccw();
           Clock::delayMicros(500);
           encoder_rotate_ccw();
-          break;
         }
-        default:
+        break;
+      }
+      case SDL_MOUSEBUTTONUP: case SDL_MOUSEBUTTONDOWN: {
+        if (e.button.button == SDL_BUTTON_LEFT) {
+          Gpio::set(enc_but_pin, e.type == SDL_MOUSEBUTTONDOWN ? 0 : 1);
+        }
+        break;
+      }
+      case (SDL_DROPFILE): {      // In case if dropped file
+          char *dropped_filedir = e.drop.file;
+          input_file.open(dropped_filedir);
+          SDL_free(dropped_filedir);    // Free dropped_filedir memory
           break;
-      }
-    } else if (e.type == SDL_MOUSEWHEEL) {
-      if (e.wheel.y > 0 ){
-        encoder_rotate_cw();
-        Clock::delayMicros(500);
-        encoder_rotate_cw();
-      } else {
-        encoder_rotate_ccw();
-        Clock::delayMicros(500);
-        encoder_rotate_ccw();
-      }
-    } else if (e.type == SDL_MOUSEBUTTONUP || e.type == SDL_MOUSEBUTTONDOWN) {
-      if (e.button.button == SDL_BUTTON_LEFT) {
-        Gpio::set(enc_but_pin, e.type == SDL_MOUSEBUTTONDOWN ? 0 : 1);
       }
     }
   }
@@ -189,26 +216,26 @@ void ST7920Device::window_destroy() {
 void ST7920Device::encoder_rotate_cw() {
   switch(encoder_position) {
     case 0: {
-      Gpio::set(enc1_pin, 1);
-      Gpio::set(enc2_pin, 0);
+      Gpio::pin_map[enc1_pin].value = 1;
+      Gpio::pin_map[enc2_pin].value = 0;
       encoder_position = 2;
       break;
     }
     case 1: {
-      Gpio::set(enc1_pin, 0);
-      Gpio::set(enc2_pin, 0);
+      Gpio::pin_map[enc1_pin].value = 0;
+      Gpio::pin_map[enc2_pin].value = 0;
       encoder_position = 0;
       break;
     }
     case 2: {
-      Gpio::set(enc1_pin, 1);
-      Gpio::set(enc2_pin, 1);
+      Gpio::pin_map[enc1_pin].value = 1;
+      Gpio::pin_map[enc2_pin].value = 1;
       encoder_position = 3;
       break;
     }
     case 3: {
-      Gpio::set(enc1_pin, 0);
-      Gpio::set(enc2_pin, 1);
+      Gpio::pin_map[enc1_pin].value = 0;
+      Gpio::pin_map[enc2_pin].value = 1;
       encoder_position = 1;
       break;
     }
@@ -218,26 +245,26 @@ void ST7920Device::encoder_rotate_cw() {
 void ST7920Device::encoder_rotate_ccw() {
   switch(encoder_position) {
     case 0: {
-      Gpio::set(enc1_pin, 0);
-      Gpio::set(enc2_pin, 1);
+      Gpio::pin_map[enc1_pin].value = 0;
+      Gpio::pin_map[enc2_pin].value = 1;
       encoder_position = 1;
       break;
     }
     case 1: {
-      Gpio::set(enc1_pin, 1);
-      Gpio::set(enc2_pin, 1);
+      Gpio::pin_map[enc1_pin].value = 1;
+      Gpio::pin_map[enc2_pin].value = 1;
       encoder_position = 3;
       break;
     }
     case 2: {
-      Gpio::set(enc1_pin, 0);
-      Gpio::set(enc2_pin, 0);
+      Gpio::pin_map[enc1_pin].value = 0;
+      Gpio::pin_map[enc2_pin].value = 0;
       encoder_position = 0;
       break;
     }
     case 3: {
-      Gpio::set(enc1_pin, 1);
-      Gpio::set(enc2_pin, 0);
+      Gpio::pin_map[enc1_pin].value = 1;
+      Gpio::pin_map[enc2_pin].value = 0;
       encoder_position = 2;
       break;
     }
