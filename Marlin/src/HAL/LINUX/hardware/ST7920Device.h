@@ -46,8 +46,8 @@ public:
 
 
   /*** SDL ****/
-  void window_create();
-  void window_update();
+  void window_create(float scaler);
+  void process_event(SDL_Event& e);
   void window_destroy();
   void encoder_rotate_cw();
   void encoder_rotate_ccw();
@@ -56,6 +56,7 @@ public:
   bool dirty = true;
   uint32_t last_frame = 0;
   uint8_t encoder_position = 0;
+  float scaler;
 
   SDL_Window* window = nullptr;
   SDL_Surface* screenSurface = nullptr;

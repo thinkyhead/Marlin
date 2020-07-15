@@ -33,12 +33,12 @@ struct LowpassFilter {
 
 class Heater: public Peripheral {
 public:
-  Heater(pin_t heater, pin_t adc);
+  Heater(pin_type heater, pin_type adc);
   virtual ~Heater();
   void interrupt(GpioEvent ev);
   void update();
 
-  pin_t heater_pin, adc_pin;
+  pin_type heater_pin, adc_pin;
   uint16_t room_temp_raw;
   uint16_t heater_state;
   LowpassFilter pwmcap;

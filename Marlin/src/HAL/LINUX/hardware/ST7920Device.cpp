@@ -18,9 +18,6 @@ ST7920Device::ST7920Device(pin_type clk, pin_type mosi, pin_type cs,  pin_type b
   Gpio::attachPeripheral(clk_pin, this);
   Gpio::attachPeripheral(cs_pin, this);
   Gpio::attachPeripheral(beeper_pin, this);
-
-  window_create();
-
 }
 
 ST7920Device::~ST7920Device() {
@@ -94,7 +91,7 @@ void ST7920Device::update() {
     SDL_Surface* surf = SDL_CreateRGBSurfaceFrom((void*)graphic_ram, 128, 64, 1, 256 / 8, 0x1, 0x1, 0x1, 0);
     SDL_Surface* optimizedSurface = SDL_ConvertSurface( surf, screenSurface->format, 0 );
     SDL_FreeSurface(surf);
-    SDL_Rect rect{100, 100, 128 * 6, 64 * 6};
+    SDL_Rect rect{0, 0, (int)(128 * scaler), (int)(64 * scaler)};
     if (surf != nullptr) SDL_BlitScaled( optimizedSurface, nullptr, screenSurface, &rect);
     SDL_UpdateWindowSurface( window );
     SDL_FreeSurface(optimizedSurface);
@@ -106,9 +103,6 @@ void ST7920Device::update() {
     usb_serial.receive_buffer.write(buffer, count);
     if(count == 0) input_file.close();
   }
-
-  window_update();
-
 }
 
 void ST7920Device::interrupt(GpioEvent ev) {
@@ -136,8 +130,9 @@ void ST7920Device::interrupt(GpioEvent ev) {
   }
 }
 
-void ST7920Device::window_create() {
-  window = SDL_CreateWindow( "ST7920 Emulation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 968, 600, SDL_WINDOW_SHOWN );
+void ST7920Device::window_create(float scaler) {
+  this->scaler = scaler;
+  window = SDL_CreateWindow( "ST7920 Emulation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 128 * scaler, 64 * scaler, SDL_WINDOW_SHOWN );
   if( window == NULL ) {
     printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
   } else {
@@ -147,15 +142,10 @@ void ST7920Device::window_create() {
   }
 }
 
-void ST7920Device::window_update() {
-  SDL_Event e;
-  while( SDL_PollEvent( &e ) != 0 ) {
-    switch (e.type) {
-      case SDL_QUIT: {
-        close_request = true;
-        break;
-      }
-      case SDL_KEYDOWN: case SDL_KEYUP: {
+void ST7920Device::process_event(SDL_Event& e) {
+  switch (e.type) {
+    case SDL_KEYDOWN: case SDL_KEYUP: {
+      if (e.key.windowID == SDL_GetWindowID( window ))
         switch(e.key.keysym.sym) {
           case SDLK_k : {
             Gpio::set(kill_pin, e.type == SDL_KEYDOWN ? 0 : 1);
@@ -167,44 +157,55 @@ void ST7920Device::window_update() {
           }
           case SDLK_UP: {
             encoder_rotate_cw();
-            Clock::delayMicros(500);
+            Clock::delayMicros(200);
             encoder_rotate_cw();
             break;
           }
           case SDLK_DOWN: {
             encoder_rotate_ccw();
-            Clock::delayMicros(500);
+            Clock::delayMicros(200);
             encoder_rotate_ccw();
             break;
           }
           default:
             break;
         }
-      }
-      case SDL_MOUSEWHEEL: {
+      break;
+    }
+    case SDL_MOUSEWHEEL: {
+      if (e.wheel.windowID == SDL_GetWindowID( window )) {
         if (e.wheel.y > 0 ){
           encoder_rotate_cw();
-          Clock::delayMicros(500);
+          Clock::delayMicros(200);
           encoder_rotate_cw();
         } else {
           encoder_rotate_ccw();
-          Clock::delayMicros(500);
+          Clock::delayMicros(200);
           encoder_rotate_ccw();
         }
-        break;
       }
-      case SDL_MOUSEBUTTONUP: case SDL_MOUSEBUTTONDOWN: {
+      break;
+    }
+    case SDL_MOUSEBUTTONUP: case SDL_MOUSEBUTTONDOWN: {
+      if (e.button.windowID == SDL_GetWindowID( window ))
         if (e.button.button == SDL_BUTTON_LEFT) {
           Gpio::set(enc_but_pin, e.type == SDL_MOUSEBUTTONDOWN ? 0 : 1);
         }
+      break;
+    }
+    case SDL_DROPFILE: {      // In case if dropped file
+        char *dropped_filedir = e.drop.file;
+        input_file.open(dropped_filedir);
+        SDL_free(dropped_filedir);    // Free dropped_filedir memory
         break;
+    }
+    case SDL_WINDOWEVENT: {
+      if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
+        // if (SDL_GetWindowID(window) == e.window.windowID) {
+        // }
+        close_request = true;
       }
-      case (SDL_DROPFILE): {      // In case if dropped file
-          char *dropped_filedir = e.drop.file;
-          input_file.open(dropped_filedir);
-          SDL_free(dropped_filedir);    // Free dropped_filedir memory
-          break;
-      }
+      break;
     }
   }
 }

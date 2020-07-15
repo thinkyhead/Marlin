@@ -32,44 +32,49 @@ extern void loop();
 #include <iostream>
 #include <fstream>
 
+#ifdef ENABLE_SIMULATION
+  #include "hardware/IOLoggerCSV.h"
+  #include "hardware/Heater.h"
+  #include "hardware/LinearAxis.h"
+  #include "hardware/ST7920Device.h"
+  #include "visualisation.h"
+#endif
+
 #include "../../inc/MarlinConfig.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include "../shared/Delay.h"
 
-#ifdef ENABLE_SIMULATION
-#include "hardware/IOLoggerCSV.h"
-#include "hardware/Heater.h"
-#include "hardware/LinearAxis.h"
-#include "hardware/ST7920Device.h"
-#endif
-
 bool finished = false;
+bool main_finished = false;
 
 // simple stdout / stdin implementation for fake serial port
 void write_serial_thread() {
   char buffer[129] = {};
-  while (!finished) {
+  while (!main_finished) {
     if (usb_serial.transmit_buffer.available()) {
       auto count = usb_serial.transmit_buffer.read((uint8_t*)buffer, usb_serial.transmit_buffer.available());
       buffer[count] = '\0';
       fputs(buffer, stdout);
     }
+    DELAY_US(100);
     std::this_thread::yield();
   }
 }
 
 void read_serial_thread() {
   char buffer[255] = {};
-  while (!finished) {
+  while (!main_finished) {
     std::size_t len = _MIN(usb_serial.receive_buffer.free(), 254U);
     if (fgets(buffer, len, stdin))
         usb_serial.receive_buffer.write((uint8_t*)buffer, strlen(buffer));
+    DELAY_US(100);
     std::this_thread::yield();
   }
 }
 
 #ifdef ENABLE_SIMULATION
+constexpr uint32_t steps_per_unit[] = DEFAULT_AXIS_STEPS_PER_UNIT;
 void simulation_loop() {
   Heater hotend(HEATER_0_PIN, TEMP_0_PIN);
   Heater bed(HEATER_BED_PIN, TEMP_BED_PIN);
@@ -78,6 +83,15 @@ void simulation_loop() {
   LinearAxis z_axis(Z_ENABLE_PIN, Z_DIR_PIN, Z_STEP_PIN, Z_MIN_PIN, Z_MAX_PIN);
   LinearAxis extruder0(E0_ENABLE_PIN, E0_DIR_PIN, E0_STEP_PIN, P_NC, P_NC);
   ST7920Device display(LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS, BEEPER_PIN, BTN_EN1, BTN_EN2, BTN_ENC, KILL_PIN);
+  Visualisation vis;
+
+  if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
+    printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+  }
+
+  vis.create(1280, 768);
+  display.window_create(6);
+
 
   #ifdef GPIO_LOGGING
     IOLoggerCSV logger("all_gpio_log.csv");
@@ -89,7 +103,7 @@ void simulation_loop() {
     int32_t x = 0, y = 0, z = 0;
   #endif
 
-  while (!finished) {
+  while (!main_finished) {
 
     hotend.update();
     bed.update();
@@ -98,8 +112,28 @@ void simulation_loop() {
     y_axis.update();
     z_axis.update();
     extruder0.update();
+
+    SDL_Event e;
+    while( SDL_PollEvent( &e ) != 0 ) {
+      if( e.type == SDL_QUIT ) {
+        finished = true;
+      }
+      if( e.type == SDL_WINDOWEVENT) {
+        if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
+          finished = true;
+        }
+      }
+      display.process_event(e);
+      vis.process_event(e);
+    }
+
     display.update();
-    finished = display.close_request;
+
+    vis.effector_pos.x = x_axis.position / (float)steps_per_unit[0];
+    vis.effector_pos.z = y_axis.position / (float)steps_per_unit[1] * -1.0f;
+    vis.effector_pos.y = z_axis.position / (float)steps_per_unit[2];
+    vis.update();
+
 
     #ifdef POSITION_LOGGING
       if (x_axis.position != x || y_axis.position != y || z_axis.position != z) {
@@ -118,11 +152,13 @@ void simulation_loop() {
     DELAY_US(1);
     std::this_thread::yield();
   }
+  vis.destroy();
+
+  SDL_Quit();
 }
 #endif
 
 int main() {
-
   sched_param sch;
   int policy;
   pthread_getschedparam(pthread_self(), &policy, &sch);
@@ -136,7 +172,6 @@ int main() {
 
   #if NUM_SERIAL > 0
     MYSERIAL0.begin(BAUDRATE);
-    SERIAL_ECHOLNPGM("x86_64 Initialized");
     SERIAL_FLUSHTX();
   #endif
 
@@ -146,10 +181,7 @@ int main() {
   HAL_timer_init();
 
   #ifdef ENABLE_SIMULATION
-  if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
-    printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
-  }
-  std::thread simulation (simulation_loop);
+    std::thread simulation (simulation_loop);
   #endif
 
   DELAY_US(10000);
@@ -160,9 +192,11 @@ int main() {
     std::this_thread::yield();
   }
 
+  // signal that main is finished and the other threads can now exit safely
+  main_finished = true;
+
   #ifdef ENABLE_SIMULATION
-  simulation.join();
-  SDL_Quit();
+    simulation.join();
   #endif
 
   write_serial.join();
