@@ -74,7 +74,6 @@ void read_serial_thread() {
 }
 
 #ifdef ENABLE_SIMULATION
-constexpr uint32_t steps_per_unit[] = DEFAULT_AXIS_STEPS_PER_UNIT;
 void simulation_loop() {
   Heater hotend(HEATER_0_PIN, TEMP_0_PIN);
   Heater bed(HEATER_BED_PIN, TEMP_BED_PIN);
@@ -92,7 +91,6 @@ void simulation_loop() {
   vis.create(1280, 768);
   display.window_create(6);
 
-
   #ifdef GPIO_LOGGING
     IOLoggerCSV logger("all_gpio_log.csv");
     Gpio::attachLogger(&logger);
@@ -102,6 +100,8 @@ void simulation_loop() {
     position_log.open("axis_position_log.csv");
     int32_t x = 0, y = 0, z = 0;
   #endif
+
+  vis.set_data_source(&x_axis.position, &y_axis.position,  &z_axis.position, &extruder0.position);
 
   while (!main_finished) {
 
@@ -128,10 +128,6 @@ void simulation_loop() {
     }
 
     display.update();
-
-    vis.effector_pos.x = x_axis.position / (float)steps_per_unit[0];
-    vis.effector_pos.z = y_axis.position / (float)steps_per_unit[1] * -1.0f;
-    vis.effector_pos.y = z_axis.position / (float)steps_per_unit[2];
     vis.update();
 
 
@@ -159,13 +155,13 @@ void simulation_loop() {
 #endif
 
 int main() {
-  sched_param sch;
-  int policy;
-  pthread_getschedparam(pthread_self(), &policy, &sch);
-  sch.sched_priority = sched_get_priority_max(SCHED_FIFO);
-  if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &sch)) {
-      std::cout << "Unable to change thread scheduler priority (" << std::strerror(errno) << ")\n";
-  }
+  // sched_param sch;
+  // int policy;
+  // pthread_getschedparam(pthread_self(), &policy, &sch);
+  // sch.sched_priority = sched_get_priority_max(SCHED_FIFO);
+  // if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &sch)) {
+  //     std::cout << "Unable to change thread scheduler priority (" << std::strerror(errno) << ")\n";
+  // }
 
   std::thread write_serial (write_serial_thread);
   std::thread read_serial (read_serial_thread);
@@ -185,6 +181,7 @@ int main() {
   #endif
 
   DELAY_US(10000);
+  //DELAY_US(1000000);
   setup();
   while (!finished) {
     loop();

@@ -42,15 +42,13 @@ Heater::~Heater() {
 void Heater::update() {
   // crude pwm read and cruder heat simulation
   auto now = Clock::micros();
-  double delta = (now - last);
-  if (delta > 1000 ) {
-    heater_state = pwmcap.update(0xFFFF * Gpio::pin_map[heater_pin].value);
-    last = now;
-    heat += (heater_state - heat) * (delta / 1000000000.0);
+  double delta = (now - last) / 1000000.0f;
+  last = now;
 
-    NOLESS(heat, room_temp_raw);
-    Gpio::pin_map[analogInputToDigitalPin(adc_pin)].value = 0xFFFF - (uint16_t)heat;
-  }
+  heater_state = pwmcap.update(0xFFFF * Gpio::pin_map[heater_pin].value);
+  heat += (heater_state - heat) * (delta / 500.0);
+  NOLESS(heat, room_temp_raw);
+  Gpio::pin_map[analogInputToDigitalPin(adc_pin)].value = 0xFFFF - (uint16_t)heat;
 }
 
 void Heater::interrupt(GpioEvent ev) {
