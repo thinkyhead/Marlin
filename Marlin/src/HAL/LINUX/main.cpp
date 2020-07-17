@@ -78,7 +78,7 @@ void simulation_loop() {
   Heater hotend(HEATER_0_PIN, TEMP_0_PIN);
   Heater bed(HEATER_BED_PIN, TEMP_BED_PIN);
   LinearAxis x_axis(X_ENABLE_PIN, X_DIR_PIN, X_STEP_PIN, X_MIN_PIN, X_MAX_PIN);
-  LinearAxis y_axis(Y_ENABLE_PIN, Y_DIR_PIN, Y_STEP_PIN, Y_MIN_PIN, Y_MAX_PIN);
+  LinearAxis y_axis(Y_ENABLE_PIN, Y_DIR_PIN, Y_STEP_PIN, Y_MIN_PIN, Y_MAX_PIN, true);
   LinearAxis z_axis(Z_ENABLE_PIN, Z_DIR_PIN, Z_STEP_PIN, Z_MIN_PIN, Z_MAX_PIN);
   LinearAxis extruder0(E0_ENABLE_PIN, E0_DIR_PIN, E0_STEP_PIN, P_NC, P_NC);
   ST7920Device display(LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS, BEEPER_PIN, BTN_EN1, BTN_EN2, BTN_ENC, KILL_PIN);
@@ -172,7 +172,7 @@ int main() {
   #endif
 
   Clock::setFrequency(F_CPU);
-  Clock::setTimeMultiplier(1.0); // some testing at 10x
+  Clock::setTimeMultiplier(1.0); // some testing at 4x
 
   HAL_timer_init();
 
@@ -181,7 +181,6 @@ int main() {
   #endif
 
   DELAY_US(10000);
-  //DELAY_US(1000000);
   setup();
   while (!finished) {
     loop();
@@ -198,6 +197,7 @@ int main() {
 
   write_serial.join();
   read_serial.join();
+
 }
 
 #endif // __PLAT_LINUX__

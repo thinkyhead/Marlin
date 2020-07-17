@@ -26,12 +26,13 @@
 #include "Clock.h"
 #include "LinearAxis.h"
 
-LinearAxis::LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type end_min, pin_type end_max) {
+LinearAxis::LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type end_min, pin_type end_max, bool invert_travel) {
   enable_pin = enable;
   dir_pin = dir;
   step_pin = step;
   min_pin = end_min;
   max_pin = end_max;
+  this->invert_travel = invert_travel ? -1 : 1;
 
   min_position = 50;
   max_position = (200*80) + min_position;
@@ -57,7 +58,7 @@ void LinearAxis::interrupt(GpioEvent ev) {
   if (ev.pin_id == step_pin && !Gpio::pin_map[enable_pin].value){
     if (ev.event == GpioEvent::RISE) {
       last_update = ev.timestamp;
-      position += -1 + 2 * Gpio::pin_map[dir_pin].value;
+      position += (Gpio::pin_map[dir_pin].value > 0 ? 1 : -1) * invert_travel;
       Gpio::pin_map[min_pin].value = (position < min_position);
     }
   }

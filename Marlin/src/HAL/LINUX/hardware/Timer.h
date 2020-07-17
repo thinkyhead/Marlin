@@ -58,8 +58,9 @@ public:
     _this->avg_error /= 2; //very crude precision analysis (actually within +-500ns usually)
     _this->start_time = Clock::nanos(); // wrap
     _this->cbfn();
-    _this->overruns += timer_getoverrun(_this->timerid); // even at 50Khz this doesn't stay zero, again demonstrating the limitations
-                                                         // using a realtime linux kernel would help somewhat
+    _this->overruns = si->si_overrun; // even at 50Khz this doesn't stay zero, again demonstrating the limitations
+                                       // using a realtime linux kernel would help somewhat
+    //if (_this->overruns) printf("overrun: %d\n", _this->overruns);
   }
 
 private:

@@ -23,12 +23,14 @@ constexpr uint32_t steps_per_unit[] = { 80, 80, 80, 500 };
 typedef enum t_attrib_id
 {
     attrib_position,
+    attrib_normal,
     attrib_color
 } t_attrib_id;
 
 struct cp_vertex {
-  glm::vec4 color;
   glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec4 color;
 };
 
 class PerspectiveCamera {
@@ -57,7 +59,7 @@ public:
     proj = glm::perspective(fov, aspect_ratio, clip_near, clip_far);
     direction = glm::normalize(position - focal_point);
     right = glm::normalize(glm::cross(world_up, direction));
-    up = glm::cross(direction, right);
+    up = glm::normalize(glm::cross(direction, right));
     view = glm::lookAt(position, position - direction, up);
 
     // glm::extractEulerAngleXYX(-view, rotation.x, rotation.y, rotation.z);
@@ -165,6 +167,10 @@ public:
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 8 );
 
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
@@ -172,82 +178,152 @@ public:
     window = SDL_CreateWindow( "Printer Visualisation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN );
     context = SDL_GL_CreateContext( window );
 
-    glEnable( GL_DEPTH_TEST );
-    glEnable( GL_CULL_FACE);
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
-    glClearColor( 0.1, 0.1, 0.1, 0.1 );
+    glClearColor( 0.1, 0.1, 0.1, 1.0 );
     glViewport( 0, 0, width, height );
 
-    const char * geometry_shader = R"SHADERSTR(
+    // todo : Y axis change fix, worked around by not joining
+    // todo : very spiky corners after 45 degs, again just worked around by not joining
+    const char * geometry_shader =
+R"SHADERSTR(
       #version 410 core
-      layout (lines) in;
-      layout (triangle_strip, max_vertices = 14) out;
+      layout (lines_adjacency) in;
+      layout (triangle_strip, max_vertices = 28) out;
 
+      in vec3 g_normal[];
       in vec4 g_color[];
       out vec4 v_color;
+      out vec3 v_normal;
+      out vec4 v_position;
 
       uniform mat4 u_mvp;
-      const float layer_thickness = 0.3; // will be uniforms
-      const float layer_width = 0.35;
+      const float layer_thickness = 0.3;
+      const float layer_width = 0.4;
+
+      vec4 mvp_vertices[9];
+      vec4 vertices[9];
+      void emit(const int a, const int b, const int c, const int d) {
+        gl_Position = mvp_vertices[a]; v_position = vertices[a]; EmitVertex();
+        gl_Position = mvp_vertices[b]; v_position = vertices[b]; EmitVertex();
+        gl_Position = mvp_vertices[c]; v_position = vertices[c]; EmitVertex();
+        gl_Position = mvp_vertices[d]; v_position = vertices[d]; EmitVertex();
+        EndPrimitive();
+      }
+
+      const float epsilon = 0.00001;
+      bool about_zero(float value) {
+        return step(-epsilon, value) * (1.0 - step(epsilon, value)) == 0.0;
+      }
+
+      bool collinear_xz(vec3 a, vec3 b, vec3 c){
+        return cross(vec3(b.xz, 0) - vec3(a.xz, 0), vec3(c.xz, 0) - vec3(b.xz, 0)) == 0.0;
+      }
+
+      bool collinear(vec3 a, vec3 b, vec3 c){
+        return cross(b - a, c - b) == 0.0;
+      }
 
       void main() {
-        vec3 start = gl_in[0].gl_Position.xyz;
-        vec3 end = gl_in[1].gl_Position.xyz;
-        vec3 direction = end - start;
+        vec3 prev = gl_in[0].gl_Position.xyz;
+        vec3 start = gl_in[1].gl_Position.xyz;
+        vec3 end = gl_in[2].gl_Position.xyz;
+        vec3 next = gl_in[3].gl_Position.xyz;
 
-        vec3 lhs = cross(normalize(direction), vec3(0.0, 0.0, -1.0));
-        vec3 up = cross(normalize(direction), vec3(0.0, 1.0, 0.0));
+        vec4 prev_color = g_color[1];
+        vec4 active_color = g_color[2];
+        vec4 next_color = g_color[3];
+
+        vec3 forward = normalize(end - start);
+        vec3 left = normalize(cross(forward, g_normal[2])); // what if formward is world_up? zero vector
+        if (left == 0.0) return; //panic
+
+        vec3 up = normalize(cross(forward, left));
+        up *= sign(up); // make sure up is positive
+
+        bool first_segment = length(start - prev) < epsilon;
+        bool last_segment = length(end - next) < epsilon;
+        vec3 a = normalize(start - prev);
+        vec3 b = normalize(start - end);
+        vec3 c = (a + b) * 0.5;
+        vec3 start_lhs = normalize(c) * sign(dot(c, left));
+        a = normalize(end - start);
+        b = normalize(end - next);
+        c = (a + b) * 0.5;
+        vec3 end_lhs = normalize(c) * sign(dot(c, left));
+
+        vec2 xz_dir_a = normalize(start.xz - prev.xz);
+        vec2 xz_dir_b = normalize(end.xz - start.xz);
+        vec2 xz_dir_c = normalize(next.xz - end.xz);
+
+
+        // pick on edge cases that ar not taken into account, changle to extrude state, change in z, colliniarity in xy and angle between vectors more than 90 degrees
+        if(first_segment || active_color.a != prev_color.a || forward.y > epsilon || collinear_xz(prev, start, end) || dot(start - prev, end - start) < 0.0) {
+          start_lhs = left;
+          first_segment = true;
+        }
+        if(last_segment || active_color.a != next_color.a || normalize(next - end).y > epsilon || collinear_xz(start, end, next) || dot(end - start, next - end) < 0.0) {
+          end_lhs = left;
+          last_segment = true;
+        }
+
+        float start_join_scale = dot(start_lhs, left);
+        float end_join_scale = dot(end_lhs, left);
+        start_lhs *= layer_width * 0.5;
+        end_lhs *= layer_width * 0.5;
 
         float half_layer_width = layer_width / 2.0;
-        vec3 top_back_left = start - (up * half_layer_width);
-        vec3 top_back_right = start + (up * half_layer_width);
-        vec3 top_front_left = end - (up * half_layer_width);
-        vec3 top_front_right = end + (up * half_layer_width);
-        vec3 bottom_back_left = start - (up * half_layer_width) - vec3(0.0, layer_thickness, 0.0);
-        vec3 bottom_back_right = start + (up * half_layer_width) - vec3(0.0, layer_thickness, 0.0);
-        vec3 bottom_front_left = end - (up * half_layer_width) - vec3(0.0, layer_thickness, 0.0);
-        vec3 bottom_front_right = end + (up * half_layer_width) - vec3(0.0, layer_thickness, 0.0);
+        vertices[0] = vec4(start - start_lhs / start_join_scale, 1.0); // top_back_left
+        vertices[1] = vec4(start + start_lhs / start_join_scale, 1.0); // top_back_right
+        vertices[2] = vec4(end   - end_lhs / end_join_scale, 1.0);   // top_front_left
+        vertices[3] = vec4(end   + end_lhs / end_join_scale, 1.0);   // top_front_right
+        vertices[4] = vec4(start - start_lhs / start_join_scale - (up * layer_thickness), 1.0); // bottom_back_left
+        vertices[5] = vec4(start + start_lhs / start_join_scale - (up * layer_thickness), 1.0); // bottom_back_right
+        vertices[6] = vec4(end   - end_lhs / end_join_scale - (up * layer_thickness), 1.0);   // bottom_front_left
+        vertices[7] = vec4(end   + end_lhs / end_join_scale - (up * layer_thickness), 1.0);   // bottom_front_right
 
-        v_color = g_color[1];
+        mvp_vertices[0] = u_mvp * vertices[0];
+        mvp_vertices[1] = u_mvp * vertices[1];
+        mvp_vertices[2] = u_mvp * vertices[2];
+        mvp_vertices[3] = u_mvp * vertices[3];
+        mvp_vertices[4] = u_mvp * vertices[4];
+        mvp_vertices[5] = u_mvp * vertices[5];
+        mvp_vertices[6] = u_mvp * vertices[6];
+        mvp_vertices[7] = u_mvp * vertices[7];
 
-        gl_Position = u_mvp * vec4( top_front_left, 1.0);//vec4(-1.0, 0.0, 1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( top_front_right, 1.0);//vec4( 1.0, 0.0, 1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( bottom_front_left, 1.0);//vec4(-1.0, -layer_thickness, 1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( bottom_front_right, 1.0);//vec4( 1.0, -layer_thickness, 1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( bottom_back_right, 1.0);//;1.0, -layer_thickness, -1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( top_front_right, 1.0); //1.0, 0.0, 1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( top_back_right, 1.0f); //1.0, 0.0, -1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( top_front_left, 1.0f); //-1.0, 0.0, 1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( top_back_left, 1.0f); //-1.0, 0.0, -1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( bottom_front_left, 1.0f); //-1.0, -layer_thickness, 1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( bottom_back_left, 1.0f); //-1.0, -layer_thickness, -1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( bottom_back_right, 1.0f); //1.0, -layer_thickness, -1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( top_back_left, 1.0f);  //-1.0, 0.0, -1.0, 1.0));
-        EmitVertex();
-        gl_Position = u_mvp * vec4( top_back_right, 1.0f);  //1.0, 0.0, -1.0, 1.0));
-        EmitVertex();
-        EndPrimitive();
-      };)SHADERSTR";
+        vertices[8] = vec4(start - (left * half_layer_width) + (up * 1.0), 1.0);
+        mvp_vertices[8] = u_mvp * vertices[8];
+
+        v_color = active_color;
+        v_normal = forward;
+        if (last_segment) emit(2, 3, 6, 7); // thise should be rounded ends of path diamter, not single po
+        v_normal = -forward;
+        if (first_segment) emit(1, 0, 5, 4);
+        v_normal = -left;
+        emit(3, 1, 7, 5);
+        v_normal = left;
+        emit(0, 2, 4, 6);
+        v_normal = up;
+        emit(0, 1, 2, 3);
+        v_normal = -up;
+        emit(5, 4, 7, 6);
+
+        //emit(0, 1, 8, 0); //show up normal
+      };
+)SHADERSTR";
 
     const char * path_vertex_shader = R"SHADERSTR(
       #version 410
       in vec3 i_position;
+      in vec3 i_normal;
       in vec4 i_color;
       out vec4 g_color;
+      out vec3 g_normal;
       void main() {
           g_color = i_color;
+          g_normal = i_normal;
           gl_Position = vec4( i_position, 1.0 );
       };)SHADERSTR";
 
@@ -255,28 +331,70 @@ public:
       #version 410
       in vec4 v_color;
       out vec4 o_color;
+      in vec3 v_normal;
+      in vec4 v_position;
+
+      uniform vec3 u_view_position;
       void main() {
           if(v_color.a < 0.1) discard;
-          o_color = v_color;
+
+          float ambient_level = 0.1;
+          vec3 ambient_color = vec3(1.0, 0.86, 0.66);
+          vec3 ambient = ambient_color * ambient_level;
+
+          vec3 light_position = vec3(0,300,0);
+          vec3 norm = normalize(v_normal);
+          vec3 light_direction = light_position - v_position.xyz;
+          float d = length(light_direction);
+          float attenuation = 1.0 / ( 1.0 + 0.005 * d); // simplication of 1.0/(1.0 + c1*d + c2*d^2)
+          light_direction = normalize(light_direction);
+          vec3 diffuse_color = ambient_color;
+          float diff = max(dot(norm, light_direction), 0.0);
+          vec3 diffuse = diff * diffuse_color;
+
+          float specular_strength = 0.5;
+          vec3 view_direction = normalize(u_view_position - v_position.xyz);
+          vec3 reflect_direction = reflect(-light_direction, norm);
+
+          float spec = pow(max(dot(view_direction, reflect_direction), 0.0), 32);
+          vec3 specular = specular_strength * spec * diffuse_color;
+
+          if(v_color.a < 0.1) {
+            o_color = vec4(vec3(0.0, 0.0, 1.0) * (ambient + ((diffuse + specular) * attenuation)), v_color.a);
+          } else {
+            o_color = vec4(v_color.rgb * (ambient + ((diffuse + specular) * attenuation)), v_color.a);
+          }
       };)SHADERSTR";
 
     const char * vertex_shader = R"SHADERSTR(
       #version 410
       in vec3 i_position;
+      in vec3 i_normal;
       in vec4 i_color;
       out vec4 v_color;
+      out vec3 v_normal;
+      out vec3 v_position;
       uniform mat4 u_mvp;
       void main() {
           v_color = i_color;
+          v_normal = i_normal;
+          v_position = i_position;
           gl_Position = u_mvp * vec4( i_position, 1.0 );
       };)SHADERSTR";
 
     const char * fragment_shader = R"SHADERSTR(
       #version 410
       in vec4 v_color;
+      in vec3 v_normal;
+      in vec3 v_position;
       out vec4 o_color;
       void main() {
-          o_color = v_color;
+          if(v_color.a < 0.1) {
+            //discard;
+            o_color = vec4(0.0, 0.0, 1.0, 1.0);
+          } else {
+            o_color = v_color;
+          }
       };)SHADERSTR";
 
     path_program = ShaderProgram::loadProgram(path_vertex_shader, path_fragment_shader, geometry_shader);
@@ -287,9 +405,11 @@ public:
     glBindVertexArray( vao );
     glBindBuffer( GL_ARRAY_BUFFER, vbo );
     glEnableVertexAttribArray( attrib_position );
+    glEnableVertexAttribArray( attrib_normal );
     glEnableVertexAttribArray( attrib_color );
-    glVertexAttribPointer( attrib_color, 4, GL_FLOAT, GL_FALSE, sizeof(cp_vertex), 0 );
-    glVertexAttribPointer( attrib_position, 3, GL_FLOAT, GL_FALSE, sizeof(cp_vertex), ( void * )(sizeof(cp_vertex::color)) );
+    glVertexAttribPointer( attrib_position, 3, GL_FLOAT, GL_FALSE, sizeof(cp_vertex), 0 );
+    glVertexAttribPointer( attrib_normal, 3, GL_FLOAT, GL_FALSE, sizeof(cp_vertex), ( void * )(sizeof(cp_vertex::position)) );
+    glVertexAttribPointer( attrib_color, 4, GL_FLOAT, GL_FALSE, sizeof(cp_vertex), ( void * )(sizeof(cp_vertex::position) + sizeof(cp_vertex::normal)) );
 
     camera = { {50.0f, 200.0f, -200.0f}, {100.0f, 0.0f, -100.0f}, {0.0f, 1.0f, 0.0f}, float(width) / float(height), glm::radians(45.0f), 0.1f, 1000.0f};
     camera.generate();
@@ -344,7 +464,13 @@ public:
             }
             case SDLK_F2: {
               if (e.type == SDL_KEYUP) {
-                show_full_path = !show_full_path;
+                render_full_path = !render_full_path;
+              }
+              break;
+            }
+            case SDLK_F3: {
+              if (e.type == SDL_KEYUP) {
+                render_path_line = !render_path_line;
               }
               break;
             }
@@ -409,9 +535,11 @@ public:
     }
   }
 
+  using millisec = std::chrono::duration<float, std::milli>;
   void update() {
-    float delta = (Clock::micros() - last_update) / 1000000.0;
-    last_update = Clock::micros();
+    auto now = clock.now();
+    float delta = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_update).count();
+    last_update = now;
 
     if (input_state[0]) {
       camera.position -= camera.speed * camera.direction * delta;
@@ -462,24 +590,36 @@ public:
     glUniformMatrix4fv( glGetUniformLocation( program, "u_mvp" ), 1, GL_FALSE, glm::value_ptr(mvp));
     glDrawArrays( GL_TRIANGLES, 18, 24);
 
+
     glm::mat4 print_path_matrix = glm::mat4(1.0f);
     mvp = camera.proj * camera.view * print_path_matrix;
-    glUseProgram( path_program );
-    glUniformMatrix4fv( glGetUniformLocation( path_program, "u_mvp" ), 1, GL_FALSE, glm::value_ptr(mvp));
-
+    glUniformMatrix4fv( glGetUniformLocation( program, "u_mvp" ), 1, GL_FALSE, glm::value_ptr(mvp));
     auto active_path = active_path_block; // a new active path block can be added at any time, so back up the active block ptr;
     std::size_t data_length = active_path->size();
-    if (active_path != nullptr && data_length > 1) {
-      glBufferData( GL_ARRAY_BUFFER, data_length * sizeof(std::remove_pointer<decltype(active_path)>::type::value_type), &(*active_path)[0], GL_STATIC_DRAW );
-      glDrawArrays( GL_LINE_STRIP, 0, data_length);
+
+    if (render_path_line) {
+      if (active_path != nullptr && data_length > 1) {
+        glBufferData( GL_ARRAY_BUFFER, data_length * sizeof(std::remove_pointer<decltype(active_path)>::type::value_type), &(*active_path)[0], GL_STATIC_DRAW );
+        glDrawArrays( GL_LINE_STRIP_ADJACENCY, 0, data_length);
+      }
     }
 
-    if (show_full_path) {
+    glUseProgram( path_program );
+    glUniformMatrix4fv( glGetUniformLocation( path_program, "u_mvp" ), 1, GL_FALSE, glm::value_ptr(mvp));
+    glUniform3fv( glGetUniformLocation( path_program, "u_view_position" ), 1, glm::value_ptr(camera.position));
+
+    if (active_path != nullptr && data_length > 1) {
+      glBufferData( GL_ARRAY_BUFFER, data_length * sizeof(std::remove_pointer<decltype(active_path)>::type::value_type), &(*active_path)[0], GL_STATIC_DRAW );
+      glDrawArrays( GL_LINE_STRIP_ADJACENCY, 0, data_length);
+    }
+
+    if (render_full_path) {
       for (auto& path : full_path) {
         if (&path[0] == &(*active_path)[0]) break;
+        // these are no longer dynamic buffers and could have the geometry baked rather than continue using the geometery shader
         std::size_t data_length = path.size();
         glBufferData( GL_ARRAY_BUFFER, data_length * sizeof(std::remove_reference<decltype(path)>::type::value_type), &path[0], GL_STATIC_DRAW );
-        glDrawArrays( GL_LINE_STRIP, 0, data_length);
+        glDrawArrays( GL_LINE_STRIP_ADJACENCY, 0, data_length);
       }
     }
 
@@ -495,59 +635,64 @@ public:
 
   glm::vec4 last_position = {};
   bool extruding = false;
+  const float filiment_diameter = 1.75;
 
   void set_head_position(glm::vec4 position) {
     if (position != effector_pos) {
       if (active_path_block != nullptr && active_path_block->size() > 1 && active_path_block->size() < 10000) {
 
         if (glm::length(glm::vec3(position) - glm::vec3(last_position)) > 0.1f) {
-          if(points_are_colinear(position, active_path_block->end()[-2].position, active_path_block->end()[-1].position)) {
+          if(points_are_collinear(position, active_path_block->end()[-3].position, active_path_block->end()[-2].position)) {
             if (extruding == (position.w - last_position.w > 0.0f)) { // extrusion state has not changed to we can just change the current line.
+              active_path_block->end()[-2].position = position;
               active_path_block->end()[-1].position = position;
             } else {
               extruding = position.w - last_position.w > 0.0f;
-              active_path_block->push_back({{1.0, 0.0, 0.0, extruding ? 1.0 : 0.0}, last_position});
-              active_path_block->push_back({{1.0, 0.0, 0.0, extruding ? 1.0 : 0.0}, position});
+              // use the dummy
+              active_path_block->end()[-1] = {position, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0, (position.w - last_position.w) * filiment_diameter > 0}};
+              // add new dummy
+              active_path_block->push_back(active_path_block->back());
             }
 
           } else {
-            if (extruding == (position.w - last_position.w > 0.0f)) {
-              active_path_block->push_back({{1.0, 0.0, 0.0, extruding ? 1.0 : 0.0}, position});
-            } else {
               extruding = position.w - last_position.w > 0.0f;
-              active_path_block->push_back({{1.0, 0.0, 0.0, extruding ? 1.0 : 0.0}, last_position});
-              active_path_block->push_back({{1.0, 0.0, 0.0, extruding ? 1.0 : 0.0}, position});
-            }
+              // use the dummy
+              active_path_block->end()[-1] ={position, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0, (position.w - last_position.w) * filiment_diameter > 0}};
+              // add new dummy
+              active_path_block->push_back(active_path_block->back());
           }
           last_position = position;
         }
       } else {
         if (active_path_block == nullptr) {
-          full_path.push_back({});
-          full_path.back().reserve(10000);
+          full_path.push_back({{position, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0, 0.0}}});
+          full_path.back().reserve(10100);
           active_path_block = &full_path.end()[-1];
         } else {
           full_path.push_back({full_path.back().back()});
-          full_path.back().reserve(10000);
+          full_path.back().reserve(10100);
           active_path_block = &full_path.end()[-1];
         }
-        active_path_block->push_back({{1.0, 0.0, 0.0, extruding ? 1.0 : 0.0}, position});
-
+        // extra dummy verticies for line strip adjacency
+        active_path_block->push_back(active_path_block->back());
+        active_path_block->push_back(active_path_block->back());
+        active_path_block->push_back(active_path_block->back());
         last_position = position;
       }
-
       effector_pos = position;
     }
   }
 
-  bool points_are_colinear(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+  bool points_are_collinear(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
     return glm::length(glm::dot(b - a, c - a) - (glm::length(b - a) * glm::length(c - a))) < 0.0001;
   }
 
   bool follow_mode = false;
-  bool show_full_path = true;
+  bool render_full_path = true;
+  bool render_path_line = false;
   glm::vec3 follow_offset = {0.0f, 0.0f, 0.0f};
-  uint32_t last_update = 0;
+  std::chrono::high_resolution_clock clock;
+  std::chrono::high_resolution_clock::time_point last_update;
   glm::vec4 effector_pos = {};
   glm::vec3 effector_scale = {3.0f ,10.0f, 3.0f};
 
@@ -563,40 +708,40 @@ public:
   bool mouse_captured = false;
   bool input_state[6] = {};
 
-  const std::array<GLfloat, 24 * 7> g_vertex_buffer_data{
+  const std::array<GLfloat, 24 * 10> g_vertex_buffer_data{
       //end effector
-      1, 0, 0, 1, 0, 0, 0,
-      0, 1, 0, 1, -0.5, 0.5, 0.5,
-      0, 0, 1, 1, -0.5, 0.5, -0.5,
+      0, 0, 0, 0.0, 0.0, 0.0, 1, 0, 0, 1,
+      -0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
+      -0.5, 0.5, -0.5, 0.0, 0.0, 0.0, 0, 0, 1, 1,
 
-      1, 0, 0, 1, 0, 0, 0,
-      0, 0, 1, 1, -0.5, 0.5, -0.5,
-      0, 1, 0, 1, 0.5, 0.5, -0.5,
+      0, 0, 0, 0.0, 0.0, 0.0, 1, 0, 0, 1,
+      -0.5, 0.5, -0.5, 0.0, 0.0, 0.0, 0, 0, 1, 1,
+       0.5, 0.5, -0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
 
-      1, 0, 0, 1, 0, 0, 0,
-      0, 1, 0, 1, 0.5, 0.5, -0.5,
-      0, 0, 1, 1, 0.5, 0.5, 0.5,
+      0, 0, 0, 0.0, 0.0, 0.0, 1, 0, 0, 1,
+       0.5, 0.5, -0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
+       0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0, 0, 1, 1,
 
-      1, 0, 0, 1, 0, 0, 0,
-      0, 0, 1, 1, 0.5, 0.5, 0.5,
-      0, 1, 0, 1, -0.5, 0.5, 0.5,
+      0, 0, 0, 0.0, 0.0, 0.0, 1, 0, 0, 1,
+       0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0, 0, 1, 1,
+      -0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
 
-      0, 1, 0, 1, 0.5, 0.5, -0.5,
-      0, 0, 1, 1, -0.5, 0.5, -0.5,
-      0, 1, 0, 1, -0.5, 0.5, 0.5,
+       0.5, 0.5, -0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
+      -0.5, 0.5, -0.5, 0.0, 0.0, 0.0, 0, 0, 1, 1,
+      -0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
 
-      0, 1, 0, 1, 0.5, 0.5, -0.5,
-      0, 1, 0, 1, -0.5, 0.5, 0.5,
-      0, 0, 1, 1, 0.5, 0.5, 0.5,
+       0.5, 0.5, -0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
+      -0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0, 1, 0, 1,
+       0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0, 0, 1, 1,
 
       // bed
-      0.5, 0.5, 0.5, 1, 0.5, 0, -0.5,
-      0.5, 0.5, 0.5, 1, -0.5, 0, -0.5,
-      0.5, 0.5, 0.5, 1, -0.5, 0, 0.5,
+      0.5, 0, -0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 1,
+      -0.5, 0, -0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 1,
+      -0.5, 0, 0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 1,
 
-      0.5, 0.5, 0.5, 1, 0.5, 0, -0.5,
-      0.5, 0.5, 0.5, 1, -0.5, 0, 0.5,
-      0.5, 0.5, 0.5, 1, 0.5, 0, 0.5,
+      0.5, 0, -0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 1,
+      -0.5, 0, 0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 1,
+      0.5, 0, 0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 1,
   };
 
 

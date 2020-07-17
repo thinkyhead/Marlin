@@ -47,7 +47,8 @@ void Heater::update() {
 
   heater_state = pwmcap.update(0xFFFF * Gpio::pin_map[heater_pin].value);
   heat += (heater_state - heat) * (delta / 500.0);
-  NOLESS(heat, room_temp_raw);
+  if ( heat < room_temp_raw) heat = room_temp_raw;
+  else if (heat > 4095 - (48 << 2)) heat = 4095 - (48 << 2);
   Gpio::pin_map[analogInputToDigitalPin(adc_pin)].value = 0xFFFF - (uint16_t)heat;
 }
 

@@ -8,7 +8,12 @@
 
 class ST7920Device: public Peripheral {
 public:
+  enum KeyName {
+    ARROW_UP, ARROW_DOWN, COUNT
+  };
+
   struct Command {
+    Command(uint8_t rw, uint8_t rs, uint8_t data) : rw(rw), rs(rs), data(data){};
     uint8_t rw = 0;
     uint8_t rs = 0;
     uint8_t data = 0;
@@ -16,6 +21,7 @@ public:
 
   ST7920Device(pin_type clk, pin_type mosi, pin_type cs, pin_type beeper, pin_type enc1, pin_type enc2, pin_type enc_but, pin_type kill);
   virtual ~ST7920Device();
+  void process_command(Command cmd);
   void update();
   void interrupt(GpioEvent ev);
 
@@ -52,9 +58,12 @@ public:
   void encoder_rotate_cw();
   void encoder_rotate_ccw();
 
+  bool key_pressed[KeyName::COUNT] = {};
+
   bool close_request = false;
   bool dirty = true;
-  uint32_t last_frame = 0;
+  std::chrono::high_resolution_clock clock;
+  std::chrono::high_resolution_clock::time_point last_update;
   uint8_t encoder_position = 0;
   float scaler;
 

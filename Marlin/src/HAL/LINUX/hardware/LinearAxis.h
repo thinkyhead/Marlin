@@ -26,7 +26,7 @@
 
 class LinearAxis: public Peripheral {
 public:
-  LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type end_min, pin_type end_max);
+  LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type end_min, pin_type end_max, bool invert_travel = false);
   virtual ~LinearAxis();
   void update();
   void interrupt(GpioEvent ev);
@@ -41,5 +41,6 @@ public:
   int32_t min_position;
   int32_t max_position;
   uint64_t last_update;
+  int8_t invert_travel;
 
 };
