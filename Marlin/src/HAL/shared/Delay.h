@@ -144,7 +144,7 @@
   }
   #undef nop
 
-#elif defined(__PLAT_LINUX__) || defined(ESP32)
+#elif defined(__PLAT_NATIVE_REALTIME__) || defined(ESP32) || defined(__PLAT_NATIVE_SIM__)
 
   // specified inside platform
 
