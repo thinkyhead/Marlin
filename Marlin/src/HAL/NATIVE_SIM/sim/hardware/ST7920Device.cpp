@@ -97,6 +97,9 @@ void ST7920Device::update() {
   // }
   auto now = clock.now();
   float delta = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_update).count();
+  char buffer[255];
+  sprintf(buffer, "%f", kernel.ticksToNanos(kernel.getTicks()) / 1000000000.0);
+  SDL_SetWindowTitle(window, buffer);
 
   if (dirty && delta > 1.0 / 30.0) {
     last_update = now;
@@ -118,12 +121,12 @@ void ST7920Device::update() {
 
   if (key_pressed[KeyName::ARROW_DOWN]) {
     encoder_rotate_ccw();
-    Clock::delayMicros(50);
+    //kernel.delayMicros(50);
     encoder_rotate_ccw();
   }
   if(key_pressed[KeyName::ARROW_UP]) {
     encoder_rotate_cw();
-    Clock::delayMicros(20);
+    //kernel.delayMicros(20);
     encoder_rotate_cw();
   }
 
@@ -199,11 +202,11 @@ void ST7920Device::process_event(SDL_Event& e) {
       if (e.wheel.windowID == SDL_GetWindowID( window )) {
         if (e.wheel.y > 0 ){
           encoder_rotate_cw();
-          Clock::delayMicros(200);
+          //kernel.delayMicros(200);
           encoder_rotate_cw();
         } else {
           encoder_rotate_ccw();
-          Clock::delayMicros(200);
+          //kernel.delayMicros(200);
           encoder_rotate_ccw();
         }
       }

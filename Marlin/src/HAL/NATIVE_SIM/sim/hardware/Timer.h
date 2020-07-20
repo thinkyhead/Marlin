@@ -28,7 +28,7 @@
 #include <time.h>
 #include <stdio.h>
 
-#include "Clock.h"
+#include "../execution_control.h"
 
 class Timer {
 public:
@@ -54,9 +54,9 @@ public:
 
   static void handler(int sig, siginfo_t *si, void *uc){
     Timer* _this = (Timer*)si->si_value.sival_ptr;
-    _this->avg_error += (Clock::nanos() - _this->start_time) - _this->period; //high_resolution_clock is also limited in precision, but best we have
+    _this->avg_error += (kernel.nanos() - _this->start_time) - _this->period; //high_resolution_clock is also limited in precision, but best we have
     _this->avg_error /= 2; //very crude precision analysis (actually within +-500ns usually)
-    _this->start_time = Clock::nanos(); // wrap
+    _this->start_time = kernel.nanos(); // wrap
     _this->cbfn();
     _this->overruns = si->si_overrun; // even at 50Khz this doesn't stay zero, again demonstrating the limitations
                                        // using a realtime linux kernel would help somewhat

@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include "Clock.h"
+#include "../execution_control.h"
 #include "src/inc/MarlinConfigPre.h"
 #include <stdint.h>
 
@@ -107,7 +107,7 @@ public:
     if (!valid_pin(pin)) return;
     GpioEvent::Type evt_type = value > 1 ? GpioEvent::SET_VALUE : value > pin_map[pin].value ? GpioEvent::RISE : value < pin_map[pin].value ? GpioEvent::FALL : GpioEvent::NOP;
     pin_map[pin].value = value;
-    GpioEvent evt(Clock::nanos(), pin, evt_type);
+    GpioEvent evt(kernel.nanos(), pin, evt_type);
     if (pin_map[pin].cb != nullptr) {
       pin_map[pin].cb->interrupt(evt);
     }
@@ -127,7 +127,7 @@ public:
     if (!valid_pin(pin)) return;
     pin_map[pin].mode = pin_data::Mode::GPIO;
 
-    GpioEvent evt(Clock::nanos(), pin, GpioEvent::Type::SETM);
+    GpioEvent evt(kernel.nanos(), pin, GpioEvent::Type::SETM);
     //if (pin_map[pin].cb != nullptr) pin_map[pin].cb->interrupt(evt);
     if (Gpio::logger != nullptr) Gpio::logger->log(evt);
 
@@ -147,7 +147,7 @@ public:
   static void setDir(pin_type pin, uint8_t value) {
     if (!valid_pin(pin)) return;
     pin_map[pin].dir = value;
-    GpioEvent evt(Clock::nanos(), pin, GpioEvent::Type::SETD);
+    GpioEvent evt(kernel.nanos(), pin, GpioEvent::Type::SETD);
     if (pin_map[pin].cb != nullptr) pin_map[pin].cb->interrupt(evt);
     if (Gpio::logger != nullptr) Gpio::logger->log(evt);
   }

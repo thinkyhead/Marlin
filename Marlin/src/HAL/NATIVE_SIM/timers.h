@@ -32,7 +32,7 @@
 
 #define FORCE_INLINE __attribute__((always_inline)) inline
 
-typedef uint32_t hal_timer_t;
+typedef uint64_t hal_timer_t;
 #define HAL_TIMER_TYPE_MAX 0xFFFFFFFF
 
 #define HAL_TIMER_RATE         ((SystemCoreClock) / 4)  // frequency of timers peripherals
@@ -72,22 +72,12 @@ typedef uint32_t hal_timer_t;
   #define HAL_TEMP_TIMER_ISR()  extern "C" void TIMER1_IRQHandler()
 #endif
 
-// PWM timer
-#define HAL_PWM_TIMER
-#define HAL_PWM_TIMER_ISR()   extern "C" void TIMER3_IRQHandler()
-#define HAL_PWM_TIMER_IRQn
-
-
 void HAL_timer_init();
 void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency);
 
 void HAL_timer_set_compare(const uint8_t timer_num, const hal_timer_t compare);
 hal_timer_t HAL_timer_get_compare(const uint8_t timer_num);
 hal_timer_t HAL_timer_get_count(const uint8_t timer_num);
-FORCE_INLINE static void HAL_timer_restrain(const uint8_t timer_num, const uint16_t interval_ticks) {
-  const hal_timer_t mincmp = HAL_timer_get_count(timer_num) + interval_ticks;
-  if (HAL_timer_get_compare(timer_num) < mincmp) HAL_timer_set_compare(timer_num, mincmp);
-}
 
 void HAL_timer_enable_interrupt(const uint8_t timer_num);
 void HAL_timer_disable_interrupt(const uint8_t timer_num);

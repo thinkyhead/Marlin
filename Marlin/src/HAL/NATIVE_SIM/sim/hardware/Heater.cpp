@@ -30,7 +30,7 @@
 Heater::Heater(pin_t heater, pin_t adc) {
   heater_state = 0;
   room_temp_raw = 150;
-  last = Clock::micros();
+  last = kernel.micros();
   heater_pin = heater;
   adc_pin = adc;
   heat = 0.0;
@@ -41,7 +41,7 @@ Heater::~Heater() {
 
 void Heater::update() {
   // crude pwm read and cruder heat simulation
-  auto now = Clock::micros();
+  auto now = kernel.micros();
   double delta = (now - last) / 1000000.0f;
   last = now;
 

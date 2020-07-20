@@ -90,11 +90,11 @@ void Timer::disable() {
 void Timer::setCompare(uint32_t compare) {
   uint32_t nsec_offset = 0;
   if (active) {
-    nsec_offset = Clock::nanos() - this->start_time; // calculate how long the timer would have been running for
+    nsec_offset = kernel.nanos() - this->start_time; // calculate how long the timer would have been running for
     nsec_offset = nsec_offset < 1000 ? nsec_offset : 0; // constrain, this shouldn't be needed but apparently Marlin enables interrupts on the stepper timer before initialising it, todo: investigate ?bug?
   }
   this->compare = compare;
-  uint64_t ns = Clock::ticksToNanos(compare, frequency) - nsec_offset;
+  uint64_t ns = kernel.ticksToNanos(compare, frequency) - nsec_offset;
   struct itimerspec its;
   its.it_value.tv_sec = ns / 1000000000;
   its.it_value.tv_nsec = ns % 1000000000;
@@ -107,11 +107,11 @@ void Timer::setCompare(uint32_t compare) {
   }
   //printf("timer(%ld) started, compare: %d(%d)\n", getID(), compare, its.it_value.tv_nsec);
   this->period = its.it_value.tv_nsec;
-  this->start_time = Clock::nanos();
+  this->start_time = kernel.nanos();
 }
 
 uint32_t Timer::getCount() {
-  return Clock::nanosToTicks(Clock::nanos() - this->start_time, frequency);
+  return kernel.nanosToTicks(kernel.nanos() - this->start_time, frequency);
 }
 
 #endif // __PLAT_NATIVE_SIM__

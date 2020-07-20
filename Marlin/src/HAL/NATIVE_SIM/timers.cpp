@@ -21,51 +21,87 @@
  */
 #ifdef __PLAT_NATIVE_SIM__
 
-#include "sim/hardware/Timer.h"
+// #include "sim/hardware/Timer.h"
 
 #include <src/inc/MarlinConfig.h>
 
-/**
- * Use POSIX signals to attempt to emulate Interrupts
- * This has many limitations and is not fit for the purpose
- */
+// /**
+//  * Use POSIX signals to attempt to emulate Interrupts
+//  * This has many limitations and is not fit for the purpose
+//  */
 
-HAL_STEP_TIMER_ISR();
-HAL_TEMP_TIMER_ISR();
+// HAL_STEP_TIMER_ISR();
+// HAL_TEMP_TIMER_ISR();
 
-Timer timers[2];
+// Timer timers[2];
+
+// void HAL_timer_init() {
+//   timers[0].init(0, STEPPER_TIMER_RATE, TIMER0_IRQHandler);
+//   timers[1].init(1, TEMP_TIMER_RATE, TIMER1_IRQHandler);
+// }
+
+// void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency) {
+//   timers[timer_num].start(frequency);
+// }
+
+// void HAL_timer_enable_interrupt(const uint8_t timer_num) {
+//   timers[timer_num].enable();
+// }
+
+// void HAL_timer_disable_interrupt(const uint8_t timer_num) {
+//   timers[timer_num].disable();
+// }
+
+// bool HAL_timer_interrupt_enabled(const uint8_t timer_num) {
+//   return timers[timer_num].enabled();
+// }
+
+// void HAL_timer_set_compare(const uint8_t timer_num, const hal_timer_t compare) {
+//   timers[timer_num].setCompare(compare);
+// }
+
+// hal_timer_t HAL_timer_get_compare(const uint8_t timer_num) {
+//   return timers[timer_num].getCompare();
+// }
+
+// hal_timer_t HAL_timer_get_count(const uint8_t timer_num) {
+//   return timers[timer_num].getCount();
+// }
+
+#include "sim/execution_control.h"
+extern Kernel kernel;
 
 void HAL_timer_init() {
-  timers[0].init(0, STEPPER_TIMER_RATE, TIMER0_IRQHandler);
-  timers[1].init(1, TEMP_TIMER_RATE, TIMER1_IRQHandler);
+  kernel.timerInit(STEP_TIMER_NUM, STEPPER_TIMER_RATE);
+  kernel.timerInit(TEMP_TIMER_NUM, TEMP_TIMER_RATE);
 }
 
 void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency) {
-  timers[timer_num].start(frequency);
+  kernel.timerStart(timer_num, frequency);
 }
 
 void HAL_timer_enable_interrupt(const uint8_t timer_num) {
-  timers[timer_num].enable();
+  kernel.timerEnable(timer_num);
 }
 
 void HAL_timer_disable_interrupt(const uint8_t timer_num) {
-  timers[timer_num].disable();
+  kernel.timerDisable(timer_num);
 }
 
 bool HAL_timer_interrupt_enabled(const uint8_t timer_num) {
-  return timers[timer_num].enabled();
+  return kernel.timerEnabled(timer_num);
 }
 
 void HAL_timer_set_compare(const uint8_t timer_num, const hal_timer_t compare) {
-  timers[timer_num].setCompare(compare);
+  kernel.timerSetCompare(timer_num, compare);
 }
 
 hal_timer_t HAL_timer_get_compare(const uint8_t timer_num) {
-  return timers[timer_num].getCompare();
+  return kernel.timerGetCompare(timer_num);
 }
 
 hal_timer_t HAL_timer_get_count(const uint8_t timer_num) {
-  return timers[timer_num].getCount();
+  return kernel.timerGetCount(timer_num);
 }
 
 #endif // __PLAT_NATIVE_SIM__

@@ -19,34 +19,37 @@
  */
 #ifdef __PLAT_NATIVE_SIM__
 
-#define ENABLE_SIMULATION
 //#define GPIO_LOGGING // Full GPIO Logging
 //#define POSITION_LOGGING // Positional Logging
 
 extern void setup();
 extern void loop();
 
-#include <thread>
-#include <pthread.h>
-
-#include <iostream>
-#include <fstream>
-
-#ifdef ENABLE_SIMULATION
-  #include "hardware/IOLoggerCSV.h"
-  #include "hardware/Heater.h"
-  #include "hardware/LinearAxis.h"
-  #include "hardware/ST7920Device.h"
-  #include "visualisation.h"
-#endif
-
-#include "src/inc/MarlinConfig.h"
 #include <stdio.h>
 #include <stdarg.h>
-#include "../../shared/Delay.h"
+#include <thread>
+#include <pthread.h>
+#include <iostream>
+#include <fstream>
+#include <chrono>
+using namespace std::chrono_literals;
+
+
+#include "execution_control.h"
+
+#include "hardware/IOLoggerCSV.h"
+#include "hardware/Heater.h"
+#include "hardware/LinearAxis.h"
+#include "hardware/ST7920Device.h"
+#include "visualisation.h"
+
+#include "src/inc/MarlinConfig.h"
 
 bool finished = false;
 bool main_finished = false;
+
+std::atomic_bool initialised = false;
+Kernel kernel;
 
 // simple stdout / stdin implementation for fake serial port
 void write_serial_thread() {
@@ -57,7 +60,6 @@ void write_serial_thread() {
       buffer[count] = '\0';
       fputs(buffer, stdout);
     }
-    DELAY_US(100);
     std::this_thread::yield();
   }
 }
@@ -68,12 +70,10 @@ void read_serial_thread() {
     std::size_t len = _MIN(usb_serial.receive_buffer.free(), 254U);
     if (fgets(buffer, len, stdin))
         usb_serial.receive_buffer.write((uint8_t*)buffer, strlen(buffer));
-    DELAY_US(100);
     std::this_thread::yield();
   }
 }
 
-#ifdef ENABLE_SIMULATION
 void simulation_loop() {
   Heater hotend(HEATER_0_PIN, TEMP_0_PIN);
   Heater bed(HEATER_BED_PIN, TEMP_BED_PIN);
@@ -102,6 +102,16 @@ void simulation_loop() {
   #endif
 
   vis.set_data_source(&x_axis.position, &y_axis.position,  &z_axis.position, &extruder0.position);
+
+  hotend.update();
+  bed.update();
+
+  x_axis.update();
+  y_axis.update();
+  z_axis.update();
+  extruder0.update();
+
+  initialised = true;
 
   while (!main_finished) {
 
@@ -145,24 +155,14 @@ void simulation_loop() {
       // flush the logger
       logger.flush();
     #endif
-    DELAY_US(1);
     std::this_thread::yield();
   }
   vis.destroy();
 
   SDL_Quit();
 }
-#endif
 
 int main() {
-  // sched_param sch;
-  // int policy;
-  // pthread_getschedparam(pthread_self(), &policy, &sch);
-  // sch.sched_priority = sched_get_priority_max(SCHED_FIFO);
-  // if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &sch)) {
-  //     std::cout << "Unable to change thread scheduler priority (" << std::strerror(errno) << ")\n";
-  // }
-
   std::thread write_serial (write_serial_thread);
   std::thread read_serial (read_serial_thread);
 
@@ -171,33 +171,28 @@ int main() {
     SERIAL_FLUSHTX();
   #endif
 
-  Clock::setFrequency(F_CPU);
-  Clock::setTimeMultiplier(4.0); // some testing at 4x
-
+  // kernel.setFrequency(F_CPU);
+  // kernel.setTimeMultiplier(1.0); // some testing at 4x
   HAL_timer_init();
+  std::thread simulation (simulation_loop);
 
-  #ifdef ENABLE_SIMULATION
-    std::thread simulation (simulation_loop);
-  #endif
+  while(!initialised) std::this_thread::sleep_for(200ms);
 
-  DELAY_US(10000);
-  setup();
+  kernel.timerInit(2, 100000000);
+  kernel.timerStart(2, 1000);
+  kernel.timerEnable(2);
+
   while (!finished) {
-    loop();
-    DELAY_US(1);
-    std::this_thread::yield();
+    kernel.execute_loop();
   }
+  kernel.kill();
 
-  // signal that main is finished and the other threads can now exit safely
   main_finished = true;
-
-  #ifdef ENABLE_SIMULATION
-    simulation.join();
-  #endif
-
+  simulation.join();
   write_serial.join();
   read_serial.join();
 
 }
+
 
 #endif // __PLAT_NATIVE_SIM__

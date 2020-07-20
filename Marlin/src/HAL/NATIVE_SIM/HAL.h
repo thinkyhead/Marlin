@@ -49,8 +49,6 @@ uint8_t _getc();
 #define B01 1
 #define B10 2
 
-#include "sim/hardware/Clock.h"
-
 #include "../shared/Marduino.h"
 #include "../shared/math_32bit.h"
 #include "../shared/HAL_SPI.h"
@@ -103,9 +101,8 @@ inline void HAL_clear_reset_source(void) {}
 inline uint8_t HAL_get_reset_source(void) { return RST_POWER_ON; }
 
 /* ---------------- Delay in cycles */
-FORCE_INLINE static void DELAY_CYCLES(uint64_t x) {
-  Clock::delayCycles(x);
-}
+
+#define DELAY_CYCLES(x) kernel.delayCycles(x)
 
 // Add strcmp_P if missing
 #ifndef strcmp_P

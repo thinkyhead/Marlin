@@ -72,12 +72,6 @@ typedef uint32_t hal_timer_t;
   #define HAL_TEMP_TIMER_ISR()  extern "C" void TIMER1_IRQHandler()
 #endif
 
-// PWM timer
-#define HAL_PWM_TIMER
-#define HAL_PWM_TIMER_ISR()   extern "C" void TIMER3_IRQHandler()
-#define HAL_PWM_TIMER_IRQn
-
-
 void HAL_timer_init();
 void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency);
 

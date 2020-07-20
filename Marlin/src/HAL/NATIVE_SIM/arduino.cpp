@@ -23,7 +23,8 @@
 
 #include <iostream>
 #include <src/inc/MarlinConfig.h>
-#include "sim/hardware/Clock.h"
+#include "sim/execution_control.h"
+
 #include "../shared/Delay.h"
 
 // Interrupts
@@ -36,16 +37,16 @@ void _delay_ms(const int delay_ms) {
 }
 
 uint32_t millis() {
-  return (uint32_t)Clock::millis();
+  return (uint32_t)kernel.millis();
 }
 
 // This is required for some Arduino libraries we are using
 void delayMicroseconds(uint32_t us) {
-  Clock::delayMicros(us);
+  kernel.delayMicros(us);
 }
 
 extern "C" void delay(const int msec) {
-  Clock::delayMillis(msec);
+  kernel.delayMillis(msec);
 }
 
 // IO functions
