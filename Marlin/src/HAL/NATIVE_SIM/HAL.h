@@ -22,6 +22,8 @@
 #pragma once
 
 #define CPU_32_BIT
+#define HAL_IDLETASK
+void HAL_idletask();
 
 #define F_CPU 100000000
 #define SystemCoreClock F_CPU
@@ -103,6 +105,7 @@ inline uint8_t HAL_get_reset_source(void) { return RST_POWER_ON; }
 /* ---------------- Delay in cycles */
 
 #define DELAY_CYCLES(x) kernel.delayCycles(x)
+#define SYSTEM_YIELD() kernel.yield()
 
 // Add strcmp_P if missing
 #ifndef strcmp_P

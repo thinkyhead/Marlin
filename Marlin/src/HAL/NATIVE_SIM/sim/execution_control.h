@@ -6,45 +6,39 @@
 #include <atomic>
 #include <algorithm>
 #include <cassert>
+#include <map>
 
 extern void setup();
 extern void loop();
 extern "C" void TIMER0_IRQHandler();
 extern "C" void TIMER1_IRQHandler();
 
+
+constexpr inline uint64_t tickConvertFrequency(std::uint64_t value, std::uint64_t from, std::uint64_t to) {
+  return from > to ? value / (from / to) : value * (to / from);
+}
+
 class KernelThread {
 public:
-  KernelThread(std::string name, void (*callback_loop)(),  void (*callback_init)() = nullptr) : name(name), thread_loop(callback_loop), thread_init(callback_init == nullptr ? callback_loop : callback_init), thread(&KernelThread::thread_main, this) {}
-  void thread_main() {
-    while (active) {
-      if (execute_loop) {
-        execute_loop = false;
-        running = true;
-        if (initilised) thread_loop(); else { thread_init(); initilised = true;}
-        running = false;
-      }
-      std::this_thread::yield();
-    }
+  KernelThread(std::string name, void (*callback_loop)(),  void (*callback_init)() = nullptr) : name(name), thread_loop(callback_loop), thread_init(callback_init == nullptr ? callback_loop : callback_init) {}
+
+  uint64_t next_interrupt(const uint64_t main_frequency) {
+    return timer_enabled ? timer_offset + tickConvertFrequency(timer_compare, timer_rate, main_frequency) : std::numeric_limits<uint64_t>::max();
   }
 
-  uint64_t next_interrupt(const uint64_t main_frequency, const uint64_t ticks) {
-    return timer_enabled ? timer_offset + (timer_compare * (main_frequency / (float)timer_rate)) : std::numeric_limits<uint64_t>::max();
+  uint64_t timer_count(const uint64_t system_ticks, const uint64_t system_frequency) {
+    return tickConvertFrequency(system_ticks - timer_offset, timer_rate, system_frequency);
   }
-
-  std::atomic_bool execute_loop = false;
-  std::atomic_bool active = true;
-  std::atomic_bool running = false;
 
   bool initilised = false;
   bool timer_enabled = false;
-  uint32_t timer_rate = 0;
-  uint32_t timer_compare = 0;
-  std::uint64_t timer_offset = 0;
+  std::uint64_t timer_rate{0};
+  std::uint64_t timer_compare{0};
+  std::uint64_t timer_offset{0};
   std::string name;
 
   std::function<void()> thread_loop;
   std::function<void()> thread_init;
-  std::thread thread;
 };
 
 class Kernel {
@@ -52,63 +46,44 @@ public:
   // ordered highest priority first
   Kernel() : threads({KernelThread{"Stepper ISR", TIMER0_IRQHandler}, {"Temperature ISR", TIMER1_IRQHandler}, {"Marlin Loop", loop, setup}}) {}
   std::array<KernelThread, 3> threads;
+  KernelThread* this_thread = nullptr;
+  bool timers_active = true;
 
-  void kill() {
-    for (auto& thread : threads) {
-      thread.active = false;
-      thread.thread.join();
-    }
-  }
-
-  //execute highest priority thread with closest interrupt
-  bool execute_loop() {
-    uint64_t lowest = std::numeric_limits<uint64_t>::max();
-    KernelThread* next = nullptr;
-    for (auto& thread : threads) {
-      auto value = thread.next_interrupt(frequency, ticks);
-      if (value < lowest && thread.timer_enabled && std::this_thread::get_id() != thread.thread.get_id()) {
-        lowest = value;
-        next = &thread;
-      }
-    }
-    if (next != nullptr) {
-      next->execute_loop = true;
-      while (next->running);
-      next->timer_offset = ticks = lowest;
-      return true;
-    }
-    //assert("this shouldnt happen? something must want to run");
-    // but it does because of global constructors running Arduino code before any tasks are added to the simulation
-    return false;
-  }
-
+  //execute highest priority thread with closest interrupt, return true if something was executed
+  bool execute_loop( uint64_t max_end_ticks = std::numeric_limits<uint64_t>::max());
   // if a thread wants to wait, see what should be executed during that wait
-  inline void delayCycles(uint64_t cycles) {
-    auto end = ticks + cycles;
-    while (execute_loop() && ticks < end);
-    ticks = end;
-  }
+  void delayCycles(uint64_t cycles);
+  // this was neede for when marlin loops idle waiting for an event with no delays
+  void yield();
 
   //Timers
+  inline void disableInterrupts() {
+    timers_active = false;
+  }
+
+  inline void enableInterrupts() {
+    timers_active = true;
+  }
+
   inline void timerInit(uint8_t thread_id, uint32_t rate) {
     if (thread_id < threads.size()) {
-      threads[thread_id].timer_rate = rate;
-      printf("Timer[%d] Initialised( rate: %d )\n", thread_id, rate);
+       threads[thread_id].timer_rate = rate;
+      // printf("Timer[%d] Initialised( rate: %d )\n", thread_id, rate);
     }
   }
 
   inline void timerStart(uint8_t thread_id, uint32_t interrupt_frequency) {
     if (thread_id < threads.size()) {
       threads[thread_id].timer_compare = threads[thread_id].timer_rate / interrupt_frequency;
-      threads[thread_id].timer_offset = ticks;
-      printf("Timer[%d] Started( frequency: %d )\n", thread_id, interrupt_frequency);
+      threads[thread_id].timer_offset = ticks.load();
+      // printf("Timer[%d] Started( frequency: %d compare: %ld)\n", thread_id, interrupt_frequency, threads[thread_id].timer_compare);
     }
   }
 
   inline void timerEnable(uint8_t thread_id) {
     if (thread_id < threads.size()) {
       threads[thread_id].timer_enabled = true;
-      printf("Timer[%d] Enabled\n", thread_id);
+      // printf("Timer[%d] Enabled\n", thread_id);
     }
   }
 
@@ -119,18 +94,23 @@ public:
   }
 
   inline void timerDisable(uint8_t thread_id) {
-    if (thread_id < threads.size())
+    if (thread_id < threads.size()) {
       threads[thread_id].timer_enabled = false;
+      //printf("Timer[%d] Disabled\n", thread_id);
+    }
   }
 
   inline void timerSetCompare(uint8_t thread_id, uint64_t compare) {
-    if (thread_id < threads.size())
+    if (thread_id < threads.size()) {
       threads[thread_id].timer_compare = compare;
+    }
   }
 
   inline uint64_t timerGetCount(uint8_t thread_id) {
-    if (thread_id < threads.size())
-      return (ticks - threads[thread_id].timer_offset) * (threads[thread_id].timer_rate / float(frequency) );
+    if (thread_id < threads.size()) {
+      ticks.fetch_add(1 + nanosToTicks(100, threads[thread_id].timer_rate)); // todo: realtime control? time must pass here fore the stepper isr pulse counter
+      return threads[thread_id].timer_count(ticks.load(), frequency);
+    }
     return 0;
   }
 
@@ -145,52 +125,62 @@ public:
     return ticks;
   }
 
-  inline uint64_t nanosToTicks(uint64_t ns) {
-    return ns * (frequency / 1000000);
+  // constants to reduce risk of typos
+  static constexpr uint64_t ONE_BILLION  = 1000'000'000;
+  static constexpr uint64_t ONE_MILLION  = 1000'000;
+  static constexpr uint64_t ONE_THOUSAND = 1000;
+
+  constexpr static uint64_t nanosToTicks(const uint64_t value, const uint64_t freq) {
+    return freq > ONE_BILLION ? value * (freq / ONE_BILLION) : value / (ONE_BILLION / freq);
   }
 
-  inline uint64_t nanosToTicks(uint64_t ns, uint64_t freq) {
-    return ns * (freq / 1000000);
+  inline uint64_t nanosToTicks(uint64_t value) {
+    return nanosToTicks(value, frequency);
   }
 
-  inline uint64_t ticksToNanos(uint64_t tick) {
-    return tick / (frequency / 1000000);
+  constexpr static uint64_t ticksToNanos(const uint64_t value, const uint64_t freq) {
+    return freq > ONE_BILLION ? value / (freq / ONE_BILLION) : value * (ONE_BILLION / freq);
   }
 
-  inline uint64_t ticksToNanos(uint64_t tick, uint64_t freq) {
-    return tick / (freq / 1000000);
+  inline uint64_t ticksToNanos(uint64_t value) {
+    return ticksToNanos(value, frequency);
   }
 
   inline uint64_t nanos() {
+    ticks.fetch_add(nanosToTicks(100)); // todo: some things loop on a delay until the expected period has passed, increase ticks in an interupt at clock frequency?
     return ticksToNanos(ticks);
   }
 
   inline uint64_t micros() {
-    return nanos() / 1000;
+    return nanos() / ONE_THOUSAND;
   }
 
   inline uint64_t millis() {
-    return micros() / 1000000;
+    return nanos() / ONE_MILLION;
   }
 
   inline double seconds() {
-    return nanos() / 1000000000.0;
+    return ticksToNanos(ticks.load()) / double(ONE_BILLION);
+  }
+
+  inline void delayNanos(uint64_t ns) {
+    delayCycles(nanosToTicks(ns));
   }
 
   inline void delayMicros(uint64_t micros) {
-    delayCycles(micros * (frequency / 1000000));
+    delayCycles(nanosToTicks(micros * ONE_THOUSAND));
   }
 
   inline void delayMillis(uint64_t millis) {
-    delayCycles(millis * (frequency / 1000));
+    delayCycles(nanosToTicks(millis * ONE_MILLION));
   }
 
   inline void delaySeconds(double secs) {
-    delayCycles(secs * frequency);
+    delayCycles(nanosToTicks(secs * ONE_BILLION));
   }
 
-  std::atomic_uint64_t ticks = 0;
-  static constexpr uint32_t frequency = 100000000;
+  std::atomic_uint64_t ticks{0};
+  static constexpr uint32_t frequency = 100'000'000;
 };
 
 extern Kernel kernel;

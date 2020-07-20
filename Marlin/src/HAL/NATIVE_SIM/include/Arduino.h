@@ -67,6 +67,8 @@ typedef uint8_t byte;
 //Interrupts
 void cli(); // Disable
 void sei(); // Enable
+void noInterrupts();
+void interrupts();
 void attachInterrupt(uint32_t pin, void (*callback)(), uint32_t mode);
 void detachInterrupt(uint32_t pin);
 extern "C" void GpioEnableInt(uint32_t port, uint32_t pin, uint32_t mode);
@@ -100,6 +102,7 @@ extern "C" {
 void _delay_ms(const int delay);
 void delayMicroseconds(unsigned long);
 uint32_t millis();
+uint64_t micros();
 
 //IO functions
 void pinMode(const pin_t, const uint8_t);

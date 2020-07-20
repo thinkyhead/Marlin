@@ -34,10 +34,10 @@ extern void loop();
 #include <chrono>
 using namespace std::chrono_literals;
 
+#include <imgui.h>
 
 #include "execution_control.h"
 
-#include "hardware/IOLoggerCSV.h"
 #include "hardware/Heater.h"
 #include "hardware/LinearAxis.h"
 #include "hardware/ST7920Device.h"
@@ -45,15 +45,15 @@ using namespace std::chrono_literals;
 
 #include "src/inc/MarlinConfig.h"
 
-bool finished = false;
-bool main_finished = false;
+std::atomic_bool finished = false;
+std::atomic_bool main_finished = false;
 
 std::atomic_bool initialised = false;
 Kernel kernel;
 
 // simple stdout / stdin implementation for fake serial port
 void write_serial_thread() {
-  char buffer[129] = {};
+  char buffer[HalSerial::transmit_buffer_size] = {};
   while (!main_finished) {
     if (usb_serial.transmit_buffer.available()) {
       auto count = usb_serial.transmit_buffer.read((uint8_t*)buffer, usb_serial.transmit_buffer.available());
@@ -65,22 +65,21 @@ void write_serial_thread() {
 }
 
 void read_serial_thread() {
-  char buffer[255] = {};
+  char buffer[HalSerial::receive_buffer_size] = {};
   while (!main_finished) {
-    std::size_t len = _MIN(usb_serial.receive_buffer.free(), 254U);
+    std::size_t len = usb_serial.receive_buffer.free();
     if (fgets(buffer, len, stdin))
         usb_serial.receive_buffer.write((uint8_t*)buffer, strlen(buffer));
     std::this_thread::yield();
   }
 }
 
+std::atomic_bool sim_step{false};
+std::atomic_bool sim_run{false};
+
 void simulation_loop() {
   Heater hotend(HEATER_0_PIN, TEMP_0_PIN);
   Heater bed(HEATER_BED_PIN, TEMP_BED_PIN);
-  LinearAxis x_axis(X_ENABLE_PIN, X_DIR_PIN, X_STEP_PIN, X_MIN_PIN, X_MAX_PIN);
-  LinearAxis y_axis(Y_ENABLE_PIN, Y_DIR_PIN, Y_STEP_PIN, Y_MIN_PIN, Y_MAX_PIN, true);
-  LinearAxis z_axis(Z_ENABLE_PIN, Z_DIR_PIN, Z_STEP_PIN, Z_MIN_PIN, Z_MAX_PIN);
-  LinearAxis extruder0(E0_ENABLE_PIN, E0_DIR_PIN, E0_STEP_PIN, P_NC, P_NC);
   ST7920Device display(LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS, BEEPER_PIN, BTN_EN1, BTN_EN2, BTN_ENC, KILL_PIN);
   Visualisation vis;
 
@@ -101,15 +100,9 @@ void simulation_loop() {
     int32_t x = 0, y = 0, z = 0;
   #endif
 
-  vis.set_data_source(&x_axis.position, &y_axis.position,  &z_axis.position, &extruder0.position);
 
   hotend.update();
   bed.update();
-
-  x_axis.update();
-  y_axis.update();
-  z_axis.update();
-  extruder0.update();
 
   initialised = true;
 
@@ -117,11 +110,6 @@ void simulation_loop() {
 
     hotend.update();
     bed.update();
-
-    x_axis.update();
-    y_axis.update();
-    z_axis.update();
-    extruder0.update();
 
     SDL_Event e;
     while( SDL_PollEvent( &e ) != 0 ) {
@@ -131,6 +119,18 @@ void simulation_loop() {
       if( e.type == SDL_WINDOWEVENT) {
         if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
           finished = true;
+        }
+      }
+      if (e.type == SDL_KEYDOWN ||  e.type == SDL_KEYUP) {
+        switch(e.key.keysym.sym) {
+          case SDLK_RETURN : {
+            sim_step = !(e.type == SDL_KEYDOWN);
+            break;
+          }
+          case SDLK_RSHIFT : {
+            sim_run = (e.type == SDL_KEYDOWN);
+            break;
+          }
         }
       }
       display.process_event(e);
@@ -162,7 +162,11 @@ void simulation_loop() {
   SDL_Quit();
 }
 
-int main() {
+void HAL_idletask() {
+  kernel.yield();
+}
+
+int main(int, char**) {
   std::thread write_serial (write_serial_thread);
   std::thread read_serial (read_serial_thread);
 
@@ -171,8 +175,7 @@ int main() {
     SERIAL_FLUSHTX();
   #endif
 
-  // kernel.setFrequency(F_CPU);
-  // kernel.setTimeMultiplier(1.0); // some testing at 4x
+  //kernel.setFrequency(F_CPU);
   HAL_timer_init();
   std::thread simulation (simulation_loop);
 
@@ -183,15 +186,18 @@ int main() {
   kernel.timerEnable(2);
 
   while (!finished) {
-    kernel.execute_loop();
+    if (sim_step) {
+      //sim_step = false;
+      kernel.execute_loop();
+    }
+    std::this_thread::yield();
   }
-  kernel.kill();
 
   main_finished = true;
   simulation.join();
   write_serial.join();
   read_serial.join();
-
+  return 0;
 }
 
 

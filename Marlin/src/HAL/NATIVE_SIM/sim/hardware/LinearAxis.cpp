@@ -21,9 +21,9 @@
  */
 #ifdef __PLAT_NATIVE_SIM__
 
+#include "../execution_control.h"
 #include <random>
 #include <stdio.h>
-#include "Clock.h"
 #include "LinearAxis.h"
 
 LinearAxis::LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type end_min, pin_type end_max, bool invert_travel) {
@@ -37,12 +37,10 @@ LinearAxis::LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type en
   min_position = 50;
   max_position = (200*80) + min_position;
   position = rand() % ((max_position - 40) - min_position) + (min_position + 20);
-  last_update = kernel.nanos();
+  last_update = kernel.ticks.load();
 
   Gpio::pin_map[min_pin].value = (position < min_position);
   Gpio::pin_map[max_pin].value = (position > max_position);
-
-  Gpio::attachPeripheral(step_pin, this);
 }
 
 LinearAxis::~LinearAxis() {
@@ -50,16 +48,19 @@ LinearAxis::~LinearAxis() {
 }
 
 void LinearAxis::update() {
-  Gpio::pin_map[min_pin].value = (position < min_position);
-  Gpio::pin_map[max_pin].value = (position > max_position);
+
 }
 
-void LinearAxis::interrupt(GpioEvent ev) {
-  if (ev.pin_id == step_pin && !Gpio::pin_map[enable_pin].value){
-    if (ev.event == GpioEvent::RISE) {
-      last_update = ev.timestamp;
-      position += (Gpio::pin_map[dir_pin].value > 0 ? 1 : -1) * invert_travel;
-      Gpio::pin_map[min_pin].value = (position < min_position);
+void LinearAxis::interrupt(GpioEvent& ev) {
+  if (ev.pin_id == min_pin || ev.pin_id == max_pin || ev.pin_id == step_pin) { // interested in event //todo: better interface for the visualiser
+    Gpio::pin_map[min_pin].value = (position < min_position);
+    Gpio::pin_map[max_pin].value = (position > max_position);
+
+    if (ev.pin_id == step_pin && !Gpio::pin_map[enable_pin].value){
+      if (ev.event == GpioEvent::RISE) {
+        last_update = ev.timestamp;
+        position += (Gpio::pin_map[dir_pin].value > 0 ? 1 : -1) * invert_travel;
+      }
     }
   }
 }

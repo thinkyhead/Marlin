@@ -35,7 +35,7 @@ class Heater: public Peripheral {
 public:
   Heater(pin_type heater, pin_type adc);
   virtual ~Heater();
-  void interrupt(GpioEvent ev);
+  void interrupt(GpioEvent& ev);
   void update();
 
   pin_type heater_pin, adc_pin;

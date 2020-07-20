@@ -3,7 +3,6 @@
 #include <mutex>
 #include <fstream>
 #include <cmath>
-#include "Clock.h"
 #include "Gpio.h"
 
 #include "ST7920Device.h"
@@ -16,9 +15,9 @@ std::ifstream input_file;
 ST7920Device::ST7920Device(pin_type clk, pin_type mosi, pin_type cs,  pin_type beeper, pin_type enc1, pin_type enc2, pin_type enc_but, pin_type kill)
   : clk_pin(clk), mosi_pin(mosi), cs_pin(cs), beeper_pin(beeper), enc1_pin(enc1), enc2_pin(enc2), enc_but_pin(enc_but), kill_pin(kill) {
 
-  Gpio::attachPeripheral(clk_pin, this);
-  Gpio::attachPeripheral(cs_pin, this);
-  Gpio::attachPeripheral(beeper_pin, this);
+  Gpio::attach(clk_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(cs_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(beeper_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
 }
 
 ST7920Device::~ST7920Device() {
@@ -97,9 +96,17 @@ void ST7920Device::update() {
   // }
   auto now = clock.now();
   float delta = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_update).count();
-  char buffer[255];
-  sprintf(buffer, "%f", kernel.ticksToNanos(kernel.getTicks()) / 1000000000.0);
-  SDL_SetWindowTitle(window, buffer);
+  char title_buffer[255];
+
+  double total_seconds = kernel.seconds();
+  uint32_t hours = total_seconds / (60 * 60.0);
+  double remainder = std::fmod(total_seconds, 60 * 60);
+  uint32_t minutes = remainder / 60.0;
+  remainder = std::fmod(remainder, 60);
+
+
+  sprintf(title_buffer, "%02d:%02d:%-66f", hours, minutes, remainder );
+  SDL_SetWindowTitle(window, title_buffer);
 
   if (dirty && delta > 1.0 / 30.0) {
     last_update = now;
@@ -113,7 +120,7 @@ void ST7920Device::update() {
   }
 
   if (input_file.is_open() && usb_serial.receive_buffer.free()) {
-    uint8_t buffer[128]{};
+    uint8_t buffer[HalSerial::receive_buffer_size]{};
     auto count = input_file.readsome((char*)buffer, usb_serial.receive_buffer.free());
     usb_serial.receive_buffer.write(buffer, count);
     if(count == 0) input_file.close();
@@ -132,7 +139,7 @@ void ST7920Device::update() {
 
 }
 
-void ST7920Device::interrupt(GpioEvent ev) {
+void ST7920Device::interrupt(GpioEvent& ev) {
   if (ev.pin_id == clk_pin && ev.event == GpioEvent::FALL && Gpio::pin_map[cs_pin].value){
     incomming_byte = (incomming_byte << 1) | Gpio::pin_map[mosi_pin].value;
     if (++incomming_bit_count == 8) {

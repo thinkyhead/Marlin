@@ -21,10 +21,7 @@
  */
 #ifdef __PLAT_NATIVE_SIM__
 
-#include "Clock.h"
-#include <stdio.h>
-#include "src/inc/MarlinConfig.h"
-
+#include <Arduino.h>
 #include "Heater.h"
 
 Heater::Heater(pin_t heater, pin_t adc) {
@@ -34,26 +31,29 @@ Heater::Heater(pin_t heater, pin_t adc) {
   heater_pin = heater;
   adc_pin = adc;
   heat = 0.0;
+  Gpio::attach(analogInputToDigitalPin(adc_pin), std::bind(&Heater::interrupt, this, std::placeholders::_1));
 }
 
 Heater::~Heater() {
 }
 
 void Heater::update() {
-  // crude pwm read and cruder heat simulation
-  auto now = kernel.micros();
-  double delta = (now - last) / 1000000.0f;
-  last = now;
 
-  heater_state = pwmcap.update(0xFFFF * Gpio::pin_map[heater_pin].value);
-  heat += (heater_state - heat) * (delta / 500.0);
-  if ( heat < room_temp_raw) heat = room_temp_raw;
-  else if (heat > 4095 - (48 << 2)) heat = 4095 - (48 << 2);
-  Gpio::pin_map[analogInputToDigitalPin(adc_pin)].value = 0xFFFF - (uint16_t)heat;
 }
 
-void Heater::interrupt(GpioEvent ev) {
-  // ununsed
+void Heater::interrupt(GpioEvent& ev) {
+  if (ev.event == ev.GET_VALUE) {
+    // crude pwm read and cruder heat simulation
+    auto now = kernel.ticksToNanos(ev.timestamp) / 1000; //micros
+    double delta = (now - last) / 1000000.0f;
+    last = now;
+
+    heater_state = pwmcap.update(0xFFFF * Gpio::pin_map[heater_pin].value);
+    heat += (heater_state - heat) * (delta / 500.0);
+    if ( heat < room_temp_raw) heat = room_temp_raw;
+    else if (heat > 4095 - (48 << 2)) heat = 4095 - (48 << 2);
+    Gpio::pin_map[analogInputToDigitalPin(adc_pin)].value = 0xFFFF - (uint16_t)heat;
+  }
 }
 
 #endif // __PLAT_NATIVE_SIM__

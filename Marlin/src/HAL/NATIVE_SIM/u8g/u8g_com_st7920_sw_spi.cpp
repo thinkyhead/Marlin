@@ -63,34 +63,22 @@
 #include "../../shared/Delay.h"
 
 #undef SPI_SPEED
-#define SPI_SPEED 0  // About 1 MHz
+#define SPI_SPEED 6
+#define SPI_DELAY_CYCLES (1 + SPI_SPEED * 10)
 
 static pin_t SCK_pin_ST7920_HAL, MOSI_pin_ST7920_HAL_HAL;
 static uint8_t SPI_speed = 0;
 
 static uint8_t swSpiTransfer(uint8_t b, const uint8_t spi_speed, const pin_t sck_pin, const pin_t miso_pin, const pin_t mosi_pin) {
   for (uint8_t i = 0; i < 8; i++) {
-    if (spi_speed == 0) {
-     WRITE_PIN(mosi_pin, !!(b & 0x80));
-     WRITE_PIN(sck_pin, HIGH);
-      b <<= 1;
-      if (miso_pin >= 0 && READ_PIN(miso_pin)) b |= 1;
-     WRITE_PIN(sck_pin, LOW);
-    }
-    else {
-      const uint8_t state = (b & 0x80) ? HIGH : LOW;
-      for (uint8_t j = 0; j < spi_speed; j++)
-       WRITE_PIN(mosi_pin, state);
-
-      for (uint8_t j = 0; j < spi_speed + (miso_pin >= 0 ? 0 : 1); j++)
-       WRITE_PIN(sck_pin, HIGH);
-
-      b <<= 1;
-      if (miso_pin >= 0 && READ_PIN(miso_pin)) b |= 1;
-
-      for (uint8_t j = 0; j < spi_speed; j++)
-       WRITE_PIN(sck_pin, LOW);
-    }
+    WRITE_PIN(mosi_pin, !!(b & 0x80));
+    DELAY_CYCLES(SPI_SPEED);
+    WRITE_PIN(sck_pin, HIGH);
+    DELAY_CYCLES(SPI_SPEED);
+    b <<= 1;
+    if (miso_pin >= 0 && READ_PIN(miso_pin)) b |= 1;
+    WRITE_PIN(sck_pin, LOW);
+    DELAY_CYCLES(SPI_SPEED);
   }
   return b;
 }

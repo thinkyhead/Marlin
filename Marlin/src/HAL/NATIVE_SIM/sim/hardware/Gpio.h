@@ -21,9 +21,13 @@
  */
 #pragma once
 
+#include <cstdint>
+#include <atomic>
+#include <functional>
+
 #include "../execution_control.h"
 #include "src/inc/MarlinConfigPre.h"
-#include <stdint.h>
+
 
 typedef int16_t pin_type;
 
@@ -34,17 +38,14 @@ struct GpioEvent {
     RISE,
     SET_VALUE,
     SETM,
-    SETD
+    SETD,
+    GET_VALUE
   };
   uint64_t timestamp;
   pin_type pin_id;
   GpioEvent::Type event;
 
-  GpioEvent(uint64_t timestamp, pin_type pin_id, GpioEvent::Type event){
-    this->timestamp = timestamp;
-    this->pin_id = pin_id;
-    this->event = event;
-  }
+  GpioEvent(uint64_t timestamp, pin_type pin_id, GpioEvent::Type event) : timestamp(timestamp), pin_id(pin_id), event(event) { }
 };
 
 class IOLogger {
@@ -56,7 +57,6 @@ public:
 class Peripheral {
 public:
   virtual ~Peripheral(){};
-  virtual void interrupt(GpioEvent ev) = 0;
   virtual void update() = 0;
 };
 
@@ -82,11 +82,16 @@ struct pin_data {
     LOW,
     HIGH
   };
-  uint8_t pull;
-  uint8_t dir;
-  uint8_t mode;
-  uint16_t value;
-  Peripheral* cb;
+  template<class... Args>
+  bool attach(Args... args) {
+    callback = std::function<void(GpioEvent&)>((..., args));
+    return true;
+  }
+  std::atomic_uint8_t pull;
+  std::atomic_uint8_t dir;
+  std::atomic_uint8_t mode;
+  std::atomic_uint16_t value;
+  std::function<void(GpioEvent&)> callback;
 };
 
 class Gpio {
@@ -107,15 +112,18 @@ public:
     if (!valid_pin(pin)) return;
     GpioEvent::Type evt_type = value > 1 ? GpioEvent::SET_VALUE : value > pin_map[pin].value ? GpioEvent::RISE : value < pin_map[pin].value ? GpioEvent::FALL : GpioEvent::NOP;
     pin_map[pin].value = value;
-    GpioEvent evt(kernel.nanos(), pin, evt_type);
-    if (pin_map[pin].cb != nullptr) {
-      pin_map[pin].cb->interrupt(evt);
+    GpioEvent evt(kernel.ticks.load(), pin, evt_type);
+    if (pin_map[pin].callback) {
+      pin_map[pin].callback(evt);
     }
-    if (Gpio::logger != nullptr && evt.event != GpioEvent::NOP) Gpio::logger->log(evt); //filter NOPs
   }
 
   static uint16_t get(pin_type pin) {
     if (!valid_pin(pin)) return 0;
+    GpioEvent evt(kernel.ticks.load(), pin, GpioEvent::GET_VALUE);
+    if (pin_map[pin].callback) {
+      pin_map[pin].callback(evt);
+    }
     return pin_map[pin].value;
   }
 
@@ -127,9 +135,7 @@ public:
     if (!valid_pin(pin)) return;
     pin_map[pin].mode = pin_data::Mode::GPIO;
 
-    GpioEvent evt(kernel.nanos(), pin, GpioEvent::Type::SETM);
-    //if (pin_map[pin].cb != nullptr) pin_map[pin].cb->interrupt(evt);
-    if (Gpio::logger != nullptr) Gpio::logger->log(evt);
+    GpioEvent evt(kernel.ticks.load(), pin, GpioEvent::Type::SETM);
 
     if (value != 1) setDir(pin, pin_data::Direction::INPUT);
     else setDir(pin, pin_data::Direction::OUTPUT);
@@ -147,9 +153,8 @@ public:
   static void setDir(pin_type pin, uint8_t value) {
     if (!valid_pin(pin)) return;
     pin_map[pin].dir = value;
-    GpioEvent evt(kernel.nanos(), pin, GpioEvent::Type::SETD);
-    if (pin_map[pin].cb != nullptr) pin_map[pin].cb->interrupt(evt);
-    if (Gpio::logger != nullptr) Gpio::logger->log(evt);
+    GpioEvent evt(kernel.ticks.load(), pin, GpioEvent::Type::SETD);
+    if (pin_map[pin].callback) pin_map[pin].callback(evt);
   }
 
   static uint8_t getDir(pin_type pin) {
@@ -157,15 +162,9 @@ public:
     return pin_map[pin].dir;
   }
 
-  static void attachPeripheral(pin_type pin, Peripheral* per) {
-    if (!valid_pin(pin)) return;
-    pin_map[pin].cb = per;
+  template<class... Args>
+  static bool attach(const pin_type pin, Args... args) {
+    if (!valid_pin(pin)) return false;
+    return pin_map[pin].attach((..., args));
   }
-
-  static void attachLogger(IOLogger* logger) {
-    Gpio::logger = logger;
-  }
-
-private:
-  static IOLogger* logger;
 };

@@ -23,7 +23,6 @@
 
 #include "Gpio.h"
 
-pin_data Gpio::pin_map[Gpio::pin_count+1] = {};
-IOLogger* Gpio::logger = nullptr;
+pin_data Gpio::pin_map[Gpio::pin_count + 1] = {};
 
 #endif // __PLAT_NATIVE_SIM__

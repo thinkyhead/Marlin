@@ -21,9 +21,8 @@
  */
 #pragma once
 
-
+void usleep(uint64_t microsec);
 // The following are optional depending on the platform.
-#include <unistd.h> // inject into u8g.h so usleep is available
 
 // definitions of HAL specific com and device drivers.
 uint8_t u8g_com_sw_spi_fn(u8g_t *u8g, uint8_t msg, uint8_t arg_val, void *arg_ptr);

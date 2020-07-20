@@ -23,7 +23,7 @@ public:
   virtual ~ST7920Device();
   void process_command(Command cmd);
   void update();
-  void interrupt(GpioEvent ev);
+  void interrupt(GpioEvent& ev);
 
   pin_type clk_pin, mosi_pin, cs_pin, beeper_pin, enc1_pin, enc2_pin, enc_but_pin, kill_pin;
 

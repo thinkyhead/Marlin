@@ -51,18 +51,24 @@ public:
     return true;
   }
 
-  [[gnu::always_inline, gnu::optimize("O3")]] inline std::size_t read(T* dst, std::size_t length) {
+  inline std::size_t read(T* dst, std::size_t length) {
+    std::scoped_lock lock(m);
     length = std::min(length, available());
     const std::size_t length1 = std::min(length, buffer_size - index_read);
+    assert(index_read < buffer_size);
+    assert(index_read < buffer_size + length1);
     memcpy(dst, (char*)buffer + index_read, length1);
     memcpy(dst + length1, (char*)buffer, length - length1);
     index_read = mask(index_read + length);
     return length;
   }
 
-  [[gnu::always_inline, gnu::optimize("O3")]] inline std::size_t write(T* src, std::size_t length) {
+  inline std::size_t write(T* src, std::size_t length) {
+    std::scoped_lock lock(m);
     length = std::min(length, free());
     const std::size_t length1 = std::min(length, buffer_size - index_write);
+    assert(index_write < buffer_size);
+    assert(index_write < buffer_size + length1);
     memcpy((char*)buffer + index_write, src, length1);
     memcpy((char*)buffer, src + length1, length - length1);
     index_write = mask(index_write + length);
@@ -70,6 +76,7 @@ public:
   }
 
   std::size_t read(T *const value) {
+    std::scoped_lock lock(m);
     if (value == nullptr || empty()) return 0;
     *value = buffer[index_read];
     index_read = next(index_read);
@@ -77,6 +84,7 @@ public:
   }
 
   std::size_t write(const T value) {
+    std::scoped_lock lock(m);
     std::size_t next_head = next(index_write);
     if (next_head == index_read) return 0;     // buffer full
     buffer[index_write] = value;
@@ -96,12 +104,12 @@ private:
   inline std::size_t next(std::size_t val) const {
     return mask(val + 1);
   }
-
+  std::mutex m;
   static const std::size_t buffer_size = S;
   static const std::size_t buffer_mask = buffer_size - 1;
   volatile T buffer[buffer_size];
-  volatile std::size_t index_write;
-  volatile std::size_t index_read;
+  std::atomic_size_t index_write;
+  std::atomic_size_t index_read;
 };
 
 
@@ -112,7 +120,7 @@ public:
     EmergencyParser::State emergency_state;
   #endif
 
-  HalSerial() { host_connected = true; }
+  HalSerial() { }
 
   void begin(int32_t) {}
 
@@ -130,12 +138,11 @@ public:
   }
 
   size_t write(char c) {
-    if (!host_connected) return 0;
     while (!transmit_buffer.free());
     return transmit_buffer.write(c);
   }
 
-  operator bool() { return host_connected; }
+  operator bool() { return true; }
 
   uint16_t available() {
     return (uint16_t)receive_buffer.available();
@@ -148,8 +155,7 @@ public:
   }
 
   void flushTX() {
-    if (host_connected)
-      while (transmit_buffer.available()) { /* nada */ }
+    while (transmit_buffer.available()) { /* nada */ }
   }
 
   void printf(const char *format, ...) {
@@ -159,11 +165,9 @@ public:
     int length = vsnprintf((char *) buffer, 256, (char const *) format, vArgs);
     va_end(vArgs);
     if (length > 0 && length < 256) {
-      if (host_connected) {
-        for (int i = 0; i < length;) {
-          if (transmit_buffer.write(buffer[i])) {
-            ++i;
-          }
+      for (int i = 0; i < length;) {
+        if (transmit_buffer.write(buffer[i])) {
+          ++i;
         }
       }
     }
@@ -237,7 +241,8 @@ public:
   void println(double value, int round = 6) { printf("%f\n" , value); }
   void println() { print('\n'); }
 
-  RingBuffer<uint8_t, 128> receive_buffer;
-  RingBuffer<uint8_t, 128> transmit_buffer;
-  volatile bool host_connected;
+  static constexpr std::size_t receive_buffer_size = 32768;
+  static constexpr std::size_t transmit_buffer_size = 32768;
+  RingBuffer<uint8_t, receive_buffer_size> receive_buffer;
+  RingBuffer<uint8_t, transmit_buffer_size> transmit_buffer;
 };

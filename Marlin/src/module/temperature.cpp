@@ -2308,7 +2308,7 @@ void Temperature::readings_ready() {
         const bool heater_on = (temp_hotend[e].target > 0
           || TERN0(PIDTEMP, temp_hotend[e].soft_pwm_amount) > 0
         );
-        if (rawtemp > temp_range[e].raw_max * tdir) max_temp_error((heater_ind_t)e);
+       // if (rawtemp > temp_range[e].raw_max * tdir) max_temp_error((heater_ind_t)e);
         if (heater_on && rawtemp < temp_range[e].raw_min * tdir && !is_preheating(e)) {
           #ifdef MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED
             if (++consecutive_low_temperature_error[e] >= MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED)
