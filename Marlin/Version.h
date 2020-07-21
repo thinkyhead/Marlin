@@ -25,10 +25,14 @@
 // VENDOR VERSION EXAMPLE //
 ////////////////////////////
 
+#define MACHINE_SIZE    "220x220x250"
+#define CORP_WEBSITE_C  "www.cxsw3d.com"
+#define CORP_WEBSITE_E  "www.creality.com"
+
 /**
  * Marlin release version identifier
  */
-//#define SHORT_BUILD_VERSION "bugfix-2.0.x"
+#define SHORT_BUILD_VERSION "Ver 0.0.6 (" __DATE__ ")"
 
 /**
  * Verbose version identifier which should contain a reference to the location
@@ -46,7 +50,7 @@
 /**
  * Defines a generic printer name to be output to the LCD after booting Marlin.
  */
-//#define MACHINE_NAME "3D Printer"
+#define MACHINE_NAME "Ender-3 V2"
 
 /**
  * The SOURCE_CODE_URL is the location where users will find the Marlin Source
