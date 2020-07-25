@@ -52,9 +52,8 @@ public:
 
 
   /*** SDL ****/
-  void window_create(float scaler);
+
   void process_event(SDL_Event& e);
-  void window_destroy();
   void encoder_rotate_cw();
   void encoder_rotate_ccw();
 
@@ -67,6 +66,6 @@ public:
   uint8_t encoder_position = 0;
   float scaler;
 
-  SDL_Window* window = nullptr;
-  SDL_Surface* screenSurface = nullptr;
+  GLuint texture_id;
+
 };

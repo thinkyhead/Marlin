@@ -84,7 +84,7 @@ struct pin_data {
   };
   template<class... Args>
   bool attach(Args... args) {
-    callback = std::function<void(GpioEvent&)>((..., args));
+    callback = std::function<void(GpioEvent&)>(args...);
     return true;
   }
   std::atomic_uint8_t pull;
@@ -165,6 +165,6 @@ public:
   template<class... Args>
   static bool attach(const pin_type pin, Args... args) {
     if (!valid_pin(pin)) return false;
-    return pin_map[pin].attach((..., args));
+    return pin_map[pin].attach(args...);
   }
 };

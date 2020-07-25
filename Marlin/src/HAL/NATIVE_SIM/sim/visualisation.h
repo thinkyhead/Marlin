@@ -1,6 +1,7 @@
 #pragma once
 
-#define GL_GLEXT_PROTOTYPES
+#include <vector>
+#include <array>
 
 #include "hardware/LinearAxis.h"
 
@@ -16,8 +17,8 @@
 #include <glm/gtc/epsilon.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-#include <vector>
-#include <array>
+#include "window.h"
+#include "user_interface.h"
 
 using millisec = std::chrono::duration<float, std::milli>;
 
@@ -38,14 +39,14 @@ class PerspectiveCamera {
 public:
   PerspectiveCamera() = default;
   PerspectiveCamera(glm::vec3 position,
-                    glm::vec3 focal_point,
+                    glm::vec3 rotation,
                     glm::vec3 world_up,
                     float aspect_ratio,
                     float fov,
                     float clip_near,
                     float clip_far
                     ):position{position},
-                    focal_point{focal_point},
+                    rotation{rotation},
                     world_up{world_up},
                     aspect_ratio{aspect_ratio},
                     fov{fov},
@@ -58,28 +59,25 @@ public:
 
   void generate() {
     proj = glm::perspective(fov, aspect_ratio, clip_near, clip_far);
-    direction = glm::normalize(position - focal_point);
-    right = glm::normalize(glm::cross(world_up, direction));
-    up = glm::normalize(glm::cross(direction, right));
-    view = glm::lookAt(position, position - direction, up);
-
-    // glm::extractEulerAngleXYX(-view, rotation.x, rotation.y, rotation.z);
-    // rotation.x = glm::degrees(rotation.x);
-    // rotation.y = glm::degrees(rotation.y);
-    // rotation.z = 0.0f;
-    rotation = {-110.599464, 64.200356, 0.000000};
+    update_view();
   }
 
   void update_view() {
-    right = glm::normalize(glm::cross(world_up, direction));
-    up = glm::cross(direction, right);
-    view = glm::lookAt(position, position - direction, up);
+    direction = glm::vec3(  cos(glm::radians(rotation.y)) * sin(glm::radians(rotation.x)),
+                            sin(glm::radians(rotation.y)),
+                            cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x)));
+
+    right = glm::vec3(sin(glm::radians(rotation.x) - (glm::pi<float>() / 2.0)), 0, cos(glm::radians(rotation.x) - (glm::pi<float>() / 2.0)));
+    up = glm::cross(right, direction);
+    view = glm::lookAt(position, position + direction, up);
+  }
+
+  void update_aspect_ratio(float ar) {
+    aspect_ratio = ar;
+    proj = glm::perspective(fov, aspect_ratio, clip_near, clip_far);
   }
 
   void update_direction() {
-    direction.x = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
-    direction.y = sin(glm::radians(rotation.y));
-    direction.z = sin(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
   }
 
   float* proj_ptr() { return glm::value_ptr(proj); }
@@ -160,7 +158,7 @@ class Visualisation {
 public:
   Visualisation();
   ~Visualisation();
-  void create(std::size_t width, std::size_t height);
+  void create();
   void process_event(SDL_Event& e);
 
   LinearAxis x_axis;
@@ -173,6 +171,9 @@ public:
   void gpio_event_handler(GpioEvent& event);
   void update();
   void destroy();
+
+  void ui_viewport_callback(UiWindow*);
+  void ui_info_callback(UiWindow*);
 
   glm::vec4 last_position = {};
   glm::vec4 last_extrusion_check = {};
@@ -192,15 +193,15 @@ public:
   glm::vec3 effector_scale = {3.0f ,10.0f, 3.0f};
 
   PerspectiveCamera camera;
+  opengl_util::MsaaFrameBuffer framebuffer;
   std::vector<cp_vertex>* active_path_block = nullptr;
   std::vector<std::vector<cp_vertex>> full_path;
 
-  SDL_Window * window;
-  SDL_GLContext context;
   GLuint program, path_program;
   GLuint vao, vbo;
   bool mouse_captured = false;
   bool input_state[6] = {};
+  glm::vec<2, int> mouse_lock_pos;
 
   const std::array<GLfloat, 24 * 10> g_vertex_buffer_data{
       //end effector
@@ -239,4 +240,34 @@ public:
   };
 
 
+};
+
+struct Viewport : public UiWindow {
+  bool hovered = false;
+  bool focused = false;
+  ImVec2 viewport_size;
+  GLuint texture_id = 0;
+  bool dirty = false;
+
+  template<class... Args>
+  Viewport(std::string name, Args... args) : UiWindow(name, args...) {}
+  void show() {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
+    ImGui::Begin((char *)name.c_str(), nullptr);
+    auto size = ImGui::GetContentRegionAvail();
+    if (viewport_size.x != size.x || viewport_size.y != size.y) {
+      viewport_size = size;
+      dirty = true;
+    }
+    ImGui::Image((ImTextureID)(intptr_t)texture_id, viewport_size, ImVec2(0,1), ImVec2(1,0));
+    hovered = ImGui::IsItemHovered();
+    focused = ImGui::IsWindowFocused();
+
+    if(show_callback != nullptr) {
+      show_callback(this);
+    }
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+  }
 };

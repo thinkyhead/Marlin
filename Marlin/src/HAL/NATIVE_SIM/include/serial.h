@@ -26,6 +26,9 @@
   #include "../../../feature/e_parser.h"
 #endif
 
+#include <mutex>
+#include <atomic>
+#include <cstring>
 #include <stdarg.h>
 #include <stdio.h>
 

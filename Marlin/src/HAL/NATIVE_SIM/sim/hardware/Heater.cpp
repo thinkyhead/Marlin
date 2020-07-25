@@ -30,7 +30,7 @@ Heater::Heater(pin_t heater, pin_t adc) {
   last = kernel.micros();
   heater_pin = heater;
   adc_pin = adc;
-  heat = 0.0;
+  heat = room_temp_raw;
   Gpio::attach(analogInputToDigitalPin(adc_pin), std::bind(&Heater::interrupt, this, std::placeholders::_1));
 }
 
