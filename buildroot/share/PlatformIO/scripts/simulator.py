@@ -5,6 +5,8 @@
 # Get the environment thus far for the build
 Import("env")
 
+#print(env.Dump())
+
 #
 # Give the binary a distinctive name
 #
