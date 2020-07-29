@@ -23,7 +23,7 @@ Visualisation::Visualisation() :
   y_axis(Y_ENABLE_PIN, Y_DIR_PIN, Y_STEP_PIN, Y_MIN_PIN, Y_MAX_PIN, INVERT_Y_DIR),
   z_axis(Z_ENABLE_PIN, Z_DIR_PIN, Z_STEP_PIN, Z_MIN_PIN, Z_MAX_PIN, INVERT_Z_DIR),
   extruder0(E0_ENABLE_PIN, E0_DIR_PIN, E0_STEP_PIN, P_NC, P_NC, INVERT_E0_DIR) {
-    Gpio::attach(x_axis.step_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
+    Gpio::attach(x_axis.step_pin, [this](GpioEvent &event){ this->gpio_event_handler(event); }); //todo this works too
     Gpio::attach(x_axis.min_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
     Gpio::attach(x_axis.max_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
     Gpio::attach(y_axis.step_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
@@ -35,8 +35,6 @@ Visualisation::Visualisation() :
     Gpio::attach(extruder0.step_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
     Gpio::attach(extruder0.min_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
     Gpio::attach(extruder0.max_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
-
-
   }
 
 Visualisation::~Visualisation() {}
@@ -493,7 +491,10 @@ bool Visualisation::points_are_collinear(glm::vec3 a, glm::vec3 b, glm::vec3 c) 
 
 
 void Visualisation::ui_viewport_callback(UiWindow* window) {
-  float delta = ImGui::GetIO().DeltaTime;
+  auto now = clock.now();
+  float delta = std::chrono::duration_cast<std::chrono::duration<float>>(now- last_update).count();
+  last_update = now;
+
   Viewport& viewport = *((Viewport*)window);
 
   if (viewport.dirty) {
@@ -550,11 +551,17 @@ void Visualisation::ui_viewport_callback(UiWindow* window) {
 };
 
 void Visualisation::ui_info_callback(UiWindow*) {
-  ImGui::SliderFloat("camx", &camera.position.x, -1000.0f, 1000.0f);
-  ImGui::SliderFloat("camy", &camera.position.y, -1000.0f, 1000.0f);
-  ImGui::SliderFloat("camz", &camera.position.z, -1000.0f, 1000.0f);
-  ImGui::SliderFloat("camyaw", &camera.rotation.x, -180.0f, 180.0f);
-  ImGui::SliderFloat("campitch", &camera.rotation.y, -180.0f, 180.0f);
+  ImGui::SliderFloat("sim speed 100", &kernel.realtime_scale, 0.0f, 100.0f);
+  ImGui::SliderFloat("sim speed 10", &kernel.realtime_scale, 0.0f, 10.0f);
+  ImGui::SliderFloat("sim speed 1", &kernel.realtime_scale, 0.0f, 1.0f);
+  ImGui::SliderFloat("sim speed 0.1", &kernel.realtime_scale, 0.0f, 0.1f);
+  uint64_t hours = (kernel.realtime_nanos / (Kernel::ONE_BILLION * 60 * 60)) ;
+  uint64_t remainder = (kernel.realtime_nanos % (Kernel::ONE_BILLION * 60 * 60));
+  uint64_t mins = (remainder / (Kernel::ONE_BILLION * 60));
+  remainder = (remainder % (Kernel::ONE_BILLION * 60));
+  uint64_t seconds = remainder / (Kernel::ONE_BILLION);
+  remainder = remainder % (Kernel::ONE_BILLION);
+  ImGui::Text("%02ld:%02ld:%02ld.%ld", hours, mins, seconds, remainder);
 }
 
 #endif

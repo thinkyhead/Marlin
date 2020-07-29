@@ -37,7 +37,7 @@ LinearAxis::LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type en
   min_position = 50;
   max_position = (200*80) + min_position;
   position = rand() % ((max_position - 40) - min_position) + (min_position + 20);
-  last_update = kernel.ticks.load();
+  last_update = kernel.getTicks();
 
   Gpio::pin_map[min_pin].value = (position < min_position);
   Gpio::pin_map[max_pin].value = (position > max_position);

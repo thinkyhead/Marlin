@@ -43,11 +43,7 @@ void marlin_main() {
 
   //kernel.setFrequency(F_CPU);
   HAL_timer_init();
-
-  kernel.timerInit(2, 100000000);
-  kernel.timerStart(2, 1000);
-  kernel.timerEnable(2);
-
+  kernel.threads[0].timer_enabled = true;
   while(!main_finished) {
     kernel.execute_loop();
     std::this_thread::yield();
@@ -63,6 +59,7 @@ int main(int, char**) {
   while (app.active) {
     app.update();
     app.render();
+    std::this_thread::yield();
   }
 
   main_finished = true;

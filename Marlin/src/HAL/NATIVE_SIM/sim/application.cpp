@@ -11,8 +11,8 @@ Application::Application() {
   sim.vis.create();
 
   user_interface.addElement<SerialMonitor>("Serial Monitor");
-  user_interface.addElement<StatusWindow>("Status", &clear_color, std::bind(&Visualisation::ui_info_callback, &sim.vis, std::placeholders::_1));
   user_interface.addElement<TextureWindow>("Controller Display", sim.display.texture_id, 128.0 / 64.0);
+  user_interface.addElement<StatusWindow>("Status", &clear_color, std::bind(&Visualisation::ui_info_callback, &sim.vis, std::placeholders::_1));
   user_interface.addElement<Viewport>("Viewport", std::bind(&Visualisation::ui_viewport_callback, &sim.vis, std::placeholders::_1));
 }
 

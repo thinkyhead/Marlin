@@ -23,43 +23,37 @@ Pos=60,60
 Size=400,400
 Collapsed=0
 
-[Window][LeftBar]
-Size=683,386
+[Window][Controller Display]
+Pos=0,0
+Size=498,274
 Collapsed=0
 DockId=0x00000003,0
 
 [Window][Viewport]
-Pos=502,0
-Size=778,720
+Pos=500,0
+Size=780,720
 Collapsed=0
 DockId=0x00000002,0
 
 [Window][Serial Monitor]
-Pos=0,317
-Size=500,403
+Pos=0,276
+Size=498,444
 Collapsed=0
-DockId=0x00000006,0
+DockId=0x00000004,0
 
 [Window][Status]
 Pos=0,0
-Size=500,315
+Size=498,274
 Collapsed=0
-DockId=0x00000005,1
-
-[Window][Controller Display]
-Pos=0,0
-Size=500,315
-Collapsed=0
-DockId=0x00000005,0
+DockId=0x00000003,1
 
 [Docking][Data]
-DockSpace       ID=0x6F13380E Window=0x49B6D357 Pos=0,0 Size=1280,720 Split=X Selected=0x995B0CF8
-  DockNode      ID=0x00000001 Parent=0x6F13380E SizeRef=500,720 Split=Y Selected=0x0522F8E4
-    DockNode    ID=0x00000003 Parent=0x00000001 SizeRef=938,386 Selected=0x0522F8E4
-    DockNode    ID=0x00000004 Parent=0x00000001 SizeRef=938,319 Split=Y Selected=0xB42549D5
-      DockNode  ID=0x00000005 Parent=0x00000004 SizeRef=683,315 Selected=0x0C6D4DF2
-      DockNode  ID=0x00000006 Parent=0x00000004 SizeRef=683,403 Selected=0xB42549D5
-  DockNode      ID=0x00000002 Parent=0x6F13380E SizeRef=778,720 CentralNode=1 Selected=0x995B0CF8
+DockSpace     ID=0x6F13380E Window=0x49B6D357 Pos=0,0 Size=1280,720 Split=X
+  DockNode    ID=0x00000001 Parent=0x6F13380E SizeRef=498,720 Split=Y Selected=0xB42549D5
+    DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=263,274 Selected=0x0C6D4DF2
+    DockNode  ID=0x00000004 Parent=0x00000001 SizeRef=263,444 Selected=0xB42549D5
+  DockNode    ID=0x00000002 Parent=0x6F13380E SizeRef=780,720 CentralNode=1 Selected=0x995B0CF8
+
 )";
 
 class UiWindow {
