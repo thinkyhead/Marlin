@@ -193,7 +193,7 @@ public:
   glm::vec3 effector_scale = {3.0f ,10.0f, 3.0f};
 
   PerspectiveCamera camera;
-  opengl_util::MsaaFrameBuffer framebuffer;
+  opengl_util::FrameBuffer* framebuffer = nullptr;
   std::vector<cp_vertex>* active_path_block = nullptr;
   std::vector<std::vector<cp_vertex>> full_path;
 

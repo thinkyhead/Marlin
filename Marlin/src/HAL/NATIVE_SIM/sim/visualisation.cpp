@@ -70,18 +70,7 @@ R"SHADERSTR(
       EndPrimitive();
     }
 
-    const float epsilon = 0.00001;
-    bool about_zero(float value) {
-      return step(-epsilon, value) * (1.0 - step(epsilon, value)) == 0.0;
-    }
-
-    bool collinear_xz(vec3 a, vec3 b, vec3 c){
-      return cross(vec3(b.xz, 0) - vec3(a.xz, 0), vec3(c.xz, 0) - vec3(b.xz, 0)) == 0.0;
-    }
-
-    bool collinear(vec3 a, vec3 b, vec3 c){
-      return cross(b - a, c - b) == 0.0;
-    }
+    const float epsilon = 0.000001;
 
     void main() {
       vec3 prev = gl_in[0].gl_Position.xyz;
@@ -95,7 +84,7 @@ R"SHADERSTR(
 
       vec3 forward = normalize(end - start);
       vec3 left = normalize(cross(forward, g_normal[2])); // what if formward is world_up? zero vector
-      if (left == 0.0) return; //panic
+      if (left == vec3(0.0)) return; //panic
 
       vec3 up = normalize(cross(forward, left));
       up *= sign(up); // make sure up is positive
@@ -116,12 +105,12 @@ R"SHADERSTR(
       vec2 xz_dir_c = normalize(next.xz - end.xz);
 
 
-      // pick on edge cases that ar not taken into account, changle to extrude state, change in z, colliniarity in xy and angle between vectors more than 90 degrees
-      if(first_segment || active_color.a != prev_color.a || forward.y > epsilon || collinear_xz(prev, start, end) || dot(start - prev, end - start) < 0.0) {
+      // remove edge cases that will break teh following algorithm, angle more than 90 degrees or 0 (points collinear), also break on extrude state change (color)
+      if(first_segment || active_color.a != prev_color.a || normalize(next - prev).y != 0.0 ||  dot(normalize(start.xz - prev.xz), normalize(end.xz - start.xz)) < epsilon || dot(normalize(start.xz - prev.xz), normalize(end.xz - start.xz)) > 1.0 - epsilon) {
         start_lhs = left;
         first_segment = true;
       }
-      if(last_segment || active_color.a != next_color.a || normalize(next - end).y > epsilon || collinear_xz(start, end, next) || dot(end - start, next - end) < 0.0) {
+      if(last_segment || active_color.a != next_color.a || normalize(next - prev).y != 0.0 || dot(normalize(end.xz - start.xz), normalize(next.xz - end.xz)) < epsilon || dot(normalize(end.xz - start.xz), normalize(next.xz - end.xz)) > 1.0 - epsilon) {
         end_lhs = left;
         last_segment = true;
       }
@@ -268,7 +257,16 @@ R"SHADERSTR(
   glVertexAttribPointer( attrib_normal, 3, GL_FLOAT, GL_FALSE, sizeof(cp_vertex), ( void * )(sizeof(cp_vertex::position)) );
   glVertexAttribPointer( attrib_color, 4, GL_FLOAT, GL_FALSE, sizeof(cp_vertex), ( void * )(sizeof(cp_vertex::position) + sizeof(cp_vertex::normal)) );
 
-  framebuffer = opengl_util::MsaaFrameBuffer{100, 100};
+  framebuffer = new opengl_util::MsaaFrameBuffer();
+  if (!((opengl_util::MsaaFrameBuffer*)framebuffer)->create(100, 100, 4)) {
+    fprintf(stderr, "Failed to initialise MSAA Framebuffer falling back to TextureFramebuffer\n");
+    delete framebuffer;
+    framebuffer = new opengl_util::TextureFrameBuffer();
+    if (!((opengl_util::TextureFrameBuffer*)framebuffer)->create(100,100)) {
+      fprintf(stderr, "Unable to initialise a Framebuffer\n");
+    }
+  }
+
   camera = { {37.0f, 121.0f, 129.0f}, {-192.0f, -25.0, 0.0f}, {0.0f, 1.0f, 0.0f}, float(100) / float(100), glm::radians(45.0f), 0.1f, 1000.0f};
   camera.generate();
 }
@@ -402,6 +400,16 @@ void Visualisation::update() {
         glBufferData( GL_ARRAY_BUFFER, data_length * sizeof(std::remove_pointer<decltype(active_path)>::type::value_type), &(*active_path)[0], GL_STATIC_DRAW );
         glDrawArrays( GL_LINE_STRIP_ADJACENCY, 0, data_length);
       }
+
+      if (render_full_path) {
+        for (auto& path : full_path) {
+          if (&path[0] == &(*active_path)[0]) break;
+          // these are no longer dynamic buffers and could have the geometry baked rather than continue using the geometery shader
+          std::size_t data_length = path.size();
+          glBufferData( GL_ARRAY_BUFFER, data_length * sizeof(std::remove_reference<decltype(path)>::type::value_type), &path[0], GL_STATIC_DRAW );
+          glDrawArrays( GL_LINE_STRIP_ADJACENCY, 0, data_length);
+        }
+      }
     }
 
     glUseProgram( path_program );
@@ -426,12 +434,17 @@ void Visualisation::update() {
 
 }
 
-void Visualisation::destroy() {}
+void Visualisation::destroy() {
+  if(framebuffer != nullptr) {
+    framebuffer->release();
+    delete framebuffer;
+  }
+}
 
 void Visualisation::set_head_position(glm::vec4 position) {
   if (position != effector_pos) {
 
-    if (glm::length(glm::vec3(position) - glm::vec3(last_extrusion_check)) > 0.1f) { // smooths out extrusion over a minimum length to fill in gaps todo: implement an simulatiopn to do this better
+    if (glm::length(glm::vec3(position) - glm::vec3(last_extrusion_check)) > 0.5f) { // smooths out extrusion over a minimum length to fill in gaps todo: implement an simulation to do this better
       extruding = position.w - last_extrusion_check.w > 0.0f;
       last_extrusion_check = position;
     }
@@ -484,8 +497,8 @@ void Visualisation::ui_viewport_callback(UiWindow* window) {
   Viewport& viewport = *((Viewport*)window);
 
   if (viewport.dirty) {
-      framebuffer.update(viewport.viewport_size.x, viewport.viewport_size.y);
-      viewport.texture_id = framebuffer.color_attachment_id;
+      framebuffer->update(viewport.viewport_size.x, viewport.viewport_size.y);
+      viewport.texture_id = framebuffer->texture_id();
       camera.update_aspect_ratio(viewport.viewport_size.x / viewport.viewport_size.y);
   }
 

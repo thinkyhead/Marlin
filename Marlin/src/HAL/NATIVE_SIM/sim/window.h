@@ -38,17 +38,30 @@ public:
 
 namespace opengl_util {
 
-struct MsaaFrameBuffer {
-  void create(GLuint w, GLuint h, GLint msaa = -1) {
-    if (w == width && h == height && msaa_levels == msaa) {
-      return;
+struct FrameBuffer {
+  virtual bool update(GLuint w, GLuint h) = 0;
+  virtual void release() = 0;
+  virtual void bind() = 0;
+  virtual void render() = 0;
+  virtual void unbind() = 0;
+  virtual GLuint texture_id() = 0;
+  virtual ~FrameBuffer() {}
+};
+
+struct MsaaFrameBuffer : public FrameBuffer {
+
+  bool create(GLuint w, GLuint h, GLint msaa) {
+    msaa_levels = msaa;
+    return update(w, h);
+  }
+
+  bool update(GLuint w, GLuint h) {
+    if (w == width && h == height) {
+      return true;
     }
 
     width = w;
     height = h;
-    if (msaa > -1) {
-      msaa_levels = msaa;
-    }
 
     if(color_attachment_id) {
       release();
@@ -79,11 +92,13 @@ struct MsaaFrameBuffer {
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_attachment_id, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, render_buffer_id);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  }
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+      release();
+      return false;
+    }
 
-  void update(GLuint w, GLuint h) {
-    create(w, h);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return true;
   }
 
   void release() {
@@ -114,11 +129,84 @@ struct MsaaFrameBuffer {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
+  GLuint texture_id() {
+    return color_attachment_id;
+  }
+
   GLuint framebuffer_id = 0, framebuffer_msaa_id = 0,
           color_attachment_id = 0, color_attachment_msaa_id = 0, depth_attachment_msaa_id = 0,
           render_buffer_id = 0,
           width = 0, height = 0;
-  GLint msaa_levels = 4;
+  GLint msaa_levels = 0;
+};
+
+struct TextureFrameBuffer : public FrameBuffer {
+  bool create(GLuint w, GLuint h) {
+    return update(w, h);
+  }
+
+  bool update(GLuint w, GLuint h) {
+    if (w == width && h == height) {
+      return true;
+    }
+
+    width = w;
+    height = h;
+
+    if(color_attachment_id) {
+      release();
+    }
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &color_attachment_id);
+    glBindTexture(GL_TEXTURE_2D, color_attachment_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &depth_attachment_id);
+    glBindTexture(GL_TEXTURE_2D, depth_attachment_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenFramebuffers(1, &framebuffer_id);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_attachment_id, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth_attachment_id, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+      release();
+      return false;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return true;
+  }
+
+  void release() {
+    glDeleteFramebuffers(1, &framebuffer_id);
+    glDeleteTextures(1, &depth_attachment_id);
+    glDeleteTextures(1, &color_attachment_id);
+  }
+
+  void bind() {
+    if(framebuffer_id) {
+      glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+      glViewport(0, 0, width, height);
+    }
+  }
+
+  void render() {
+    unbind();
+  }
+
+  void unbind() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
+
+  GLuint texture_id() {
+    return color_attachment_id;
+  }
+
+  GLuint framebuffer_id = 0, color_attachment_id = 0, depth_attachment_id = 0, width = 0, height = 0;
 };
 
 } // namespace opengl_util

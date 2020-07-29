@@ -56,11 +56,11 @@ void Application::update() {
 }
 
 void Application::render() {
-  sim.vis.framebuffer.bind();
+  sim.vis.framebuffer->bind();
   glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   sim.vis.update(); //update and render
-  sim.vis.framebuffer.render(); // render and unbind framebuffer
+  sim.vis.framebuffer->render(); // render and unbind framebuffer
 
   user_interface.render();
   window.swap_buffers();
