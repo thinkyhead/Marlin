@@ -21,15 +21,10 @@
  */
 #pragma once
 
+#include <cmath>
+
 #include "Gpio.h"
 
-struct LowpassFilter {
-  uint64_t data_delay = 0;
-  uint16_t update(uint16_t value) {
-    data_delay = data_delay - (data_delay >> 6) + value;
-    return (uint16_t)(data_delay >> 6);
-  }
-};
 
 class Heater: public Peripheral {
 public:
@@ -39,9 +34,35 @@ public:
   void update();
 
   pin_type heater_pin, adc_pin;
-  uint16_t room_temp_raw;
-  uint16_t heater_state;
-  LowpassFilter pwmcap;
-  double heat;
-  uint64_t last;
+
+  //heater element
+  double heater_volts = 12.0;
+  double heater_resistance = 4.8;
+
+  //pwm sim
+  uint64_t pwm_period = 0;
+  uint64_t pwm_duty = 0;
+  uint64_t pwm_hightick = 0;
+  uint64_t pwm_lowtick = 0;
+  uint64_t pwm_last_update = 0;
+
+  //hotend block
+  double hotend_ambient_temperature = 25.0;
+  double hotend_temperature = 0.0;
+  double hotend_energy = 0.0;
+  double hotend_mass = 20.0; // g
+
+  // intermediates for sphere approximation
+  double hotend_density = 2.7; // gm/cm^3 (Aluminium)
+  double hotend_volume = hotend_mass / hotend_density; // cm^3
+  double hotend_radius = std::cbrt((hotend_volume * 3.0) / (4.0 * M_PI)); // cm
+  // ****
+
+  double hotend_surface_area = 4.0 * M_PI * hotend_radius * hotend_radius; // cm^2
+  double hotend_specific_heat = 0.897; // j/g/C (Aluminum)
+  double hotend_convection_transfer = 0.001; // 0.001 W/cm^2 . C is an approximate often used for convective heat transfer into slow moving air
+
+  //adc
+  double adc_pullup_resistance = 4700;
+  uint32_t adc_resolution = 12;
 };

@@ -541,12 +541,10 @@ void Visualisation::ui_viewport_callback(UiWindow* window) {
     SDL_SetWindowGrab(SDL_GL_GetCurrentWindow(), SDL_FALSE);
     SDL_WarpMouseInWindow(SDL_GL_GetCurrentWindow(), mouse_lock_pos.x, mouse_lock_pos.y);
   } else if (mouse_captured) {
-    if(ImGui::IsMouseDragging(0)) {
-      camera.rotation.x -= ImGui::GetIO().MouseDelta.x * 0.2;
-      camera.rotation.y -= ImGui::GetIO().MouseDelta.y * 0.2;
-      if (camera.rotation.y > 89.0f) camera.rotation.y = 89.0f;
-      else if (camera.rotation.y < -89.0f) camera.rotation.y = -89.0f;
-    }
+    camera.rotation.x -= ImGui::GetIO().MouseDelta.x * 0.2;
+    camera.rotation.y -= ImGui::GetIO().MouseDelta.y * 0.2;
+    if (camera.rotation.y > 89.0f) camera.rotation.y = 89.0f;
+    else if (camera.rotation.y < -89.0f) camera.rotation.y = -89.0f;
   }
 };
 

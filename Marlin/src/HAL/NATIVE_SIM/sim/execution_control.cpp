@@ -16,7 +16,7 @@ bool Kernel::execute_loop( uint64_t max_end_ticks) {
 
   /**
    *
-   *  call update on hardware that has registered it needs to trigger hardware interrupts here
+   *  todo: call update on hardware that has registered it needs to trigger hardware interrupts here
    *
    * */
 
@@ -81,8 +81,15 @@ bool Kernel::execute_loop( uint64_t max_end_ticks) {
 // if a thread wants to wait, see what should be executed during that wait
 void Kernel::delayCycles(uint64_t cycles) {
   auto end = getTicks() + cycles;
-  while (execute_loop(end) && getTicks() < end);
-  if (end > getTicks()) setTicks(end);
+
+  // time skip mode
+  // while (execute_loop(end) && getTicks() < end);
+  // if (end > getTicks()) setTicks(end);
+
+  while ( getTicks() < end) {
+    execute_loop();
+  }
+
 }
 
 // this was neede for when marlin loops idle waiting for an event with no delays
