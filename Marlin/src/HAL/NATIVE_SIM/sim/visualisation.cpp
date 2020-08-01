@@ -12,9 +12,13 @@
 
 #include <vector>
 #include <array>
+#include <imgui_internal.h>
+#include <implot.h>
 
 #include "hardware/LinearAxis.h"
 #include "src/inc/MarlinConfig.h"
+
+
 
 constexpr uint32_t steps_per_unit[] = DEFAULT_AXIS_STEPS_PER_UNIT;
 
@@ -37,7 +41,9 @@ Visualisation::Visualisation() :
     Gpio::attach(extruder0.max_pin, std::bind(&Visualisation::gpio_event_handler, this, std::placeholders::_1));
   }
 
-Visualisation::~Visualisation() {}
+Visualisation::~Visualisation() {
+  destroy();
+}
 
 void Visualisation::create() {
   // todo : Y axis change fix, worked around by not joining
@@ -155,7 +161,7 @@ R"SHADERSTR(
       emit(5, 4, 7, 6);
 
       //emit(0, 1, 8, 0); //show up normal
-    };
+    }
 )SHADERSTR";
 
   const char * path_vertex_shader = R"SHADERSTR(
@@ -169,7 +175,7 @@ R"SHADERSTR(
         g_color = i_color;
         g_normal = i_normal;
         gl_Position = vec4( i_position, 1.0 );
-    };)SHADERSTR";
+    })SHADERSTR";
 
   const char * path_fragment_shader = R"SHADERSTR(
     #version 330
@@ -208,7 +214,7 @@ R"SHADERSTR(
         } else {
           o_color = vec4(v_color.rgb * (ambient + ((diffuse + specular) * attenuation)), v_color.a);
         }
-    };)SHADERSTR";
+    })SHADERSTR";
 
   const char * vertex_shader = R"SHADERSTR(
     #version 330
@@ -224,7 +230,7 @@ R"SHADERSTR(
         v_normal = i_normal;
         v_position = i_position;
         gl_Position = u_mvp * vec4( i_position, 1.0 );
-    };)SHADERSTR";
+    })SHADERSTR";
 
   const char * fragment_shader = R"SHADERSTR(
     #version 330
@@ -239,7 +245,7 @@ R"SHADERSTR(
         } else {
           o_color = v_color;
         }
-    };)SHADERSTR";
+    })SHADERSTR";
 
   path_program = ShaderProgram::loadProgram(path_vertex_shader, path_fragment_shader, geometry_shader);
   program = ShaderProgram::loadProgram(vertex_shader, fragment_shader);
@@ -350,7 +356,7 @@ void Visualisation::gpio_event_handler(GpioEvent& event) {
   y_axis.interrupt(event);
   z_axis.interrupt(event);
   extruder0.interrupt(event);
-  set_head_position(glm::vec4{x_axis.position / (float)steps_per_unit[0], z_axis.position / (float)steps_per_unit[0], y_axis.position / (float)steps_per_unit[1] * -1.0f, extruder0.position  / (float)steps_per_unit[3]});
+  set_head_position(glm::vec4{x_axis.position / (float)steps_per_unit[0], z_axis.position / (float)steps_per_unit[2], y_axis.position / (float)steps_per_unit[1] * -1.0f, extruder0.position  / (float)steps_per_unit[3]});
 }
 
 using millisec = std::chrono::duration<float, std::milli>;
@@ -548,18 +554,84 @@ void Visualisation::ui_viewport_callback(UiWindow* window) {
   }
 };
 
+struct ScrollingData {
+    int MaxSize;
+    int Offset;
+    ImVector<ImPlotPoint> Data;
+    ScrollingData() {
+        MaxSize = 2000;
+        Offset  = 0;
+        Data.reserve(MaxSize);
+    }
+    void AddPoint(float x, float y) {
+        if (Data.size() < MaxSize)
+            Data.push_back(ImPlotPoint(x,y));
+        else {
+            Data[Offset] = ImPlotPoint(x,y);
+            Offset =  (Offset + 1) % MaxSize;
+        }
+    }
+    void Erase() {
+        if (Data.size() > 0) {
+            Data.shrink(0);
+            Offset  = 0;
+        }
+    }
+};
+
 void Visualisation::ui_info_callback(UiWindow*) {
-  ImGui::SliderFloat("sim speed 100", &kernel.realtime_scale, 0.0f, 100.0f);
-  ImGui::SliderFloat("sim speed 10", &kernel.realtime_scale, 0.0f, 10.0f);
-  ImGui::SliderFloat("sim speed 1", &kernel.realtime_scale, 0.0f, 1.0f);
-  ImGui::SliderFloat("sim speed 0.1", &kernel.realtime_scale, 0.0f, 0.1f);
-  uint64_t hours = (kernel.realtime_nanos / (Kernel::ONE_BILLION * 60 * 60)) ;
-  uint64_t remainder = (kernel.realtime_nanos % (Kernel::ONE_BILLION * 60 * 60));
+
+  if (kernel.timing_mode == Kernel::TimingMode::ISRSTEP) {
+    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+  }
+  ui_realtime_scale = kernel.realtime_scale.load();
+  ImGui::SliderFloat("sim speed 100", &ui_realtime_scale, 0.0f, 100.0f);
+  ImGui::SliderFloat("sim speed 10", &ui_realtime_scale, 0.0f, 10.0f);
+  ImGui::SliderFloat("sim speed 1", &ui_realtime_scale, 0.0f, 1.0f);
+  ImGui::SliderFloat("sim speed 0.1", &ui_realtime_scale, 0.0f, 0.1f);
+  kernel.realtime_scale.store(ui_realtime_scale);
+  if (kernel.timing_mode == Kernel::TimingMode::ISRSTEP) {
+    ImGui::PopItemFlag();
+    ImGui::PopStyleVar();
+  }
+
+  uint64_t time_source = kernel.ticksToNanos(kernel.getTicks());
+  uint64_t hours = (time_source / (Kernel::ONE_BILLION * 60 * 60)) ;
+  uint64_t remainder = (time_source % (Kernel::ONE_BILLION * 60 * 60));
   uint64_t mins = (remainder / (Kernel::ONE_BILLION * 60));
   remainder = (remainder % (Kernel::ONE_BILLION * 60));
   uint64_t seconds = remainder / (Kernel::ONE_BILLION);
   remainder = remainder % (Kernel::ONE_BILLION);
   ImGui::Text("%02ld:%02ld:%02ld.%ld", hours, mins, seconds, remainder);
+  ImGui::Text("ISR timing error: %ldns", kernel.isr_timing_error.load());
+  ImGui::Checkbox("Disable Realtime Mode ", (bool*)&kernel.timing_mode_toggle);
+
+  static bool paused = false;
+  static ScrollingData sdata1, sdata2;
+  //static RollingData   rdata1, rdata2;
+  static float t = 0.0;
+  if (!paused) {
+      t += ImGui::GetIO().DeltaTime;
+      sdata1.AddPoint(t, kernel.isr_timing_error.load());
+      //rdata1.AddPoint(t, mouse.x * 0.0005f);
+      sdata2.AddPoint(t, kernel.realtime_scale.load());
+      //rdata2.AddPoint(t, mouse.y * 0.0005f);
+  }
+  static float history = 10.0f;
+  ImGui::SliderFloat("History",&history,1,30,"%.1f s");
+  // rdata1.Span = history;
+  // rdata2.Span = history;
+  ImPlot::SetNextPlotLimitsX(t - history, t, paused ? ImGuiCond_Once : ImGuiCond_Always);
+  static int rt_axis = ImPlotAxisFlags_Default & ~ImPlotAxisFlags_TickLabels;
+  if (ImPlot::BeginPlot("##Scrolling", NULL, NULL, ImVec2(-1,150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
+      ImPlot::PlotLine("Data 1", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, sizeof(ImPlotPoint));
+      ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+      ImPlot::PlotShaded("Data 2", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, sizeof(ImPlotPoint));
+      ImPlot::PopStyleVar();
+      ImPlot::EndPlot();
+  }
+
 }
 
 #endif

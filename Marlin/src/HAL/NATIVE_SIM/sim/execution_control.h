@@ -97,13 +97,19 @@ struct KernelTimer {
 
 class Kernel {
 public:
+  enum TimingMode {
+    REALTIME_SCALED,
+    ISRSTEP
+    //REALTIME_SIGNAL
+  };
+
   // ordered highest priority first
   Kernel() : threads({KernelThread{"Marlin Loop", loop, setup}}),
              timers({KernelTimer{"Stepper ISR", TIMER0_IRQHandler}, {"Temperate ISR", TIMER1_IRQHandler}}),
              last_clock_read(clock.now()) {
     threads[0].timer_offset = getTicks();
     threads[0].timer_rate = 1000000;
-    threads[0].timer_compare = 1000;
+    threads[0].timer_compare = 500;
   }
   std::array<KernelThread, 1> threads;
   std::array<KernelTimer, 2> timers;
@@ -112,19 +118,30 @@ public:
   KernelThread* this_thread = nullptr;
   std::vector<KernelThread*> call_stack;
   bool timers_active = true;
+  bool timing_mode_toggle = false;
+  bool timing_mode_toggle_last = false;
 
+
+  TimingMode timing_mode = TimingMode::REALTIME_SCALED;
   std::chrono::high_resolution_clock clock;
   std::chrono::high_resolution_clock::time_point last_clock_read;
-  inline uint64_t getRealtimeTicks() {
+  std::atomic_uint64_t isr_timing_error = 0;
+
+  inline void updateRealtimeTicks() {
     auto now = clock.now();
     auto delta = now - last_clock_read;
     uint64_t delta_uint64 = std::chrono::duration_cast<std::chrono::nanoseconds>(delta).count();
+    if(delta_uint64 > std::numeric_limits<std::uint64_t>::max() - ONE_BILLION) {
+      //printf("rt info: %ld : %f\n", delta_uint64, realtime_scale.load());
+      //aparently time can go backwards, thread issue?
+      delta_uint64 = 0;
+    }
     uint64_t delta_uint64_scaled = delta_uint64 * realtime_scale;
     if (delta_uint64_scaled != 0) {
       last_clock_read = now;
       realtime_nanos += delta_uint64_scaled;
     }
-    return nanosToTicks(realtime_nanos);
+    ticks.store(nanosToTicks(realtime_nanos));
   }
 
   //execute highest priority thread with closest interrupt, return true if something was executed
@@ -186,8 +203,10 @@ public:
 
   inline uint64_t timerGetCount(uint8_t timer_id) {
     if (timer_id < timers.size()) {
-      //ticks.fetch_add(1 + nanosToTicks(100, timers[timer_id].timer_frequency)); // todo: realtime control? time must pass here fore the stepper isr pulse counter
-      //setTicks(getTicks() + 1 + nanosToTicks(100, timers[timer_id].timer_frequency));
+      if (timing_mode == TimingMode::ISRSTEP) {
+        //in timeskip mode time must pass here for the stepper isr pulse counter (time + 100ns)
+        setTicks(getTicks() + 1 + nanosToTicks(100, timers[timer_id].timer_frequency));
+      }
       return timers[timer_id].get_count(getTicks(), frequency);
     }
     return 0;
@@ -201,11 +220,16 @@ public:
 
   // Clock
   inline uint64_t getTicks() {
-    return getRealtimeTicks();//ticks.load();
+    if (timing_mode == TimingMode::REALTIME_SCALED) {
+      updateRealtimeTicks();
+    }
+    return ticks.load();
   }
 
   inline void setTicks(uint64_t new_ticks) {
-    //ticks.store(new_ticks);
+    if (timing_mode == TimingMode::ISRSTEP) {
+      ticks.store(new_ticks);
+    }
   }
 
   // constants to reduce risk of typos
@@ -230,7 +254,9 @@ public:
   }
 
   inline uint64_t nanos() {
-    setTicks(getTicks() + nanosToTicks(100)); // Marlin has loops that only break after x ticks, so we need to increment ticks here
+    if (timing_mode == TimingMode::ISRSTEP) {
+      setTicks(getTicks() + 1 + nanosToTicks(100)); // Marlin has loops that only break after x ticks, so we need to increment ticks here
+    }
     return ticksToNanos(getTicks());
   }
 
@@ -262,7 +288,7 @@ public:
     delayCycles(nanosToTicks(secs * ONE_BILLION));
   }
 
-  float realtime_scale = 1.0;
+  std::atomic<float> realtime_scale = 1.0;
   std::atomic_uint64_t ticks{0};
   uint64_t realtime_nanos = 0;
   static constexpr uint32_t frequency = 100'000'000;

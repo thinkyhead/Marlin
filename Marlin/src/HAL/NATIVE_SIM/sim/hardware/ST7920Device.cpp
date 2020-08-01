@@ -18,7 +18,7 @@ ST7920Device::ST7920Device(pin_type clk, pin_type mosi, pin_type cs,  pin_type b
   Gpio::attach(cs_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
   Gpio::attach(beeper_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
 
-  glCreateTextures(GL_TEXTURE_2D, 1, &texture_id);
+  glGenTextures(1, &texture_id);
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

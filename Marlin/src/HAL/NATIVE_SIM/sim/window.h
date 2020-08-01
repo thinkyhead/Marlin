@@ -67,7 +67,7 @@ struct MsaaFrameBuffer : public FrameBuffer {
       release();
     }
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &color_attachment_id);
+    glGenTextures(1, &color_attachment_id);
     glBindTexture(GL_TEXTURE_2D, color_attachment_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -157,13 +157,13 @@ struct TextureFrameBuffer : public FrameBuffer {
       release();
     }
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &color_attachment_id);
+    glGenTextures(1, &color_attachment_id);
     glBindTexture(GL_TEXTURE_2D, color_attachment_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &depth_attachment_id);
+    glGenTextures(1, &depth_attachment_id);
     glBindTexture(GL_TEXTURE_2D, depth_attachment_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

@@ -166,7 +166,7 @@ public:
   LinearAxis z_axis;
   LinearAxis extruder0;
 
-  bool data_thread_active = false;
+  float ui_realtime_scale = 0.0f;
 
   void gpio_event_handler(GpioEvent& event);
   void update();

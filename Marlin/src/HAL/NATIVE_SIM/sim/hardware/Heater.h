@@ -37,7 +37,7 @@ public:
 
   //heater element
   double heater_volts = 12.0;
-  double heater_resistance = 4.8;
+  double heater_resistance = 3.6; // 40Watts
 
   //pwm sim
   uint64_t pwm_period = 0;
@@ -50,15 +50,16 @@ public:
   double hotend_ambient_temperature = 25.0;
   double hotend_temperature = 0.0;
   double hotend_energy = 0.0;
-  double hotend_mass = 20.0; // g
+  double hotend_mass = 13.0; // g [approxiamte of 2x2x1 heatblock + nozzle]
 
-  // intermediates for sphere approximation
-  double hotend_density = 2.7; // gm/cm^3 (Aluminium)
-  double hotend_volume = hotend_mass / hotend_density; // cm^3
-  double hotend_radius = std::cbrt((hotend_volume * 3.0) / (4.0 * M_PI)); // cm
-  // ****
+  // // intermediates for sphere approximation
+  // double hotend_density = 2.7; // gm/cm^3 (Aluminium)
+  // double hotend_volume = hotend_mass / hotend_density; // cm^3
+  // double hotend_radius = std::cbrt((hotend_volume * 3.0) / (4.0 * M_PI)); // cm
+  // double hotend_surface_area = 4.0 * M_PI * hotend_radius * hotend_radius; // cm^2
+  // // ****
 
-  double hotend_surface_area = 4.0 * M_PI * hotend_radius * hotend_radius; // cm^2
+  double hotend_surface_area = (16.0 + 4.0);// cm^2 [approxiamte of 2x2x1 heatblock + nozzle]
   double hotend_specific_heat = 0.897; // j/g/C (Aluminum)
   double hotend_convection_transfer = 0.001; // 0.001 W/cm^2 . C is an approximate often used for convective heat transfer into slow moving air
 
