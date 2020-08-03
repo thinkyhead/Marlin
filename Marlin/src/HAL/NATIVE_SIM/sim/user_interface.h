@@ -247,7 +247,9 @@ struct TextureWindow : public UiWindow {
   bool focused = false;
   GLuint texture_id = 0;
   float aspect_ratio = 0.0f;
-  TextureWindow(std::string name, GLuint texture_id, float aratio) : UiWindow(name), texture_id{texture_id}, aspect_ratio(aratio) {}
+
+  template<class... Args>
+  TextureWindow(std::string name, GLuint texture_id, float aratio, Args... args) : UiWindow(name, args...), texture_id{texture_id}, aspect_ratio(aratio) {}
   void show() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{2, 2});
     ImGui::Begin((char *)name.c_str(), nullptr);
@@ -256,6 +258,9 @@ struct TextureWindow : public UiWindow {
     ImGui::Image((ImTextureID)(intptr_t)texture_id, size, ImVec2(0,0), ImVec2(1,1));
     hovered = ImGui::IsItemHovered();
     focused = ImGui::IsWindowFocused();
+    if (show_callback != nullptr) {
+      show_callback((UiWindow*)this);
+    }
     ImGui::End();
     ImGui::PopStyleVar();
   }

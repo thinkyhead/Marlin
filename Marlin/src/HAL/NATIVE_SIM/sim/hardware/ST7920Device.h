@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include "../user_interface.h"
 
 #include <list>
 #include <deque>
@@ -9,7 +10,7 @@
 class ST7920Device: public Peripheral {
 public:
   enum KeyName {
-    ARROW_UP, ARROW_DOWN, COUNT
+    KILL_BUTTON, ENCODER_BUTTON, COUNT
   };
 
   struct Command {
@@ -24,6 +25,7 @@ public:
   void process_command(Command cmd);
   void update();
   void interrupt(GpioEvent& ev);
+  void ui_callback(UiWindow* window);
 
   pin_type clk_pin, mosi_pin, cs_pin, beeper_pin, enc1_pin, enc2_pin, enc_but_pin, kill_pin;
 
@@ -50,22 +52,14 @@ public:
   uint8_t coordinate[2] = {};
   uint8_t coordinate_index = 0;
 
-
-  /*** SDL ****/
-
-  void process_event(SDL_Event& e);
-  void encoder_rotate_cw();
-  void encoder_rotate_ccw();
-
   bool key_pressed[KeyName::COUNT] = {};
+  uint8_t encoder_position = 0.0f;
+  static constexpr int8_t encoder_table[4] = {1, 3, 2, 0};
 
-  bool close_request = false;
   bool dirty = true;
   std::chrono::high_resolution_clock clock;
   std::chrono::high_resolution_clock::time_point last_update;
-  uint8_t encoder_position = 0;
   float scaler;
-
   GLuint texture_id;
 
 };

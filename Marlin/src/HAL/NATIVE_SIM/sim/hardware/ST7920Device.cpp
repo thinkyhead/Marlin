@@ -17,6 +17,10 @@ ST7920Device::ST7920Device(pin_type clk, pin_type mosi, pin_type cs,  pin_type b
   Gpio::attach(clk_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
   Gpio::attach(cs_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
   Gpio::attach(beeper_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(kill_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(enc_but_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(enc1_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(enc2_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
 
   glGenTextures(1, &texture_id);
   glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -119,18 +123,6 @@ void ST7920Device::update() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 128, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
     glBindTexture(GL_TEXTURE_2D, 0);
   }
-
-  if (key_pressed[KeyName::ARROW_DOWN]) {
-    encoder_rotate_ccw();
-    //kernel.delayMicros(50);
-    encoder_rotate_ccw();
-  }
-  if(key_pressed[KeyName::ARROW_UP]) {
-    encoder_rotate_cw();
-    //kernel.delayMicros(20);
-    encoder_rotate_cw();
-  }
-
 }
 
 void ST7920Device::interrupt(GpioEvent& ev) {
@@ -155,120 +147,29 @@ void ST7920Device::interrupt(GpioEvent& ev) {
     } else if (ev.event == GpioEvent::FALL) {
       // stop sound
     }
+  } else if (ev.pin_id == kill_pin) {
+    Gpio::pin_map[kill_pin].value = !key_pressed[KeyName::KILL_BUTTON];
+  } else if (ev.pin_id == enc_but_pin) {
+    Gpio::pin_map[enc_but_pin].value = !key_pressed[KeyName::ENCODER_BUTTON];
+  } else if (ev.pin_id == enc1_pin || ev.pin_id == enc2_pin) {
+    uint8_t encoder_state = encoder_position % 4;
+    Gpio::pin_map[enc1_pin].value = encoder_table[encoder_state] & 0x01;
+    Gpio::pin_map[enc2_pin].value = encoder_table[encoder_state] & 0x02;
   }
 }
 
-void ST7920Device::process_event(SDL_Event& e) {
-  switch (e.type) {
-    case SDL_KEYDOWN: case SDL_KEYUP: {
-      switch(e.key.keysym.sym) {
-        case SDLK_k : {
-          Gpio::pin_map[kill_pin].value = e.type == SDL_KEYDOWN ? 0 : 1;
-          break;
-        }
-        case SDLK_SPACE: {
-          Gpio::pin_map[enc_but_pin].value =  e.type == SDL_KEYDOWN ? 0 : 1;
-          break;
-        }
-        case SDLK_UP: {
-          key_pressed[KeyName::ARROW_UP] = e.type == SDL_KEYDOWN;
-          break;
-        }
-        case SDLK_DOWN: {
-          key_pressed[KeyName::ARROW_DOWN] = e.type == SDL_KEYDOWN;
-          break;
-        }
-        default:
-          break;
-
-      }
-      break;
-    }
-    case SDL_MOUSEWHEEL: {
-      if (e.wheel.y > 0 ){
-        encoder_rotate_cw();
-        //kernel.delayMicros(200);
-        encoder_rotate_cw();
-      } else {
-        encoder_rotate_ccw();
-        //kernel.delayMicros(200);
-        encoder_rotate_ccw();
-      }
-      break;
-    }
-    case SDL_MOUSEBUTTONUP: case SDL_MOUSEBUTTONDOWN: {
-      if (e.button.button == SDL_BUTTON_LEFT) {
-        Gpio::pin_map[enc_but_pin].value = e.type == SDL_MOUSEBUTTONDOWN ? 0 : 1;
-      }
-      break;
-    }
-    case SDL_WINDOWEVENT: {
-      if (e.window.event == SDL_WINDOWEVENT_CLOSE) {
-        // if (SDL_GetWindowID(window) == e.window.windowID) {
-        // }
-        close_request = true;
-      }
-      break;
+void ST7920Device::ui_callback(UiWindow* window) {
+  if (ImGui::IsWindowFocused()) {
+    key_pressed[KeyName::KILL_BUTTON] = ImGui::IsKeyDown(SDL_SCANCODE_K);
+    key_pressed[KeyName::ENCODER_BUTTON] = ImGui::IsKeyDown(SDL_SCANCODE_SPACE);
+    encoder_position -= ImGui::IsKeyDown(SDL_SCANCODE_UP);
+    encoder_position += ImGui::IsKeyDown(SDL_SCANCODE_DOWN);
+    if (ImGui::IsWindowHovered()) {
+      key_pressed[KeyName::ENCODER_BUTTON] = ImGui::IsMouseClicked(0);
+      encoder_position += ImGui::GetIO().MouseWheel > 0 ? 1 : ImGui::GetIO().MouseWheel < 0 ? -1 : 0;
     }
   }
 }
 
-void ST7920Device::encoder_rotate_cw() {
-  switch(encoder_position) {
-    case 0: {
-      Gpio::pin_map[enc1_pin].value = 1;
-      Gpio::pin_map[enc2_pin].value = 0;
-      encoder_position = 2;
-      break;
-    }
-    case 1: {
-      Gpio::pin_map[enc1_pin].value = 0;
-      Gpio::pin_map[enc2_pin].value = 0;
-      encoder_position = 0;
-      break;
-    }
-    case 2: {
-      Gpio::pin_map[enc1_pin].value = 1;
-      Gpio::pin_map[enc2_pin].value = 1;
-      encoder_position = 3;
-      break;
-    }
-    case 3: {
-      Gpio::pin_map[enc1_pin].value = 0;
-      Gpio::pin_map[enc2_pin].value = 1;
-      encoder_position = 1;
-      break;
-    }
-  }
-}
-
-void ST7920Device::encoder_rotate_ccw() {
-  switch(encoder_position) {
-    case 0: {
-      Gpio::pin_map[enc1_pin].value = 0;
-      Gpio::pin_map[enc2_pin].value = 1;
-      encoder_position = 1;
-      break;
-    }
-    case 1: {
-      Gpio::pin_map[enc1_pin].value = 1;
-      Gpio::pin_map[enc2_pin].value = 1;
-      encoder_position = 3;
-      break;
-    }
-    case 2: {
-      Gpio::pin_map[enc1_pin].value = 0;
-      Gpio::pin_map[enc2_pin].value = 0;
-      encoder_position = 0;
-      break;
-    }
-    case 3: {
-      Gpio::pin_map[enc1_pin].value = 1;
-      Gpio::pin_map[enc2_pin].value = 0;
-      encoder_position = 2;
-      break;
-    }
-  }
-}
 #endif
 
