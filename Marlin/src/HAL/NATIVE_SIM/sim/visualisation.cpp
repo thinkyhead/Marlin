@@ -276,79 +276,7 @@ R"SHADERSTR(
 }
 
 void Visualisation::process_event(SDL_Event& e) {
-  switch (e.type) {
-    case SDL_KEYDOWN: case SDL_KEYUP: {
-        switch(e.key.keysym.sym) {
-          case SDLK_w : {
-            input_state[0] = e.type == SDL_KEYDOWN;
-            break;
-          }
-          case SDLK_a : {
-            input_state[1] = e.type == SDL_KEYDOWN;
-            break;
-          }
-          case SDLK_s : {
-            input_state[2] = e.type == SDL_KEYDOWN;
-            break;
-          }
-          case SDLK_d : {
-            input_state[3] = e.type == SDL_KEYDOWN;
-            break;
-          }
-          case SDLK_SPACE : {
-            input_state[4] = e.type == SDL_KEYDOWN;
-            break;
-          }
-          case SDLK_LSHIFT : {
-            input_state[5] = e.type == SDL_KEYDOWN;
-            break;
-          }
 
-          case SDLK_f :{
-            if( e.type == SDL_KEYUP) {
-              follow_mode = follow_mode == 1? 0 : 1;
-              if (follow_mode) {
-                camera.position = glm::vec3(effector_pos.x, effector_pos.y + 10.0, effector_pos.z);
-                camera.rotation.y = 89.99999;
-              }
-            }
-            break;
-          }
-          case SDLK_g :{
-            if( e.type == SDL_KEYUP) {
-              follow_mode = follow_mode == 2? 0 : 2;
-              if (follow_mode) {
-                follow_offset = camera.position - glm::vec3(effector_pos);
-              }
-            }
-            break;
-          }
-          case SDLK_F1: {
-            if (e.type == SDL_KEYUP) {
-              SDL_SetRelativeMouseMode((SDL_bool)!mouse_captured);
-              mouse_captured = !mouse_captured;
-            }
-            break;
-          }
-          case SDLK_F2: {
-            if (e.type == SDL_KEYUP) {
-              render_full_path = !render_full_path;
-            }
-            break;
-          }
-          case SDLK_F3: {
-            if (e.type == SDL_KEYUP) {
-              render_path_line = !render_path_line;
-            }
-            break;
-          }
-          default:
-            break;
-        }
-      break;
-    }
-
-  }
 }
 
 void Visualisation::gpio_event_handler(GpioEvent& event) {
@@ -510,23 +438,46 @@ void Visualisation::ui_viewport_callback(UiWindow* window) {
   }
 
   if (viewport.focused) {
-    if(ImGui::IsKeyDown(SDL_SCANCODE_W)) {
+    if (ImGui::IsKeyDown(SDL_SCANCODE_W)) {
       camera.position += camera.speed * camera.direction * delta;
     }
-    if(ImGui::IsKeyDown(SDL_SCANCODE_S)) {
+    if (ImGui::IsKeyDown(SDL_SCANCODE_S)) {
       camera.position -= camera.speed * camera.direction * delta;
     }
-    if(ImGui::IsKeyDown(SDL_SCANCODE_A)) {
+    if (ImGui::IsKeyDown(SDL_SCANCODE_A)) {
       camera.position -= glm::normalize(glm::cross(camera.direction, camera.up)) * camera.speed * delta;
     }
-    if(ImGui::IsKeyDown(SDL_SCANCODE_D)) {
+    if (ImGui::IsKeyDown(SDL_SCANCODE_D)) {
       camera.position += glm::normalize(glm::cross(camera.direction, camera.up)) * camera.speed * delta;
     }
-    if(ImGui::IsKeyDown(SDL_SCANCODE_SPACE)) {
+    if (ImGui::IsKeyDown(SDL_SCANCODE_SPACE)) {
       camera.position += camera.world_up * camera.speed * delta;
     }
-    if(ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT)) {
+    if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT)) {
       camera.position -= camera.world_up * camera.speed * delta;
+    }
+    if (ImGui::IsKeyPressed(SDL_SCANCODE_F)) {
+      follow_mode = follow_mode == 1? 0 : 1;
+      if (follow_mode) {
+        camera.position = glm::vec3(effector_pos.x, effector_pos.y + 10.0, effector_pos.z);
+        camera.rotation.y = -89.99999;
+      }
+    }
+    if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
+      follow_mode = follow_mode == 2? 0 : 2;
+      if (follow_mode) {
+        follow_offset = camera.position - glm::vec3(effector_pos);
+      }
+    }
+    if (ImGui::IsKeyPressed(SDL_SCANCODE_F1)) {
+      render_full_path = !render_full_path;
+    }
+    if (ImGui::IsKeyPressed(SDL_SCANCODE_F2)) {
+      render_path_line = !render_path_line;
+    }
+
+    if (ImGui::GetIO().MouseWheel != 0 && viewport.hovered) {
+      camera.position += camera.speed * camera.direction * delta * ImGui::GetIO().MouseWheel;
     }
   }
 
@@ -554,6 +505,9 @@ void Visualisation::ui_viewport_callback(UiWindow* window) {
   }
 };
 
+
+// Test graph
+
 struct ScrollingData {
     int MaxSize;
     int Offset;
@@ -580,7 +534,6 @@ struct ScrollingData {
 };
 
 void Visualisation::ui_info_callback(UiWindow*) {
-
   if (kernel.timing_mode == Kernel::TimingMode::ISRSTEP) {
     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
@@ -605,7 +558,20 @@ void Visualisation::ui_info_callback(UiWindow*) {
   remainder = remainder % (Kernel::ONE_BILLION);
   ImGui::Text("%02ld:%02ld:%02ld.%ld", hours, mins, seconds, remainder);
   ImGui::Text("ISR timing error: %ldns", kernel.isr_timing_error.load());
+
+
+  // lock the toggle button until the mode has been changed as it may be blocked
+  bool disabled_toggle = kernel.timing_mode != kernel.timing_mode_toggle;
+  if (disabled_toggle) {
+    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+  }
   ImGui::Checkbox("Disable Realtime Mode ", (bool*)&kernel.timing_mode_toggle);
+  if (disabled_toggle) {
+    ImGui::PopItemFlag();
+    ImGui::PopStyleVar();
+  }
+
 
   static bool paused = false;
   static ScrollingData sdata1, sdata2;
@@ -615,7 +581,7 @@ void Visualisation::ui_info_callback(UiWindow*) {
       t += ImGui::GetIO().DeltaTime;
       sdata1.AddPoint(t, kernel.isr_timing_error.load());
       //rdata1.AddPoint(t, mouse.x * 0.0005f);
-      sdata2.AddPoint(t, kernel.realtime_scale.load());
+      //sdata2.AddPoint(t, kernel.realtime_scale.load());
       //rdata2.AddPoint(t, mouse.y * 0.0005f);
   }
   static float history = 10.0f;
@@ -623,14 +589,15 @@ void Visualisation::ui_info_callback(UiWindow*) {
   // rdata1.Span = history;
   // rdata2.Span = history;
   ImPlot::SetNextPlotLimitsX(t - history, t, paused ? ImGuiCond_Once : ImGuiCond_Always);
-  static int rt_axis = ImPlotAxisFlags_Default & ~ImPlotAxisFlags_TickLabels;
-  if (ImPlot::BeginPlot("##Scrolling", NULL, NULL, ImVec2(-1,150), ImPlotFlags_Default, rt_axis, rt_axis | ImPlotAxisFlags_LockMin)) {
-      ImPlot::PlotLine("Data 1", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, sizeof(ImPlotPoint));
-      ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-      ImPlot::PlotShaded("Data 2", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, sizeof(ImPlotPoint));
-      ImPlot::PopStyleVar();
+  static int rt_axis = ImPlotAxisFlags_Default | ImPlotAxisFlags_LockMin;
+  if (ImPlot::BeginPlot("##Scrolling", NULL, NULL, ImVec2(-1,150), ImPlotFlags_Default, rt_axis & ~ImPlotAxisFlags_TickLabels, rt_axis)) {
+      ImPlot::PlotLine("ISR Timing Error (ns)", &sdata1.Data[0].x, &sdata1.Data[0].y, sdata1.Data.size(), sdata1.Offset, sizeof(ImPlotPoint));
+      //ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+      //ImPlot::PlotShaded("Data 2", &sdata2.Data[0].x, &sdata2.Data[0].y, sdata2.Data.size(), 0, sdata2.Offset, sizeof(ImPlotPoint));
+      //ImPlot::PopStyleVar();
       ImPlot::EndPlot();
   }
+  ImGui::Text("Double left click to autoscale, right click contect menu");
 
 }
 

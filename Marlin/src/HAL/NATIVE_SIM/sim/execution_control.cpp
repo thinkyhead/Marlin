@@ -15,8 +15,8 @@ bool Kernel::execute_loop( uint64_t max_end_ticks) {
     std::dynamic_pointer_cast<SerialMonitor>(UserInterface::ui_elements["Serial Monitor"])->insert_text(buffer);
   }
 
-  // make sure the timing mode changes at a controlled oint in execution
-  if (timing_mode_toggle != timing_mode_toggle_last) {
+  // make sure the timing mode changes at a controlled point in execution
+  if (timing_mode_toggle != timing_mode_toggle_last && this_thread == nullptr) {
     timing_mode_toggle_last = timing_mode_toggle;
     if (timing_mode == TimingMode::REALTIME_SCALED) {
       timing_mode = TimingMode::ISRSTEP;
