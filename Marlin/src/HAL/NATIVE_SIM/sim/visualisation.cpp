@@ -48,8 +48,7 @@ Visualisation::~Visualisation() {
 void Visualisation::create() {
   // todo : Y axis change fix, worked around by not joining
   // todo : very spiky corners after 45 degs, again just worked around by not joining
-  const char * geometry_shader =
-R"SHADERSTR(
+  const char * geometry_shader = R"SHADERSTR(
     #version 330 core
     layout (lines_adjacency) in;
     layout (triangle_strip, max_vertices = 28) out;
@@ -161,8 +160,7 @@ R"SHADERSTR(
       emit(5, 4, 7, 6);
 
       //emit(0, 1, 8, 0); //show up normal
-    }
-)SHADERSTR";
+    })SHADERSTR";
 
   const char * path_vertex_shader = R"SHADERSTR(
     #version 330

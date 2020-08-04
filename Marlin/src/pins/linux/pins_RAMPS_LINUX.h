@@ -49,6 +49,10 @@
   #define BOARD_INFO_NAME "RAMPS 1.4"
 #endif
 
+#ifndef DEFAULT_MACHINE_NAME
+  #define DEFAULT_MACHINE_NAME "SimRap 1.4"
+#endif
+
 #ifndef MARLIN_EEPROM_SIZE
   #define MARLIN_EEPROM_SIZE 0x1000               // 4KB
 #endif
