@@ -554,8 +554,8 @@ void Visualisation::ui_info_callback(UiWindow*) {
   remainder = (remainder % (Kernel::ONE_BILLION * 60));
   uint64_t seconds = remainder / (Kernel::ONE_BILLION);
   remainder = remainder % (Kernel::ONE_BILLION);
-  ImGui::Text("%02ld:%02ld:%02ld.%ld", hours, mins, seconds, remainder);
-  ImGui::Text("ISR timing error: %ldns", kernel.isr_timing_error.load());
+  ImGui::Text("%02lld:%02lld:%02lld.%lld", hours, mins, seconds, remainder);
+  ImGui::Text("ISR timing error: %lldns", kernel.isr_timing_error.load());
 
 
   // lock the toggle button until the mode has been changed as it may be blocked

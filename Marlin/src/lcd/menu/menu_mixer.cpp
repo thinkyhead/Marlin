@@ -241,7 +241,7 @@ void menu_mixer() {
 
   #if HAS_DUAL_MIXING
   {
-    char tmp[10];
+    char tmp[11];
     SUBMENU(MSG_MIX, lcd_mixer_mix_edit);
     MENU_ITEM_ADDON_START(10);
       mixer.update_mix_from_vtool();
