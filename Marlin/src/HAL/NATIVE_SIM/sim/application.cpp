@@ -29,19 +29,19 @@ void Application::update() {
   while (SDL_PollEvent(&event)) {
     ImGui_ImplSDL2_ProcessEvent(&event);
 
-    if (event.type == SDL_QUIT) {
-      active = false;
-    }
-    if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID((SDL_Window*)window.getHandle())) {
-      active = false;
-    }
+    switch (event.type) {
+      case SDL_DROPFILE: {
+        char *dropped_filedir = event.drop.file;
+        input_file.open(dropped_filedir);
+        SDL_free(dropped_filedir);    // Free dropped_filedir memory
+      } break;
 
-    if (event.type == SDL_DROPFILE) {
-      char *dropped_filedir = event.drop.file;
-      input_file.open(dropped_filedir);
-      SDL_free(dropped_filedir);    // Free dropped_filedir memory
-    }
+      case SDL_WINDOWEVENT:
+        if (event.window.event != SDL_WINDOWEVENT_CLOSE || event.window.windowID != SDL_GetWindowID((SDL_Window*)window.getHandle()))
+          break;
 
+      case SDL_QUIT: active = false; break;
+    }
   }
 
   // File read into serial port
@@ -49,7 +49,7 @@ void Application::update() {
     uint8_t buffer[HalSerial::receive_buffer_size]{};
     auto count = input_file.readsome((char*)buffer, usb_serial.receive_buffer.free());
     usb_serial.receive_buffer.write(buffer, count);
-    if(count == 0) input_file.close();
+    if (count == 0) input_file.close();
   }
 
   sim.update();
@@ -60,11 +60,11 @@ void Application::render() {
   sim.vis.framebuffer->bind();
   glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  sim.vis.update(); //update and render
-  sim.vis.framebuffer->render(); // render and unbind framebuffer
+  sim.vis.update();               // Update and render
+  sim.vis.framebuffer->render();  // Render and unbind framebuffer
 
   user_interface.render();
   window.swap_buffers();
 }
 
-#endif //__PLAT_NATIVE_SIM__
+#endif // __PLAT_NATIVE_SIM__

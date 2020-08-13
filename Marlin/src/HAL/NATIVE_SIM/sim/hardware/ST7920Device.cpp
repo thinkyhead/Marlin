@@ -131,20 +131,20 @@ void ST7920Device::update() {
 
 void ST7920Device::interrupt(GpioEvent& ev) {
   if (ev.pin_id == clk_pin && ev.event == GpioEvent::FALL && Gpio::pin_map[cs_pin].value){
-    incomming_byte = (incomming_byte << 1) | Gpio::pin_map[mosi_pin].value;
-    if (++incomming_bit_count == 8) {
-      if (incomming_byte_count == 0 && (incomming_byte & 0xF8) != 0xF8) {
-        incomming_byte_count++;
+    incoming_byte = (incoming_byte << 1) | Gpio::pin_map[mosi_pin].value;
+    if (++incoming_bit_count == 8) {
+      if (incoming_byte_count == 0 && (incoming_byte & 0xF8) != 0xF8) {
+        incoming_byte_count++;
       }
-      incomming_cmd[incomming_byte_count++] = incomming_byte;
-      incomming_byte = incomming_bit_count = 0;
-      if (incomming_byte_count == 3) {
-        process_command({(incomming_cmd[0] & 0b100) != 0, (incomming_cmd[0] & 0b010) != 0, uint8_t(incomming_cmd[1] | incomming_cmd[2] >> 4)});
-        incomming_byte_count = 0;
+      incoming_cmd[incoming_byte_count++] = incoming_byte;
+      incoming_byte = incoming_bit_count = 0;
+      if (incoming_byte_count == 3) {
+        process_command({(incoming_cmd[0] & 0b100) != 0, (incoming_cmd[0] & 0b010) != 0, uint8_t(incoming_cmd[1] | incoming_cmd[2] >> 4)});
+        incoming_byte_count = 0;
       }
     }
   } else if (ev.pin_id == cs_pin && ev.event == GpioEvent::RISE) {
-    incomming_bit_count = incomming_byte_count = incomming_byte = 0;
+    incoming_bit_count = incoming_byte_count = incoming_byte = 0;
   } else if (ev.pin_id == beeper_pin) {
     if (ev.event == GpioEvent::RISE) {
       // play sound
@@ -164,10 +164,12 @@ void ST7920Device::interrupt(GpioEvent& ev) {
 
 void ST7920Device::ui_callback(UiWindow* window) {
   if (ImGui::IsWindowFocused()) {
-    key_pressed[KeyName::KILL_BUTTON] = ImGui::IsKeyDown(SDL_SCANCODE_K);
+    key_pressed[KeyName::KILL_BUTTON]    = ImGui::IsKeyDown(SDL_SCANCODE_K);
     key_pressed[KeyName::ENCODER_BUTTON] = ImGui::IsKeyDown(SDL_SCANCODE_SPACE);
-    encoder_position -= ImGui::IsKeyDown(SDL_SCANCODE_UP);
-    encoder_position += ImGui::IsKeyDown(SDL_SCANCODE_DOWN);
+
+    if (ImGui::IsKeyDown(SDL_SCANCODE_UP))   encoder_position--;
+    if (ImGui::IsKeyDown(SDL_SCANCODE_DOWN)) encoder_position++;
+
     if (ImGui::IsWindowHovered()) {
       key_pressed[KeyName::ENCODER_BUTTON] |= ImGui::IsMouseClicked(0);
       encoder_position += ImGui::GetIO().MouseWheel > 0 ? 1 : ImGui::GetIO().MouseWheel < 0 ? -1 : 0;
@@ -176,4 +178,3 @@ void ST7920Device::ui_callback(UiWindow* window) {
 }
 
 #endif
-

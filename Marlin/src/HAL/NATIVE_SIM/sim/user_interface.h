@@ -16,6 +16,15 @@
 #endif
 #include <imgui.h>
 
+/**
+ * |-----|-----|------|
+ * |Stat | LCD |      |
+ * |           |      |
+ * |           |  3D  |
+ * |-----------|      |
+ * |Ser        |      |
+ * |-----------|------|
+ */
 static constexpr const char* ImGuiDefaultLayout =
 R"([Window][DockSpaceWindwow]
 Pos=0,0
@@ -94,22 +103,20 @@ struct StatusWindow : public UiWindow {
   template<class... Args>
   StatusWindow( std::string name, ImVec4* clear_color, Args... args) : UiWindow{name, args...}, clear_color{clear_color} {}
   void show() override {
-    if(!ImGui::Begin((char*)name.c_str())) {
+    if (!ImGui::Begin((char*)name.c_str())) {
       ImGui::End();
       return;
     }
 
-    if(show_callback != nullptr) {
-      show_callback(this);
-    }
+    if (show_callback) show_callback(this);
 
     ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 
     ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::ColorEdit3("clear color", (float*)clear_color);  // Edit 3 floats representing a color
 
-    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-      counter++;
+    if (ImGui::Button("Button")) counter++;                 // Buttons return true when clicked (most widgets return true when edited/activated)
+
     ImGui::SameLine();
     ImGui::Text("counter = %d", counter);
 
@@ -152,7 +159,7 @@ struct SerialMonitor : public UiWindow {
           if (history_index > 0) history_index --;
         }
         if (history_index > 0 && history_index != history_index_prev) {
-          if(history_index_prev == 0) {
+          if (history_index_prev == 0) {
             input_buffer = std::string{data->Buf};
           }
           data->DeleteChars(0, data->BufTextLen);
@@ -181,15 +188,15 @@ struct SerialMonitor : public UiWindow {
 
   void show() {
     if (!ImGui::Begin((char *)name.c_str(), nullptr)) {
-        ImGui::End();
-        return;
+      ImGui::End();
+      return;
     }
 
     ImGui::BeginGroup();
     const ImGuiWindowFlags child_flags = 0;
     const ImGuiID child_id = ImGui::GetID((void*)(intptr_t)0);
     auto size = ImGui::GetContentRegionAvail();
-    size.y = size.y - 25; //todo: there must be a better way to fill 2 items on a line
+    size.y -= 25; // TODO: there must be a better way to fill 2 items on a line
     if (ImGui::BeginChild(child_id, size, true, child_flags)) {
       for (auto line : line_buffer) {
         if (line.count > 1) ImGui::TextWrapped("[%ld] %s", line.count, (char *)line.text.c_str());
@@ -197,11 +204,11 @@ struct SerialMonitor : public UiWindow {
       }
       ImGui::TextWrapped("%s", (char *)working_buffer.c_str());
 
-      // automatically set follow when scrolled to max
+      // Automatically set follow when scrolled to max
       if (ImGui::GetScrollY() != ImGui::GetScrollMaxY() || scroll_follow_state == 2) scroll_follow = false;
       else scroll_follow = true;
 
-      // automattical rescroll to max when follow clicked
+      // Automatically rescroll to max when follow clicked
       if (scroll_follow || scroll_follow_state == 1) {
         scroll_follow_state = 0;
         ImGui::SetScrollHereY(1.0f);
@@ -228,13 +235,14 @@ struct SerialMonitor : public UiWindow {
         reclaim_focus = true;
     }
     ImGui::PopItemWidth();
+
     // Auto-focus on window apparition
     ImGui::SetItemDefaultFocus();
-    if (reclaim_focus)
-        ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+    if (reclaim_focus) ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
     ImGui::SameLine();
+
     bool last_follow_state = scroll_follow;
-    if(ImGui::Checkbox("##scroll_follow", &scroll_follow)) {
+    if (ImGui::Checkbox("##scroll_follow", &scroll_follow)) {
       if (last_follow_state != scroll_follow) {
         scroll_follow_state = last_follow_state == false ? 1 : 2;
       } else {
@@ -262,9 +270,7 @@ struct TextureWindow : public UiWindow {
     ImGui::Image((ImTextureID)(intptr_t)texture_id, size, ImVec2(0,0), ImVec2(1,1));
     hovered = ImGui::IsItemHovered();
     focused = ImGui::IsWindowFocused();
-    if (show_callback != nullptr) {
-      show_callback((UiWindow*)this);
-    }
+    if (show_callback) show_callback((UiWindow*)this);
     ImGui::End();
     ImGui::PopStyleVar();
   }

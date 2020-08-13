@@ -7,7 +7,7 @@
 #include <imgui_impl_opengl3.h>
 #include "user_interface.h"
 
- std::map<std::string, std::shared_ptr<UiWindow>> UserInterface::ui_elements;
+std::map<std::string, std::shared_ptr<UiWindow>> UserInterface::ui_elements;
 
 void DockSpace() {
   ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
@@ -36,7 +36,7 @@ void DockSpace() {
 
 UserInterface::UserInterface() {
   ImGui::LoadIniSettingsFromMemory(ImGuiDefaultLayout, strlen(ImGuiDefaultLayout));
-  ImGui::LoadIniSettingsFromDisk("imgui.ini");
+  ImGui::LoadIniSettingsFromDisk("imgui.ini"); // Load early
 }
 
 UserInterface::~UserInterface() {

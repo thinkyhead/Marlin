@@ -31,10 +31,10 @@ public:
 
   bool extended_instruction_set = false;
 
-  uint8_t incomming_byte = 0;
-  uint8_t incomming_bit_count = 0;
-  uint8_t incomming_byte_count = 0;
-  uint8_t incomming_cmd[3] = {};
+  uint8_t incoming_byte = 0;
+  uint8_t incoming_bit_count = 0;
+  uint8_t incoming_byte_count = 0;
+  uint8_t incoming_cmd[3] = {};
   std::deque<Command> cmd_in;
 
   static constexpr uint8_t display_ram_size = 64 * (16 / 8);
