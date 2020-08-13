@@ -7,7 +7,11 @@
 #include "Gpio.h"
 
 #include <GL/glew.h>
-#include <GL/gl.h>
+#if defined(__APPLE__) && !defined(__MESA__)
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 
 #include "ST7920Device.h"
 
