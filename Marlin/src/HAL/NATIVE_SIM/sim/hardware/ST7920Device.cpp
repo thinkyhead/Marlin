@@ -165,7 +165,7 @@ void ST7920Device::ui_callback(UiWindow* window) {
     encoder_position -= ImGui::IsKeyDown(SDL_SCANCODE_UP);
     encoder_position += ImGui::IsKeyDown(SDL_SCANCODE_DOWN);
     if (ImGui::IsWindowHovered()) {
-      key_pressed[KeyName::ENCODER_BUTTON] = ImGui::IsMouseClicked(0);
+      key_pressed[KeyName::ENCODER_BUTTON] |= ImGui::IsMouseClicked(0);
       encoder_position += ImGui::GetIO().MouseWheel > 0 ? 1 : ImGui::GetIO().MouseWheel < 0 ? -1 : 0;
     }
   }
