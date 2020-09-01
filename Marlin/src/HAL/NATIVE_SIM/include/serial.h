@@ -135,7 +135,7 @@ public:
   }
 
   int16_t read() {
-    uint8_t value;
+    uint8_t value; UNUSED(value);
     uint32_t ret = receive_buffer.read(&value);
     return (ret ? value : -1);
   }
