@@ -43,7 +43,7 @@ public:
 
   Simulation() :  hotend(HEATER_0_PIN, TEMP_0_PIN),
                   bed(HEATER_BED_PIN, TEMP_BED_PIN),
-                  display(LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS, BEEPER_PIN, BTN_EN1, BTN_EN2, BTN_ENC, KILL_PIN) {}
+                  display(LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS, BEEPER_PIN, BTN_EN1, BTN_EN2, BTN_ENC, BTN_BACK, KILL_PIN) {}
 
   void process_event(SDL_Event& e) {}
 

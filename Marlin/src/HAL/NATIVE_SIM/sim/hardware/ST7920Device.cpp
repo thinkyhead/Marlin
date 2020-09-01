@@ -15,16 +15,17 @@
 
 #include "ST7920Device.h"
 
-ST7920Device::ST7920Device(pin_type clk, pin_type mosi, pin_type cs,  pin_type beeper, pin_type enc1, pin_type enc2, pin_type enc_but, pin_type kill)
-  : clk_pin(clk), mosi_pin(mosi), cs_pin(cs), beeper_pin(beeper), enc1_pin(enc1), enc2_pin(enc2), enc_but_pin(enc_but), kill_pin(kill) {
+ST7920Device::ST7920Device(pin_type clk, pin_type mosi, pin_type cs, pin_type beeper, pin_type enc1, pin_type enc2, pin_type enc_but, pin_type back, pin_type kill)
+  : clk_pin(clk), mosi_pin(mosi), cs_pin(cs), beeper_pin(beeper), enc1_pin(enc1), enc2_pin(enc2), enc_but_pin(enc_but), back_pin(back), kill_pin(kill) {
 
   Gpio::attach(clk_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
   Gpio::attach(cs_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
   Gpio::attach(beeper_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
-  Gpio::attach(kill_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
-  Gpio::attach(enc_but_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
   Gpio::attach(enc1_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
   Gpio::attach(enc2_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(enc_but_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(back_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
+  Gpio::attach(kill_pin, std::bind(&ST7920Device::interrupt, this, std::placeholders::_1));
 
   glGenTextures(1, &texture_id);
   glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -155,20 +156,30 @@ void ST7920Device::interrupt(GpioEvent& ev) {
     Gpio::pin_map[kill_pin].value = !key_pressed[KeyName::KILL_BUTTON];
   } else if (ev.pin_id == enc_but_pin) {
     Gpio::pin_map[enc_but_pin].value = !key_pressed[KeyName::ENCODER_BUTTON];
+  } else if (ev.pin_id == back_pin) {
+    Gpio::pin_map[back_pin].value = !key_pressed[KeyName::BACK_BUTTON];
   } else if (ev.pin_id == enc1_pin || ev.pin_id == enc2_pin) {
-    uint8_t encoder_state = encoder_position % 4;
+    const uint8_t encoder_state = encoder_position % 4;
     Gpio::pin_map[enc1_pin].value = encoder_table[encoder_state] & 0x01;
     Gpio::pin_map[enc2_pin].value = encoder_table[encoder_state] & 0x02;
   }
 }
 
 void ST7920Device::ui_callback(UiWindow* window) {
+  static long int call_count = 0;
+  static uint8_t up_held = 0, down_held = 0;
+  call_count++;
   if (ImGui::IsWindowFocused()) {
-    key_pressed[KeyName::KILL_BUTTON]    = ImGui::IsKeyDown(SDL_SCANCODE_K);
-    key_pressed[KeyName::ENCODER_BUTTON] = ImGui::IsKeyDown(SDL_SCANCODE_SPACE);
 
-    if (ImGui::IsKeyDown(SDL_SCANCODE_UP))   encoder_position--;
-    if (ImGui::IsKeyDown(SDL_SCANCODE_DOWN)) encoder_position++;
+    key_pressed[KeyName::KILL_BUTTON]    = ImGui::IsKeyDown(SDL_SCANCODE_K);
+    key_pressed[KeyName::ENCODER_BUTTON] = ImGui::IsKeyDown(SDL_SCANCODE_SPACE) || ImGui::IsKeyDown(SDL_SCANCODE_RETURN) || ImGui::IsKeyDown(SDL_SCANCODE_RIGHT);
+    key_pressed[KeyName::BACK_BUTTON]    = ImGui::IsKeyDown(SDL_SCANCODE_LEFT);
+
+    // Turn keypresses (and repeat) into encoder clicks
+    if (up_held) { up_held--; encoder_position--; }
+    else if (ImGui::IsKeyPressed(SDL_SCANCODE_UP)) up_held = 4;
+    if (down_held) { down_held--; encoder_position++; }
+    else if (ImGui::IsKeyPressed(SDL_SCANCODE_DOWN)) down_held = 4;
 
     if (ImGui::IsWindowHovered()) {
       key_pressed[KeyName::ENCODER_BUTTON] |= ImGui::IsMouseClicked(0);
