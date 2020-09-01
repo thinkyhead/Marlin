@@ -148,28 +148,31 @@ struct SerialMonitor : public UiWindow {
 
   int input_callback(ImGuiInputTextCallbackData* data) {
     switch (data->EventFlag) {
-      case ImGuiInputTextFlags_CallbackCompletion: { // todo: just search history?
+      case ImGuiInputTextFlags_CallbackCompletion:   // TODO: just search history?
         break;
-      }
+
       case ImGuiInputTextFlags_CallbackHistory: {
         std::size_t history_index_prev = history_index;
+
         if (data->EventKey == ImGuiKey_UpArrow) {
           if (history_index < command_history.size()) history_index ++;
-        } else if (data->EventKey == ImGuiKey_DownArrow) {
-          if (history_index > 0) history_index --;
         }
+        else if (data->EventKey == ImGuiKey_DownArrow) {
+          if (history_index > 0) history_index--;
+        }
+
         if (history_index > 0 && history_index != history_index_prev) {
-          if (history_index_prev == 0) {
+          if (history_index_prev == 0)
             input_buffer = std::string{data->Buf};
-          }
+
           data->DeleteChars(0, data->BufTextLen);
           data->InsertChars(0, (char *)command_history[history_index - 1].c_str());
-        } else if (history_index == 0) {
+        }
+        else if (history_index == 0) {
           data->DeleteChars(0, data->BufTextLen);
           data->InsertChars(0, (char *)input_buffer.c_str());
         }
-        break;
-      }
+      } break;
     }
     return 0;
   }
