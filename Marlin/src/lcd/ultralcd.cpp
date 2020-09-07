@@ -1047,6 +1047,9 @@ void MarlinUI::update() {
 
         run_current_screen();
 
+        // Apply all DWIN drawing after processing
+        TERN_(IS_DWIN_MARLINUI, DWIN_UpdateLCD());
+
       #endif
 
       TERN_(HAS_LCD_MENU, lcd_clicked = false);

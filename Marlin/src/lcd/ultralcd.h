@@ -407,7 +407,11 @@ public:
 
         static void set_font(const MarlinFont font_nr);
 
-      #else
+      #elif IS_DWIN_MARLINUI
+
+        static void set_font(const uint8_t font_nr);
+
+      #elif HAS_CHARACTER_LCD
 
         static void set_custom_characters(const HD44780CharSet screen_charset=CHARSET_INFO);
 

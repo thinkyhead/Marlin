@@ -459,6 +459,9 @@
   #define HAS_SPI_LCD 1
   #if ENABLED(DOGLCD)
     #define HAS_GRAPHICAL_LCD 1
+  #elif IS_DWIN_MARLINUI
+    // Since HAS_GRAPHICAL_LCD refers to U8G displays
+    // the DWIN display can define its own flags
   #elif DISABLED(HAS_GRAPHICAL_TFT)
     #define HAS_CHARACTER_LCD 1
   #endif
