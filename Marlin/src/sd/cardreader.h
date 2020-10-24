@@ -54,6 +54,9 @@ typedef struct {
        #if ENABLED(BINARY_FILE_TRANSFER)
          , binary_mode:1
        #endif
+       #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+         , longlist_mode:1
+       #endif
     ;
 } card_flags_t;
 
@@ -267,7 +270,11 @@ private:
   static int countItems(SdFile dir);
   static void selectByIndex(SdFile dir, const uint8_t index);
   static void selectByName(SdFile dir, const char * const match);
-  static void printListing(SdFile parent, const char * const prepend=nullptr);
+  static void printListing(SdFile parent, const char * const prepend=nullptr
+    #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+      , const char * const lprepend=nullptr
+    #endif
+  );
 
   #if ENABLED(SDCARD_SORT_ALPHA)
     static void flush_presort();

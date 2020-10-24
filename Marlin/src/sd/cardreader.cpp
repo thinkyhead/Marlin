@@ -244,7 +244,11 @@ void CardReader::selectByName(SdFile dir, const char * const match) {
 //
 // Recursive method to list all files within a folder
 //
-void CardReader::printListing(SdFile parent, const char * const prepend/*=nullptr*/) {
+void CardReader::printListing(SdFile parent, const char * const prepend/*=nullptr*/
+  #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+    , const char * const lprepend/*=nullptr*/
+  #endif
+) {
   dir_t p;
   while (parent.readDir(&p, longFilename) > 0) {
     if (DIR_IS_SUBDIR(&p)) {
@@ -258,6 +262,12 @@ void CardReader::printListing(SdFile parent, const char * const prepend/*=nullpt
       const int len = (prepend_is_empty ? 1 : strlen(prepend)) + strlen(dosFilename) + 1 + 1;
       char path[len];
 
+      #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+        const bool lprepend_is_empty = (!lprepend || lprepend[0] == '\0');
+        const int llen = (lprepend_is_empty ? 1 : strlen(lprepend)) + strlen(longFilename) + 1 + 1;
+        char lpath[llen];
+      #endif
+
       // Append the FOLDERNAME12/ to the passed string.
       // It contains the full path to the "parent" argument.
       // We now have the full path to the item in this folder.
@@ -265,7 +275,17 @@ void CardReader::printListing(SdFile parent, const char * const prepend/*=nullpt
       strcat(path, dosFilename);                      // FILENAME_LENGTH characters maximum
       strcat(path, "/");                              // 1 character
 
-      // Serial.print(path);
+      #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+        const bool has_long = longFilename[0] != '\0';
+        if (flag.longlist_mode) {
+          strcpy(lpath, lprepend_is_empty ? "/" : lprepend); // root slash if prepend is empty
+          strcat(lpath, longest_filename());                 // LONG_FILENAME_LENGTH characters maximum
+          strcat(lpath, "/");                                // 1 character
+        }
+      #endif
+
+      //SERIAL_ECHOLN(path);
+      //SERIAL_ECHOLN(lpath);
 
       // Get a new directory object using the full path
       // and dive recursively into it.
@@ -273,13 +293,24 @@ void CardReader::printListing(SdFile parent, const char * const prepend/*=nullpt
       if (!child.open(&parent, dosFilename, O_READ))
         SERIAL_ECHO_MSG(STR_SD_CANT_OPEN_SUBDIR, dosFilename);
 
-      printListing(child, path);
+      printListing(child, path
+        #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+          , lpath
+        #endif
+      );
       // close() is done automatically by destructor of SdFile
     }
     else if (is_dir_or_gcode(p)) {
       createFilename(filename, p);
       if (prepend) SERIAL_ECHO(prepend);
       SERIAL_ECHO(filename);
+      #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+        if (flag.longlist_mode) {
+          SERIAL_CHAR(' ');
+          if (lprepend) SERIAL_ECHO(lprepend);
+          SERIAL_ECHO(longFilename);
+        }
+      #endif
       SERIAL_CHAR(' ');
       SERIAL_ECHOLN(p.fileSize);
     }
@@ -293,6 +324,7 @@ void CardReader::ls() {
   if (flag.mounted) {
     root.rewind();
     printListing(root);
+    TERN_(LONG_FILENAME_MEDIA_LIST, flag.longlist_mode = false);
   }
 }
 

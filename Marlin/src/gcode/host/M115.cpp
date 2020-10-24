@@ -150,6 +150,9 @@ void GcodeSuite::M115() {
     // MEATPACK Compression
     cap_line(PSTR("MEATPACK"), ENABLED(HAS_MEATPACK));
 
+    // LONG_FILENAME_MEDIA_LIST (M20 L)
+    TERN_(LONG_FILENAME_MEDIA_LIST, cap_line(PSTR("LONG_FILENAME_MEDIA_LIST"), true));
+
     // Machine Geometry
     #if ENABLED(M115_GEOMETRY_REPORT)
       const xyz_pos_t dmin = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS },

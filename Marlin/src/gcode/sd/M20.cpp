@@ -29,10 +29,24 @@
 
 /**
  * M20: List SD card to serial output
+ *
+ * Extended interface:
+ *   M20   : Deep listing with DOS8.3 path and file size.
+ *   M20 L : Deep listing with longname path and file size.
+ *   M20 H : Hierarchical (compact) listing with DOS paths and file sizes.
+ *   M20 D : List the contents of the current DIR only, no prefix. With L show long names too.
+ *   M20 C : Change the workDir to the given directory (long or short name).
+ *   M20 U : Up one level.
+ *   M20 R : Change workDir to the root directory.
+ *   M20 W : What is the working directory?
+ *
  */
 void GcodeSuite::M20() {
   if (card.flag.mounted) {
     SERIAL_ECHOLNPGM(STR_BEGIN_FILE_LIST);
+    #if ENABLED(LONG_FILENAME_MEDIA_LIST)
+      if (parser.seen('L')) card.flag.longlist_mode = true;
+    #endif
     card.ls();
     SERIAL_ECHOLNPGM(STR_END_FILE_LIST);
   }
