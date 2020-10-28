@@ -30,6 +30,8 @@
 
 #include "../../inc/MarlinConfig.h"
 
+#define littleBIG(color) ((color >> 8) | (color << 8))
+
 #if HAS_UI_320x240
   #define TFT_WIDTH         320
   #define TFT_HEIGHT        240
