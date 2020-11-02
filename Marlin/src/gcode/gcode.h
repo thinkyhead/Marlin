@@ -210,6 +210,7 @@
  * M405 - Enable Filament Sensor flow control. "M405 D<delay_cm>". (Requires FILAMENT_WIDTH_SENSOR)
  * M406 - Disable Filament Sensor flow control. (Requires FILAMENT_WIDTH_SENSOR)
  * M407 - Display measured filament diameter in millimeters. (Requires FILAMENT_WIDTH_SENSOR)
+ * M408 - Report machine state in JSON format. (Requires PANELDUE or RRF_GCODE_DIALECT)
  * M410 - Quickstop. Abort all planned moves.
  * M412 - Enable / Disable Filament Runout Detection. (Requires FILAMENT_RUNOUT_SENSOR)
  * M413 - Enable / Disable Power-Loss Recovery. (Requires POWER_LOSS_RECOVERY)
@@ -743,6 +744,8 @@ private:
     static void M406();
     static void M407();
   #endif
+
+  TERN_(RRF_GCODE_DIALECT, static void M408());
 
   TERN_(HAS_FILAMENT_SENSOR, static void M412());
 
