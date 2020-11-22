@@ -2312,7 +2312,8 @@ static_assert(hbm[Z_AXIS] >= 0, "HOMING_BUMP_MM.Z must be greater than or equal 
   + ENABLED(U8GLIB_SH1106_EINSTART) \
   + ENABLED(ULTI_CONTROLLER) \
   + ENABLED(ULTIMAKERCONTROLLER) \
-  + ENABLED(ZONESTAR_LCD)
+  + ENABLED(ZONESTAR_LCD) \
+  + ENABLED(PANELDUE)
   #error "Please select only one LCD controller option."
 #endif
 
