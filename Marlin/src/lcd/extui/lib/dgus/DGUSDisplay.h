@@ -23,6 +23,9 @@
 
 /* DGUS implementation written by coldtobi in 2019 for Marlin */
 
+//#define DEBUG_DGUSLCD
+//#define DEBUG_DGUSLCD_COMM
+
 #include "../../../../inc/MarlinConfigPre.h"
 
 #include "../../../../MarlinCore.h"
@@ -43,6 +46,10 @@ typedef enum : uint8_t {
   DGUS_WAIT_TELEGRAM,  //< LEN received, Waiting for to receive all bytes.
 } rx_datagram_state_t;
 
+#if ENABLED(DWIN_CREALITY_TOUCHLCD)
+  typedef void (*screenUpdateCallback_t)(DGUSLCD_Screens screen);
+#endif
+
 // Low-Level access to the display.
 class DGUSDisplay {
 public:
@@ -50,6 +57,9 @@ public:
   DGUSDisplay() = default;
 
   static void InitDisplay();
+  #if ENABLED(DWIN_CREALITY_TOUCHLCD)
+    static void ResetDisplay();
+  #endif
 
   // Variable access.
   static void WriteVariable(uint16_t adr, const void* values, uint8_t valueslen, bool isstr=false);
@@ -60,7 +70,11 @@ public:
   static void WriteVariable(uint16_t adr, int8_t value);
   static void WriteVariable(uint16_t adr, long value);
 
-  // Utility functions for bridging ui_api and dbus
+  #if ENABLED(DWIN_CREALITY_TOUCHLCD)
+    static void ReadVariable(uint16_t adr);
+  #endif
+
+  // Utility functions for bridging ui_api and dgus
   template<typename T, float(*Getter)(const T), T selector, typename WireType=uint16_t>
   static void SetVariable(DGUS_VP_Variable &var) {
     WriteVariable(var.VP, (WireType)Getter(selector));
@@ -80,6 +94,11 @@ public:
   // (to implement a pop up message, which may not be nested)
   static void RequestScreen(DGUSLCD_Screens screen);
 
+  #if ENABLED(DWIN_CREALITY_TOUCHLCD)
+    // Request the current displayed screen - will be passed to current_screen_update_callback
+    static void ReadCurrentScreen();
+  #endif
+
   // Periodic tasks, eg. Rx-Queue handling.
   static void loop();
 
@@ -91,6 +110,10 @@ public:
   // (both boils down that the display answered to our chatting)
   static inline bool isInitialized() { return Initialized; }
 
+  #if ENABLED(DWIN_CREALITY_TOUCHLCD)
+    static screenUpdateCallback_t current_screen_update_callback;
+  #endif
+
 private:
   static void WriteHeader(uint16_t adr, uint8_t cmd, uint8_t payloadlen);
   static void WritePGM(const char str[], uint8_t len);
@@ -100,6 +123,10 @@ private:
   static rx_datagram_state_t rx_datagram_state;
   static uint8_t rx_datagram_len;
   static bool Initialized, no_reentrance;
+
+  #if ENABLED(DWIN_CREALITY_TOUCHLCD)
+    static DGUSLCD_Screens displayRequest;
+  #endif
 };
 
 #define GET_VARIABLE(f, t, V...) (&DGUSDisplay::GetVariable<decltype(t), f, t, ##V>)

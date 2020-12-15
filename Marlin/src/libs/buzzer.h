@@ -115,6 +115,12 @@
   // Buzz directly via the BEEPER pin tone queue
   #define BUZZ(d,f) buzzer.tone(d, f)
 
+#elif ENABLED(DWIN_CREALITY_TOUCHLCD)
+
+  // Let extensible UI handle it
+  #include "../lcd/extui/ui_api.h"
+  #define BUZZ(d,f) ExtUI::onPlayTone(f, d)
+
 #elif HAS_BUZZER
 
   // Buzz indirectly via the MarlinUI instance
