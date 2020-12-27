@@ -409,6 +409,10 @@ G29_TYPE GcodeSuite::G29() {
       #endif
     }
 
+    #if ENABLED(STRAIN_GAUGE_PROBE)
+      do_blocking_move_to_z(_MAX(Z_CLEARANCE_BETWEEN_PROBES, Z_CLEARANCE_DEPLOY_PROBE));
+    #endif
+
     // Disable auto bed leveling during G29.
     // Be formal so G29 can be done successively without G28.
     if (!no_action) set_bed_leveling_enabled(false);

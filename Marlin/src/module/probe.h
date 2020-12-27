@@ -244,7 +244,7 @@ public:
 
   #if ENABLED(PROBE_TARE)
     static void tare_init();
-    static bool tare();
+    static bool tare(const bool always=false);
   #endif
 
 private:

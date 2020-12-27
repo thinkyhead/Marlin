@@ -511,13 +511,17 @@ bool Probe::probe_down_to_z(const float z, const feedRate_t fr_mm_s) {
 
 #if ENABLED(PROBE_TARE)
 
+  #if ENABLED(STRAIN_GAUGE_PROBE)
+    #define TARE_UNLESS_PROBING 1
+  #endif
+
   /**
    * @brief Init the tare pin
    *
    * @details Init tare pin to ON state for a strain gauge, otherwise OFF
    */
   void Probe::tare_init() {
-    OUT_WRITE(PROBE_TARE_PIN, !PROBE_TARE_STATE);
+    OUT_WRITE(PROBE_TARE_PIN, IF_DISABLED(TARE_UNLESS_PROBING, !)PROBE_TARE_STATE);
   }
 
   /**
@@ -527,9 +531,9 @@ bool Probe::probe_down_to_z(const float z, const feedRate_t fr_mm_s) {
    *
    * @return TRUE if the tare cold not be completed
    */
-  bool Probe::tare() {
+  bool Probe::tare(const bool always/*=false*/) {
     #if BOTH(PROBE_ACTIVATION_SWITCH, PROBE_TARE_ONLY_WHILE_INACTIVE)
-      if (endstops.probe_switch_activated()) {
+      if (!always && endstops.probe_switch_activated()) {
         SERIAL_ECHOLNPGM("Cannot tare an active probe");
         return true;
       }
@@ -541,7 +545,7 @@ bool Probe::probe_down_to_z(const float z, const feedRate_t fr_mm_s) {
     WRITE(PROBE_TARE_PIN, !PROBE_TARE_STATE);
     delay(PROBE_TARE_DELAY);
 
-    endstops.hit_on_purpose();
+    if (!always) endstops.hit_on_purpose();
     return false;
   }
 #endif
@@ -599,6 +603,8 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
     // Raise to give the probe clearance
     do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
 
+    TERN_(TARE_UNLESS_PROBING, tare(true)); // Tare probe to reset
+
   #elif Z_PROBE_SPEED_FAST != Z_PROBE_SPEED_SLOW
 
     // If the nozzle is well over the travel height then
@@ -608,6 +614,8 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
       // Probe down fast. If the probe never triggered, raise for probe clearance
       if (!probe_down_to_z(z, z_probe_fast_mm_s))
         do_blocking_move_to_z(current_position.z + Z_CLEARANCE_BETWEEN_PROBES, z_probe_fast_mm_s);
+
+      TERN_(TARE_UNLESS_PROBING, tare(true)); // Tare probe to reset
     }
   #endif
 
@@ -658,7 +666,10 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
           #if EXTRA_PROBING > 0
             < TOTAL_PROBING - 1
           #endif
-        ) do_blocking_move_to_z(z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
+        ) {
+          do_blocking_move_to_z(z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
+          TERN_(TARE_UNLESS_PROBING, tare(true)); // Tare probe to reset
+        }
       #endif
     }
 
@@ -740,6 +751,11 @@ float Probe::probe_at_point(const float &rx, const float &ry, const ProbePtRaise
   }
   else if (!position_is_reachable(npos)) return NAN;        // The given position is in terms of the nozzle
 
+  #if TARE_UNLESS_PROBING
+    DEBUG_ECHOLNPGM("TARE_UNLESS_PROBING: Set PROBE_TARE_PIN off");
+    WRITE(PROBE_TARE_PIN, !PROBE_TARE_STATE);  // Tare OFF for probing
+  #endif
+
   // Move the probe to the starting XYZ
   do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
 
@@ -755,6 +771,11 @@ float Probe::probe_at_point(const float &rx, const float &ry, const ProbePtRaise
     if (verbose_level > 2)
       SERIAL_ECHOLNPAIR("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
   }
+
+  #if TARE_UNLESS_PROBING
+    DEBUG_ECHOLNPGM("TARE_UNLESS_PROBING: Set PROBE_TARE_PIN on");
+    WRITE(PROBE_TARE_PIN, PROBE_TARE_STATE);  // Tare ON normally
+  #endif
 
   if (isnan(measured_z)) {
     stow();
