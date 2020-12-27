@@ -18,6 +18,9 @@ opt_disable CLASSIC_JERK
 opt_add SDCARD_EEPROM_EMULATION
 exec_test $1 $2 "Ender 3 v2, SD EEPROM, w/o CLASSIC_JERK" "$3"
 
+use_example_configs "Creality/CR-6 SE"
+exec_test $1 $2 "Creality CR-6 SE"
+
 restore_configs
 opt_set SERIAL_PORT 1
 opt_set MOTHERBOARD BOARD_CREALITY_V452
