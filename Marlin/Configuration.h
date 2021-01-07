@@ -462,6 +462,37 @@
 //#define COREZY
 
 //===========================================================================
+//============================== Galvo XY Settings ==========================
+//===========================================================================
+// Enable GALVO_XY kinematics and most of the default configuration for Galvo XY
+//#define GALVO_XY
+#if ENABLED(GALVO_XY)
+
+  // TODO: review some settings based on DELTA
+  // TODO: galvo custom menu items
+
+  #define GALVOXY_SCALAR 45 // galvo max angle
+
+  #define GALVO_XY_STEPS_MULTIPLIER 652.79 // taken from OpenSL. Must calibrate!
+
+  // Make delta curves from many straight lines (linear interpolation).
+  // This is a trade-off between visible corners (not enough segments)
+  // and processor overload (too many expensive sqrt calls).
+  #define GALVOXY_SEGMENTS_PER_SECOND 160
+  // X axis of movement
+  #define GALVOXY_X_WIDTH 150
+
+  // Y axis of movement
+  #define GALVOXY_Y_WIDTH 150
+
+  // height
+  #define GALVOXY_HEIGHT 300
+
+  #define GALVOXY_ENDSTOP_ADJ { 0, 0 }
+
+#endif // GALVO_XY
+
+//===========================================================================
 //============================== Endstop Settings ===========================
 //===========================================================================
 
