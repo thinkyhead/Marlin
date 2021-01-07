@@ -374,7 +374,9 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
  * Filament Runout needs a pin and either SD Support or Auto print start detection
  */
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
-  #if !HAS_FIL_RUNOUT
+  #if EXTRUDERS == 0
+    #error "FILAMENT_RUNOUT_SENSOR requires an extruder."
+  #elif !HAS_FIL_RUNOUT
     #error "FILAMENT_RUNOUT_SENSOR requires FIL_RUNOUT_PIN."
   #elif DISABLED(SDSUPPORT) && DISABLED(PRINTJOB_TIMER_AUTOSTART)
     #error "FILAMENT_RUNOUT_SENSOR requires SDSUPPORT or PRINTJOB_TIMER_AUTOSTART."
@@ -387,7 +389,9 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
  * Advanced Pause
  */
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
-  #if DISABLED(NEWPANEL)
+  #if EXTRUDERS == 0
+    #error "ADVANCED_PAUSE_FEATURE requires an extruder."
+  #elif DISABLED(NEWPANEL)
     #error "ADVANCED_PAUSE_FEATURE currently requires an LCD controller."
   #elif ENABLED(EXTRUDER_RUNOUT_PREVENT)
     #error "EXTRUDER_RUNOUT_PREVENT is incompatible with ADVANCED_PAUSE_FEATURE."
@@ -438,6 +442,13 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
 #endif
 
 /**
+ * Requirements for FWRETRACT
+ */
+#if ENABLED(FWRETRACT) && EXTRUDERS == 0
+  #error "FWRETRACT requires at least one extruder."
+#endif
+
+/**
  * A Dual Nozzle carriage with switching servo
  */
 #if ENABLED(SWITCHING_NOZZLE)
@@ -463,7 +474,7 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
  * Mixing Extruder requirements
  */
 #if ENABLED(MIXING_EXTRUDER)
-  #if EXTRUDERS > 1
+  #if EXTRUDERS != 1
     #error "MIXING_EXTRUDER currently only supports one extruder."
   #elif MIXING_STEPPERS < 2
     #error "You must set MIXING_STEPPERS >= 2 for a mixing extruder."
@@ -983,8 +994,10 @@ static_assert(1 >= 0
   #error "TEMP_0_PIN not defined for this board."
 #elif !PIN_EXISTS(E0_STEP) || !PIN_EXISTS(E0_DIR) || !PIN_EXISTS(E0_ENABLE)
   #error "E0_STEP_PIN, E0_DIR_PIN, or E0_ENABLE_PIN not defined for this board."
-#elif TEMP_SENSOR_0 == 0
-  #error "TEMP_SENSOR_0 is required."
+#elif HOTENDS && TEMP_SENSOR_0 == 0
+  #error "TEMP_SENSOR_0 is required for the 1st extruder."
+#elif HOTENDS > 1 && TEMP_SENSOR_1 == 0
+  #error "TEMP_SENSOR_1 is required for the 2nd extruder."
 #endif
 
 #if HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
