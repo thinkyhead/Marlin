@@ -105,9 +105,9 @@
 #elif defined(USE_AUTOMATIC_VERSIONING)
   #error "USE_AUTOMATIC_VERSIONING is now CUSTOM_VERSION_FILE."
 #elif defined(SDSLOW)
-  #error "SDSLOW deprecated. Set SPI_SPEED to SPI_HALF_SPEED instead."
+  #error "SDSLOW deprecated. Set SD_SPI_SPEED to SPI_HALF_SPEED instead."
 #elif defined(SDEXTRASLOW)
-  #error "SDEXTRASLOW deprecated. Set SPI_SPEED to SPI_QUARTER_SPEED instead."
+  #error "SDEXTRASLOW deprecated. Set SD_SPI_SPEED to SPI_QUARTER_SPEED instead."
 #elif defined(FILAMENT_SENSOR)
   #error "FILAMENT_SENSOR is now FILAMENT_WIDTH_SENSOR."
 #elif defined(ENDSTOPPULLUP_FIL_RUNOUT)
@@ -541,6 +541,8 @@
   #else
     #error "FIL_RUNOUT_INVERTING false is now FIL_RUNOUT_STATE LOW."
   #endif
+#elif defined(ASSISTED_TRAMMING_MENU_ITEM)
+  #error "ASSISTED_TRAMMING_MENU_ITEM is deprecated and should be removed."
 #endif
 
 /**
@@ -721,7 +723,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if ENABLED(SHOW_CUSTOM_BOOTSCREEN) && NONE(HAS_MARLINUI_U8GLIB, TOUCH_UI_FTDI_EVE)
   #error "SHOW_CUSTOM_BOOTSCREEN requires Graphical LCD or TOUCH_UI_FTDI_EVE."
 #elif ENABLED(CUSTOM_STATUS_SCREEN_IMAGE) && !HAS_MARLINUI_U8GLIB
-  #error "CUSTOM_STATUS_SCREEN_IMAGE requires a Graphical LCD."
+  #error "CUSTOM_STATUS_SCREEN_IMAGE requires a 128x64 DOGM B/W Graphical LCD."
 #endif
 
 /**
@@ -1593,7 +1595,7 @@ static_assert(hbm[Z_AXIS] >= 0, "HOMING_BUMP_MM.Z must be greater than or equal 
 /**
  * ULTIPANEL encoder
  */
-#if IS_ULTIPANEL && NONE(IS_NEWPANEL, SR_LCD_2W_NL) && !defined(SHIFT_CLK)
+#if IS_ULTIPANEL && NONE(IS_NEWPANEL, SR_LCD_2W_NL) && !PIN_EXISTS(SHIFT_CLK)
   #error "ULTIPANEL controllers require some kind of encoder."
 #endif
 
@@ -2913,8 +2915,12 @@ static_assert(   _ARR_TEST(3,0) && _ARR_TEST(3,1) && _ARR_TEST(3,2)
   #error "PRINTCOUNTER requires EEPROM_SETTINGS."
 #endif
 
-#if ENABLED(USB_FLASH_DRIVE_SUPPORT) && !PINS_EXIST(USB_CS, USB_INTR)
+#if ENABLED(USB_FLASH_DRIVE_SUPPORT) && !PINS_EXIST(USB_CS, USB_INTR) && DISABLED(USE_OTG_USB_HOST)
   #error "USB_CS_PIN and USB_INTR_PIN are required for USB_FLASH_DRIVE_SUPPORT."
+#endif
+
+#if ENABLED(USE_OTG_USB_HOST) && !defined(HAS_OTG_USB_HOST_SUPPORT)
+  #error "The current board does not support USE_OTG_USB_HOST."
 #endif
 
 #if ENABLED(SD_FIRMWARE_UPDATE) && !defined(__AVR_ATmega2560__)
