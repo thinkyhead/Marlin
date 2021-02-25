@@ -42,13 +42,13 @@ enum class PrintBase {
   Bin = 2
 };
 
-// A simple forward struct that prevent the compiler to select print(double, int) as a default overload for any type different than
-// double or float. For double or float, a conversion exists so the call will be transparent
+// A simple forward struct to prevent the compiler selecting print(double, int) as a default promotion
+// for non-decimal types. A conversion exists for double or float so the call will be transparent.
 struct EnsureDouble {
   double a;
   FORCE_INLINE operator double() { return a; }
   // If the compiler breaks on ambiguity here, it's likely because you're calling print(X, base) with X not a double or a float, and a
-  // base that's not one of PrintBase's value. This exact code is made to detect such error, you NEED to set a base explicitely like this:
+  // base that's not one of PrintBase's value. This exact code is made to detect such error, you NEED to set a base explicitly like this:
   // SERIAL_PRINT(v, PrintBase::Hex)
   FORCE_INLINE EnsureDouble(double a) : a(a) {}
   FORCE_INLINE EnsureDouble(float a) : a(a) {}
