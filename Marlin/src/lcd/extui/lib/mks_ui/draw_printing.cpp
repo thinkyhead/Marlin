@@ -110,7 +110,7 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
   }
 }
 
-void lv_draw_printing(void) {
+void lv_draw_printing() {
   disp_state_stack._disp_index = 0;
   ZERO(disp_state_stack._disp_state);
   scr = lv_screen_create(PRINTING_UI);
@@ -235,7 +235,8 @@ void disp_print_time() {
 }
 
 void disp_fan_Zpos() {
-  sprintf_P(public_buf_l, PSTR("%.3f"), current_position[Z_AXIS]);
+  char str_1[16];
+  sprintf_P(public_buf_l, PSTR("%s"), dtostrf(current_position[Z_AXIS], 1, 3, str_1));
   lv_label_set_text(labelZpos, public_buf_l);
 }
 

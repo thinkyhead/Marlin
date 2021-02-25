@@ -40,8 +40,6 @@
   #include "lib/dgus/DGUSScreenHandler.h"
 #endif
 
-extern const char NUL_STR[];
-
 namespace ExtUI {
 
   void onStartup() {
