@@ -21,7 +21,9 @@
  */
 #pragma once
 
-/* DGUS implementation written by coldtobi in 2019 for Marlin */
+/**
+ * lcd/extui/lib/dgus/DGUSDisplay.h
+ */
 
 //#define DEBUG_DGUSLCD
 //#define DEBUG_DGUSLCD_COMM
@@ -37,6 +39,7 @@
 
 enum DGUSLCD_Screens : uint8_t;
 
+//#define DEBUG_DGUSLCD
 #define DEBUG_OUT ENABLED(DEBUG_DGUSLCD)
 #include "../../../../core/debug_out.h"
 
@@ -70,6 +73,8 @@ public:
   static void WriteVariable(uint16_t adr, uint8_t value);
   static void WriteVariable(uint16_t adr, int8_t value);
   static void WriteVariable(uint16_t adr, long value);
+  static void MKS_WriteVariable(uint16_t adr, uint8_t value);
+
 
   #if ENABLED(DWIN_CREALITY_TOUCHLCD)
     static void ReadVariable(uint16_t adr);
