@@ -69,8 +69,6 @@ void cli(); // Disable
 void sei(); // Enable
 void attachInterrupt(uint32_t pin, void (*callback)(), uint32_t mode);
 void detachInterrupt(uint32_t pin);
-extern "C" void GpioEnableInt(uint32_t port, uint32_t pin, uint32_t mode);
-extern "C" void GpioDisableInt(uint32_t port, uint32_t pin);
 
 // Program Memory
 #define pgm_read_ptr(addr)        (*((void**)(addr)))
@@ -93,10 +91,13 @@ extern "C" void GpioDisableInt(uint32_t port, uint32_t pin);
 #define strlen_P strlen
 #define strchr_P strchr
 
-// Time functions
 extern "C" {
-  void delay(const int milis);
+  void GpioEnableInt(uint32_t port, uint32_t pin, uint32_t mode);
+  void GpioDisableInt(uint32_t port, uint32_t pin);
 }
+
+// Time functions
+extern "C" void delay(const int milis);
 void _delay_ms(const int delay);
 void delayMicroseconds(unsigned long);
 uint32_t millis();

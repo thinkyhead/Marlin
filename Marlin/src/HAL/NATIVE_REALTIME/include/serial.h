@@ -25,6 +25,7 @@
 #if ENABLED(EMERGENCY_PARSER)
   #include <src/feature/e_parser.h>
 #endif
+#include "../../../core/serial_hook.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -33,7 +34,6 @@
  * Generic RingBuffer
  * T type of the buffer array
  * S size of the buffer (must be power of 2)
- *
  */
 template <typename T, std::size_t S> class RingBuffer {
 public:
@@ -104,19 +104,11 @@ private:
   volatile std::size_t index_read;
 };
 
-
-class HalSerial {
-public:
-
-  #if ENABLED(EMERGENCY_PARSER)
-    EmergencyParser::State emergency_state;
-  #endif
-
+struct HalSerial {
   HalSerial() { host_connected = true; }
 
   void begin(int32_t) {}
-
-  void end() {}
+  void end()          {}
 
   int peek() {
     uint8_t value;
@@ -135,7 +127,7 @@ public:
     return transmit_buffer.write(c);
   }
 
-  operator bool() { return host_connected; }
+  bool connected() { return host_connected; }
 
   uint16_t available() {
     return (uint16_t)receive_buffer.available();
@@ -237,7 +229,9 @@ public:
   void println(double value, int round = 6) { printf("%f\n" , value); }
   void println() { print('\n'); }
 
-  RingBuffer<uint8_t, 128> receive_buffer;
-  RingBuffer<uint8_t, 128> transmit_buffer;
+  volatile RingBuffer<uint8_t, 128> receive_buffer;
+  volatile RingBuffer<uint8_t, 128> transmit_buffer;
   volatile bool host_connected;
 };
+
+typedef Serial0Type<HalSerial> MSerialT;

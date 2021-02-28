@@ -113,9 +113,8 @@ public:
     GpioEvent::Type evt_type = value > 1 ? GpioEvent::SET_VALUE : value > pin_map[pin].value ? GpioEvent::RISE : value < pin_map[pin].value ? GpioEvent::FALL : GpioEvent::NOP;
     pin_map[pin].value = value;
     GpioEvent evt(kernel.getTicks(), pin, evt_type);
-    if (pin_map[pin].callback) {
-      pin_map[pin].callback(evt);
-    }
+    if (pin_map[pin].callback) pin_map[pin].callback(evt);
+    if (Gpio::logger) Gpio::logger->log(evt);
   }
 
   static uint16_t get(pin_type pin) {
@@ -143,6 +142,7 @@ public:
     pin_map[pin].pull = value == 2 ? pin_data::Pull::PULLUP : value == 3 ? pin_data::Pull::PULLDOWN : pin_data::Pull::NONE;
     if (pin_map[pin].pull == pin_data::Pull::PULLUP) set(pin, pin_data::State::HIGH);
 
+    if (Gpio::logger) Gpio::logger->log(evt);
   }
 
   static uint8_t getMode(pin_type pin) {
@@ -155,6 +155,7 @@ public:
     pin_map[pin].dir = value;
     GpioEvent evt(kernel.getTicks(), pin, GpioEvent::Type::SETD);
     if (pin_map[pin].callback) pin_map[pin].callback(evt);
+    if (Gpio::logger) Gpio::logger->log(evt);
   }
 
   static uint8_t getDir(pin_type pin) {
