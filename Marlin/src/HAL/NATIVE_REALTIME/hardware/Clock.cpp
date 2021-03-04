@@ -19,11 +19,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#ifdef __PLAT_LINUX__
+#ifdef __PLAT_NATIVE_REALTIME__
 
-#include "Gpio.h"
+#include "../../../inc/MarlinConfig.h"
+#include "Clock.h"
 
-pin_data Gpio::pin_map[Gpio::pin_count+1] = {};
-IOLogger* Gpio::logger = nullptr;
+std::chrono::nanoseconds Clock::startup = std::chrono::high_resolution_clock::now().time_since_epoch();
+uint32_t Clock::frequency = F_CPU;
 
-#endif // __PLAT_LINUX__
+#endif // __PLAT_NATIVE_REALTIME__

@@ -19,7 +19,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#ifdef __PLAT_LINUX__
+#ifdef __PLAT_NATIVE_REALTIME__
 
 #include "hardware/Timer.h"
 
@@ -68,4 +68,4 @@ hal_timer_t HAL_timer_get_count(const uint8_t timer_num) {
   return timers[timer_num].getCount();
 }
 
-#endif // __PLAT_LINUX__
+#endif // __PLAT_NATIVE_REALTIME__

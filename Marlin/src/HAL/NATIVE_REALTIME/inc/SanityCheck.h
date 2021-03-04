@@ -22,22 +22,28 @@
 #pragma once
 
 /**
- * Test X86_64-specific configuration values for errors at compile-time.
+ * Test realtime native specific configuration values for errors at compile-time.
  */
+
+#ifndef __linux__
+  #error The realtime signals needed for timing are only implemented for the linux platform
+#endif
+
+#define __NOTICE_READ__
+#ifndef __NOTICE_READ__
+  #error The native realtime platform is for experimental purposes only and is unlikely to ever function well enough for use with a 3d printer. Enable the above definition to build anyway
+#endif
+#undef __NOTICE_READ__
 
 // Emulating RAMPS
 #if ENABLED(SPINDLE_LASER_PWM) && !(SPINDLE_LASER_PWM_PIN == 4 || SPINDLE_LASER_PWM_PIN == 6 || SPINDLE_LASER_PWM_PIN == 11)
   #error "SPINDLE_LASER_PWM_PIN must use SERVO0, SERVO1 or SERVO3 connector"
 #endif
 
-#if ENABLED(FAST_PWM_FAN) || SPINDLE_LASER_FREQUENCY
-  #error "Features requiring Hardware PWM (FAST_PWM_FAN, SPINDLE_LASER_FREQUENCY) are not yet supported on LINUX."
+#if ENABLED(FAST_PWM_FAN)
+  #error "FAST_PWM_FAN is not yet implemented for this platform."
 #endif
 
 #if HAS_TMC_SW_SERIAL
-  #error "TMC220x Software Serial is not supported on LINUX."
-#endif
-
-#if ENABLED(POSTMORTEM_DEBUGGING)
-  #error "POSTMORTEM_DEBUGGING is not yet supported on LINUX."
+  #error "TMC220x Software Serial is not supported on this platform."
 #endif

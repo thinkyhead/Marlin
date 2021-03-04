@@ -21,10 +21,10 @@
  */
 #pragma once
 
-#include "../../../inc/MarlinConfigPre.h"
+#include "../../inc/MarlinConfigPre.h"
 
 #include <stdint.h>
-#include "../hardware/Gpio.h"
+#include "../hardware/gpio.h"
 
 typedef pin_type pin_t;
 

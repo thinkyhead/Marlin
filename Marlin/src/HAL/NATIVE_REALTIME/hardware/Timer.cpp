@@ -19,7 +19,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#ifdef __PLAT_LINUX__
+#ifdef __PLAT_NATIVE_REALTIME__
 
 #include "Timer.h"
 #include <stdio.h>
@@ -114,4 +114,4 @@ uint32_t Timer::getCount() {
   return Clock::nanosToTicks(Clock::nanos() - this->start_time, frequency);
 }
 
-#endif // __PLAT_LINUX__
+#endif // __PLAT_NATIVE_REALTIME__

@@ -138,12 +138,13 @@ void calibrate_delay_loop();
   // Delay in microseconds
   #define DELAY_US(x) DELAY_CYCLES((x) * ((F_CPU) / 1000000UL))
 
-#elif defined(__PLAT_LINUX__) || defined(ESP32)
+#elif ANY(ESP32, __PLAT_NATIVE_REALTIME__)
 
   // DELAY_CYCLES specified inside platform
 
   // Delay in microseconds
   #define DELAY_US(x) DELAY_CYCLES((x) * ((F_CPU) / 1000000UL))
+
 #else
 
   #error "Unsupported MCU architecture"
@@ -152,6 +153,3 @@ void calibrate_delay_loop();
 
 // Delay in nanoseconds
 #define DELAY_NS(x) DELAY_CYCLES((x) * ((F_CPU) / 1000000UL) / 1000UL)
-
-
-

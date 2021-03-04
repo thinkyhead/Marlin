@@ -24,7 +24,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <math.h>
+
 #include <cstring>
+#include <binary.h>
 
 #include <pinmapping.h>
 

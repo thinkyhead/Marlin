@@ -19,13 +19,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#ifdef __PLAT_LINUX__
+#pragma once
 
-#include "../../../inc/MarlinConfig.h"
+#include "../../inc/MarlinConfigPre.h"
+
 #include "Clock.h"
+#include <stdint.h>
 
-std::chrono::nanoseconds Clock::startup = std::chrono::high_resolution_clock::now().time_since_epoch();
-uint32_t Clock::frequency = F_CPU;
-double Clock::time_multiplier = 1.0;
+typedef int16_t pin_type;
 
-#endif // __PLAT_LINUX__
+struct Gpio {
+  static constexpr pin_type pin_count = 255;
+
+  static bool valid_pin(pin_type pin);
+  static void set(pin_type pin);
+  static void set(pin_type pin, bool value);
+  static bool get(pin_type pin);
+  static uint16_t get_adc(pin_type pin);
+  static void clear(pin_type pin);
+  static void setMode(pin_type pin, uint8_t value);
+  static uint8_t getMode(pin_type pin);
+  static void setDir(pin_type pin, uint8_t value);
+  static uint8_t getDir(pin_type pin);
+};

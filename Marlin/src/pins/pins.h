@@ -656,11 +656,11 @@
   #include "pins_custom.h"                      //                                        env:custom
 
 //
-// Linux Native Debug board
+// Native Build
 //
 
-#elif MB(LINUX_RAMPS)
-  #include "linux/pins_RAMPS_LINUX.h"           // Linux                                  env:linux_native
+#elif MB(NATIVE_RAMPS)
+  #include "linux/pins_RAMPS_NATIVE.h"          // Native                                 lin:native_realtime
 
 #else
 

@@ -19,7 +19,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#ifdef __PLAT_LINUX__
+#ifdef __PLAT_NATIVE_REALTIME__
 
 #include <iostream>
 #include "../../inc/MarlinConfig.h"
@@ -72,7 +72,7 @@ void analogWrite(pin_t pin, int pwm_value) {  // 1 - 254: pwm_value, 0: LOW, 255
 
 uint16_t analogRead(pin_t adc_pin) {
   if (!VALID_PIN(DIGITAL_PIN_TO_ANALOG_PIN(adc_pin))) return 0;
-  return Gpio::get(DIGITAL_PIN_TO_ANALOG_PIN(adc_pin));
+  return Gpio::get_adc(DIGITAL_PIN_TO_ANALOG_PIN(adc_pin));
 }
 
 char *dtostrf(double __val, signed char __width, unsigned char __prec, char *__s) {
@@ -98,4 +98,4 @@ int map(uint16_t x, uint16_t in_min, uint16_t in_max, uint16_t out_min, uint16_t
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-#endif // __PLAT_LINUX__
+#endif // __PLAT_NATIVE_REALTIME__

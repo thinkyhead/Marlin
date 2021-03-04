@@ -19,27 +19,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#pragma once
+#ifdef __PLAT_NATIVE_REALTIME__
 
-#include <chrono>
-#include "Gpio.h"
+#include "../../inc/MarlinConfig.h"
 
-class LinearAxis: public Peripheral {
-public:
-  LinearAxis(pin_type enable, pin_type dir, pin_type step, pin_type end_min, pin_type end_max);
-  virtual ~LinearAxis();
-  void update();
-  void interrupt(GpioEvent ev);
+#if ENABLED(USE_WATCHDOG)
 
-  pin_type enable_pin;
-  pin_type dir_pin;
-  pin_type step_pin;
-  pin_type min_pin;
-  pin_type max_pin;
+#include "watchdog.h"
 
-  int32_t position;
-  int32_t min_position;
-  int32_t max_position;
-  uint64_t last_update;
+void watchdog_init() {}
+void HAL_watchdog_refresh() {}
 
-};
+#endif
+
+#endif // __PLAT_NATIVE_REALTIME__
