@@ -15,8 +15,12 @@ def get_envs_for_board(board):
             mbs = r.findall(line)
             if mbs:
                 board_found = board if board in re.split(r",\s*", mbs[0]) else ""
-            if board_found and "#include " in line and "env:" in line:
-                return re.findall(r"env:\w+", line)
+            if board_found:
+                print("board found", line)
+                print("match is ", re.match(r"#include .+(env|mac|win|uni):", line))
+                if re.match(r"#include .+(env|mac|win|uni):", line):
+                    print("match found")
+                    return re.findall(r"(env|mac|win|uni):\w+", line)
     return []
 
 def check_envs(build_env, base_envs, config):
