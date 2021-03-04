@@ -660,7 +660,7 @@
 //
 
 #elif MB(NATIVE_RAMPS)
-  #include "linux/pins_RAMPS_NATIVE.h"          // Native or Simulation                   lin:native_realtime mac:simulator_macos win:simulator_win uni:simulator_unix_debug uni:simulator_unix_release
+  #include "native/pins_RAMPS_NATIVE.h"         // Native or Simulation                   lin:native_realtime mac:simulator_macos win:simulator_win uni:simulator_unix_debug uni:simulator_unix_release
 
 #else
 
