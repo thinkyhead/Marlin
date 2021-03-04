@@ -2610,10 +2610,10 @@ void Temperature::readings_ready() {
       const int8_t tdir = temp_dir[e];
       if (tdir) {
         const int16_t rawtemp = temp_hotend[e].raw * tdir; // normal direction, +rawtemp, else -rawtemp
-        const bool heater_on = (temp_hotend[e].target > 0
-          || TERN0(PIDTEMP, temp_hotend[e].soft_pwm_amount) > 0
-        );
-        if (rawtemp > temp_range[e].raw_max * tdir) max_temp_error((heater_id_t)e);
+        const bool heater_on = temp_hotend[e].target > 0 || TERN0(PIDTEMP, temp_hotend[e].soft_pwm_amount > 0)
+        #ifndef __PLAT_NATIVE_SIM__
+          if (rawtemp > temp_range[e].raw_max * tdir) max_temp_error((heater_id_t)e);
+        #endif
         if (heater_on && rawtemp < temp_range[e].raw_min * tdir && !is_preheating(e)) {
           #ifdef MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED
             if (++consecutive_low_temperature_error[e] >= MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED)

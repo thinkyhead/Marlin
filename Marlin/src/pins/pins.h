@@ -656,11 +656,11 @@
   #include "pins_custom.h"                      //                                        env:custom
 
 //
-// Native Build
+// Native / Simulation
 //
 
 #elif MB(NATIVE_RAMPS)
-  #include "linux/pins_RAMPS_NATIVE.h"          // Native                                 lin:native_realtime
+  #include "linux/pins_RAMPS_NATIVE.h"          // Native or Simulation                   lin:native_realtime mac:simulator_macos win:simulator_win uni:simulator_unix_debug uni:simulator_unix_release
 
 #else
 
