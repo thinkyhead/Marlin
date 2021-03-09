@@ -29,6 +29,10 @@
 
 uint8_t marlin_debug_flags = MARLIN_DEBUG_NONE;
 
+#ifdef __PLAT_LINUX__
+  #warning "SOLUTION NEEDED! A proper serial_echopair_PGM(size_t)"
+#endif
+
 // Commonly-used strings in serial output
 PGMSTR(NUL_STR,   "");   PGMSTR(SP_P_STR, " P");  PGMSTR(SP_T_STR, " T");
 PGMSTR(X_STR,     "X");  PGMSTR(Y_STR,     "Y");  PGMSTR(Z_STR,     "Z");  PGMSTR(E_STR,     "E");
