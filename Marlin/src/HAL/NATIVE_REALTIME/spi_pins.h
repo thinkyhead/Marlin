@@ -21,8 +21,8 @@
  */
 #pragma once
 
-#include <src/core/macros.h>
-#include <src/inc/MarlinConfigPre.h>
+#include "../../core/macros.h"
+#include "../../inc/MarlinConfigPre.h"
 
 /** onboard SD card */
 //#define SCK_PIN           P0_07

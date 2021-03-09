@@ -21,7 +21,7 @@
  */
 #ifdef __PLAT_NATIVE_REALTIME__
 
-#include <src/inc/MarlinConfig.h>
+#include "../../../inc/MarlinConfig.h"
 #include "Clock.h"
 
 std::chrono::nanoseconds Clock::startup = std::chrono::high_resolution_clock::now().time_since_epoch();

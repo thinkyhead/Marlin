@@ -23,7 +23,7 @@
 
 #include <pinmapping.h>
 
-#include <src/gcode/parser.h>
+#include "../../../gcode/parser.h"
 
 uint8_t analog_offset = NUM_DIGITAL_PINS - NUM_ANALOG_INPUTS;
 

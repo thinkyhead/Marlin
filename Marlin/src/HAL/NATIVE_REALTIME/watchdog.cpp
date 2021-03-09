@@ -21,7 +21,7 @@
  */
 #ifdef __PLAT_NATIVE_REALTIME__
 
-#include <src/inc/MarlinConfig.h>
+#include "../../inc/MarlinConfig.h"
 
 #if ENABLED(USE_WATCHDOG)
 

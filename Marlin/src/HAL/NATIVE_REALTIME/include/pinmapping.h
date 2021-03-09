@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <src/inc/MarlinConfigPre.h>
+#include "../../../inc/MarlinConfigPre.h"
 
 #include <stdint.h>
 #include "../hardware/gpio.h"

@@ -22,7 +22,7 @@
 #pragma once
 
 #include "Clock.h"
-#include <src/inc/MarlinConfigPre.h>
+#include "../../../inc/MarlinConfigPre.h"
 #include <stdint.h>
 
 typedef int16_t pin_type;

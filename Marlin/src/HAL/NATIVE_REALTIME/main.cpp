@@ -29,7 +29,7 @@ extern void loop();
 #include <iostream>
 #include <fstream>
 
-#include <src/inc/MarlinConfig.h>
+#include "../../inc/MarlinConfig.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include "../shared/Delay.h"

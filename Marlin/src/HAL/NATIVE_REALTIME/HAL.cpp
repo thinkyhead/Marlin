@@ -21,7 +21,7 @@
  */
 #ifdef __PLAT_NATIVE_REALTIME__
 
-#include <src/inc/MarlinConfig.h>
+#include "../../inc/MarlinConfig.h"
 #include "../shared/Delay.h"
 
 HalSerial usb_serial(false);

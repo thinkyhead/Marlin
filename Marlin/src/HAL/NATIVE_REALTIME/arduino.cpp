@@ -22,7 +22,7 @@
 #ifdef __PLAT_NATIVE_REALTIME__
 
 #include <iostream>
-#include <src/inc/MarlinConfig.h>
+#include "../../inc/MarlinConfig.h"
 #include "hardware/Clock.h"
 #include "../shared/Delay.h"
 
