@@ -49,4 +49,4 @@ if sys.platform == 'darwin':
     # Break out of the PIO build immediately
     sys.exit(1)
 
-env['BUILD_FLAGS'] += [ "-I" + "/usr/include/SDL2" ]
+env.AddCustomTarget("upload", "$BUILD_DIR/${PROGNAME}", "$BUILD_DIR/${PROGNAME}")
