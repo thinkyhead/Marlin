@@ -29,7 +29,7 @@
 
 uint8_t marlin_debug_flags = MARLIN_DEBUG_NONE;
 
-#ifdef __PLAT_LINUX__
+#if __INTPTR_WIDTH__ == __SIZE_WIDTH__
   #warning "SOLUTION NEEDED! A proper serial_echopair_PGM(size_t)"
 #endif
 

@@ -24,7 +24,10 @@
 #include "../../inc/MarlinConfig.h"
 #include "../shared/Delay.h"
 
-MSerialT usb_serial(false);
+MSerialT serial_stream_0(false);
+MSerialT serial_stream_1(false);
+MSerialT serial_stream_2(false);
+MSerialT serial_stream_3(false);
 
 // U8glib required functions
 extern "C" {

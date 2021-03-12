@@ -60,8 +60,43 @@ uint8_t _getc();
 
 #define SHARED_SERVOS HAS_SERVOS
 
-extern MSerialT usb_serial;
-#define MYSERIAL0 usb_serial
+extern MSerialT serial_stream_0;
+extern MSerialT serial_stream_1;
+extern MSerialT serial_stream_2;
+extern MSerialT serial_stream_3;
+
+#define _MSERIAL(X) serial_stream_##X
+#define MSERIAL(X) _MSERIAL(X)
+
+#if WITHIN(SERIAL_PORT, 0, 3)
+  #define MYSERIAL1 MSERIAL(SERIAL_PORT)
+#else
+  #error "SERIAL_PORT must be from 0 to 3. Please update your configuration."
+#endif
+
+#ifdef SERIAL_PORT_2
+  #if WITHIN(SERIAL_PORT_2, 0, 3)
+    #define MYSERIAL2 MSERIAL(SERIAL_PORT_2)
+  #else
+    #error "SERIAL_PORT_2 must be from 0 to 3. Please update your configuration."
+  #endif
+#endif
+
+#ifdef MMU2_SERIAL_PORT
+  #if WITHIN(MMU2_SERIAL_PORT, 0, 3)
+    #define MMU2_SERIAL MSERIAL(MMU2_SERIAL_PORT)
+  #else
+    #error "MMU2_SERIAL_PORT must be from 0 to 3. Please update your configuration."
+  #endif
+#endif
+
+#ifdef LCD_SERIAL_PORT
+  #if WITHIN(LCD_SERIAL_PORT, 0, 3)
+    #define LCD_SERIAL MSERIAL(LCD_SERIAL_PORT)
+  #else
+    #error "LCD_SERIAL_PORT must be from 0 to 3. Please update your configuration."
+  #endif
+#endif
 
 #define ST7920_DELAY_1 DELAY_NS(600)
 #define ST7920_DELAY_2 DELAY_NS(750)

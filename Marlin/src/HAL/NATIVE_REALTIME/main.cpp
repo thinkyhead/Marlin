@@ -75,7 +75,7 @@ int main() {
   std::thread read_serial (read_serial_thread);
 
   #if NUM_SERIAL > 0
-    MYSERIAL0.begin(BAUDRATE);
+    MYSERIAL1.begin(BAUDRATE);
     SERIAL_FLUSHTX();
   #endif
 

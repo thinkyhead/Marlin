@@ -23,7 +23,7 @@
 
 // #include "sim/hardware/Timer.h"
 
-#include <src/inc/MarlinConfig.h>
+#include "../../inc/MarlinConfig.h"
 
 // /**
 //  * Use POSIX signals to attempt to emulate Interrupts
