@@ -2040,7 +2040,7 @@
 /**
  * Encoder Direction Options
  *
- * Test your encoder's behavior first with both options disabled.
+ * Test your encoder's behavior first with all these options disabled.
  *
  *  Reversed Value Edit and Menu Nav? Enable REVERSE_ENCODER_DIRECTION.
  *  Reversed Menu Navigation only?    Enable REVERSE_MENU_DIRECTION.
@@ -2052,7 +2052,7 @@
 //
 //  Set this option if CLOCKWISE causes values to DECREASE
 //
-//#define REVERSE_ENCODER_DIRECTION
+#define REVERSE_ENCODER_DIRECTION
 
 //
 // This option reverses the encoder direction for navigating LCD menus.
@@ -2144,7 +2144,7 @@
 //
 // Note: Usually sold with a blue PCB.
 //
-#define G3D_PANEL
+//#define G3D_PANEL
 
 //
 // RigidBot Panel V1.0
@@ -2264,7 +2264,7 @@
 // RepRapDiscount FULL GRAPHIC Smart Controller
 // https://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-//#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
 //
 // K.3D Full Graphic Smart Controller
