@@ -92,7 +92,7 @@
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
-#define BAUDRATE 115200
+#define BAUDRATE 250000
 
 #define BAUD_RATE_GCODE       // Enable G-code M575 to set the baud rate
 
@@ -2887,7 +2887,7 @@
 //
 // Note: Usually sold with a blue PCB.
 //
-#define G3D_PANEL
+//#define G3D_PANEL
 
 //
 // RigidBot Panel V1.0
@@ -3007,7 +3007,7 @@
 // RepRapDiscount FULL GRAPHIC Smart Controller
 // https://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-//#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
 //
 // K.3D Full Graphic Smart Controller
