@@ -263,9 +263,9 @@
 
 /**
  *        ------                  ------
- *  PC5  | 1  2 | PE13       PA6 | 1  2 | PA5
- *  PD13 | 3  4 | PC6        PE8 | 3  4 | PE10
- *  PE14 | 5  6   PE15      PE11 | 5  6   PA7
+ *  PC5  | 1  2 | PE13       PA6 | 1  2 | PA5    (SCK)
+ *  PD13 | 3  4 | PC6        PE8 | 3  4 | PE10   (SS)
+ *  PE14 | 5  6   PE15      PE11 | 5  6   PA7    (MOSI)
  *  PD11 | 7  8 | PD10      PE12 | 7  8 | RESET
  *   GND | 9 10 | 5V         GND | 9 10 | 3.3V
  *        ------                  ------
@@ -294,6 +294,23 @@
 //
 // LCD / Controller
 //
+
+#define EXP1_01_PIN                         PC5
+#define EXP1_02_PIN                         PE13
+#define EXP1_03_PIN                         PD13
+#define EXP1_04_PIN                         PC6
+#define EXP1_05_PIN                         PE14
+#define EXP1_06_PIN                         PE15
+#define EXP1_07_PIN                         PD11
+#define EXP1_08_PIN                         PD10
+
+#define EXP2_01_PIN                         PA6
+#define EXP2_02_PIN                         PA5
+#define EXP2_03_PIN                         PE8
+#define EXP2_04_PIN                         PA7   // Not PE0
+#define EXP2_05_PIN                         PE11
+#define EXP2_06_PIN                         PE10
+#define EXP2_07_PIN                         PE12
 
 /**
  * Note: MKS Robin TFT screens use various TFT controllers.
@@ -331,6 +348,7 @@
   #define TFT_MISO_PIN               EXP2_01_PIN
   #define TFT_MOSI_PIN               EXP2_06_PIN
   #define TFT_DC_PIN                 EXP1_08_PIN
+  #define TFT_RST_PIN                EXP1_04_PIN
   #define TFT_A0_PIN                  TFT_DC_PIN
 
   #define TFT_RESET_PIN              EXP1_04_PIN

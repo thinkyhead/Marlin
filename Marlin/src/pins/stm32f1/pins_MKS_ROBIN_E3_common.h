@@ -171,16 +171,15 @@
 #define EXP2_08_PIN                         -1    // RESET
 
 // "Ender-3 EXP1"
-#define EXP3_01_PIN                         PC1
-#define EXP3_02_PIN                         PC3
-#define EXP3_03_PIN                         PB11
-#define EXP3_04_PIN                         -1    // RESET
-#define EXP3_05_PIN                         PB0
-#define EXP3_06_PIN                         PA6
-#define EXP3_07_PIN                         PA5
-#define EXP3_08_PIN                         PA4
+#define EXP3_03_PIN                  EXP1_03_PIN
+#define EXP3_04_PIN                  EXP1_04_PIN
+#define EXP3_05_PIN                  EXP1_05_PIN
+#define EXP3_06_PIN                  EXP2_05_PIN
+#define EXP3_08_PIN                  EXP2_03_PIN
+#define EXP3_09_PIN                  EXP1_02_PIN
+#define EXP3_10_PIN                  EXP1_01_PIN
 
-#if HAS_WIRED_LCD
+#if HAS_WIRED_LCD && !HAS_SPI_TFT
 
   #define BEEPER_PIN                 EXP1_01_PIN
   #define BTN_ENC                    EXP1_02_PIN

@@ -266,6 +266,40 @@
 #endif
 
 //
+// EXT-IO Header
+//
+
+#define EXTIO_1_PIN                         PE5
+#define EXTIO_2_PIN                         PE6
+#define EXTIO_3_PIN                         PC2
+#define EXTIO_4_PIN                         PA1
+#define EXTIO_5_PIN                         PA2
+#define EXTIO_6_PIN                         PA3
+#define EXTIO_7_PIN                         PB0
+#define EXTIO_8_PIN                         PE7
+
+//
+// EXP Headers
+//
+
+#define EXP1_01_PIN                         PC5
+#define EXP1_02_PIN                         PE13
+#define EXP1_03_PIN                         PD13
+#define EXP1_04_PIN                         PC6
+#define EXP1_05_PIN                         PE14
+#define EXP1_06_PIN                         PE15
+#define EXP1_07_PIN                         PD11
+#define EXP1_08_PIN                         PD10
+
+#define EXP2_01_PIN                         PA6
+#define EXP2_02_PIN                         PA5
+#define EXP2_03_PIN                         PE8
+#define EXP2_04_PIN                         PE10
+#define EXP2_05_PIN                         PE11
+#define EXP2_06_PIN                         PA7
+#define EXP2_07_PIN                         PE12
+
+//
 // LCD / Controller
 //
 
@@ -315,6 +349,7 @@
   #define TFT_A0_PIN                  TFT_DC_PIN
 
   #define TFT_RESET_PIN              EXP1_04_PIN
+
   #define TFT_BACKLIGHT_PIN    LCD_BACKLIGHT_PIN
 
   #define TOUCH_BUTTONS_HW_SPI
@@ -407,6 +442,6 @@
   #define SPI_FLASH_MOSI_PIN                PB15
 #endif
 
-#if ENABLED(SPEAKER) && BEEPER_PIN == PC5
+#if ENABLED(SPEAKER) && BEEPER_PIN == EXP1_01_PIN
   #error "MKS Robin nano default BEEPER_PIN is not a SPEAKER."
 #endif
