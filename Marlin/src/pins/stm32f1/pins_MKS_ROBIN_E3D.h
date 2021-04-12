@@ -65,3 +65,114 @@
 #endif
 
 #include "pins_MKS_ROBIN_E3_common.h"
+
+#ifndef BEEPER_PIN
+  #define BEEPER_PIN                 EXP1_01_PIN
+#endif
+
+/**
+ * Note: MKS Robin TFT screens use various TFT controllers.
+ * If the screen stays white, disable 'LCD_RESET_PIN'
+ * to let the bootloader init the screen.
+ */
+
+#if HAS_SPI_TFT
+
+  // Shared SPI TFT
+
+  #define LCD_BACKLIGHT_PIN          EXP1_03_PIN
+
+  #define TOUCH_CS_PIN               EXP1_05_PIN  // SPI1_NSS
+  #define TOUCH_SCK_PIN              EXP2_02_PIN  // SPI1_SCK
+  #define TOUCH_MISO_PIN             EXP2_01_PIN  // SPI1_MISO
+  #define TOUCH_MOSI_PIN             EXP2_06_PIN  // SPI1_MOSI
+
+  #define BTN_EN1                    EXP2_03_PIN
+  #define BTN_EN2                    EXP2_05_PIN
+  #define BTN_ENC                    EXP1_02_PIN
+
+  #define TFT_CS_PIN                 EXP1_07_PIN
+  #define TFT_SCK_PIN                EXP2_02_PIN
+  #define TFT_MISO_PIN               EXP2_01_PIN
+  #define TFT_MOSI_PIN               EXP2_06_PIN
+  #define TFT_DC_PIN                 EXP1_08_PIN
+  #define TFT_RST_PIN                EXP1_04_PIN
+  #define TFT_A0_PIN                  TFT_DC_PIN
+
+  #define TFT_RESET_PIN              EXP1_04_PIN
+  #define TFT_BACKLIGHT_PIN          EXP1_03_PIN
+
+  #define TOUCH_BUTTONS_HW_SPI
+  #define TOUCH_BUTTONS_HW_SPI_DEVICE          1
+
+  #ifndef TFT_WIDTH
+    #define TFT_WIDTH                        480
+  #endif
+  #ifndef TFT_HEIGHT
+    #define TFT_HEIGHT                       320
+  #endif
+
+  #define LCD_READ_ID                       0xD3
+  #define LCD_USE_DMA_SPI
+
+#endif
+
+#if HAS_SPI_GRAPHICAL_TFT
+  // Emulated DOGM SPI
+  #define LCD_PINS_ENABLE            EXP1_03_PIN
+  #define LCD_PINS_RS                EXP1_04_PIN
+  #define BTN_ENC                    EXP1_02_PIN
+  #define BTN_EN1                    EXP2_03_PIN
+  #define BTN_EN2                    EXP2_05_PIN
+#elif ENABLED(TFT_480x320_SPI)
+  #define TFT_DRIVER                      ST7796
+  #define TFT_BUFFER_SIZE                  14400
+#endif
+
+#if HAS_WIRED_LCD && !HAS_SPI_TFT
+
+  // NON TFT Displays
+
+  #if ENABLED(MKS_MINI_12864)
+
+    // MKS MINI12864 and MKS LCD12864B
+    // If using MKS LCD12864A (Need to remove RPK2 resistor)
+
+    #define LCD_BACKLIGHT_PIN               -1
+    #define LCD_RESET_PIN                   -1
+    #define DOGLCD_A0                EXP1_07_PIN
+    #define DOGLCD_CS                EXP1_06_PIN
+    #define DOGLCD_SCK               EXP2_02_PIN
+    #define DOGLCD_MOSI              EXP2_06_PIN
+
+    // Required for MKS_MINI_12864 with this board
+    #define MKS_LCD12864B
+    #undef SHOW_BOOTSCREEN
+
+  #else                                           // !MKS_MINI_12864
+
+    #define LCD_PINS_D4              EXP1_05_PIN
+    #if IS_ULTIPANEL
+      #define LCD_PINS_D5            EXP1_06_PIN
+      #define LCD_PINS_D6            EXP1_07_PIN
+      #define LCD_PINS_D7            EXP1_08_PIN
+
+      #if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
+        #define BTN_ENC_EN           LCD_PINS_D7  // Detect the presence of the encoder
+      #endif
+
+    #endif
+
+    #ifndef BOARD_ST7920_DELAY_1
+      #define BOARD_ST7920_DELAY_1 DELAY_NS(125)
+    #endif
+    #ifndef BOARD_ST7920_DELAY_2
+      #define BOARD_ST7920_DELAY_2 DELAY_NS(125)
+    #endif
+    #ifndef BOARD_ST7920_DELAY_3
+      #define BOARD_ST7920_DELAY_3 DELAY_NS(125)
+    #endif
+
+  #endif // !MKS_MINI_12864
+
+#endif // HAS_WIRED_LCD && !HAS_SPI_TFT

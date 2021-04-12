@@ -154,52 +154,49 @@
  *                ------                                    ------                                  ------
  *                 EXP1                                      EXP2                                "Ender-3 EXP1"
  */
-#define EXP1_03_PIN                         PC5
-#define EXP1_04_PIN                         PC4
-#define EXP1_05_PIN                         PA7
-#define EXP1_06_PIN                         PA6
-#define EXP1_07_PIN                         PA5
-#define EXP1_08_PIN                         PA4
-#define EXP1_09_PIN                         PC3
-#define EXP1_10_PIN                         PC1
+#define EXP1_01_PIN                         PC1
+#define EXP1_02_PIN                         PC3
+#define EXP1_03_PIN                         PA4
+#define EXP1_04_PIN                         PA5
+#define EXP1_05_PIN                         PA6
+#define EXP1_06_PIN                         PA7
+#define EXP1_07_PIN                         PC4
+#define EXP1_08_PIN                         PC5
 
-#define EXP2_03_PIN                         -1   // RESET
-#define EXP2_04_PIN                         PC10
-#define EXP2_05_PIN                         PB15
-#define EXP2_06_PIN                         PB0
-#define EXP2_07_PIN                         PA15
-#define EXP2_08_PIN                         PB11
-#define EXP2_09_PIN                         PB13
-#define EXP2_10_PIN                         PB14
+#define EXP2_01_PIN                         PB14
+#define EXP2_02_PIN                         PB13
+#define EXP2_03_PIN                         PB11
+#define EXP2_04_PIN                         PA15
+#define EXP2_05_PIN                         PB0
+#define EXP2_06_PIN                         PB15
+#define EXP2_07_PIN                         PC10
 
-// "Ender-3 EXP1"
-#define E3_EXP1_03_PIN                      PA4
-#define E3_EXP1_04_PIN                      PA5
-#define E3_EXP1_05_PIN                      PA6
-#define E3_EXP1_06_PIN                      PB0
-#define E3_EXP1_07_PIN                      -1   // RESET
-#define E3_EXP1_08_PIN                      PB11
-#define E3_EXP1_09_PIN                      PC3
-#define E3_EXP1_10_PIN                      PC1
+#define EXP3_03_PIN                  EXP1_03_PIN
+#define EXP3_04_PIN                  EXP1_04_PIN
+#define EXP3_05_PIN                  EXP1_05_PIN
+#define EXP3_06_PIN                  EXP2_05_PIN
+#define EXP3_08_PIN                  EXP2_03_PIN
+#define EXP3_09_PIN                  EXP1_02_PIN
+#define EXP3_10_PIN                  EXP1_01_PIN
 
-#if HAS_WIRED_LCD
+#if HAS_WIRED_LCD && !HAS_SPI_TFT
 
-  #define BEEPER_PIN                 EXP1_10_PIN
-  #define BTN_ENC                    EXP1_09_PIN
-  #define LCD_PINS_ENABLE            EXP1_08_PIN
-  #define LCD_PINS_RS                EXP1_07_PIN
-  #define BTN_EN1                    EXP2_08_PIN
-  #define BTN_EN2                    EXP2_06_PIN
+  #define BEEPER_PIN                 EXP1_01_PIN
+  #define BTN_ENC                    EXP1_02_PIN
+  #define LCD_PINS_ENABLE            EXP1_03_PIN
+  #define LCD_PINS_RS                EXP1_04_PIN
+  #define BTN_EN1                    EXP2_03_PIN
+  #define BTN_EN2                    EXP2_05_PIN
 
   // MKS MINI12864 and MKS LCD12864B; If using MKS LCD12864A (Need to remove RPK2 resistor)
   #if ENABLED(MKS_MINI_12864)
 
     #define LCD_BACKLIGHT_PIN               -1
     #define LCD_RESET_PIN                   -1
-    #define DOGLCD_A0                EXP1_04_PIN
-    #define DOGLCD_CS                EXP1_05_PIN
-    #define DOGLCD_SCK               EXP2_09_PIN
-    #define DOGLCD_MOSI              EXP2_05_PIN
+    #define DOGLCD_A0                EXP1_07_PIN
+    #define DOGLCD_CS                EXP1_06_PIN
+    #define DOGLCD_SCK               EXP2_02_PIN
+    #define DOGLCD_MOSI              EXP2_06_PIN
 
   #elif ENABLED(FYSETC_MINI_12864_2_1)
     #define DOGLCD_CS                EXP1_08_PIN
@@ -216,11 +213,11 @@
 
   #else
 
-    #define LCD_PINS_D4              EXP1_06_PIN
+    #define LCD_PINS_D4              EXP1_05_PIN
     #if IS_ULTIPANEL
-      #define LCD_PINS_D5            EXP1_05_PIN
-      #define LCD_PINS_D6            EXP1_04_PIN
-      #define LCD_PINS_D7            EXP1_03_PIN
+      #define LCD_PINS_D5            EXP1_06_PIN
+      #define LCD_PINS_D6            EXP1_07_PIN
+      #define LCD_PINS_D7            EXP1_08_PIN
 
       #if !defined(BTN_ENC_EN) && ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
         #define BTN_ENC_EN           LCD_PINS_D7  // Detect the presence of the encoder
@@ -253,12 +250,12 @@
 #define ONBOARD_SPI_DEVICE                     2
 #define SDSS                           SD_SS_PIN
 #define ONBOARD_SD_CS_PIN              SD_SS_PIN
-#define SD_DETECT_PIN                       PC10  // EXP2_04_PIN
+#define SD_DETECT_PIN                EXP2_07_PIN
 #define NO_SD_HOST_DRIVE
 
 // TODO: This is the only way to set SPI for SD on STM32 (for now)
 #define ENABLE_SPI2
-#define SD_SCK_PIN                   EXP2_09_PIN
-#define SD_MISO_PIN                  EXP2_10_PIN
-#define SD_MOSI_PIN                  EXP2_05_PIN
-#define SD_SS_PIN                    EXP2_07_PIN
+#define SD_SCK_PIN                   EXP2_02_PIN
+#define SD_MISO_PIN                  EXP2_01_PIN
+#define SD_MOSI_PIN                  EXP2_06_PIN
+#define SD_SS_PIN                    EXP2_04_PIN
