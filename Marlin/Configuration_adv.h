@@ -740,7 +740,7 @@
  * The multiplexer is automatically switched at tool-change.
  * Set FANMUX[012]_PINs below for up to 2, 4, or 8 multiplexed fans.
  */
-#define FANMUX0_PIN 53
+#define FANMUX0_PIN -1
 #define FANMUX1_PIN -1
 #define FANMUX2_PIN -1
 
@@ -748,7 +748,7 @@
  * @section caselight
  * M355 Case Light on-off / brightness
  */
-#define CASE_LIGHT_ENABLE
+//#define CASE_LIGHT_ENABLE
 #if ENABLED(CASE_LIGHT_ENABLE)
   //#define CASE_LIGHT_PIN 4                  // Override the default pin if needed
   #define INVERT_CASE_LIGHT false             // Set true if Case Light is ON when pin is LOW
@@ -2893,7 +2893,7 @@
  *
  * Enable PARK_HEAD_ON_PAUSE to add the G-code M125 Pause and Park.
  */
-#define ADVANCED_PAUSE_FEATURE
+//#define ADVANCED_PAUSE_FEATURE
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
   #define PAUSE_PARK_RETRACT_FEEDRATE         60  // (mm/s) Initial retract feedrate.
   #define PAUSE_PARK_RETRACT_LENGTH            2  // (mm) Initial retract.
@@ -4286,7 +4286,7 @@
  * Requires 3 signal wires. Some useful debug options are included to demonstrate its usage.
  * @section debug matrix
  */
-#define MAX7219_DEBUG
+//#define MAX7219_DEBUG
 #if ENABLED(MAX7219_DEBUG)
   #define MAX7219_CLK_PIN    4
   #define MAX7219_DIN_PIN    6
@@ -4502,13 +4502,13 @@
 //
 // M43 - display pin status, toggle pins, watch pins, watch endstops & toggle LED, test servo probe
 //
-#define PINS_DEBUGGING
+//#define PINS_DEBUGGING
 
 // Enable Tests that will run at startup and produce a report
 //#define MARLIN_TEST_BUILD
 
 // Enable Marlin dev mode which adds some special commands
-#define MARLIN_DEV_MODE
+//#define MARLIN_DEV_MODE
 
 #if ENABLED(MARLIN_DEV_MODE)
   /**
