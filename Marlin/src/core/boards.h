@@ -452,6 +452,11 @@
 #define BOARD_BRICOLEMON_LITE_V1_0    6102  // Bricolemon Lite
 
 //
+// RP2040 Dual ARM Cortex M0+
+//
+#define BOARD_RP2040                  7000  // Raspberry Pi 2040
+
+//
 // Custom board
 //
 
