@@ -1455,7 +1455,7 @@ void Planner::check_axes_activity() {
     float high = 0.0;
     for (uint8_t b = block_buffer_tail; b != block_buffer_head; b = next_block_index(b)) {
       block_t *block = &block_buffer[b];
-      if (LINEAR_AXIS_GANG(block->steps.x, || block->steps.y, || block->steps.z, || block->steps.i, || block->steps.j, || block->steps.k)) {
+      if (LINEAR_AXIS_GANG(block->steps.x, || block->steps.y, || block->steps.z, || block->steps.i, || block->steps.j, || block->steps.k, block->steps.m, || block->steps.o, || block->steps.p, || block->steps.q)) {
         const float se = (float)block->steps.e / block->step_event_count * SQRT(block->nominal_speed_sqr); // mm/sec;
         NOLESS(high, se);
       }
@@ -1967,7 +1967,11 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       if (dc < 0) SBI(dm, Z_AXIS),
       if (di < 0) SBI(dm, I_AXIS),
       if (dj < 0) SBI(dm, J_AXIS),
-      if (dk < 0) SBI(dm, K_AXIS)
+      if (dk < 0) SBI(dm, K_AXIS),
+      if (dmv < 0) SBI(dm, M_AXIS),
+      if (dov < 0) SBI(dm, O_AXIS),
+      if (dpv < 0) SBI(dm, P_AXIS),
+      if (dqv < 0) SBI(dm, Q_AXIS)
     );
   #endif
 
@@ -1991,7 +1995,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       if (dpv < 0) SBI(dm, P_AXIS);
     #endif
     #if LINEAR_AXES >= 10
-      if (dqv < 0) SBI(dm, K_AXIS);
+      if (dqv < 0) SBI(dm, Q_AXIS);
     #endif
   #endif
 
@@ -2180,7 +2184,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
   block->step_event_count = _MAX(LOGICAL_AXIS_LIST(
     esteps, block->steps.a, block->steps.b, block->steps.c, block->steps.i, block->steps.j, block->steps.k, \
-    block->steps.m, block->steps.o, block->steps.p, block->steps.q),  /**SG**/
+    block->steps.m, block->steps.o, block->steps.p, block->steps.q
   ));
 
   // Bail if this is a zero-length block
@@ -2458,7 +2462,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   uint32_t accel;
   if (LINEAR_AXIS_GANG(
          !block->steps.a, && !block->steps.b, && !block->steps.c,
-      && !block->steps.i, && !block->steps.j, && !block->steps.k),
+      && !block->steps.i, && !block->steps.j, && !block->steps.k,
       && !block->steps.m, && !block->steps.o, && !block->steps.p, && !block->steps.q)
   ) {                                                             // Is this a retract / recover move?
     accel = CEIL(settings.retract_acceleration * steps_per_mm);   // Convert to: acceleration steps/sec^2
@@ -2986,10 +2990,10 @@ bool Planner::buffer_segment(const abce_pos_t &abce
       int32_t(LROUND(abce.i * settings.axis_steps_per_mm[I_AXIS])),
       int32_t(LROUND(abce.j * settings.axis_steps_per_mm[J_AXIS])),
       int32_t(LROUND(abce.k * settings.axis_steps_per_mm[K_AXIS])),
-      int32_t(LROUND(abce.m * settings.axis_steps_per_mm[M_AXIS])),    /**SG**/
-      int32_t(LROUND(abce.o * settings.axis_steps_per_mm[O_AXIS])),    /**SG**/
-      int32_t(LROUND(abce.p * settings.axis_steps_per_mm[P_AXIS])),    /**SG**/
-      int32_t(LROUND(abce.q * settings.axis_steps_per_mm[Q_AXIS]))    /**SG**/
+      int32_t(LROUND(abce.m * settings.axis_steps_per_mm[M_AXIS])),
+      int32_t(LROUND(abce.o * settings.axis_steps_per_mm[O_AXIS])),
+      int32_t(LROUND(abce.p * settings.axis_steps_per_mm[P_AXIS])),
+      int32_t(LROUND(abce.q * settings.axis_steps_per_mm[Q_AXIS]))
     )
   };
 

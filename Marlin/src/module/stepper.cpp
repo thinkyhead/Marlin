@@ -447,7 +447,6 @@ xyze_int8_t Stepper::count_direction{0};
   #define K_APPLY_DIR(v,Q) K_DIR_WRITE(v)
   #define K_APPLY_STEP(v,Q) K_STEP_WRITE(v)
 #endif
-/**SG**/
 #if LINEAR_AXES >= 7  
   #define M_APPLY_DIR(v,Q) M_DIR_WRITE(v)
   #define M_APPLY_STEP(v,Q) M_STEP_WRITE(v)
@@ -1837,6 +1836,18 @@ void Stepper::pulse_phase_isr() {
       #if HAS_K_STEP
         PULSE_PREP(K);
       #endif
+      #if HAS_M_STEP
+        PULSE_PREP(M);
+      #endif
+      #if HAS_O_STEP
+        PULSE_PREP(O);
+      #endif
+      #if HAS_P_STEP
+        PULSE_PREP(P);
+      #endif
+      #if HAS_Q_STEP
+        PULSE_PREP(Q);
+      #endif
 
       #if EITHER(LIN_ADVANCE, MIXING_EXTRUDER)
         delta_error.e += advance_dividend.e;
@@ -1932,7 +1943,6 @@ void Stepper::pulse_phase_isr() {
     #if HAS_K_STEP
       PULSE_STOP(K);
     #endif
-    /**SG**/
     #if HAS_M_STEP
       PULSE_STOP(M);
     #endif
@@ -2639,7 +2649,6 @@ void Stepper::init() {
   #if HAS_K_DIR
     K_DIR_INIT();
   #endif
-  /**SG**/
   #if HAS_M_DIR
     M_DIR_INIT();
   #endif
@@ -2722,7 +2731,6 @@ void Stepper::init() {
     K_ENABLE_INIT();
     if (!K_ENABLE_ON) K_ENABLE_WRITE(HIGH);
   #endif
-   /**SG**/
   #if HAS_M_ENABLE
     M_ENABLE_INIT();
     if (!M_ENABLE_ON) M_ENABLE_WRITE(HIGH);
@@ -2824,7 +2832,6 @@ void Stepper::init() {
   #if HAS_K_STEP
     AXIS_INIT(K, K);
   #endif
-  /**SG**/
   #if HAS_M_STEP
     AXIS_INIT(M, M);
   #endif
@@ -2878,10 +2885,10 @@ void Stepper::init() {
       | TERN0(INVERT_I_DIR, _BV(I_AXIS)),
       | TERN0(INVERT_J_DIR, _BV(J_AXIS)),
       | TERN0(INVERT_K_DIR, _BV(K_AXIS)),
-      | TERN0(INVERT_M_DIR, _BV(M_AXIS)),  /**SG**/
-      | TERN0(INVERT_O_DIR, _BV(O_AXIS)),  /**SG**/
-      | TERN0(INVERT_P_DIR, _BV(P_AXIS)),  /**SG**/
-      | TERN0(INVERT_Q_DIR, _BV(Q_AXIS))  /**SG**/
+      | TERN0(INVERT_M_DIR, _BV(M_AXIS)),
+      | TERN0(INVERT_O_DIR, _BV(O_AXIS)),
+      | TERN0(INVERT_P_DIR, _BV(P_AXIS)),
+      | TERN0(INVERT_Q_DIR, _BV(Q_AXIS))
     )
   );
 
@@ -3342,16 +3349,16 @@ void Stepper::report_positions() {
       #if LINEAR_AXES >= 6
         case K_AXIS: BABYSTEP_AXIS(K, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 7   /**SG**/
+      #if LINEAR_AXES >= 7
         case M_AXIS: BABYSTEP_AXIS(M, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 8   /**SG**/
+      #if LINEAR_AXES >= 8
         case O_AXIS: BABYSTEP_AXIS(O, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 9   /**SG**/
+      #if LINEAR_AXES >= 9
         case P_AXIS: BABYSTEP_AXIS(P, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 10   /**SG**/
+      #if LINEAR_AXES >= 10
         case Q_AXIS: BABYSTEP_AXIS(Q, 0, direction); break;
       #endif
 
@@ -3569,6 +3576,70 @@ void Stepper::report_positions() {
         SET_OUTPUT(Z4_MS3_PIN);
       #endif
     #endif
+    #if LINEAR_AXES >= 4
+      #if HAS_I_MS_PINS
+        SET_OUTPUT(I_MS1_PIN);
+        SET_OUTPUT(I_MS2_PIN);
+        #if PIN_EXISTS(I_MS3)
+          SET_OUTPUT(I_MS3_PIN);
+        #endif
+      #endif
+    #endif
+    #if LINEAR_AXES >= 5
+      #if HAS_J_MS_PINS
+        SET_OUTPUT(J_MS1_PIN);
+        SET_OUTPUT(J_MS2_PIN);
+        #if PIN_EXISTS(J_MS3)
+          SET_OUTPUT(J_MS3_PIN);
+        #endif
+      #endif
+    #endif
+    #if LINEAR_AXES >= 6
+      #if HAS_J_MS_PINS
+        SET_OUTPUT(J_MS1_PIN);
+        SET_OUTPUT(J_MS2_PIN);
+        #if PIN_EXISTS(J_MS3)
+          SET_OUTPUT(J_MS3_PIN);
+        #endif
+      #endif
+    #endif
+    #if LINEAR_AXES >= 7
+      #if HAS_M_MS_PINS
+        SET_OUTPUT(M_MS1_PIN);
+        SET_OUTPUT(M_MS2_PIN);
+        #if PIN_EXISTS(M_MS3)
+          SET_OUTPUT(M_MS3_PIN);
+        #endif
+      #endif
+    #endif
+    #if LINEAR_AXES >= 8
+      #if HAS_O_MS_PINS
+        SET_OUTPUT(O_MS1_PIN);
+        SET_OUTPUT(O_MS2_PIN);
+        #if PIN_EXISTS(O_MS3)
+          SET_OUTPUT(O_MS3_PIN);
+        #endif
+      #endif
+    #endif
+    #if LINEAR_AXES >= 9
+      #if HAS_P_MS_PINS
+        SET_OUTPUT(P_MS1_PIN);
+        SET_OUTPUT(P_MS2_PIN);
+        #if PIN_EXISTS(P_MS3)
+          SET_OUTPUT(P_MS3_PIN);
+        #endif
+      #endif
+    #endif
+    #if LINEAR_AXES >= 10
+      #if HAS_Q_MS_PINS
+        SET_OUTPUT(Q_MS1_PIN);
+        SET_OUTPUT(Q_MS2_PIN);
+        #if PIN_EXISTS(Q_MS3)
+          SET_OUTPUT(Q_MS3_PIN);
+        #endif
+      #endif
+    #endif
+
     #if HAS_E0_MS_PINS
       SET_OUTPUT(E0_MS1_PIN);
       SET_OUTPUT(E0_MS2_PIN);
@@ -3782,7 +3853,6 @@ void Stepper::report_positions() {
       #if HAS_K_M_PINS
         case 13: WRITE(K_MS2_PIN, ms2); break
       #endif
-      /**SG**/
       #if HAS_M_M_PINS
         case 14: WRITE(M_MS2_PIN, ms2); break
       #endif
@@ -3931,7 +4001,6 @@ void Stepper::report_positions() {
         PIN_CHAR(K_MS3);
       #endif
     #endif
-    /**SG**/
     #if HAS_M_MS_PINS
       MS_LINE(M);
       #if PIN_EXISTS(M_MS3)

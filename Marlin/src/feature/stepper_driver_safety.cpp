@@ -65,15 +65,18 @@ void stepper_driver_backward_check() {
   TEST_BACKWARD(I,   8);
   TEST_BACKWARD(J,   9);
   TEST_BACKWARD(K,  10);
+  TEST_BACKWARD(U,  11);
+  TEST_BACKWARD(V,  12);
+  TEST_BACKWARD(W,  13);
 
-  TEST_BACKWARD(E0, 11);
-  TEST_BACKWARD(E1, 12);
-  TEST_BACKWARD(E2, 13);
-  TEST_BACKWARD(E3, 14);
-  TEST_BACKWARD(E4, 15);
-  TEST_BACKWARD(E5, 16);
-  TEST_BACKWARD(E6, 17);
-  TEST_BACKWARD(E7, 18);
+  TEST_BACKWARD(E0, 14);
+  TEST_BACKWARD(E1, 15);
+  TEST_BACKWARD(E2, 16);
+  TEST_BACKWARD(E3, 17);
+  TEST_BACKWARD(E4, 18);
+  TEST_BACKWARD(E5, 19);
+  TEST_BACKWARD(E6, 20);
+  TEST_BACKWARD(E7, 21);
 
   if (!axis_plug_backward)
     WRITE(SAFE_POWER_PIN, HIGH);
@@ -82,7 +85,7 @@ void stepper_driver_backward_check() {
 void stepper_driver_backward_report() {
   if (!axis_plug_backward) return;
 
-  auto _report_if_backward = [](FSTR_P const axis, uint8_t bit) {
+  auto _report_if_backward = [](FSTR_P const axis, axis_bit_t bit) {
     if (TEST(axis_plug_backward, bit))
       stepper_driver_backward_error(axis);
   };

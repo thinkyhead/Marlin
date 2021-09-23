@@ -312,6 +312,59 @@ bool pin_is_protected(const pin_t pin) {
 
 #pragma GCC diagnostic pop
 
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
+=======
+void enable_e_steppers() {
+  #define _ENA_E(N) ENABLE_AXIS_E##N();
+  REPEAT(E_STEPPERS, _ENA_E)
+}
+
+void enable_all_steppers() {
+  TERN_(AUTO_POWER_CONTROL, powerManager.power_on());
+  ENABLE_AXIS_X();
+  ENABLE_AXIS_Y();
+  ENABLE_AXIS_Z();
+  ENABLE_AXIS_I();  // Marlin multi-axis support by DerAndere (https://github.com/DerAndere1/Marlin/wiki)
+  ENABLE_AXIS_J();
+  ENABLE_AXIS_K();
+  ENABLE_AXIS_M();  // Extension of multi-axis support for more than 6 axes by Paloky  /**SG**/
+  ENABLE_AXIS_O();
+  ENABLE_AXIS_P();
+  ENABLE_AXIS_Q();
+  enable_e_steppers();
+
+  TERN_(EXTENSIBLE_UI, ExtUI::onSteppersEnabled());
+}
+
+void disable_e_steppers() {
+  #define _DIS_E(N) DISABLE_AXIS_E##N();
+  REPEAT(E_STEPPERS, _DIS_E)
+}
+
+void disable_e_stepper(const uint8_t e) {
+  #define _CASE_DIS_E(N) case N: DISABLE_AXIS_E##N(); break;
+  switch (e) {
+    REPEAT(E_STEPPERS, _CASE_DIS_E)
+  }
+}
+
+void disable_all_steppers() {
+  DISABLE_AXIS_X();
+  DISABLE_AXIS_Y();
+  DISABLE_AXIS_Z();
+  DISABLE_AXIS_I();
+  DISABLE_AXIS_J();
+  DISABLE_AXIS_K();
+  DISABLE_AXIS_M();
+  DISABLE_AXIS_O();
+  DISABLE_AXIS_P();
+  DISABLE_AXIS_Q();
+  disable_e_steppers();
+
+  TERN_(EXTENSIBLE_UI, ExtUI::onSteppersDisabled());
+}
+
+>>>>>>> 5ecb901 Cleanup after addition of support for up to 10 linear axes
 /**
  * A Print Job exists when the timer is running or SD is printing
  */

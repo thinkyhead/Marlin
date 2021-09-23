@@ -80,7 +80,8 @@
   constexpr xyze_feedrate_t _mf = MANUAL_FEEDRATE,
            manual_feedrate_mm_s = LOGICAL_AXIS_ARRAY(_mf.e / 60.0f,
                                                      _mf.x / 60.0f, _mf.y / 60.0f, _mf.z / 60.0f,
-                                                     _mf.i / 60.0f, _mf.j / 60.0f, _mf.k / 60.0f);
+                                                     _mf.i / 60.0f, _mf.j / 60.0f, _mf.k / 60.0f,
+                                                     _mf.m / 60.0f, _mf.o / 60.0f, _mf.p / 60.0f, _mf.q / 60.0f);
 #endif
 
 #if IS_KINEMATIC && HAS_JUNCTION_DEVIATION
@@ -202,7 +203,11 @@ typedef struct block_t {
     uint32_t acceleration_rate;             // The acceleration rate used for acceleration calculation
   #endif
 
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
   axis_bits_t direction_bits;               // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
+=======
+  axis_bits_t direction_bits;                   // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
+>>>>>>> 5ecb901 Cleanup after addition of support for up to 10 linear axes
 
   // Advance extrusion
   #if ENABLED(LIN_ADVANCE)
