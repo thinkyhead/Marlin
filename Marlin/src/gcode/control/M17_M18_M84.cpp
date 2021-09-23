@@ -138,7 +138,6 @@ void GcodeSuite::M17() {
         if (parser.seen_test(AXIS7_NAME)) stepper.enable_axis(U_AXIS),
         if (parser.seen_test(AXIS8_NAME)) stepper.enable_axis(V_AXIS),
         if (parser.seen_test(AXIS9_NAME)) stepper.enable_axis(W_AXIS)
-
       );
     }
   }
@@ -223,11 +222,7 @@ void GcodeSuite::M18_M84() {
     stepper_inactive_time = parser.value_millis_from_seconds();
   }
   else {
-<<<<<<< Upstream, based on origin/bugfix-2.0.x
     if (parser.seen_axis()) {
-=======
-    if (parser.seen(LOGICAL_AXIS_GANG("E", "X", "Y", "Z", AXIS4_STR, AXIS5_STR, AXIS6_STR, AXIS7_STR, AXIS8_STR, AXIS9_STR, AXIS10_STR))) {
->>>>>>> 5c59720 Cleanup after adding 9 axis support, removing comments etc.
       planner.synchronize();
       if (any_enable_overlap())
         try_to_disable(selected_axis_bits());

@@ -347,7 +347,7 @@
     #define K_HOME_POS TERN(K_HOME_TO_MIN, K_MIN_POS, K_MAX_POS)
   #endif
 #endif
-#if LINEAR_AXES >= 7    /**SG**/
+#if LINEAR_AXES >= 7
   #ifdef MANUAL_M_HOME_POS
     #define M_HOME_POS MANUAL_M_HOME_POS
   #else
@@ -2241,6 +2241,7 @@
   #endif
   #if LINEAR_AXES >= 6 && !defined(K_INTERPOLATE)
     #define K_INTERPOLATE INTERPOLATE
+  #endif
   #if LINEAR_AXES >= 7 && !defined(U_INTERPOLATE)
     #define U_INTERPOLATE INTERPOLATE
   #endif

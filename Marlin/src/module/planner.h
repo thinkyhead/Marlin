@@ -203,11 +203,7 @@ typedef struct block_t {
     uint32_t acceleration_rate;             // The acceleration rate used for acceleration calculation
   #endif
 
-<<<<<<< Upstream, based on origin/bugfix-2.0.x
   axis_bits_t direction_bits;               // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
-=======
-  axis_bits_t direction_bits;                   // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
->>>>>>> 5ecb901 Cleanup after addition of support for up to 10 linear axes
 
   // Advance extrusion
   #if ENABLED(LIN_ADVANCE)

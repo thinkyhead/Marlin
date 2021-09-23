@@ -85,7 +85,7 @@ void stepper_driver_backward_check() {
 void stepper_driver_backward_report() {
   if (!axis_plug_backward) return;
 
-  auto _report_if_backward = [](FSTR_P const axis, axis_bit_t bit) {
+  auto _report_if_backward = [](FSTR_P const axis, uint8_t bit) {
     if (TEST(axis_plug_backward, bit))
       stepper_driver_backward_error(axis);
   };
@@ -106,15 +106,18 @@ void stepper_driver_backward_report() {
   REPORT_BACKWARD(I,   8);
   REPORT_BACKWARD(J,   9);
   REPORT_BACKWARD(K,  10);
+  REPORT_BACKWARD(U,  11);
+  REPORT_BACKWARD(V,  12);
+  REPORT_BACKWARD(W,  13);
 
-  REPORT_BACKWARD(E0, 11);
-  REPORT_BACKWARD(E1, 12);
-  REPORT_BACKWARD(E2, 13);
-  REPORT_BACKWARD(E3, 14);
-  REPORT_BACKWARD(E4, 15);
-  REPORT_BACKWARD(E5, 16);
-  REPORT_BACKWARD(E6, 17);
-  REPORT_BACKWARD(E7, 18);
+  REPORT_BACKWARD(E0, 14);
+  REPORT_BACKWARD(E1, 15);
+  REPORT_BACKWARD(E2, 16);
+  REPORT_BACKWARD(E3, 17);
+  REPORT_BACKWARD(E4, 18);
+  REPORT_BACKWARD(E5, 19);
+  REPORT_BACKWARD(E6, 20);
+  REPORT_BACKWARD(E7, 21);
 }
 
 #endif // HAS_DRIVER_SAFE_POWER_PROTECT

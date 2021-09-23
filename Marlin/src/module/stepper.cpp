@@ -607,6 +607,7 @@ void Stepper::set_directions() {
       count_direction[_AXIS(A)] = 1;            \
     }
 
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
   TERN_(HAS_X_DIR, SET_STEP_DIR(X)); // A
   TERN_(HAS_Y_DIR, SET_STEP_DIR(Y)); // B
   TERN_(HAS_Z_DIR, SET_STEP_DIR(Z)); // C
@@ -616,6 +617,38 @@ void Stepper::set_directions() {
   TERN_(HAS_U_DIR, SET_STEP_DIR(U));
   TERN_(HAS_V_DIR, SET_STEP_DIR(V));
   TERN_(HAS_W_DIR, SET_STEP_DIR(W));
+=======
+  #if HAS_X_DIR
+    SET_STEP_DIR(X); // A
+  #endif
+  #if HAS_Y_DIR
+    SET_STEP_DIR(Y); // B
+  #endif
+  #if HAS_Z_DIR
+    SET_STEP_DIR(Z); // C
+  #endif
+  #if HAS_I_DIR
+    SET_STEP_DIR(I);
+  #endif
+  #if HAS_J_DIR
+    SET_STEP_DIR(J);
+  #endif
+  #if HAS_K_DIR
+    SET_STEP_DIR(K);
+  #endif
+  #if HAS_M_DIR
+    SET_STEP_DIR(M);
+  #endif
+  #if HAS_O_DIR
+    SET_STEP_DIR(O);
+  #endif
+  #if HAS_P_DIR
+    SET_STEP_DIR(P);
+  #endif
+  #if HAS_Q_DIR
+    SET_STEP_DIR(Q);
+  #endif
+>>>>>>> 04a17e7 Cleanup, fix
 
   #if DISABLED(LIN_ADVANCE)
     #if ENABLED(MIXING_EXTRUDER)
@@ -3193,18 +3226,30 @@ void Stepper::report_positions() {
 
           const bool z_direction = direction ^ BABYSTEP_INVERT_Z;
 
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
           LINEAR_AXIS_CODE(
             enable_axis(X_AXIS), enable_axis(Y_AXIS), enable_axis(Z_AXIS),
             enable_axis(I_AXIS), enable_axis(J_AXIS), enable_axis(K_AXIS),
             enable_axis(U_AXIS), enable_axis(V_AXIS), enable_axis(W_AXIS)
           );
+=======
+          ENABLE_AXIS_X(); ENABLE_AXIS_Y(); ENABLE_AXIS_Z();
+          ENABLE_AXIS_I(); ENABLE_AXIS_J(); ENABLE_AXIS_K();
+          ENABLE_AXIS_M(); ENABLE_AXIS_O(); ENABLE_AXIS_P();
+          ENABLE_AXIS_Q();
+>>>>>>> 04a17e7 Cleanup, fix
 
           DIR_WAIT_BEFORE();
 
           const xyz_byte_t old_dir = LINEAR_AXIS_ARRAY(
             X_DIR_READ(), Y_DIR_READ(), Z_DIR_READ(),
             I_DIR_READ(), J_DIR_READ(), K_DIR_READ(),
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
             U_DIR_READ(), V_DIR_READ(), W_DIR_READ()
+=======
+            M_DIR_READ(), O_DIR_READ(), P_DIR_READ(),
+            Q_DIR_READ()
+>>>>>>> 04a17e7 Cleanup, fix
           );
 
           X_DIR_WRITE(INVERT_X_DIR ^ z_direction);

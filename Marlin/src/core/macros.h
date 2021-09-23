@@ -33,6 +33,7 @@
 
 #define _AXIS(A) (A##_AXIS)
 
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
 #define _XSTOP_  0x01
 #define _YSTOP_  0x02
 #define _ZSTOP_  0x03
@@ -69,6 +70,38 @@
 #define _UDIAG_  0x37
 #define _VDIAG_  0x38
 #define _WDIAG_  0x39
+=======
+#define _XMIN_   0x11
+#define _YMIN_   0x12
+#define _ZMIN_   0x13
+#define _IMIN_   0x14
+#define _JMIN_   0x15
+#define _KMIN_   0x16
+#define _MMIN_   0x17
+#define _OMIN_   0x18
+#define _PMIN_   0x19
+#define _QMIN_   0x1A
+#define _XMAX_   0x21
+#define _YMAX_   0x22
+#define _ZMAX_   0x23
+#define _IMAX_   0x24
+#define _JMAX_   0x25
+#define _KMAX_   0x26
+#define _MMAX_   0x27
+#define _OMAX_   0x28
+#define _PMAX_   0x29
+#define _QMAX_   0x2A
+#define _XDIAG_  0x31
+#define _YDIAG_  0x32
+#define _ZDIAG_  0x33
+#define _IDIAG_  0x34
+#define _JDIAG_  0x35
+#define _KDIAG_  0x36
+#define _MDIAG_  0x37
+#define _ODIAG_  0x38
+#define _PDIAG_  0x39
+#define _QDIAG_  0x3A
+>>>>>>> 04a17e7 Cleanup, fix
 #define _E0DIAG_ 0xE0
 #define _E1DIAG_ 0xE1
 #define _E2DIAG_ 0xE2

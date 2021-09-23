@@ -2143,13 +2143,16 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
           LINEAR_AXIS_GANG(
               sq(steps_dist_mm.head.x), + sq(steps_dist_mm.y), + sq(steps_dist_mm.head.z),
             + sq(steps_dist_mm.i),      + sq(steps_dist_mm.j), + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.m),      + sq(steps_dist_mm.o), + sq(steps_dist_mm.p),      + sq(steps_dist_mm.q)
+            + sq(steps_dist_mm.i),      + sq(steps_dist_mm.j), + sq(steps_dist_mm.k),
+            + sq(steps_dist_mm.m),      + sq(steps_dist_mm.o), + sq(steps_dist_mm.p),
+            + sq(steps_dist_mm.q)
           )
         #elif CORE_IS_YZ
           LINEAR_AXIS_GANG(
               sq(steps_dist_mm.x)  + sq(steps_dist_mm.head.y) + sq(steps_dist_mm.head.z)
             + sq(steps_dist_mm.i), + sq(steps_dist_mm.j),     + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.m), + sq(steps_dist_mm.o),     + sq(steps_dist_mm.p,        + sq(steps_dist_mm.q)
+            + sq(steps_dist_mm.m), + sq(steps_dist_mm.o),     + sq(steps_dist_mm.p),
+            + sq(steps_dist_mm.q)    + sq(steps_dist_mm.p,        + sq(steps_dist_mm.q)
           )
         #elif ENABLED(FOAMCUTTER_XYUV)
           // Return the largest distance move from either X/Y or I/J plane
@@ -2162,7 +2165,8 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
           LINEAR_AXIS_GANG(
               sq(steps_dist_mm.x), + sq(steps_dist_mm.y), + sq(steps_dist_mm.z),
             + sq(steps_dist_mm.i), + sq(steps_dist_mm.j), + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.m), + sq(steps_dist_mm.o), + sq(steps_dist_mm.p, + sq(steps_dist_mm.q)
+            + sq(steps_dist_mm.m), + sq(steps_dist_mm.o), + sq(steps_dist_mm.p),
+            + sq(steps_dist_mm.q)
           )
         #endif
       );
@@ -2183,7 +2187,8 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   TERN_(HAS_EXTRUDERS, block->steps.e = esteps);
 
   block->step_event_count = _MAX(LOGICAL_AXIS_LIST(
-    esteps, block->steps.a, block->steps.b, block->steps.c, block->steps.i, block->steps.j, block->steps.k, \
+    block->steps.a, block->steps.b, block->steps.c,
+    block->steps.i, block->steps.j, block->steps.k,
     block->steps.m, block->steps.o, block->steps.p, block->steps.q
   ));
 
