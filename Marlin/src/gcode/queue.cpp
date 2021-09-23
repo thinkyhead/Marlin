@@ -260,7 +260,12 @@ void GCodeQueue::RingBuffer::ok_to_send() {
       while (NUMERIC_SIGNED(*p))
         SERIAL_CHAR(*p++);
     }
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
     SERIAL_ECHOPGM_P(SP_P_STR, planner.moves_free(), SP_B_STR, BUFSIZE - length);
+=======
+    SERIAL_ECHOPGM_P(SP_P2_STR, planner.moves_free(),
+                      SP_B_STR, BUFSIZE - length);
+>>>>>>> b7351cd Support for up to 10 non-extruder axes ( LINEAR_AXES 10 )
   #endif
   SERIAL_EOL();
 }
