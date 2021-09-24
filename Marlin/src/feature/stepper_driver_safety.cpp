@@ -103,12 +103,33 @@ void stepper_driver_backward_report() {
   REPORT_BACKWARD(Z3,  6);
   REPORT_BACKWARD(Z4,  7);
 
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
   REPORT_BACKWARD(I,   8);
   REPORT_BACKWARD(J,   9);
   REPORT_BACKWARD(K,  10);
   REPORT_BACKWARD(U,  11);
   REPORT_BACKWARD(V,  12);
   REPORT_BACKWARD(W,  13);
+=======
+  #if HAS_I_ENABLE
+    REPORT_BACKWARD(I, 0);
+  #endif
+  #if HAS_J_ENABLE
+    REPORT_BACKWARD(J, 0);
+  #endif
+  #if HAS_K_ENABLE
+    REPORT_BACKWARD(K, 0);
+  #endif
+  #if HAS_M_ENABLE
+    REPORT_BACKWARD(M, 0);
+  #endif
+  #if HAS_O_ENABLE
+    REPORT_BACKWARD(O, 0);
+  #endif
+  #if HAS_Q_ENABLE
+    REPORT_BACKWARD(Q, 0);
+  #endif
+>>>>>>> 8da7bba Remove P axis, revert to P for Probe, fixes
 
   REPORT_BACKWARD(E0, 14);
   REPORT_BACKWARD(E1, 15);
