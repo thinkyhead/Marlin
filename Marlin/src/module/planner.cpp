@@ -2134,7 +2134,6 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
           LINEAR_AXIS_GANG(
               sq(steps_dist_mm.head.x), + sq(steps_dist_mm.y), + sq(steps_dist_mm.head.z),
             + sq(steps_dist_mm.i),      + sq(steps_dist_mm.j), + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.i),      + sq(steps_dist_mm.j), + sq(steps_dist_mm.k),
             + sq(steps_dist_mm.m),      + sq(steps_dist_mm.o), + sq(steps_dist_mm.q)
           )
         #elif CORE_IS_YZ
@@ -2174,7 +2173,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
   TERN_(HAS_EXTRUDERS, block->steps.e = esteps);
 
-  block->step_event_count = _MAX(LOGICAL_AXIS_LIST(
+  block->step_event_count = _MAX(LOGICAL_AXIS_LIST(esteps,
     block->steps.a, block->steps.b, block->steps.c,
     block->steps.i, block->steps.j, block->steps.k,
     block->steps.m, block->steps.o, block->steps.q
@@ -3093,13 +3092,13 @@ bool Planner::buffer_line(const xyze_pos_t &cart, const_feedRate_t fr_mm_s, cons
       const xyze_pos_t cart_dist_mm = LOGICAL_AXIS_ARRAY(
         cart.e - position_cart.e,
         cart.x - position_cart.x, cart.y - position_cart.y, cart.z - position_cart.z,
-        cart.i - position_cart.i, cart.j - position_cart.j, cart.j - position_cart.k,
+        cart.i - position_cart.i, cart.j - position_cart.j, cart.k - position_cart.k,
         cart.m - position_cart.m, cart.o - position_cart.o, cart.q - position_cart.q
       );
     #else
       const xyz_pos_t cart_dist_mm = LINEAR_AXIS_ARRAY(
         cart.x - position_cart.x, cart.y - position_cart.y, cart.z - position_cart.z,
-        cart.i - position_cart.i, cart.j - position_cart.j, cart.j - position_cart.k,
+        cart.i - position_cart.i, cart.j - position_cart.j, cart.k - position_cart.k,
         cart.m - position_cart.m, cart.o - position_cart.o, cart.q - position_cart.q
       );
     #endif

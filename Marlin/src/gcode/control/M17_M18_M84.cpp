@@ -29,28 +29,9 @@
   #include "../../feature/bedlevel/bedlevel.h"
 #endif
 
-<<<<<<< Upstream, based on origin/bugfix-2.0.x
 #define DEBUG_OUT ENABLED(MARLIN_DEV_MODE)
 #include "../../core/debug_out.h"
 #include "../../libs/hex_print.h"
-=======
-/**
- * M17: Enable stepper motors
- */
-void GcodeSuite::M17() {
-  if (parser.seen_axis()) {
-    LOGICAL_AXIS_CODE(
-      if (TERN0(HAS_E_STEPPER_ENABLE, parser.seen_test('E'))) enable_e_steppers(),
-      if (parser.seen_test('X'))        ENABLE_AXIS_X(),
-      if (parser.seen_test('Y'))        ENABLE_AXIS_Y(),
-      if (parser.seen_test('Z'))        ENABLE_AXIS_Z(),
-      if (parser.seen_test(AXIS4_NAME)) ENABLE_AXIS_I(),
-      if (parser.seen_test(AXIS5_NAME)) ENABLE_AXIS_J(),
-      if (parser.seen_test(AXIS6_NAME)) ENABLE_AXIS_K(),
-      if (parser.seen_test(AXIS7_NAME)) ENABLE_AXIS_M(),
-      if (parser.seen_test(AXIS8_NAME)) ENABLE_AXIS_O(),
-      if (parser.seen_test(AXIS9_NAME)) ENABLE_AXIS_Q()
->>>>>>> 8da7bba Remove P axis, revert to P for Probe, fixes
 
 inline axis_flags_t selected_axis_bits() {
   axis_flags_t selected{0};
@@ -243,7 +224,6 @@ void GcodeSuite::M18_M84() {
   else {
     if (parser.seen_axis()) {
       planner.synchronize();
-<<<<<<< Upstream, based on origin/bugfix-2.0.x
       if (any_enable_overlap())
         try_to_disable(selected_axis_bits());
       else {
@@ -267,20 +247,6 @@ void GcodeSuite::M18_M84() {
           if (parser.seen_test(AXIS9_NAME)) stepper.disable_axis(W_AXIS)
         );
       }
-=======
-      LOGICAL_AXIS_CODE(
-        if (TERN0(HAS_E_STEPPER_ENABLE, parser.seen_test('E'))) disable_e_steppers(),
-        if (parser.seen_test('X'))        DISABLE_AXIS_X(),
-        if (parser.seen_test('Y'))        DISABLE_AXIS_Y(),
-        if (parser.seen_test('Z'))        DISABLE_AXIS_Z(),
-        if (parser.seen_test(AXIS4_NAME)) DISABLE_AXIS_I(),
-        if (parser.seen_test(AXIS5_NAME)) DISABLE_AXIS_J(),
-        if (parser.seen_test(AXIS6_NAME)) DISABLE_AXIS_K(),
-        if (parser.seen_test(AXIS7_NAME)) DISABLE_AXIS_M(),
-        if (parser.seen_test(AXIS8_NAME)) DISABLE_AXIS_O(),
-        if (parser.seen_test(AXIS9_NAME)) DISABLE_AXIS_Q()
-      );
->>>>>>> 8da7bba Remove P axis, revert to P for Probe, fixes
     }
     else
       planner.finish_and_disable();
