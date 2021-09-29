@@ -2095,9 +2095,15 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       steps_dist_mm.i = di * mm_per_step[I_AXIS],
       steps_dist_mm.j = dj * mm_per_step[J_AXIS],
       steps_dist_mm.k = dk * mm_per_step[K_AXIS],
+<<<<<<< Upstream, based on origin/bugfix-2.0.x
       steps_dist_mm.u = du * mm_per_step[U_AXIS],
       steps_dist_mm.v = dv * mm_per_step[V_AXIS],
       steps_dist_mm.w = dw * mm_per_step[W_AXIS]
+=======
+      steps_dist_mm.m = dmv * mm_per_step[M_AXIS],
+      steps_dist_mm.o = dov * mm_per_step[O_AXIS],
+      steps_dist_mm.q = dqv * mm_per_step[Q_AXIS]
+>>>>>>> 22a3187 missing comma
     );
   #endif
 
