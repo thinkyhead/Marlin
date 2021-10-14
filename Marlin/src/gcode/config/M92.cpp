@@ -24,7 +24,7 @@
 #include "../../module/planner.h"
 
 /**
- * M92: Set axis steps-per-unit for one or more axes, X, Y, Z, and E.
+ * M92: Set axis steps-per-unit for one or more axes, X, Y, Z, [I, [J, [K, [U, [V, [W,]]]]]] and E.
  *      (Follows the same syntax as G92)
  *
  *      With multiple extruders use T to specify which one.
@@ -99,9 +99,9 @@ void GcodeSuite::M92_report(const bool forReplay/*=true*/, const int8_t e/*=-1*/
     SP_I_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[I_AXIS]),
     SP_J_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[J_AXIS]),
     SP_K_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[K_AXIS]),
-    SP_M_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[M_AXIS]),
-    SP_O_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[O_AXIS]),
-    SP_Q_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Q_AXIS]))
+    SP_U_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[U_AXIS]),
+    SP_V_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[V_AXIS]),
+    SP_W_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[W_AXIS]))
   );
   #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
     SERIAL_ECHOPGM_P(SP_E_STR, VOLUMETRIC_UNIT(planner.settings.axis_steps_per_mm[E_AXIS]));

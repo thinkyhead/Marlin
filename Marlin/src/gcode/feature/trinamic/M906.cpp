@@ -35,6 +35,12 @@
  *   X[current]  - Set mA current for X driver(s)
  *   Y[current]  - Set mA current for Y driver(s)
  *   Z[current]  - Set mA current for Z driver(s)
+ *   A[current]  - Set mA current for A driver(s) (Requires AXIS*_NAME 'A')
+ *   B[current]  - Set mA current for B driver(s) (Requires AXIS*_NAME 'B')
+ *   C[current]  - Set mA current for C driver(s) (Requires AXIS*_NAME 'C')
+ *   U[current]  - Set mA current for U driver(s) (Requires AXIS*_NAME 'U')
+ *   V[current]  - Set mA current for V driver(s) (Requires AXIS*_NAME 'V')
+ *   W[current]  - Set mA current for W driver(s) (Requires AXIS*_NAME 'W')
  *   E[current]  - Set mA current for E driver(s)
  *
  *   I[index]    - Axis sub-index (Omit or 0 for X, Y, Z; 1 for X2, Y2, Z2; 2 for Z3; 3 for Z4.)
@@ -48,7 +54,7 @@ void GcodeSuite::M906() {
 
   bool report = true;
 
-  #if AXIS_IS_TMC(X) || AXIS_IS_TMC(X2) || AXIS_IS_TMC(Y) || AXIS_IS_TMC(Y2) || AXIS_IS_TMC(Z) || AXIS_IS_TMC(Z2) || AXIS_IS_TMC(Z3) || AXIS_IS_TMC(Z4) || AXIS_IS_TMC(I) || AXIS_IS_TMC(J) || AXIS_IS_TMC(K) || AXIS_IS_TMC(M) || AXIS_IS_TMC(O) || AXIS_IS_TMC(Q)
+  #if AXIS_IS_TMC(X) || AXIS_IS_TMC(X2) || AXIS_IS_TMC(Y) || AXIS_IS_TMC(Y2) || AXIS_IS_TMC(Z) || AXIS_IS_TMC(Z2) || AXIS_IS_TMC(Z3) || AXIS_IS_TMC(Z4) || AXIS_IS_TMC(I) || AXIS_IS_TMC(J) || AXIS_IS_TMC(K) || AXIS_IS_TMC(U) || AXIS_IS_TMC(V) || AXIS_IS_TMC(W)
     const uint8_t index = parser.byteval('I');
   #endif
 
@@ -101,14 +107,14 @@ void GcodeSuite::M906() {
       #if AXIS_IS_TMC(K)
         case K_AXIS: TMC_SET_CURRENT(K); break;
       #endif
-      #if AXIS_IS_TMC(M)
-        case M_AXIS: TMC_SET_CURRENT(M); break;
+      #if AXIS_IS_TMC(U)
+        case U_AXIS: TMC_SET_CURRENT(U); break;
       #endif
-      #if AXIS_IS_TMC(O)
-        case O_AXIS: TMC_SET_CURRENT(O); break;
+      #if AXIS_IS_TMC(V)
+        case V_AXIS: TMC_SET_CURRENT(V); break;
       #endif
-      #if AXIS_IS_TMC(Q)
-        case Q_AXIS: TMC_SET_CURRENT(Q); break;
+      #if AXIS_IS_TMC(W)
+        case W_AXIS: TMC_SET_CURRENT(W); break;
       #endif
 
       #if E_STEPPERS
@@ -180,14 +186,14 @@ void GcodeSuite::M906() {
     #if AXIS_IS_TMC(K)
       TMC_SAY_CURRENT(K);
     #endif
-    #if AXIS_IS_TMC(M)
-      TMC_SAY_CURRENT(M);
+    #if AXIS_IS_TMC(U)
+      TMC_SAY_CURRENT(U);
     #endif
-    #if AXIS_IS_TMC(O)
-      TMC_SAY_CURRENT(O);
+    #if AXIS_IS_TMC(V)
+      TMC_SAY_CURRENT(V);
     #endif
-    #if AXIS_IS_TMC(Q)
-      TMC_SAY_CURRENT(Q);
+    #if AXIS_IS_TMC(W)
+      TMC_SAY_CURRENT(W);
     #endif
 
     #if AXIS_IS_TMC(E0)
@@ -227,7 +233,7 @@ void GcodeSuite::M906_report(const bool forReplay/*=true*/) {
 
   #if  AXIS_IS_TMC(X) || AXIS_IS_TMC(Y) || AXIS_IS_TMC(Z) \
     || AXIS_IS_TMC(I) || AXIS_IS_TMC(J) || AXIS_IS_TMC(K) \
-    || AXIS_IS_TMC(M) || AXIS_IS_TMC(O) || AXIS_IS_TMC(Q)
+    || AXIS_IS_TMC(U) || AXIS_IS_TMC(V) || AXIS_IS_TMC(W)
     say_M906(forReplay);
     #if AXIS_IS_TMC(X)
       SERIAL_ECHOPGM_P(SP_X_STR, stepperX.getMilliamps());
@@ -247,14 +253,14 @@ void GcodeSuite::M906_report(const bool forReplay/*=true*/) {
     #if AXIS_IS_TMC(K)
       SERIAL_ECHOPGM_P(SP_K_STR, stepperK.getMilliamps());
     #endif
-    #if AXIS_IS_TMC(M)
-      SERIAL_ECHOPGM_P(SP_M_STR, stepperM.getMilliamps());
+    #if AXIS_IS_TMC(U)
+      SERIAL_ECHOPGM_P(SP_U_STR, stepperU.getMilliamps());
     #endif
-    #if AXIS_IS_TMC(O)
-      SERIAL_ECHOPGM_P(SP_O_STR, stepperO.getMilliamps());
+    #if AXIS_IS_TMC(V)
+      SERIAL_ECHOPGM_P(SP_V_STR, stepperV.getMilliamps());
     #endif
-    #if AXIS_IS_TMC(Q)
-      SERIAL_ECHOPGM_P(SP_Q_STR, stepperQ.getMilliamps());
+    #if AXIS_IS_TMC(W)
+      SERIAL_ECHOPGM_P(SP_W_STR, stepperW.getMilliamps());
     #endif
     SERIAL_EOL();
   #endif
