@@ -81,7 +81,7 @@ FORCE_INLINE feedRate_t homing_feedrate(const AxisEnum a) {
            if (a == X_AXIS) v = homing_feedrate_mm_m.x,
       else if (a == Y_AXIS) v = homing_feedrate_mm_m.y,
       else if (a == Z_AXIS) v = homing_feedrate_mm_m.z,
-      else if (a == I_AXIS) v = homing_feedrate_mm_m.i,
+      else if (a == I_AXIS) v = homing_feedrate_mm_m.i,  // Marlin multi-axis support by DerAndere and others (https://github.com/DerAndere1/Marlin/wiki)
       else if (a == J_AXIS) v = homing_feedrate_mm_m.j,
       else if (a == K_AXIS) v = homing_feedrate_mm_m.k,
       else if (a == U_AXIS) v = homing_feedrate_mm_m.u,

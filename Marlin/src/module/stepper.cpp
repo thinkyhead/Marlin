@@ -501,7 +501,7 @@ void Stepper::enable_axis(const AxisEnum axis) {
     LINEAR_AXIS_CODE(
       _CASE_ENABLE(X), _CASE_ENABLE(Y), _CASE_ENABLE(Z),
       _CASE_ENABLE(I), _CASE_ENABLE(J), _CASE_ENABLE(K),
-      _CASE_ENABLE(U), _CASE_ENABLE(V), _CASE_ENABLE(W) 
+      _CASE_ENABLE(U), _CASE_ENABLE(V), _CASE_ENABLE(W)
     );
     default: break;
   }
