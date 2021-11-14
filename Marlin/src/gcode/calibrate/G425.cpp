@@ -250,14 +250,15 @@ inline void probe_side(measurements_t &m, const float uncertainty, const side_t 
 
   park_above_object(m, uncertainty);
 
+  #define _ACASE(N,A,B) case A: dir = -1; case B: axis = N##_AXIS; break
+  #define _PCASE(N) _ACASE(N, N##MINIMUM, N##MAXIMUM)
+
   switch (side) {
     #if AXIS_CAN_CALIBRATE(X)
-      case RIGHT: dir = -1;
-      case LEFT:  axis = X_AXIS; break;
+      _ACASE(X, RIGHT, LEFT);
     #endif
     #if LINEAR_AXES >= 2 && AXIS_CAN_CALIBRATE(Y)
-      case BACK:  dir = -1;
-      case FRONT: axis = Y_AXIS; break;
+      _ACASE(Y, BACK, FRONT);
     #endif
     #if HAS_Z_AXIS && AXIS_CAN_CALIBRATE(Z)
       case TOP: {
@@ -268,28 +269,22 @@ inline void probe_side(measurements_t &m, const float uncertainty, const side_t 
       }
     #endif
     #if LINEAR_AXES >= 4 && AXIS_CAN_CALIBRATE(I)
-      case IMINIMUM: dir = -1;
-      case IMAXIMUM: axis = I_AXIS; break;
+      _PCASE(I);
     #endif
     #if LINEAR_AXES >= 5 && AXIS_CAN_CALIBRATE(J)
-      case JMINIMUM: dir = -1;
-      case JMAXIMUM: axis = J_AXIS; break;
+      _PCASE(J);
     #endif
     #if LINEAR_AXES >= 6 && AXIS_CAN_CALIBRATE(K)
-      case KMINIMUM: dir = -1;
-      case KMAXIMUM: axis = K_AXIS; break;
+      _PCASE(K);
     #endif
-    #if LINEAR_AXES >= 7
-      case UMINIMUM: dir = -1;
-      case UMAXIMUM: axis = U_AXIS; break;
+    #if LINEAR_AXES >= 7 && AXIS_CAN_CALIBRATE(U)
+      _PCASE(U);
     #endif
-    #if LINEAR_AXES >= 8
-      case VMINIMUM: dir = -1;
-      case VMAXIMUM: axis = V_AXIS; break;
+    #if LINEAR_AXES >= 8 && AXIS_CAN_CALIBRATE(V)
+      _PCASE(V);
     #endif
-    #if LINEAR_AXES >= 9
-      case WMINIMUM: dir = -1;
-      case WMAXIMUM: axis = W_AXIS; break;
+    #if LINEAR_AXES >= 9 && AXIS_CAN_CALIBRATE(W)
+      _PCASE(W);
     #endif
     default: return;
   }
