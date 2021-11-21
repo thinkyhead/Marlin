@@ -134,6 +134,7 @@ void GcodeSuite::M201() {
 
 void GcodeSuite::M201_report(const bool forReplay/*=true*/) {
   report_heading_etc(forReplay, F(STR_MAX_ACCELERATION));
+  // TODO (DerAndere): Add support for rotational axes with distance in degrees
   SERIAL_ECHOLNPGM_P(
     LIST_N(DOUBLE(LINEAR_AXES),
       PSTR("  M201 X"), LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[X_AXIS]),
@@ -281,7 +282,7 @@ void GcodeSuite::M205() {
       if (parser.seenval('X')) planner.set_max_jerk(X_AXIS, parser.value_linear_units()),
       if (parser.seenval('Y')) planner.set_max_jerk(Y_AXIS, parser.value_linear_units()),
       if ((seenZ = parser.seenval('Z'))) planner.set_max_jerk(Z_AXIS, parser.value_linear_units()),
-      if (parser.seenval(AXIS4_NAME)) planner.set_max_jerk(I_AXIS, parser.value_linear_units()),
+      if (parser.seenval(AXIS4_NAME)) planner.set_max_jerk(I_AXIS, parser.value_linear_units()), // TODO (DerAndere): Rotational axes in degrees
       if (parser.seenval(AXIS5_NAME)) planner.set_max_jerk(J_AXIS, parser.value_linear_units()),
       if (parser.seenval(AXIS6_NAME)) planner.set_max_jerk(K_AXIS, parser.value_linear_units()),
       if (parser.seenval(AXIS7_NAME)) planner.set_max_jerk(U_AXIS, parser.value_linear_units()),

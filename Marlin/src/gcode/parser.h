@@ -309,13 +309,59 @@ public:
     }
 
     static inline float axis_unit_factor(const AxisEnum axis) {
-      return (
-        #if HAS_EXTRUDERS
-          axis >= E_AXIS && volumetric_enabled ? volumetric_unit_factor : linear_unit_factor
-        #else
-          linear_unit_factor
-        #endif
-      );
+      float unit_factor;
+      #if HAS_EXTRUDERS
+        if (axis >= E_AXIS && volumetric_enabled
+          #if HAS_ROTATIONAL_AXES
+            && axis != I_AXIS
+            #if HAS_ROTATIONAL_AXIS5
+              && axis != J_AXIS
+            #endif
+            #if HAS_ROTATIONAL_AXIS6
+              && axis != K_AXIS
+            #endif
+            #if HAS_ROTATIONAL_AXIS7
+              && axis != U_AXIS
+            #endif
+            #if HAS_ROTATIONAL_AXIS8
+              && axis != V_AXIS
+            #endif
+            #if HAS_ROTATIONAL_AXIS9
+              && axis != W_AXIS
+            #endif
+          #endif
+        ) {
+          unit_factor = volumetric_unit_factor;
+        }
+      #endif
+      #if HAS_ROTATIONAL_AXES
+        if (axis == I_AXIS
+          #if HAS_ROTATIONAL_AXIS5
+            || axis == J_AXIS
+          #endif
+          #if HAS_ROTATIONAL_AXIS6
+            || axis == K_AXIS
+          #endif
+          #if HAS_ROTATIONAL_AXIS7
+            || axis == U_AXIS
+          #endif
+          #if HAS_ROTATIONAL_AXIS8
+            || axis == V_AXIS
+          #endif
+          #if HAS_ROTATIONAL_AXIS9
+            || axis == W_AXIS
+          #endif
+
+        ) {
+            unit_factor = 1.0f;
+        }
+      #endif
+      #if HAS_EXTRUDERS || HAS_ROTATIONAL_AXES
+        else unit_factor = linear_unit_factor;
+      #else
+        unit_factor = linear_unit_factor;
+      #endif
+      return unit_factor;
     }
 
     static inline float linear_value_to_mm(const_float_t v)                  { return v * linear_unit_factor; }

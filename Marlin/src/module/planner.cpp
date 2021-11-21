@@ -1957,6 +1957,14 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       if (db + dc < 0) SBI(dm, B_AXIS);           // Motor B direction
       if (CORESIGN(db - dc) < 0) SBI(dm, C_AXIS); // Motor C direction
     #endif
+  #elif ENABLED(MARKFORGED_XY)
+    if (da + db < 0) SBI(dm, A_AXIS);              // Motor A direction
+    if (db < 0) SBI(dm, B_AXIS);                   // Motor B direction
+  #elif ENABLED(MARKFORGED_YX)
+    if (da < 0) SBI(dm, A_AXIS);                   // Motor A direction
+    if (db + da < 0) SBI(dm, B_AXIS);              // Motor B direction
+  #endif
+  #if ANY(IS_CORE, MARKFORGED_XY, MARKFORGED_YX)
     #if LINEAR_AXES >= 4
       if (di < 0) SBI(dm, I_AXIS);
     #endif
@@ -1975,12 +1983,6 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     #if LINEAR_AXES >= 9
       if (dw < 0) SBI(dm, W_AXIS);
     #endif
-  #elif ENABLED(MARKFORGED_XY)
-    if (da + db < 0) SBI(dm, A_AXIS);              // Motor A direction
-    if (db < 0) SBI(dm, B_AXIS);                   // Motor B direction
-  #elif ENABLED(MARKFORGED_YX)
-    if (da < 0) SBI(dm, A_AXIS);                   // Motor A direction
-    if (db + da < 0) SBI(dm, B_AXIS);              // Motor B direction
   #else
     LINEAR_AXIS_CODE(
       if (da < 0) SBI(dm, X_AXIS),
@@ -2113,6 +2115,10 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
   TERN_(LCD_SHOW_E_TOTAL, e_move_accumulator += steps_dist_mm.e);
 
+  #if HAS_ROTATIONAL_AXES
+    bool cartesian_move = true;
+  #endif
+
   if (true LINEAR_AXIS_GANG(
       && block->steps.a < MIN_STEPS_PER_SEGMENT,
       && block->steps.b < MIN_STEPS_PER_SEGMENT,
@@ -2131,40 +2137,111 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     if (millimeters)
       block->millimeters = millimeters;
     else {
-      block->millimeters = SQRT(
+      // Distance for interpretation of feedrate in accordance with LinuxCNC
+      #if ENABLED(FOAMCUTTER_XYUV) && LINEAR_AXES == 5
+        // Return the largest distance move from either X/Y or I/J plane
+        block->millimeters = SQRT(
+        _MAX(sq(steps_dist_mm.x) + sq(steps_dist_mm.y), sq(steps_dist_mm.i) + sq(steps_dist_mm.j))
+      #elif LINEAR_AXES >= 4
+        float distance_sqr = (
+      #else
+        block->millimeters = SQRT(
+      #endif
         #if ANY(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
-          LINEAR_AXIS_GANG(
-              sq(steps_dist_mm.head.x), + sq(steps_dist_mm.head.y), + sq(steps_dist_mm.z),
-            + sq(steps_dist_mm.i),      + sq(steps_dist_mm.j),      + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.u),      + sq(steps_dist_mm.v),      + sq(steps_dist_mm.w)
-          )
+               sq(steps_dist_mm.head.x)
+          #if HAS_Y_AXIS
+             + sq(steps_dist_mm.head.y)
+          #endif
+          #if HAS_Z_AXIS
+             + sq(steps_dist_mm.z)
+          #endif
         #elif CORE_IS_XZ
-          LINEAR_AXIS_GANG(
-              sq(steps_dist_mm.head.x), + sq(steps_dist_mm.y), + sq(steps_dist_mm.head.z),
-            + sq(steps_dist_mm.i),      + sq(steps_dist_mm.j), + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.u),      + sq(steps_dist_mm.v), + sq(steps_dist_mm.w)
-          )
+               sq(steps_dist_mm.head.x)
+          #if HAS_Y_AXIS
+             + sq(steps_dist_mm.y)
+          #endif
+          #if HAS_Z_AXIS
+             + sq(steps_dist_mm.head.z)
+          #endif
         #elif CORE_IS_YZ
-          LINEAR_AXIS_GANG(
-              sq(steps_dist_mm.x)  + sq(steps_dist_mm.head.y) + sq(steps_dist_mm.head.z)
-            + sq(steps_dist_mm.i), + sq(steps_dist_mm.j),     + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.u), + sq(steps_dist_mm.v),     + sq(steps_dist_mm.w)
-          )
-        #elif ENABLED(FOAMCUTTER_XYUV)
-          // Return the largest distance move from either X/Y or I/J plane
-          #if LINEAR_AXES >= 5
-            _MAX(sq(steps_dist_mm.x) + sq(steps_dist_mm.y), sq(steps_dist_mm.i) + sq(steps_dist_mm.j))
-          #else
-            sq(steps_dist_mm.x) + sq(steps_dist_mm.y)
+              sq(steps_dist_mm.x)
+          #if HAS_Y_AXIS
+            + sq(steps_dist_mm.head.y)
+          #endif
+          #if HAS_Z_AXIS
+            + sq(steps_dist_mm.head.z)
+          #endif
+        #elif ENABLED(FOAMCUTTER_XYUV) // foamcutter with only two axes: X, Y. For foamcutter with XYUV axes: see above.
+              sq(steps_dist_mm.x)
+          #if HAS_Y_AXIS
+	        + sq(steps_dist_mm.y)
           #endif
         #else
-          LINEAR_AXIS_GANG(
-              sq(steps_dist_mm.x), + sq(steps_dist_mm.y), + sq(steps_dist_mm.z),
-            + sq(steps_dist_mm.i), + sq(steps_dist_mm.j), + sq(steps_dist_mm.k),
-            + sq(steps_dist_mm.u), + sq(steps_dist_mm.v), + sq(steps_dist_mm.w)
-          )
+              sq(steps_dist_mm.x)
+          #if HAS_Y_AXIS
+            + sq(steps_dist_mm.y)
+          #endif
+          #if HAS_Z_AXIS
+            + sq(steps_dist_mm.z)
+          #endif
         #endif
       );
+
+      #if LINEAR_AXES >= 4 && !defined(FOAMCUTTER_XYUV)
+        if (NEAR_ZERO(distance_sqr)) {
+          // Move does not involve any primary linear axes (xyz) but might involve secondary linear axes
+          distance_sqr = (0.0
+            #if LINEAR_AXES >= 4 && !HAS_ROTATIONAL_AXIS4
+              + sq(steps_dist_mm.i)
+            #endif
+            #if LINEAR_AXES >= 5 && !HAS_ROTATIONAL_AXIS5
+              + sq(steps_dist_mm.j)
+            #endif
+            #if LINEAR_AXES >= 6 && !HAS_ROTATIONAL_AXIS6
+              + sq(steps_dist_mm.k)
+            #endif
+            #if LINEAR_AXES >= 7 && !HAS_ROTATIONAL_AXIS7
+              + sq(steps_dist_mm.u)
+            #endif
+            #if LINEAR_AXES >= 8 && !HAS_ROTATIONAL_AXIS8
+              + sq(steps_dist_mm.v)
+            #endif
+            #if LINEAR_AXES >= 9 && !HAS_ROTATIONAL_AXIS9
+              + sq(steps_dist_mm.w)
+            #endif
+          );
+        }
+      #endif
+
+      #if HAS_ROTATIONAL_AXES
+        if (NEAR_ZERO(distance_sqr)) {
+          // Move involves only rotational axes. Calculate angular distance in accordance with LinuxCNC
+          cartesian_move = false;
+          distance_sqr = (sq(steps_dist_mm.i)
+          #if HAS_ROTATIONAL_AXIS5
+            + sq(steps_dist_mm.j)
+          #endif
+          #if HAS_ROTATIONAL_AXIS6
+            + sq(steps_dist_mm.k)
+          #endif
+          #if HAS_ROTATIONAL_AXIS7
+            + sq(steps_dist_mm.u)
+          #endif
+          #if HAS_ROTATIONAL_AXIS8
+            + sq(steps_dist_mm.v)
+          #endif
+          #if HAS_ROTATIONAL_AXIS9
+            + sq(steps_dist_mm.w)
+          #endif
+          );
+        }
+        else
+          cartesian_move = true;
+      #endif
+
+      #if ((LINEAR_AXES >= 4 && !defined(FOAMCUTTER_XYUV)) || HAS_ROTATIONAL_AXES)
+        block->millimeters = SQRT(distance_sqr);
+      #endif
     }
 
     /**
@@ -2326,7 +2403,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
   // Slow down when the buffer starts to empty, rather than wait at the corner for a buffer refill
   #if EITHER(SLOWDOWN, HAS_WIRED_LCD) || defined(XY_FREQUENCY_LIMIT)
-    // Segment time im micro seconds
+    // Segment time in microseconds
     int32_t segment_time_us = LROUND(1000000.0f / inverse_secs);
   #endif
 
@@ -2365,7 +2442,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       filwidth.advance_e(steps_dist_mm.e);
   #endif
 
-  // Calculate and limit speed in mm/sec
+  // Calculate and limit speed in mm/sec for linear axes and in degrees/sec for rotational axes
 
   xyze_float_t current_speed;
   float speed_factor = 1.0f; // factor <1 decreases speed
@@ -2486,7 +2563,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     accel = CEIL((esteps ? settings.acceleration : settings.travel_acceleration) * steps_per_mm);
 
     #if ENABLED(LIN_ADVANCE)
-
+      // TODO (DerAndere): Add support for LINEAR_AXES >= 4
       #define MAX_E_JERK(N) TERN(HAS_LINEAR_E_JERK, max_e_jerk[E_INDEX_N(N)], max_jerk.e)
 
       /**

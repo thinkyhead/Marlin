@@ -150,7 +150,7 @@
 //#define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
 /**
- * Define the number of coordinated linear axes.
+ * Define the number of coordinated axes.
  * See https://github.com/DerAndere1/Marlin/wiki
  * Each linear axis gets its own stepper control and endstop:
  *
@@ -166,8 +166,10 @@
 //#define LINEAR_AXES 3
 
 /**
- * Axis codes for additional axes:
- * This defines the axis code that is used in G-code commands to
+ * Settings for additional axes:
+ * Set HAS_ROTATIONAL_AXIS[4/5/6...] to "true" for rotational axes. Angular distances along rotational axes in units of degrees.
+ *
+ * AXIS[4/5/6...]_NAME defines the axis code that is used in G-code commands to
  * reference a specific axis.
  * 'A' for rotational axis parallel to X
  * 'B' for rotational axis parallel to Y
@@ -179,22 +181,28 @@
  * I (AXIS4), J (AXIS5), K (AXIS6), U (AXIS7), V (AXIS8), W (AXIS9).
  */
 #if LINEAR_AXES >= 4
+  #define HAS_ROTATIONAL_AXIS4 true
   #define AXIS4_NAME 'A' // :['A', 'B', 'C', 'U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 5
-  #define AXIS5_NAME 'B' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define HAS_ROTATIONAL_AXIS5 true
+  #define AXIS5_NAME 'B' // :['B', 'C', 'U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 6
-  #define AXIS6_NAME 'C' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define HAS_ROTATIONAL_AXIS6 true
+  #define AXIS6_NAME 'C' // :['C', 'U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 7
-  #define AXIS7_NAME 'U' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define HAS_ROTATIONAL_AXIS7 false
+  #define AXIS7_NAME 'U' // :['U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 8
-  #define AXIS8_NAME 'V' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define HAS_ROTATIONAL_AXIS8 false
+  #define AXIS8_NAME 'V' // :['V', 'W']
 #endif
 #if LINEAR_AXES >= 9
-  #define AXIS9_NAME 'W' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define HAS_ROTATIONAL_AXIS9 false
+  #define AXIS9_NAME 'W' // :['W']
 #endif
 
 // @section extruder
@@ -959,14 +967,14 @@
 //#define DISTINCT_E_FACTORS
 
 /**
- * Default Axis Steps Per Unit (steps/mm)
+ * Default Axis Steps Per Unit (steps/mm for linear axes, steps/° for rotational axes)
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 500 }
 
 /**
- * Default Max Feed Rate (mm/s)
+ * Default Max Feed Rate (mm/s for linear axes, °/s for rotational axes)
  * Override with M203
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
@@ -978,7 +986,7 @@
 #endif
 
 /**
- * Default Max Acceleration (change/s) change = mm/s
+ * Default Max Acceleration (speed change with time) (mm/(s^2) for linear axes, °/(s^2) for rotational axes)
  * (Maximum start speed for accelerated moves)
  * Override with M201
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
@@ -991,7 +999,7 @@
 #endif
 
 /**
- * Default Acceleration (change/s) change = mm/s
+ * Default Acceleration (speed change with time) (mm/(s^2) for linear axes, °/(s^2) for rotational axes)
  * Override with M204
  *
  *   M204 P    Acceleration
@@ -1003,7 +1011,7 @@
 #define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration for travel (non printing) moves
 
 /**
- * Default Jerk limits (mm/s)
+ * Default Jerk limits (mm/(s^2))
  * Override with M205 X Y Z E
  *
  * "Jerk" specifies the minimum speed change that requires acceleration.
@@ -1432,7 +1440,7 @@
 #define X_BED_SIZE 200
 #define Y_BED_SIZE 200
 
-// Travel limits (mm) after homing, corresponding to endstop positions.
+// Travel limits (mm for linear axes, ° for rotational axes) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
@@ -1819,7 +1827,7 @@
   #define Z_SAFE_HOMING_Y_POINT Y_CENTER  // Y point for Z homing
 #endif
 
-// Homing speeds (mm/min)
+// Homing speeds (mm/min for linear axes, °/min for rotational axes)
 #define HOMING_FEEDRATE_MM_M { (50*60), (50*60), (4*60) }
 
 // Validate that endstops are triggered on homing moves

@@ -40,9 +40,64 @@
 void GcodeSuite::M206() {
   if (!parser.seen_any()) return M206_report();
 
-  LOOP_LINEAR_AXES(i)
-    if (parser.seen(AXIS_CHAR(i)))
-      set_home_offset((AxisEnum)i, parser.value_linear_units());
+  if (parser.seen('X'))
+    set_home_offset(X_AXIS, parser.value_linear_units());
+  #if HAS_Y_AXIS
+  if (parser.seen('Y'))
+    set_home_offset(Y_AXIS, parser.value_linear_units());
+  #endif
+  #if HAS_Z_AXIS
+  if (parser.seen('Z'))
+    set_home_offset(Y_AXIS, parser.value_linear_units());
+  #endif
+  #if LINEAR_AXES >= 4
+    if (parser.seen(AXIS4_NAME))
+      #if HAS_ROTATIONAL_AXIS4
+        set_home_offset(I_AXIS, parser.value_float());
+      #else
+        set_home_offset(I_AXIS, parser.value_linear_units());
+      #endif
+  #endif
+  #if LINEAR_AXES >= 5
+    if (parser.seen(AXIS5_NAME))
+      #if HAS_ROTATIONAL_AXIS5
+        set_home_offset(J_AXIS, parser.value_float());
+      #else
+        set_home_offset(J_AXIS, parser.value_linear_units());
+      #endif
+  #endif
+  #if LINEAR_AXES >= 6
+    if (parser.seen(AXIS6_NAME))
+      #if HAS_ROTATIONAL_AXIS6
+        set_home_offset(K_AXIS, parser.value_float());
+      #else
+        set_home_offset(K_AXIS, parser.value_linear_units());
+      #endif
+  #endif
+  #if LINEAR_AXES >= 7
+    if (parser.seen(AXIS7_NAME))
+      #if HAS_ROTATIONAL_AXIS7
+        set_home_offset(U_AXIS, parser.value_float());
+      #else
+        set_home_offset(U_AXIS, parser.value_linear_units());
+      #endif
+  #endif
+  #if LINEAR_AXES >= 8
+    if (parser.seen(AXIS8_NAME))
+      #if HAS_ROTATIONAL_AXIS8
+        set_home_offset(V_AXIS, parser.value_float());
+      #else
+        set_home_offset(V_AXIS, parser.value_linear_units());
+      #endif
+  #endif
+  #if LINEAR_AXES >= 9
+    if (parser.seen(AXIS9_NAME))
+      #if HAS_ROTATIONAL_AXIS9
+        set_home_offset(W_AXIS, parser.value_float());
+      #else
+        set_home_offset(W_AXIS, parser.value_linear_units());
+      #endif
+  #endif
 
   #if ENABLED(MORGAN_SCARA)
     if (parser.seen('T')) set_home_offset(A_AXIS, parser.value_float()); // Theta

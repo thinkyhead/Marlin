@@ -96,22 +96,46 @@ void GcodeSuite::M217() {
     if (parser.seenval('X')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.x = constrain(v, X_MIN_POS, X_MAX_POS); }
     if (parser.seenval('Y')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.y = constrain(v, Y_MIN_POS, Y_MAX_POS); }
     #if LINEAR_AXES >= 4
-      if (parser.seenval('I')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }
+      #if HAS_ROTATIONAL_AXIS4
+        if (parser.seenval('I')) { const int16_t v = parser.value_int(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }      
+      #else
+        if (parser.seenval('I')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }  // TODO (DerAndere): Rotational axes in degrees
+      #endif
     #endif
     #if LINEAR_AXES >= 5
-      if (parser.seenval('J')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.j = constrain(v, J_MIN_POS, J_MAX_POS); }
+      #if HAS_ROTATIONAL_AXIS5
+        if (parser.seenval('J')) { const int16_t v = parser.value_int(); toolchange_settings.change_point.j = constrain(v, J_MIN_POS, J_MAX_POS); }      
+      #else
+        if (parser.seenval('J')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.j = constrain(v, J_MIN_POS, J_MAX_POS); }
+      #endif
     #endif
     #if LINEAR_AXES >= 6
-      if (parser.seenval('K')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.k = constrain(v, K_MIN_POS, K_MAX_POS); }
+      #if HAS_ROTATIONAL_AXIS6
+        if (parser.seenval('K')) { const int16_t v = parser.value_int(); toolchange_settings.change_point.k = constrain(v, K_MIN_POS, K_MAX_POS); }      
+      #else
+        if (parser.seenval('K')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.k = constrain(v, K_MIN_POS, K_MAX_POS); }
+      #endif
     #endif
     #if LINEAR_AXES >= 7
-      if (parser.seenval('C')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.u = constrain(v, U_MIN_POS, U_MAX_POS); }
+      #if HAS_ROTATIONAL_AXIS7
+        if (parser.seenval('C')) { const int16_t v = parser.value_int(); toolchange_settings.change_point.u = constrain(v, U_MIN_POS, U_MAX_POS); }      
+      #else
+        if (parser.seenval('C')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.u = constrain(v, U_MIN_POS, U_MAX_POS); }
+      #endif
     #endif
     #if LINEAR_AXES >= 8
-      if (parser.seenval('H')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.v = constrain(v, V_MIN_POS, V_MAX_POS); }
+      #if HAS_ROTATIONAL_AXIS8
+        if (parser.seenval('H')) { const int16_t v = parser.value_int(); toolchange_settings.change_point.v = constrain(v, V_MIN_POS, V_MAX_POS); }      
+      #else
+        if (parser.seenval('H')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.v = constrain(v, V_MIN_POS, V_MAX_POS); }
+      #endif
     #endif
     #if LINEAR_AXES >= 9
-      if (parser.seenval('O')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.w = constrain(v, W_MIN_POS, W_MAX_POS); }
+      #if HAS_ROTATIONAL_AXIS9
+        if (parser.seenval('O')) { const int16_t v = parser.value_int(); toolchange_settings.change_point.w = constrain(v, W_MIN_POS, W_MAX_POS); }      
+      #else
+        if (parser.seenval('O')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.w = constrain(v, W_MIN_POS, W_MAX_POS); }
+      #endif
     #endif
   #endif
 
@@ -179,22 +203,46 @@ void GcodeSuite::M217_report(const bool forReplay/*=true*/) {
       SERIAL_ECHOPGM_P(SP_X_STR, LINEAR_UNIT(toolchange_settings.change_point.x));
       SERIAL_ECHOPGM_P(SP_Y_STR, LINEAR_UNIT(toolchange_settings.change_point.y));
       #if LINEAR_AXES >= 4
-        SERIAL_ECHOPGM_P(" I", LINEAR_UNIT(toolchange_settings.change_point.i));
+        #if HAS_ROTATIONAL_AXIS4
+          SERIAL_ECHOPGM_P(" I", toolchange_settings.change_point.i);
+        #else        
+          SERIAL_ECHOPGM_P(" I", LINEAR_UNIT(toolchange_settings.change_point.i));
+        #endif
       #endif
       #if LINEAR_AXES >= 5
-        SERIAL_ECHOPGM_P(" J", LINEAR_UNIT(toolchange_settings.change_point.j));
+        #if HAS_ROTATIONAL_AXIS5
+          SERIAL_ECHOPGM_P(" J", toolchange_settings.change_point.j);
+        #else        
+          SERIAL_ECHOPGM_P(" J", LINEAR_UNIT(toolchange_settings.change_point.j));
+        #endif
       #endif
       #if LINEAR_AXES >= 6
-        SERIAL_ECHOPGM_P(" K", LINEAR_UNIT(toolchange_settings.change_point.k));
+        #if HAS_ROTATIONAL_AXIS6
+          SERIAL_ECHOPGM_P(" K", toolchange_settings.change_point.k);
+        #else        
+          SERIAL_ECHOPGM_P(" K", LINEAR_UNIT(toolchange_settings.change_point.k));
+        #endif
       #endif
       #if LINEAR_AXES >= 7
-        SERIAL_ECHOPGM_P(" C", LINEAR_UNIT(toolchange_settings.change_point.u));
+        #if HAS_ROTATIONAL_AXIS7
+          SERIAL_ECHOPGM_P(" C", toolchange_settings.change_point.u);
+        #else   
+          SERIAL_ECHOPGM_P(" C", LINEAR_UNIT(toolchange_settings.change_point.u));
+        #endif
       #endif
       #if LINEAR_AXES >= 8
-        SERIAL_ECHOPGM_P(" H", LINEAR_UNIT(toolchange_settings.change_point.v));
+        #if HAS_ROTATIONAL_AXIS8
+          SERIAL_ECHOPGM_P(" H", toolchange_settings.change_point.v);
+        #else   
+          SERIAL_ECHOPGM_P(" H", LINEAR_UNIT(toolchange_settings.change_point.v));
+        #endif
       #endif
       #if LINEAR_AXES >= 9
-        SERIAL_ECHOPGM_P(" O", LINEAR_UNIT(toolchange_settings.change_point.w));
+        #if HAS_ROTATIONAL_AXIS9
+          SERIAL_ECHOPGM_P(" O", toolchange_settings.change_point.w);
+        #else
+          SERIAL_ECHOPGM_P(" O", LINEAR_UNIT(toolchange_settings.change_point.w));
+        #endif
       #endif
     #endif
 
