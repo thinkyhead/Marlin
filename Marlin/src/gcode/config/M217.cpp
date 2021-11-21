@@ -67,7 +67,7 @@
  * Tool migration command
  *  T[index]    Migrate to next extruder or the given extruder
  */
-void GcodeSuite::M217() {  // TODO (DerAndere): Add support for LINEAR_AXES >= 4
+void GcodeSuite::M217() {
 
   #if ENABLED(TOOLCHANGE_FILAMENT_SWAP)
 
