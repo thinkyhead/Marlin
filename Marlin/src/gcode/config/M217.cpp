@@ -54,8 +54,8 @@
  *  J[linear]   Park J (Requires TOOLCHANGE_PARK and LINEAR_AXES >= 5)
  *  K[linear]   Park K (Requires TOOLCHANGE_PARK and LINEAR_AXES >= 6)
  *  C[linear]   Park U (Requires TOOLCHANGE_PARK and LINEAR_AXES >= 7)
- *  D[linear]   Park V (Requires TOOLCHANGE_PARK and LINEAR_AXES >= 8)
- *  H[linear]   Park W (Requires TOOLCHANGE_PARK and LINEAR_AXES >= 9)
+ *  H[linear]   Park V (Requires TOOLCHANGE_PARK and LINEAR_AXES >= 8)
+ *  O[linear]   Park W (Requires TOOLCHANGE_PARK and LINEAR_AXES >= 9)
  *  Z[linear]   Z Raise
  *  F[linear]   Fan Speed 0-255
  *  G[linear/s] Fan time
@@ -108,10 +108,10 @@ void GcodeSuite::M217() {  // TODO (DerAndere): Add support for LINEAR_AXES >= 4
       if (parser.seenval('C')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.u = constrain(v, U_MIN_POS, U_MAX_POS); }
     #endif
     #if LINEAR_AXES >= 8
-      if (parser.seenval('D')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.v = constrain(v, V_MIN_POS, V_MAX_POS); }
+      if (parser.seenval('H')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.v = constrain(v, V_MIN_POS, V_MAX_POS); }
     #endif
     #if LINEAR_AXES >= 9
-      if (parser.seenval('H')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.w = constrain(v, W_MIN_POS, W_MAX_POS); }
+      if (parser.seenval('O')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.w = constrain(v, W_MIN_POS, W_MAX_POS); }
     #endif
   #endif
 
@@ -191,10 +191,10 @@ void GcodeSuite::M217_report(const bool forReplay/*=true*/) {
         SERIAL_ECHOPGM_P(" C", LINEAR_UNIT(toolchange_settings.change_point.u));
       #endif
       #if LINEAR_AXES >= 8
-        SERIAL_ECHOPGM_P(" D", LINEAR_UNIT(toolchange_settings.change_point.v));
+        SERIAL_ECHOPGM_P(" H", LINEAR_UNIT(toolchange_settings.change_point.v));
       #endif
       #if LINEAR_AXES >= 9
-        SERIAL_ECHOPGM_P(" H", LINEAR_UNIT(toolchange_settings.change_point.w));
+        SERIAL_ECHOPGM_P(" O", LINEAR_UNIT(toolchange_settings.change_point.w));
       #endif
     #endif
 
