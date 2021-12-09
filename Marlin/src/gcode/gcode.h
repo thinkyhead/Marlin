@@ -319,6 +319,10 @@
  * D... - Custom Development G-code. Add hooks to 'gcode_D.cpp' for developers to test features. (Requires MARLIN_DEV_MODE)
  *        D576 - Set buffer monitoring options. (Requires BUFFER_MONITORING)
  *
+ *** "C" codes (Creality CR-6) ***
+ * C001 - Configure probe heater settings
+ * C100 - Reset DGUS display or navigate to screen (R or P)
+ *
  *** "T" Codes ***
  *
  * T0-T3 - Select an extruder (tool) by index: "T<n> F<units/min>"
@@ -1216,6 +1220,13 @@ private:
   #if ENABLED(CONTROLLER_FAN_EDITABLE)
     static void M710();
     static void M710_report(const bool forReplay=true);
+  #endif
+
+  #if HAS_PROBE_SETTINGS
+    static void C001();
+    #if ENABLED(DGUS_LCD_UI_CREALITY_TOUCH)
+      static void C100();
+    #endif
   #endif
 
   static void T(const int8_t tool_index);
