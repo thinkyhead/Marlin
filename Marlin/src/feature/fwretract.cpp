@@ -63,15 +63,18 @@ float FWRetract::current_retract[EXTRUDERS],          // Retract value used by p
 
 void FWRetract::reset() {
   TERN_(FWRETRACT_AUTORETRACT, autoretract_enabled = false);
-  settings.retract_length = RETRACT_LENGTH;
-  settings.retract_feedrate_mm_s = RETRACT_FEEDRATE;
-  settings.retract_zraise = RETRACT_ZRAISE;
-  settings.retract_recover_extra = RETRACT_RECOVER_LENGTH;
-  settings.retract_recover_feedrate_mm_s = RETRACT_RECOVER_FEEDRATE;
-  settings.swap_retract_length = RETRACT_LENGTH_SWAP;
-  settings.swap_retract_recover_extra = RETRACT_RECOVER_LENGTH_SWAP;
-  settings.swap_retract_recover_feedrate_mm_s = RETRACT_RECOVER_FEEDRATE_SWAP;
-  current_hop = 0.0;
+
+  #if DISABLED(FWRETRACT_AUTORESET)
+    settings.retract_length                     = RETRACT_LENGTH;
+    settings.retract_feedrate_mm_s              = RETRACT_FEEDRATE;
+    settings.retract_zraise                     = RETRACT_ZRAISE;
+    settings.retract_recover_extra              = RETRACT_RECOVER_LENGTH;
+    settings.retract_recover_feedrate_mm_s      = RETRACT_RECOVER_FEEDRATE;
+    settings.swap_retract_length                = RETRACT_LENGTH_SWAP;
+    settings.swap_retract_recover_extra         = RETRACT_RECOVER_LENGTH_SWAP;
+    settings.swap_retract_recover_feedrate_mm_s = RETRACT_RECOVER_FEEDRATE_SWAP;
+    current_hop = 0.0;
+  #endif
 
   LOOP_L_N(i, EXTRUDERS) {
     retracted[i] = false;
