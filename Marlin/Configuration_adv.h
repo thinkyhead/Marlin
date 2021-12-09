@@ -1738,7 +1738,7 @@
 //
 // Additional options for DGUS / DWIN displays
 //
-#if HAS_DGUS_LCD
+#if EITHER(HAS_DGUS_LCD, DGUS_LCD_UI_CREALITY_TOUCH)
   #define LCD_SERIAL_PORT 3
   #define LCD_BAUDRATE 115200
 
@@ -1770,7 +1770,7 @@
       #define DGUS_UI_WAITING_STATUS_PERIOD 8 // Increase to slower waiting status looping
     #endif
   #endif
-#endif // HAS_DGUS_LCD
+#endif // HAS_DGUS_LCD || DGUS_LCD_UI_CREALITY_TOUCH
 
 //
 // Additional options for AnyCubic Chiron TFT displays
