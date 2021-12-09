@@ -22,28 +22,16 @@
 #pragma once
 
 /**
- * Creality v4.5.3 (STM32F103RET6) board pin assignments
+ * CREALITY v4.2.5 (STM32F103) board pin assignments
  */
 
-#if HAS_MULTI_HOTEND || E_STEPPERS > 1
-  #error "Creality v4.5.3 only supports one hotend / E-stepper. Comment out this line to continue."
-#endif
+#define BOARD_INFO_NAME      "Creality v4.2.5"
+#define DEFAULT_MACHINE_NAME "Creality3D"
 
-#define BOARD_INFO_NAME "Creality v4.5.3"
+#define CASE_LIGHT_PIN      PC14
+#define FAN1_PIN            PC0
+#define Y_STOP_PIN          PA4
 
-#define HEATER_0_PIN                        PB14  // HEATER1
-#define HEATER_BED_PIN                      PB13  // HOT BED
-#define FAN_PIN                             PB15  // FAN
+#define ONBOARD_SD_CS_PIN   PC9
 
-#if ENABLED(PROBE_ACTIVATION_SWITCH)
-  #ifndef PROBE_ACTIVATION_SWITCH_PIN
-    #define PROBE_ACTIVATION_SWITCH_PIN     PB2   // Optoswitch to Enable Z Probe
-  #endif
-#endif
-
-#define J1_PIN                              PA0
-#define J2_PIN                              PB2
-#define J3_PIN                              PA15
-#define J4_PIN                              PB12
-
-#include "pins_CREALITY_V45x.h"
+#include "pins_CREALITY_V4210.h"

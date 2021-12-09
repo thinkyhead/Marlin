@@ -106,9 +106,14 @@
 #define NO_SD_HOST_DRIVE                          // SD is only seen by the printer
 
 #define SDIO_SUPPORT                              // Extra added by Creality
-#define SDIO_CLOCK                       6000000  // In original source code overridden by Creality in sdio.h
+#define SDIO_CLOCK                       4500000  // In original source code overridden by Creality in sdio.h
+
+#ifndef SDIO_READ_RETRIES
+  #define SDIO_READ_RETRIES                 16
+#endif
 
 //
 // Misc. Functions
 //
-#define CASE_LIGHT_PIN                      PA6
+#define LED_PIN                             PA6
+#define CASE_LIGHT_PIN                      LED_PIN

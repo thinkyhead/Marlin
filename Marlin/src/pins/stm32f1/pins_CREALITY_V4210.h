@@ -78,11 +78,19 @@
 //
 // Limit Switches
 //
-#define X_STOP_PIN                          PA3
-#define Y_STOP_PIN                          PA7
-#define Z_STOP_PIN                          PA5
+#ifndef X_STOP_PIN
+  #define X_STOP_PIN                        PA3
+#endif
+#ifndef Y_STOP_PIN
+  #define Y_STOP_PIN                        PA7
+#endif
+#ifndef Z_STOP_PIN
+  #define Z_STOP_PIN                        PA5
+#endif
 
-#define Z_MIN_PROBE_PIN                     PA5   // BLTouch IN
+#ifndef Z_MIN_PROBE_PIN
+  #define Z_MIN_PROBE_PIN                   PA5   // BLTouch IN
+#endif
 
 //
 // Filament Runout Sensor
@@ -152,7 +160,10 @@
 #define SD_DETECT_PIN                       PC7
 #define SDCARD_CONNECTION                ONBOARD
 #define ONBOARD_SPI_DEVICE                     1
-#define ONBOARD_SD_CS_PIN                   PA4   // SDSS
+#ifndef ONBOARD_SD_CS_PIN
+  #define ONBOARD_SD_CS_PIN                 PA4   // SDSS
+#endif
+
 #define SDIO_SUPPORT
 #define NO_SD_HOST_DRIVE                          // This board's SD is only seen by the printer
 
