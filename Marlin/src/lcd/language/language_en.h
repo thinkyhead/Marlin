@@ -145,6 +145,7 @@ namespace Language_en {
   LSTR MSG_RETRACT                        = _UxGT("Retract");
   LSTR MSG_MOVE_AXIS                      = _UxGT("Move Axis");
   LSTR MSG_BED_LEVELING                   = _UxGT("Bed Leveling");
+  LSTR MSG_TARE_PROBE                     = _UxGT("Tare probe");
   LSTR MSG_LEVEL_BED                      = _UxGT("Level Bed");
   LSTR MSG_BED_TRAMMING                   = _UxGT("Bed Tramming");
   LSTR MSG_BED_TRAMMING_RAISE             = _UxGT("Adjust bed until the probe triggers.");
