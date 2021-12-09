@@ -537,6 +537,11 @@ typedef struct SettingsDataStruct {
     uint8_t ui_language;                                // M414 S
   #endif
 
+  //
+  // Probe settings
+  //
+  probe_settings_t probe_settings;
+
 } SettingsData;
 
 //static_assert(sizeof(SettingsData) <= MARLIN_EEPROM_SIZE, "EEPROM too small to contain SettingsData!");
@@ -1520,6 +1525,17 @@ void MarlinSettings::postprocess() {
     #endif
 
     //
+    // Probe settings
+    //
+    {
+      _FIELD_TEST(probe_settings);
+      #if !HAS_PROBE_SETTINGS
+        const probe_settings_t probe_setting_defaults = { 1 };
+      #endif
+      EEPROM_WRITE(TERN(HAS_PROBE_SETTINGS, probe.settings, probe_setting_defaults));
+    }
+
+    //
     // Report final CRC and Data Size
     //
     if (!eeprom_error) {
@@ -2465,6 +2481,21 @@ void MarlinSettings::postprocess() {
       }
       #endif
 
+    //
+    // Probe settings
+    //
+    {
+      _FIELD_TEST(probe_settings);
+
+      #if HAS_PROBE_SETTINGS
+        EEPROM_READ(probe.settings);
+      #else
+        probe_settings_t probe_settings;
+        EEPROM_READ(probe_settings);
+      #endif
+
+    }
+
       //
       // Validate Final Size and CRC
       //
@@ -3149,6 +3180,20 @@ void MarlinSettings::reset() {
   //
   TERN_(DGUS_LCD_UI_MKS, MKS_reset_settings());
 
+  #if HAS_PROBE_SETTINGS
+    probe.settings.turn_heaters_off = true;
+
+    #if PROBING_NOZZLE_TEMP
+      probe.settings.preheat_hotend_temp = PROBING_NOZZLE_TEMP;
+    #endif
+
+    #if PROBING_BED_TEMP
+      probe.settings.preheat_bed_temp = PROBING_BED_TEMP;
+    #endif
+
+    probe.settings.stabilize_temperatures_after_probing = true;
+  #endif
+
   postprocess();
 
   DEBUG_ECHO_MSG("Hardcoded Default Settings Loaded");
@@ -3429,6 +3474,15 @@ void MarlinSettings::reset() {
     #endif
 
     TERN_(HAS_MULTI_LANGUAGE, gcode.M414_report(forReplay));
+
+    #if ENABLED(PROBING_HEATERS_OFF)
+      CONFIG_ECHO_HEADING("Improve bed leveling accuracy (Probe heaters off):");
+      CONFIG_ECHO_START();
+      SERIAL_ECHOLNPGM("  C001 S", probe.settings.turn_heaters_off ? 1 : 0,
+                             " H", probe.settings.preheat_hotend_temp,
+                             " B", probe.settings.preheat_bed_temp,
+                             " W", probe.settings.stabilize_temperatures_after_probing);
+    #endif
   }
 
 #endif // !DISABLE_M503

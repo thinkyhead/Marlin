@@ -29,6 +29,15 @@
 
 #include "motion.h"
 
+typedef struct {
+  bool turn_heaters_off;
+
+  celsius_t preheat_hotend_temp;
+  celsius_t preheat_bed_temp;
+
+  bool stabilize_temperatures_after_probing;
+} probe_settings_t;
+
 #if HAS_BED_PROBE
   enum ProbePtRaise : uint8_t {
     PROBE_PT_NONE,      // No raise or stow after run_z_probe
@@ -56,6 +65,9 @@
 
 class Probe {
 public:
+  #if HAS_PROBE_SETTINGS
+    static probe_settings_t settings;
+  #endif
 
   #if ENABLED(SENSORLESS_PROBING)
     typedef struct { bool x:1, y:1, z:1; } sense_bool_t;

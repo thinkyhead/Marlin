@@ -305,6 +305,11 @@ namespace Language_en {
   LSTR MSG_NOZZLE_N                       = _UxGT("Nozzle ~");
   LSTR MSG_NOZZLE_PARKED                  = _UxGT("Nozzle Parked");
   LSTR MSG_NOZZLE_STANDBY                 = _UxGT("Nozzle Standby");
+  LSTR MSG_CONFIGURATION_PROBE            = _UxGT("Probe settings");
+  LSTR MSG_PROBING_HEATERS_OFF            = _UxGT("Improve accuracy");
+  LSTR MSG_PROBING_NOZZLE_TEMP            = _UxGT("Preheat nozzle");
+  LSTR MSG_PROBING_BED_TEMP               = _UxGT("Preheat bed");
+  LSTR MSG_PROBING_TEMP_STABILIZATION     = _UxGT("Stabilize temp. after probing");
   LSTR MSG_BED                            = _UxGT("Bed");
   LSTR MSG_CHAMBER                        = _UxGT("Enclosure");
   LSTR MSG_COOLER                         = _UxGT("Laser Coolant");

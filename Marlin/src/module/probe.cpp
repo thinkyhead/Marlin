@@ -90,6 +90,10 @@ Probe probe;
 
 xyz_pos_t Probe::offset; // Initialized by settings.load()
 
+#if HAS_PROBE_SETTINGS
+  probe_settings_t Probe::settings;  // Initialized by settings.load()
+#endif
+
 #if HAS_PROBE_XY_OFFSET
   const xy_pos_t &Probe::offset_xy = Probe::offset;
 #endif
@@ -249,7 +253,10 @@ xyz_pos_t Probe::offset; // Initialized by settings.load()
   #endif
 
   void Probe::set_probing_paused(const bool dopause) {
-    TERN_(PROBING_HEATERS_OFF, thermalManager.pause_heaters(dopause));
+    #if ENABLED(PROBING_HEATERS_OFF)
+      if (TERN1(HAS_PROBE_SETTINGS, settings.turn_heaters_off)) thermalManager.pause_heaters(dopause);
+    #endif
+
     TERN_(PROBING_FANS_OFF, thermalManager.set_fans_paused(dopause));
     TERN_(PROBING_ESTEPPERS_OFF, if (dopause) stepper.disable_e_steppers());
     #if ENABLED(PROBING_STEPPERS_OFF) && DISABLED(DELTA)

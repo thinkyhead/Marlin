@@ -42,7 +42,7 @@
   #include "../../feature/powerloss.h"
 #endif
 
-#if HAS_BED_PROBE
+#if HAS_BED_PROBE || HAS_PROBE_SETTINGS
   #include "../../module/probe.h"
   #if ENABLED(BLTOUCH)
     #include "../../feature/bltouch.h"
@@ -295,7 +295,7 @@ void menu_advanced_settings();
 
   void menu_config_retract() {
     START_MENU();
-    BACK_ITEM(MSG_CONFIGURATION);
+    BACK_ITEM(MSG_BACK);
     #if ENABLED(FWRETRACT_AUTORETRACT)
       EDIT_ITEM(bool, MSG_AUTORETRACT, &fwretract.autoretract_enabled, fwretract.refresh_autoretract);
     #endif
@@ -313,6 +313,33 @@ void menu_advanced_settings();
     #if HAS_MULTI_EXTRUDER
       EDIT_ITEM(float3, MSG_CONTROL_RETRACT_RECOVER_SWAPF, &fwretract.settings.swap_retract_recover_feedrate_mm_s, 1, 999);
     #endif
+    END_MENU();
+  }
+
+#endif
+
+#if HAS_PROBE_SETTINGS
+
+  void menu_config_probe() {
+    START_MENU();
+    BACK_ITEM(MSG_CONFIGURATION);
+
+    #if ENABLED(PROBING_HEATERS_OFF)
+      EDIT_ITEM(bool, MSG_PROBING_HEATERS_OFF, &probe.settings.turn_heaters_off);
+    #endif
+
+    #if PROBING_NOZZLE_TEMP
+      EDIT_ITEM(uint16_3, MSG_PROBING_NOZZLE_TEMP, &probe.settings.preheat_hotend_temp, HEATER_0_MINTEMP, HEATER_0_MAXTEMP - HOTEND_OVERSHOOT);
+    #endif
+
+    #if PROBING_BED_TEMP
+      EDIT_ITEM(uint16_3, MSG_PROBING_BED_TEMP, &probe.settings.preheat_bed_temp, BED_MINTEMP, BED_MAX_TARGET);
+    #endif
+
+     #if ENABLED(PROBING_HEATERS_OFF)
+      EDIT_ITEM(bool, MSG_PROBING_TEMP_STABILIZATION, &probe.settings.stabilize_temperatures_after_probing);
+    #endif
+
     END_MENU();
   }
 
@@ -494,6 +521,10 @@ void menu_configuration() {
     SUBMENU(MSG_ZPROBE_ZOFFSET, lcd_babystep_zoffset);
   #elif HAS_BED_PROBE
     EDIT_ITEM(LCD_Z_OFFSET_TYPE, MSG_ZPROBE_ZOFFSET, &probe.offset.z, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX);
+  #endif
+
+  #if HAS_PROBE_SETTINGS
+    SUBMENU(MSG_CONFIGURATION_PROBE, menu_config_probe);
   #endif
 
   //
