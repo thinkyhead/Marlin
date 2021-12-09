@@ -129,6 +129,9 @@ namespace ExtUI {
 
   void onSteppersDisabled() {}
   void onSteppersEnabled()  {}
+
+  void onMeshValidationStarting() {}
+  void onMeshValidationFinished() {}
 }
 
 #endif // ANYCUBIC_LCD_CHIRON

@@ -131,6 +131,9 @@ namespace ExtUI {
 
   void onSteppersDisabled() {}
   void onSteppersEnabled()  {}
+  
+  void onMeshValidationStarting() {}
+  void onMeshValidationFinished() {}
 }
 
 #endif // EXTUI_EXAMPLE && EXTENSIBLE_UI
