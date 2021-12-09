@@ -1212,6 +1212,7 @@
  */
 //#define PROBE_TARE
 #if ENABLED(PROBE_TARE)
+  //#define TARE_PROBE_ONCE       // Tare the probe only once - useful to improve direct drive reliability
   #define PROBE_TARE_TIME  200    // (ms) Time to hold tare pin
   #define PROBE_TARE_DELAY 200    // (ms) Delay after tare before
   #define PROBE_TARE_STATE HIGH   // State to write pin for tare

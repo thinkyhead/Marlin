@@ -272,7 +272,11 @@ xyz_pos_t Probe::offset; // Initialized by settings.load()
         axis_trusted = old_trusted;
       }
     #endif
-    if (dopause) safe_delay(_MAX(DELAY_BEFORE_PROBING, 25));
+
+    if (dopause) {
+      safe_delay(_MAX(DELAY_BEFORE_PROBING, 25));
+      TERN_(PROBE_TARE, tare());
+    }
   }
 
 #endif // HAS_QUIET_PROBING
@@ -576,6 +580,12 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
    * @return TRUE if the tare cold not be completed
    */
   bool Probe::tare() {
+    #if ENABLED(TARE_PROBE_ONCE)
+      static bool has_probed = false;
+      if (has_probed) return false;
+      has_probed = true;
+    #endif
+
     #if BOTH(PROBE_ACTIVATION_SWITCH, PROBE_TARE_ONLY_WHILE_INACTIVE)
       if (endstops.probe_switch_activated()) {
         SERIAL_ECHOLNPGM("Cannot tare an active probe");
@@ -583,13 +593,20 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
       }
     #endif
 
+    IF_ENABLED(PROBE_TARE_BUZZ, buzzer.tone(200, 1200));
+
     SERIAL_ECHOLNPGM("Taring probe");
     WRITE(PROBE_TARE_PIN, PROBE_TARE_STATE);
     delay(PROBE_TARE_TIME);
+
+    endstops.resync();
+
+    IF_ENABLED(PROBE_TARE_BUZZ, buzzer.tone(200, 1200));
     WRITE(PROBE_TARE_PIN, !PROBE_TARE_STATE);
     delay(PROBE_TARE_DELAY);
 
-    endstops.hit_on_purpose();
+    endstops.resync();
+
     return false;
   }
 #endif
@@ -607,7 +624,10 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
   auto try_to_probe = [&](PGM_P const plbl, const_float_t z_probe_low_point, const feedRate_t fr_mm_s, const bool scheck, const float clearance) -> bool {
     // Tare the probe, if supported
-    if (TERN0(PROBE_TARE, tare())) return true;
+    #if ENABLED(PROBE_TARE)
+      TERN(HAS_QUIET_PROBING, set_probing_paused(true), tare());
+      endstops.hit_on_purpose();
+    #endif
 
     // Do a first probe at the fast speed
     const bool probe_fail = probe_down_to_z(z_probe_low_point, fr_mm_s),            // No probe trigger?

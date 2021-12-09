@@ -1549,7 +1549,7 @@ void prepare_line_to_destination() {
           thermalManager.wait_for_hotend_heating(active_extruder);
         #endif
 
-        TERN_(HAS_QUIET_PROBING, if (final_approach) probe.set_probing_paused(true));
+        TERN_(HAS_QUIET_PROBING, if (_TERN(PROBE_TARE_SKIP_SECOND, !final_approach, final_approach)) probe.set_probing_paused(true));
       }
 
       // Disable stealthChop if used. Enable diag1 pin on driver.
