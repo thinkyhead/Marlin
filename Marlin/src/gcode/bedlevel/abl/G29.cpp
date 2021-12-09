@@ -403,9 +403,6 @@ G29_TYPE GcodeSuite::G29() {
     #if ENABLED(AUTO_BED_LEVELING_3POINT)
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> 3-point Leveling");
       points[0].z = points[1].z = points[2].z = 0;  // Probe at 3 arbitrary points
-    #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
-      TERN_(EXTENSIBLE_UI, ExtUI::onMeshLevelingStart());
-      TERN_(DWIN_CREALITY_LCD_ENHANCED, DWIN_MeshLevelingStart());
     #endif
 
     if (!faux) {
@@ -592,6 +589,11 @@ G29_TYPE GcodeSuite::G29() {
 
   #else // !PROBE_MANUALLY
   {
+    #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
+      TERN_(EXTENSIBLE_UI, ExtUI::onMeshLevelingStart());
+      TERN_(DWIN_CREALITY_LCD_ENHANCED, DWIN_MeshLevelingStart());
+    #endif
+
     const ProbePtRaise raise_after = parser.boolval('E') ? PROBE_PT_STOW : PROBE_PT_RAISE;
 
     abl.measured_z = 0;
