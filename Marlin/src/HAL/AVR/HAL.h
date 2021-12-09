@@ -136,7 +136,7 @@ typedef Servo hal_servo_t;
     #error "LCD_SERIAL_PORT must be from 0 to 3, or -1 for USB Serial."
   #endif
   #define LCD_SERIAL lcdSerial
-  #if HAS_DGUS_LCD
+  #if EITHER(HAS_DGUS_LCD, DGUS_LCD_UI_CREALITY_TOUCH)
     #define SERIAL_GET_TX_BUFFER_FREE() LCD_SERIAL.get_tx_buffer_free()
   #endif
 #endif

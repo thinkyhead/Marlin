@@ -139,6 +139,8 @@ namespace ExtUI {
   float getTravelAcceleration_mm_s2();
   float getFeedrate_percent();
   int16_t getFlow_percent(const extruder_t);
+  feedRate_t getFeedrate_mm_s();
+  void setFeedrate_mm_s(const feedRate_t fr);
 
   inline uint8_t getProgress_percent() { return ui.get_progress_percent(); }
 
@@ -165,6 +167,7 @@ namespace ExtUI {
 
   #if HAS_LEVELING
     bool getLevelingActive();
+    bool getLevelingIsInProgress();
     void setLevelingActive(const bool);
     bool getMeshValid();
     #if HAS_MESH
@@ -195,6 +198,10 @@ namespace ExtUI {
     void onMeshValidationStarting();
     void onMeshValidationFinished();
   #endif
+
+  void setCancelState();
+  void resetCancelState();
+  bool isCanceled();
 
   #if ENABLED(HOST_PROMPT_SUPPORT)
     void setHostResponse(const uint8_t);
@@ -237,6 +244,7 @@ namespace ExtUI {
   void setFlow_percent(const int16_t, const extruder_t);
   bool awaitingUserConfirm();
   void setUserConfirmed();
+  bool isWaitingOnUser();
 
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse);

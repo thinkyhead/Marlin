@@ -84,6 +84,7 @@
 
 #if HAS_LEVELING
   #include "../../feature/bedlevel/bedlevel.h"
+  #include "../../gcode/gcode.h"
 #endif
 
 #if HAS_FILAMENT_SENSOR
@@ -873,6 +874,7 @@ namespace ExtUI {
   #if HAS_LEVELING
 
     bool getLevelingActive() { return planner.leveling_active; }
+    bool getLevelingIsInProgress() { return gcode.busy_state == GcodeSuite::MarlinBusyState::IN_PROCESS || gcode.busy_state == GcodeSuite::MarlinBusyState::IN_HANDLER; }
     void setLevelingActive(const bool state) { set_bed_leveling_enabled(state); }
     bool getMeshValid() { return leveling_is_valid(); }
 
@@ -916,6 +918,12 @@ namespace ExtUI {
     #endif // HAS_MESH
 
   #endif // HAS_LEVELING
+
+
+  bool is_canceled;
+  void setCancelState() { is_canceled = true; }
+  void resetCancelState() { is_canceled = false; }
+  bool isCanceled() { return is_canceled; }
 
   #if ENABLED(HOST_PROMPT_SUPPORT)
     void setHostResponse(const uint8_t response) { hostui.handle_response(response); }
@@ -1084,6 +1092,10 @@ namespace ExtUI {
     onStatusChanged(msg);
   }
 
+  bool isWaitingOnUser() {
+    return TERN0(HAS_RESUME_CONTINUE, wait_for_user);
+  }
+
   FileList::FileList() { refresh(); }
 
   void FileList::refresh() { num_files = 0xFFFF; }
@@ -1155,5 +1167,11 @@ void MarlinUI::kill_screen(FSTR_P const error, FSTR_P const component) {
     onPrinterKilled(error, component);
   }
 }
+
+#if HAS_BUZZER
+  void MarlinUI::buzz(const long duration, const uint16_t freq) {
+    ExtUI::onPlayTone(duration, freq);
+  }
+#endif
 
 #endif // EXTENSIBLE_UI
