@@ -400,9 +400,7 @@
     #define STR_I_MIN "w_min"
     #define STR_I_MAX "w_max"
   #else
-    #define AXIS4_STR "A"
-    #define STR_I_MIN "a_min"
-    #define STR_I_MAX "a_max"
+    #error "AXIS4_NAME can only be one of 'A', 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
   #define AXIS4_STR   ""
@@ -434,9 +432,7 @@
     #define STR_J_MIN "w_min"
     #define STR_J_MAX "w_max"
   #else
-    #define AXIS5_STR "B"
-    #define STR_J_MIN "b_min"
-    #define STR_J_MAX "b_max"
+    #error "AXIS5_NAME can only be one of 'A', 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
   #define AXIS5_STR   ""
@@ -468,9 +464,7 @@
     #define STR_K_MIN "w_min"
     #define STR_K_MAX "w_max"
   #else
-    #define AXIS6_STR "C"
-    #define STR_K_MIN "c_min"
-    #define STR_K_MAX "c_max"
+    #error "AXIS6_NAME can only be one of 'A', 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
   #define AXIS6_STR   ""
@@ -502,9 +496,7 @@
     #define STR_U_MIN "w_min"
     #define STR_U_MAX "w_max"
   #else
-    #define AXIS7_STR "U"
-    #define STR_U_MIN "u_min"
-    #define STR_U_MAX "u_max"
+    #error "AXIS7_NAME can only be one of 'A', 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
   #define AXIS7_STR   ""
@@ -536,9 +528,7 @@
     #define STR_V_MIN "w_min"
     #define STR_V_MAX "w_max"
   #else
-    #define AXIS8_STR "V"
-    #define STR_V_MIN "v_min"
-    #define STR_V_MAX "v_max"
+    #error "AXIS8_NAME can only be one of 'A', 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
   #define AXIS8_STR   ""
@@ -570,9 +560,7 @@
     #define STR_W_MIN "w_min"
     #define STR_W_MAX "w_max"
   #else
-    #define AXIS9_STR "W"
-    #define STR_W_MIN "w_min"
-    #define STR_W_MAX "w_max"
+    #error "AXIS9_NAME can only be one of 'A', 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
   #define AXIS9_STR   ""

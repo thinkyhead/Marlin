@@ -238,6 +238,8 @@ void GcodeSuite::M204_report(const bool forReplay/*=true*/) {
   );
 }
 
+#define IS_AXIS_LETTER(L) (AXIS4_NAME == L || AXIS5_NAME == L || AXIS6_NAME == L || AXIS7_NAME == L || AXIS8_NAME == L || AXIS9_NAME == L)
+
 /**
  * M205: Set Advanced Settings
  *
@@ -259,7 +261,7 @@ void GcodeSuite::M205() {
   if (parser.seenval('S')) planner.settings.min_feedrate_mm_s = parser.value_linear_units();
   if (parser.seenval('T')) planner.settings.min_travel_feedrate_mm_s = parser.value_linear_units();
   #if HAS_JUNCTION_DEVIATION
-    #if HAS_CLASSIC_JERK && (AXIS4_NAME == 'J' || AXIS5_NAME == 'J' || AXIS6_NAME == 'J' || AXIS7_NAME == 'J' || AXIS8_NAME == 'J' || AXIS9_NAME == 'J')
+    #if HAS_CLASSIC_JERK && IS_AXIS_LETTER('J')
       #error "Can't set_max_jerk for 'J' axis because 'J' is used for Junction Deviation."
     #endif
     if (parser.seenval('J')) {
