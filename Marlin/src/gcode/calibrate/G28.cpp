@@ -290,6 +290,21 @@ void GcodeSuite::G28() {
       stepperY2.rms_current(Y2_CURRENT_HOME);
       if (DEBUGGING(LEVELING)) debug_current(F("Y2"), tmc_save_current_Y2, Y2_CURRENT_HOME);
     #endif
+    #if HAS_CURRENT_HOME(I)
+      const int16_t tmc_save_current_I = stepperI.getMilliamps();
+      stepperI.rms_current(I_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(F(AXIS4_STR), tmc_save_current_I, I_CURRENT_HOME);
+    #endif
+    #if HAS_CURRENT_HOME(J)
+      const int16_t tmc_save_current_J = stepperJ.getMilliamps();
+      stepperJ.rms_current(J_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(F(AXIS5_STR), tmc_save_current_J, J_CURRENT_HOME);
+    #endif
+    #if HAS_CURRENT_HOME(K)
+      const int16_t tmc_save_current_K = stepperK.getMilliamps();
+      stepperK.rms_current(K_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(F(AXIS6_STR), tmc_save_current_K, K_CURRENT_HOME);
+    #endif
     #if HAS_CURRENT_HOME(Z) && ENABLED(DELTA)
       const int16_t tmc_save_current_Z = stepperZ.getMilliamps();
       stepperZ.rms_current(Z_CURRENT_HOME);
