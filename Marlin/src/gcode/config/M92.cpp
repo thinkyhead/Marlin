@@ -92,17 +92,40 @@ void GcodeSuite::M92() {
 
 void GcodeSuite::M92_report(const bool forReplay/*=true*/, const int8_t e/*=-1*/) {
   report_heading_etc(forReplay, F(STR_STEPS_PER_UNIT));
-  // TODO (DerAndere): Add support for rotational axes with distance in degrees
   SERIAL_ECHOPGM_P(LIST_N(DOUBLE(LINEAR_AXES),
     PSTR("  M92 X"), LINEAR_UNIT(planner.settings.axis_steps_per_mm[X_AXIS]),
     SP_Y_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Y_AXIS]),
     SP_Z_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Z_AXIS]),
-    SP_I_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[I_AXIS]),
-    SP_J_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[J_AXIS]),
-    SP_K_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[K_AXIS]),
-    SP_U_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[U_AXIS]),
-    SP_V_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[V_AXIS]),
-    SP_W_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[W_AXIS]))
+    #if HAS_ROTATIONAL_AXIS4
+      SP_I_STR, planner.settings.axis_steps_per_mm[I_AXIS],
+    #else
+      SP_I_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[I_AXIS]),
+    #endif
+    #if HAS_ROTATIONAL_AXIS5
+      SP_J_STR, planner.settings.axis_steps_per_mm[J_AXIS],
+    #else
+      SP_J_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[J_AXIS]),
+    #endif
+    #if HAS_ROTATIONAL_AXIS6
+      SP_K_STR, planner.settings.axis_steps_per_mm[K_AXIS],
+    #else
+      SP_K_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[K_AXIS]),
+    #endif
+    #if HAS_ROTATIONAL_AXIS7
+      SP_U_STR, planner.settings.axis_steps_per_mm[U_AXIS],
+    #else
+      SP_U_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[U_AXIS]),
+    #endif
+    #if HAS_ROTATIONAL_AXIS8
+      SP_V_STR, planner.settings.axis_steps_per_mm[V_AXIS],
+    #else
+      SP_V_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[V_AXIS]),
+    #endif
+    #if HAS_ROTATIONAL_AXIS9
+      SP_W_STR, planner.settings.axis_steps_per_mm[W_AXIS],
+    #else
+      SP_W_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[W_AXIS]))
+    #endif
   );
   #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
     SERIAL_ECHOPGM_P(SP_E_STR, VOLUMETRIC_UNIT(planner.settings.axis_steps_per_mm[E_AXIS]));

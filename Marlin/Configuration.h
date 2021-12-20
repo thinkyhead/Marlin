@@ -167,10 +167,11 @@
 
 /**
  * Settings for additional axes:
- * Set HAS_ROTATIONAL_AXIS[4/5/6...] to "true" for rotational axes. Angular distances along rotational axes in units of degrees.
+ * Set HAS_ROTATIONAL_AXIS[4/5/6...] to "true" for rotational axes and to "false for secondary linear axes.
+ * Angular distances along rotational axes are in units of degrees.
  *
  * AXIS[4/5/6...]_NAME defines the axis code that is used in G-code commands to
- * reference a specific axis.
+ * reference a specific axis. Conventional settings are:
  * 'A' for rotational axis parallel to X
  * 'B' for rotational axis parallel to Y
  * 'C' for rotational axis parallel to Z
@@ -185,23 +186,23 @@
   #define AXIS4_NAME 'A' // :['A', 'B', 'C', 'U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 5
-  #define HAS_ROTATIONAL_AXIS5 true
+  #define HAS_ROTATIONAL_AXIS5 true // "true" requires HAS_ROTATIONAL_AXIS4 true
   #define AXIS5_NAME 'B' // :['B', 'C', 'U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 6
-  #define HAS_ROTATIONAL_AXIS6 true
+  #define HAS_ROTATIONAL_AXIS6 true // "true" requires that all axes above are also rotational
   #define AXIS6_NAME 'C' // :['C', 'U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 7
-  #define HAS_ROTATIONAL_AXIS7 false
+  #define HAS_ROTATIONAL_AXIS7 false // "true" requires that all axes above are also rotational
   #define AXIS7_NAME 'U' // :['U', 'V', 'W']
 #endif
 #if LINEAR_AXES >= 8
-  #define HAS_ROTATIONAL_AXIS8 false
+  #define HAS_ROTATIONAL_AXIS8 false // "true" requires that all axes above are also rotational
   #define AXIS8_NAME 'V' // :['V', 'W']
 #endif
 #if LINEAR_AXES >= 9
-  #define HAS_ROTATIONAL_AXIS9 false
+  #define HAS_ROTATIONAL_AXIS9 false // "true" requires that all axes above are also rotational
   #define AXIS9_NAME 'W' // :['W']
 #endif
 
@@ -1011,7 +1012,7 @@
 #define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration for travel (non printing) moves
 
 /**
- * Default Jerk limits (mm/(s^2))
+ * Default Jerk limits (mm/s)
  * Override with M205 X Y Z E
  *
  * "Jerk" specifies the minimum speed change that requires acceleration.

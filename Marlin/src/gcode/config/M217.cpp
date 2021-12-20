@@ -99,7 +99,7 @@ void GcodeSuite::M217() {
       #if HAS_ROTATIONAL_AXIS4
         if (parser.seenval('I')) { const int16_t v = parser.value_int(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }      
       #else
-        if (parser.seenval('I')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }  // TODO (DerAndere): Rotational axes in degrees
+        if (parser.seenval('I')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }
       #endif
     #endif
     #if LINEAR_AXES >= 5

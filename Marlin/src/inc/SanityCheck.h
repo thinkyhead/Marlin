@@ -1446,6 +1446,8 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if LINEAR_AXES >= 5
   #if AXIS5_NAME == AXIS4_NAME
     #error "AXIS5_NAME must be unique."
+  #elif HAS_ROTATIONAL_AXIS5 && !HAS_ROTATIONAL_AXIS4
+    #error "HAS_ROTATIONAL_AXIS4 must be true with HAS_ROTATIONAL_AXIS5 true"
   #elif !defined(J_MIN_POS) || !defined(J_MAX_POS)
     #error "J_MIN_POS and J_MAX_POS are required with LINEAR_AXES >= 5."
   #elif !defined(J_HOME_DIR)
@@ -1457,6 +1459,8 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if LINEAR_AXES >= 6
   #if AXIS6_NAME == AXIS5_NAME || AXIS6_NAME == AXIS4_NAME
     #error "AXIS6_NAME must be unique."
+  #elif HAS_ROTATIONAL_AXIS6 && (!HAS_ROTATIONAL_AXIS5 || !HAS_ROTATIONAL_AXIS4)
+    #error "HAS_ROTATIONAL_AXIS4 and HAS_ROTATIONAL_AXIS5 must be true with HAS_ROTATIONAL_AXIS6 true"
   #elif !defined(K_MIN_POS) || !defined(K_MAX_POS)
     #error "K_MIN_POS and K_MAX_POS are required with LINEAR_AXES >= 6."
   #elif !defined(K_HOME_DIR)
@@ -1465,12 +1469,45 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
     #error "K_ENABLE_ON is required for your K driver with LINEAR_AXES >= 6."
   #endif
 #endif
-#if LINEAR_AXES >= 7 && (AXIS7_NAME == AXIS6_NAME || AXIS7_NAME == AXIS5_NAME || AXIS7_NAME == AXIS4_NAME)
-  #error "AXIS7_NAME must be unique."
-#elif LINEAR_AXES >= 8 && (AXIS8_NAME == AXIS7_NAME || AXIS8_NAME == AXIS6_NAME || AXIS8_NAME == AXIS5_NAME || AXIS8_NAME == AXIS4_NAME)
-  #error "AXIS8_NAME must be unique."
-#elif LINEAR_AXES >= 9 && (AXIS9_NAME == AXIS8_NAME || AXIS9_NAME == AXIS7_NAME || AXIS9_NAME == AXIS6_NAME || AXIS9_NAME == AXIS5_NAME || AXIS9_NAME == AXIS4_NAME)
-  #error "AXIS9_NAME must be unique."
+#if LINEAR_AXES >= 7
+  #if AXIS7_NAME == AXIS6_NAME || AXIS7_NAME == AXIS5_NAME || AXIS7_NAME == AXIS4_NAME)
+    #error "AXIS7_NAME must be unique."
+  #elif HAS_ROTATIONAL_AXIS7 && (!HAS_ROTATIONAL_AXIS6 || !HAS_ROTATIONAL_AXIS5 || !HAS_ROTATIONAL_AXIS4)
+    #error "HAS_ROTATIONAL_AXIS4 up to HAS_ROTATIONAL_AXIS6 must all be true with HAS_ROTATIONAL_AXIS7 true"
+  #elif !defined(U_MIN_POS) || !defined(U_MAX_POS)
+    #error "U_MIN_POS and U_MAX_POS are required with LINEAR_AXES >= 7."
+  #elif !defined(U_HOME_DIR)
+    #error "U_HOME_DIR is required with LINEAR_AXES >= 7."
+  #elif HAS_U_ENABLE && !defined(U_ENABLE_ON)
+    #error "U_ENABLE_ON is required for your U driver with LINEAR_AXES >= 7."
+  #endif
+#endif
+#if LINEAR_AXES >= 8
+  #if AXIS8_NAME == AXIS7_NAME || AXIS8_NAME == AXIS6_NAME || AXIS8_NAME == AXIS5_NAME || AXIS8_NAME == AXIS4_NAME)
+    #error "AXIS8_NAME must be unique."
+  #elif HAS_ROTATIONAL_AXIS8 && (!HAS_ROTATIONAL_AXIS7 || !HAS_ROTATIONAL_AXIS6 || !HAS_ROTATIONAL_AXIS5 || !HAS_ROTATIONAL_AXIS4)
+    #error "HAS_ROTATIONAL_AXIS4 up to HAS_ROTATIONAL_AXIS7 must all be true with HAS_ROTATIONAL_AXIS8 true"
+  #elif !defined(V_MIN_POS) || !defined(V_MAX_POS)
+    #error "V_MIN_POS and V_MAX_POS are required with LINEAR_AXES >= 8."
+  #elif !defined(V_HOME_DIR)
+    #error "V_HOME_DIR is required with LINEAR_AXES >= 8."
+  #elif HAS_V_ENABLE && !defined(V_ENABLE_ON)
+    #error "V_ENABLE_ON is required for your V driver with LINEAR_AXES >= 8."
+  #endif
+#endif
+#if LINEAR_AXES >= 9
+  #if AXIS9_NAME == AXIS8_NAME || AXIS9_NAME == AXIS7_NAME || AXIS9_NAME == AXIS6_NAME || AXIS9_NAME == AXIS5_NAME || AXIS9_NAME == AXIS4_NAME)
+    #error "AXIS9_NAME must be unique."
+  #elif HAS_ROTATIONAL_AXIS9 && (!HAS_ROTATIONAL_AXIS8 || !HAS_ROTATIONAL_AXIS7 || !HAS_ROTATIONAL_AXIS6 || !HAS_ROTATIONAL_AXIS5 || !HAS_ROTATIONAL_AXIS4)
+    #error "HAS_ROTATIONAL_AXIS4 up to HAS_ROTATIONAL_AXIS8 must all be true with HAS_ROTATIONAL_AXIS9 true"
+  #elif !defined(W_MIN_POS) || !defined(W_MAX_POS)
+    #error "W_MIN_POS and W_MAX_POS are required with LINEAR_AXES >= 9."
+  #elif !defined(W_HOME_DIR)
+    #error "W_HOME_DIR is required with LINEAR_AXES >= 9."
+  #elif HAS_W_ENABLE && !defined(W_ENABLE_ON)
+    #error "W_ENABLE_ON is required for your W driver with LINEAR_AXES >= 9."
+#endif
+
 #endif
 
 /**
