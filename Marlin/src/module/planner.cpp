@@ -2115,10 +2115,6 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
   TERN_(LCD_SHOW_E_TOTAL, e_move_accumulator += steps_dist_mm.e);
 
-  #if HAS_ROTATIONAL_AXES
-    bool cartesian_move = true;
-  #endif
-
   if (true LINEAR_AXIS_GANG(
       && block->steps.a < MIN_STEPS_PER_SEGMENT,
       && block->steps.b < MIN_STEPS_PER_SEGMENT,
@@ -2137,12 +2133,24 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     if (millimeters)
       block->millimeters = millimeters;
     else {
-      // Distance for interpretation of feedrate in accordance with LinuxCNC
+      // Distance for interpretation of feedrate in accordance with LinuxCNC (the successor of NIST
+      // RS274NGC interpreter - version 3)
       #if ENABLED(FOAMCUTTER_XYUV) && LINEAR_AXES == 5
-        // Return the largest distance move from either X/Y or I/J plane
+        // Special 5 axis kinematics. Return the largest distance move from either X/Y or I/J plane
         block->millimeters = SQRT(
         _MAX(sq(steps_dist_mm.x) + sq(steps_dist_mm.y), sq(steps_dist_mm.i) + sq(steps_dist_mm.j))
       #elif LINEAR_AXES >= 4
+        /* Feedrate is interpreted like in LinuxCNC.
+         * Assume that X, Y, Z are the primary linear axes and U, V, W are secondary linear axes and A, B, C are
+         * rotational axes. Then dX, dY, dZ are the displacements of the primary linear axes and dU, dV, dW are the displacements of linear axes and
+         * dA, dB, dC are the displacements of rotational axes.
+         * The time it takes to execute move command with feedrate F is t = D/F, where D is the total distance, calculated as follows:
+         *   D^2 = dX^2 + dY^2 + dZ^2
+         *   if D^2 == 0 (none of XYZ move but any secondary linear axes move, whether other axes are moved or not):
+         *     D^2 = dU^2 + dV^2 + dW^2
+         *   if D^2 == 0 (only rotational axes are moved):
+         *     D^2 = dA^2 + dB^2 + dC^2
+         */
         float distance_sqr = (
       #else
         block->millimeters = SQRT(
@@ -2216,27 +2224,25 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       #if HAS_ROTATIONAL_AXES
         if (NEAR_ZERO(distance_sqr)) {
           // Move involves only rotational axes. Calculate angular distance in accordance with LinuxCNC
-          cartesian_move = false;
-          distance_sqr = (sq(steps_dist_mm.i)
-          #if HAS_ROTATIONAL_AXIS5
-            + sq(steps_dist_mm.j)
-          #endif
-          #if HAS_ROTATIONAL_AXIS6
-            + sq(steps_dist_mm.k)
-          #endif
-          #if HAS_ROTATIONAL_AXIS7
-            + sq(steps_dist_mm.u)
-          #endif
-          #if HAS_ROTATIONAL_AXIS8
-            + sq(steps_dist_mm.v)
-          #endif
-          #if HAS_ROTATIONAL_AXIS9
-            + sq(steps_dist_mm.w)
-          #endif
+          distance_sqr = (
+                sq(steps_dist_mm.i)
+            #if HAS_ROTATIONAL_AXIS5
+              + sq(steps_dist_mm.j)
+            #endif
+            #if HAS_ROTATIONAL_AXIS6
+              + sq(steps_dist_mm.k)
+            #endif
+            #if HAS_ROTATIONAL_AXIS7
+              + sq(steps_dist_mm.u)
+            #endif
+            #if HAS_ROTATIONAL_AXIS8
+              + sq(steps_dist_mm.v)
+            #endif
+            #if HAS_ROTATIONAL_AXIS9
+              + sq(steps_dist_mm.w)
+            #endif
           );
         }
-        else
-          cartesian_move = true;
       #endif
 
       #if ((LINEAR_AXES >= 4 && !defined(FOAMCUTTER_XYUV)) || HAS_ROTATIONAL_AXES)
