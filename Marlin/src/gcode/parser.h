@@ -310,55 +310,19 @@ public:
 
     static inline float axis_unit_factor(const AxisEnum axis) {
       float unit_factor;
-      #if HAS_EXTRUDERS
-        if (axis >= E_AXIS && volumetric_enabled
-          #if HAS_ROTATIONAL_AXES
-            && axis != I_AXIS
-            #if HAS_ROTATIONAL_AXIS5
-              && axis != J_AXIS
-            #endif
-            #if HAS_ROTATIONAL_AXIS6
-              && axis != K_AXIS
-            #endif
-            #if HAS_ROTATIONAL_AXIS7
-              && axis != U_AXIS
-            #endif
-            #if HAS_ROTATIONAL_AXIS8
-              && axis != V_AXIS
-            #endif
-            #if HAS_ROTATIONAL_AXIS9
-              && axis != W_AXIS
-            #endif
-          #endif
-        ) {
-          unit_factor = volumetric_unit_factor;
-        }
-      #endif
-      #if HAS_ROTATIONAL_AXES
-        if (axis == I_AXIS
-          #if HAS_ROTATIONAL_AXIS5
-            || axis == J_AXIS
-          #endif
-          #if HAS_ROTATIONAL_AXIS6
-            || axis == K_AXIS
-          #endif
-          #if HAS_ROTATIONAL_AXIS7
-            || axis == U_AXIS
-          #endif
-          #if HAS_ROTATIONAL_AXIS8
-            || axis == V_AXIS
-          #endif
-          #if HAS_ROTATIONAL_AXIS9
-            || axis == W_AXIS
-          #endif
-
-        ) {
+      #if HAS_ROTATIONAL_AXES || HAS_EXTRUDERS
+        #if HAS_ROTATIONAL_AXES
+          if (ROTATIONAL_AXIS_GANG(axis == I_AXIS, || axis == J_AXIS, || axis == K_AXIS, || axis == U_AXIS, || axis == V_AXIS, || axis == W_AXIS))
             unit_factor = 1.0f;
-        }
-      #endif
-      #if HAS_EXTRUDERS || HAS_ROTATIONAL_AXES
-        else unit_factor = linear_unit_factor;
-      #else
+          else unit_factor = linear_unit_factor;
+        #endif
+        #if HAS_EXTRUDERS
+          if (axis >= E_AXIS && volumetric_enabled)
+            unit_factor = volumetric_unit_factor;
+          else if (axis >= E_AXIS)
+            unit_factor = linear_unit_factor;
+        #endif
+      #else // !(HAS_EXTRUDERS || HAS_ROTATIONAL_AXES)
         unit_factor = linear_unit_factor;
       #endif
       return unit_factor;

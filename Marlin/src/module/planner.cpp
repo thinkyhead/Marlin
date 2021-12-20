@@ -1963,39 +1963,22 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   #elif ENABLED(MARKFORGED_YX)
     if (da < 0) SBI(dm, A_AXIS);                   // Motor A direction
     if (db + da < 0) SBI(dm, B_AXIS);              // Motor B direction
-  #endif
-  #if ANY(IS_CORE, MARKFORGED_XY, MARKFORGED_YX)
-    #if LINEAR_AXES >= 4
-      if (di < 0) SBI(dm, I_AXIS);
-    #endif
-    #if LINEAR_AXES >= 5
-      if (dj < 0) SBI(dm, J_AXIS);
-    #endif
-    #if LINEAR_AXES >= 6
-      if (dk < 0) SBI(dm, K_AXIS);
-    #endif
-    #if LINEAR_AXES >= 7
-      if (du < 0) SBI(dm, U_AXIS);
-    #endif
-    #if LINEAR_AXES >= 8
-      if (dv < 0) SBI(dm, V_AXIS);
-    #endif
-    #if LINEAR_AXES >= 9
-      if (dw < 0) SBI(dm, W_AXIS);
-    #endif
   #else
-    LINEAR_AXIS_CODE(
+    XYZ_CODE(
       if (da < 0) SBI(dm, X_AXIS),
       if (db < 0) SBI(dm, Y_AXIS),
-      if (dc < 0) SBI(dm, Z_AXIS),
-      if (di < 0) SBI(dm, I_AXIS),
-      if (dj < 0) SBI(dm, J_AXIS),
-      if (dk < 0) SBI(dm, K_AXIS),
-      if (du < 0) SBI(dm, U_AXIS),
-      if (dv < 0) SBI(dm, V_AXIS),
-      if (dw < 0) SBI(dm, W_AXIS)
+      if (dc < 0) SBI(dm, Z_AXIS)
     );
   #endif
+
+  SECONDARY_AXIS_CODE(
+    if (di < 0) SBI(dm, I_AXIS),
+    if (dj < 0) SBI(dm, J_AXIS),
+    if (dk < 0) SBI(dm, K_AXIS),
+    if (du < 0) SBI(dm, U_AXIS),
+    if (dv < 0) SBI(dm, V_AXIS),
+    if (dw < 0) SBI(dm, W_AXIS)
+  );
 
   #if HAS_EXTRUDERS
     if (de < 0) SBI(dm, E_AXIS);
@@ -2073,24 +2056,6 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       steps_dist_mm.b      = (db + dc) * mm_per_step[B_AXIS];
       steps_dist_mm.c      = CORESIGN(db - dc) * mm_per_step[C_AXIS];
     #endif
-    #if LINEAR_AXES >= 4
-      steps_dist_mm.i = di * mm_per_step[I_AXIS];
-    #endif
-    #if LINEAR_AXES >= 5
-      steps_dist_mm.j = dj * mm_per_step[J_AXIS];
-    #endif
-    #if LINEAR_AXES >= 6
-      steps_dist_mm.k = dk * mm_per_step[K_AXIS];
-    #endif
-    #if LINEAR_AXES >= 7
-      steps_dist_mm.u = du * mm_per_step[U_AXIS];
-    #endif
-    #if LINEAR_AXES >= 8
-      steps_dist_mm.v = dv * mm_per_step[V_AXIS];
-    #endif
-    #if LINEAR_AXES >= 9
-      steps_dist_mm.w = dw * mm_per_step[W_AXIS];
-    #endif
   #elif ENABLED(MARKFORGED_XY)
     steps_dist_mm.a      = (da - db) * mm_per_step[A_AXIS];
     steps_dist_mm.b      = db * mm_per_step[B_AXIS];
@@ -2098,18 +2063,21 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     steps_dist_mm.a      = da * mm_per_step[A_AXIS];
     steps_dist_mm.b      = (db - da) * mm_per_step[B_AXIS];
   #else
-    LINEAR_AXIS_CODE(
+    XYZ_CODE(
       steps_dist_mm.a = da * mm_per_step[A_AXIS],
       steps_dist_mm.b = db * mm_per_step[B_AXIS],
-      steps_dist_mm.c = dc * mm_per_step[C_AXIS],
-      steps_dist_mm.i = di * mm_per_step[I_AXIS],
-      steps_dist_mm.j = dj * mm_per_step[J_AXIS],
-      steps_dist_mm.k = dk * mm_per_step[K_AXIS],
-      steps_dist_mm.u = du * mm_per_step[U_AXIS],
-      steps_dist_mm.v = dv * mm_per_step[V_AXIS],
-      steps_dist_mm.w = dw * mm_per_step[W_AXIS]
+      steps_dist_mm.c = dc * mm_per_step[C_AXIS]
     );
   #endif
+
+  SECONDARY_AXIS_CODE(
+    steps_dist_mm.i = di * mm_per_step[I_AXIS],
+    steps_dist_mm.j = dj * mm_per_step[J_AXIS],
+    steps_dist_mm.k = dk * mm_per_step[K_AXIS],
+    steps_dist_mm.u = du * mm_per_step[U_AXIS],
+    steps_dist_mm.v = dv * mm_per_step[V_AXIS],
+    steps_dist_mm.w = dw * mm_per_step[W_AXIS]
+  );
 
   TERN_(HAS_EXTRUDERS, steps_dist_mm.e = esteps_float * mm_per_step[E_AXIS_N(extruder)]);
 
@@ -2133,69 +2101,39 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     if (millimeters)
       block->millimeters = millimeters;
     else {
-      // Distance for interpretation of feedrate in accordance with LinuxCNC (the successor of NIST
-      // RS274NGC interpreter - version 3)
-      #if ENABLED(FOAMCUTTER_XYUV) && LINEAR_AXES == 5
-        // Special 5 axis kinematics. Return the largest distance move from either X/Y or I/J plane
-        block->millimeters = SQRT(
-        _MAX(sq(steps_dist_mm.x) + sq(steps_dist_mm.y), sq(steps_dist_mm.i) + sq(steps_dist_mm.j))
-      #elif LINEAR_AXES >= 4
-        /* Feedrate is interpreted like in LinuxCNC.
-         * Assume that X, Y, Z are the primary linear axes and U, V, W are secondary linear axes and A, B, C are
-         * rotational axes. Then dX, dY, dZ are the displacements of the primary linear axes and dU, dV, dW are the displacements of linear axes and
-         * dA, dB, dC are the displacements of rotational axes.
-         * The time it takes to execute move command with feedrate F is t = D/F, where D is the total distance, calculated as follows:
-         *   D^2 = dX^2 + dY^2 + dZ^2
-         *   if D^2 == 0 (none of XYZ move but any secondary linear axes move, whether other axes are moved or not):
-         *     D^2 = dU^2 + dV^2 + dW^2
-         *   if D^2 == 0 (only rotational axes are moved):
-         *     D^2 = dA^2 + dB^2 + dC^2
-         */
-        float distance_sqr = (
-      #else
-        block->millimeters = SQRT(
-      #endif
-        #if ANY(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
-               sq(steps_dist_mm.head.x)
-          #if HAS_Y_AXIS
-             + sq(steps_dist_mm.head.y)
+      /*
+       *  Distance for interpretation of feedrate in accordance with LinuxCNC (the successor of NIST
+       * RS274NGC interpreter - version 3)
+       * Assume that X, Y, Z are the primary linear axes and U, V, W are secondary linear axes and A, B, C are
+       * rotational axes. Then dX, dY, dZ are the displacements of the primary linear axes and dU, dV, dW are the displacements of linear axes and
+       * dA, dB, dC are the displacements of rotational axes.
+       * The time it takes to execute move command with feedrate F is t = D/F, where D is the total distance, calculated as follows:
+       *   D^2 = dX^2 + dY^2 + dZ^2
+       *   if D^2 == 0 (none of XYZ move but any secondary linear axes move, whether other axes are moved or not):
+       *     D^2 = dU^2 + dV^2 + dW^2
+       *   if D^2 == 0 (only rotational axes are moved):
+       *     D^2 = dA^2 + dB^2 + dC^2
+       */
+      float distance_sqr = (
+        #if ENABLED(FOAMCUTTER_XYUV) 
+          #if LINEAR_AXES == 5
+            // Special 5 axis kinematics. Return the largest distance move from either X/Y or I/J plane
+            _MAX(sq(steps_dist_mm.x) + sq(steps_dist_mm.y), sq(steps_dist_mm.i) + sq(steps_dist_mm.j))
+          #elif LINEAR_AXES == 2 // foamcutter with only two axes (XY)
+            sq(steps_dist_mm.x) + sq(steps_dist_mm.y)
           #endif
-          #if HAS_Z_AXIS
-             + sq(steps_dist_mm.z)
-          #endif
+        #elif ANY(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
+          XYZ_GANG(sq(steps_dist_mm.head.x), + sq(steps_dist_mm.head.y), + sq(steps_dist_mm.z))
         #elif CORE_IS_XZ
-               sq(steps_dist_mm.head.x)
-          #if HAS_Y_AXIS
-             + sq(steps_dist_mm.y)
-          #endif
-          #if HAS_Z_AXIS
-             + sq(steps_dist_mm.head.z)
-          #endif
+          XYZ_GANG(sq(steps_dist_mm.head.x), + sq(steps_dist_mm.y),      + sq(steps_dist_mm.head.z))
         #elif CORE_IS_YZ
-              sq(steps_dist_mm.x)
-          #if HAS_Y_AXIS
-            + sq(steps_dist_mm.head.y)
-          #endif
-          #if HAS_Z_AXIS
-            + sq(steps_dist_mm.head.z)
-          #endif
-        #elif ENABLED(FOAMCUTTER_XYUV) // foamcutter with only two axes: X, Y. For foamcutter with XYUV axes: see above.
-              sq(steps_dist_mm.x)
-          #if HAS_Y_AXIS
-	        + sq(steps_dist_mm.y)
-          #endif
+          XYZ_GANG(sq(steps_dist_mm.x),      + sq(steps_dist_mm.head.y), + sq(steps_dist_mm.head.z))
         #else
-              sq(steps_dist_mm.x)
-          #if HAS_Y_AXIS
-            + sq(steps_dist_mm.y)
-          #endif
-          #if HAS_Z_AXIS
-            + sq(steps_dist_mm.z)
-          #endif
+          XYZ_GANG(sq(steps_dist_mm.x),       + sq(steps_dist_mm.y),      + sq(steps_dist_mm.z))
         #endif
       );
 
-      #if LINEAR_AXES >= 4 && !defined(FOAMCUTTER_XYUV)
+      #if SECONDARY_LINEAR_AXES >= 1 && !defined(FOAMCUTTER_XYUV)
         if (NEAR_ZERO(distance_sqr)) {
           // Move does not involve any primary linear axes (xyz) but might involve secondary linear axes
           distance_sqr = (0.0
@@ -2224,30 +2162,11 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       #if HAS_ROTATIONAL_AXES
         if (NEAR_ZERO(distance_sqr)) {
           // Move involves only rotational axes. Calculate angular distance in accordance with LinuxCNC
-          distance_sqr = (
-                sq(steps_dist_mm.i)
-            #if HAS_ROTATIONAL_AXIS5
-              + sq(steps_dist_mm.j)
-            #endif
-            #if HAS_ROTATIONAL_AXIS6
-              + sq(steps_dist_mm.k)
-            #endif
-            #if HAS_ROTATIONAL_AXIS7
-              + sq(steps_dist_mm.u)
-            #endif
-            #if HAS_ROTATIONAL_AXIS8
-              + sq(steps_dist_mm.v)
-            #endif
-            #if HAS_ROTATIONAL_AXIS9
-              + sq(steps_dist_mm.w)
-            #endif
-          );
+          distance_sqr = ROTATIONAL_AXIS_GANG(sq(steps_dist_mm.i), + sq(steps_dist_mm.j), + sq(steps_dist_mm.k), + sq(steps_dist_mm.u), + sq(steps_dist_mm.v), + sq(steps_dist_mm.w));
         }
       #endif
 
-      #if ((LINEAR_AXES >= 4 && !defined(FOAMCUTTER_XYUV)) || HAS_ROTATIONAL_AXES)
-        block->millimeters = SQRT(distance_sqr);
-      #endif
+      block->millimeters = SQRT(distance_sqr);
     }
 
     /**
@@ -2337,23 +2256,15 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     );
   #endif
   #if ANY(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
-    #if LINEAR_AXES >= 4
-      if (block->steps.i) stepper.enable_axis(I_AXIS);
-    #endif
-    #if LINEAR_AXES >= 5
-      if (block->steps.j) stepper.enable_axis(J_AXIS);
-    #endif
-    #if LINEAR_AXES >= 6
-      if (block->steps.k) stepper.enable_axis(K_AXIS);
-    #endif
-    #if LINEAR_AXES >= 7
-      if (block->steps.u) stepper.enable_axis(U_AXIS);
-    #endif
-    #if LINEAR_AXES >= 8
-      if (block->steps.v) stepper.enable_axis(V_AXIS);
-    #endif
-    #if LINEAR_AXES >= 9
-      if (block->steps.w) stepper.enable_axis(W_AXIS);
+    #if SECONDARY_AXES
+      SECONDARY_AXIS_CODE(
+        if (block->steps.i) stepper.enable_axis(I_AXIS),
+        if (block->steps.j) stepper.enable_axis(J_AXIS),
+        if (block->steps.k) stepper.enable_axis(K_AXIS),
+        if (block->steps.u) stepper.enable_axis(U_AXIS),
+        if (block->steps.v) stepper.enable_axis(V_AXIS),
+        if (block->steps.w) stepper.enable_axis(W_AXIS)
+	);
     #endif
   #endif
 
@@ -2569,7 +2480,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     accel = CEIL((esteps ? settings.acceleration : settings.travel_acceleration) * steps_per_mm);
 
     #if ENABLED(LIN_ADVANCE)
-      // TODO (DerAndere): Add support for LINEAR_AXES >= 4
+      // Linear advance is currently not ready for LINEAR_AXES >= 4
       #define MAX_E_JERK(N) TERN(HAS_LINEAR_E_JERK, max_e_jerk[E_INDEX_N(N)], max_jerk.e)
 
       /**

@@ -683,7 +683,7 @@
 #endif
 
 /**
- * Number of Linear Axes (e.g., XYZ)
+ * Number of Linear Axes (e.g., XYZIJKUVW)
  * All the logical axes except for the tool (E) axis
  */
 #ifndef LINEAR_AXES
@@ -697,7 +697,53 @@
 #endif
 
 /**
- * Number of Logical Axes (e.g., XYZE)
+ * Number of Primary Linear Axes (e.g. XYZ)
+ * X, XY, or XYZ axes
+ */
+#if LINEAR_AXES >= 4
+  #define PRIMARY_LINEAR_AXES 3
+#else
+  #define PRIMARY_LINEAR_AXES LINEAR_AXES
+#endif
+
+/**
+ * Number of Secondary Axes (e.g. IJKUVW)
+ * All axes exept for XYZE axes
+ */
+#if LINEAR_AXES >= 4
+  #define SECONDARY_AXES SUB3(LINEAR_AXES)
+#else
+  #define SECONDARY_AXES 0
+#endif
+
+/**
+ * Number of Rotational Axes (e.g. IJK)
+ * All the rotational axes for which HAS_ROTATIONAL_AXIS* is true
+ */
+#if HAS_ROTATIONAL_AXIS9
+  #define ROTATIONAL_AXES 6
+#elif HAS_ROTATIONAL_AXIS8
+  #define ROTATIONAL_AXES 5
+#elif HAS_ROTATIONAL_AXIS7
+  #define ROTATIONAL_AXES 4
+#elif HAS_ROTATIONAL_AXIS6
+  #define ROTATIONAL_AXES 3
+#elif HAS_ROTATIONAL_AXIS5
+  #define ROTATIONAL_AXES 2
+#elif HAS_ROTATIONAL_AXIS4
+  #define ROTATIONAL_AXES 1
+#else
+  #define ROTATIONAL_AXES 0
+#endif
+
+/**
+ * Number of Rotational Axes (e.g. IJK)
+ * All the axes for which HAS_ROTATIONAL_AXIS* is true
+ */
+#define SECONDARY_LINEAR_AXES (LINEAR_AXES - PRIMARY_LINEAR_AXES - ROTATIONAL_AXES)
+
+/**
+ * Number of Logical Axes (e.g., XYZIJKUVWE)
  * All the logical axes that can be commanded directly by G-code.
  * Delta maps stepper-specific values to ABC steppers.
  */

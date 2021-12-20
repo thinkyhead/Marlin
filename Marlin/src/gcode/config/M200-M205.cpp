@@ -134,7 +134,6 @@ void GcodeSuite::M201() {
 
 void GcodeSuite::M201_report(const bool forReplay/*=true*/) {
   report_heading_etc(forReplay, F(STR_MAX_ACCELERATION));
-  // TODO (DerAndere): Add support for rotational axes with distance in degrees
   SERIAL_ECHOLNPGM_P(
     LIST_N(DOUBLE(LINEAR_AXES),
       PSTR("  M201 X"), LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[X_AXIS]),
@@ -399,6 +398,7 @@ void GcodeSuite::M205_report(const bool forReplay/*=true*/) {
           SP_W_STR, planner.max_jerk.w,
         #else
           SP_W_STR, LINEAR_UNIT(planner.max_jerk.w)
+        #endif
       )
       #if HAS_CLASSIC_E_JERK
         , SP_E_STR, LINEAR_UNIT(planner.max_jerk.e)
