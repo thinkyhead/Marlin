@@ -495,7 +495,7 @@
   #endif
 #endif
 
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #ifdef I_STOP_PIN
     #if I_HOME_TO_MIN
       #define I_MIN_PIN I_STOP_PIN
@@ -518,7 +518,7 @@
   #undef I_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #ifdef J_STOP_PIN
     #if J_HOME_TO_MIN
       #define J_MIN_PIN J_STOP_PIN
@@ -541,7 +541,7 @@
   #undef J_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #ifdef K_STOP_PIN
     #if K_HOME_TO_MIN
       #define K_MIN_PIN K_STOP_PIN
@@ -564,7 +564,7 @@
   #undef K_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #ifdef U_STOP_PIN
     #if U_HOME_TO_MIN
       #define U_MIN_PIN U_STOP_PIN
@@ -587,7 +587,7 @@
   #undef U_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #ifdef V_STOP_PIN
     #if V_HOME_TO_MIN
       #define V_MIN_PIN V_STOP_PIN
@@ -610,7 +610,7 @@
   #undef V_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #ifdef W_STOP_PIN
     #if W_HOME_TO_MIN
       #define W_MIN_PIN W_STOP_PIN
@@ -1111,12 +1111,12 @@
 #endif
 
 // The I axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 4 && !defined(I_DIAG_PIN) && !defined(I_STEP_PIN) && !PIN_EXISTS(I_CS_PIN)
+#if NUM_AXES >= 4 && !defined(I_DIAG_PIN) && !defined(I_STEP_PIN) && !PIN_EXISTS(I_CS_PIN)
   #define J_E_INDEX INCREMENT(I_E_INDEX)
 #else
   #define J_E_INDEX I_E_INDEX
 #endif
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #ifndef I_STEP_PIN
     #define I_STEP_PIN   _EPIN(I_E_INDEX, STEP)
     #define I_DIR_PIN    _EPIN(I_E_INDEX, DIR)
@@ -1196,12 +1196,12 @@
 #endif
 
 // The J axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 5 && !defined(J_DIAG_PIN) && !defined(J_STEP_PIN) && !PIN_EXISTS(J_CS_PIN)
+#if NUM_AXES >= 5 && !defined(J_DIAG_PIN) && !defined(J_STEP_PIN) && !PIN_EXISTS(J_CS_PIN)
   #define K_E_INDEX INCREMENT(J_E_INDEX)
 #else
   #define K_E_INDEX J_E_INDEX
 #endif
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #ifndef J_STEP_PIN
     #define J_STEP_PIN   _EPIN(J_E_INDEX, STEP)
     #define J_DIR_PIN    _EPIN(J_E_INDEX, DIR)
@@ -1281,13 +1281,13 @@
 #endif
 
 // The K axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 6 && !defined(K_DIAG_PIN) && !defined(K_STEP_PIN) && !PIN_EXISTS(K_CS_PIN)
+#if NUM_AXES >= 6 && !defined(K_DIAG_PIN) && !defined(K_STEP_PIN) && !PIN_EXISTS(K_CS_PIN)
   #define U_E_INDEX INCREMENT(K_E_INDEX)
 #else
   #define U_E_INDEX K_E_INDEX
 #endif
 
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #ifndef K_STEP_PIN
     #define K_STEP_PIN   _EPIN(K_E_INDEX, STEP)
     #define K_DIR_PIN    _EPIN(K_E_INDEX, DIR)
@@ -1367,13 +1367,13 @@
 #endif
 
 // The U axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 7 && !defined(U_DIAG_PIN) && !defined(U_STEP_PIN) && !PIN_EXISTS(U_CS_PIN)
+#if NUM_AXES >= 7 && !defined(U_DIAG_PIN) && !defined(U_STEP_PIN) && !PIN_EXISTS(U_CS_PIN)
   #define U_E_INDEX INCREMENT(K_E_INDEX)
 #else
   #define U_E_INDEX K_E_INDEX
 #endif
 
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #ifndef U_STEP_PIN
     #define U_STEP_PIN   _EPIN(U_E_INDEX, STEP)
     #define U_DIR_PIN    _EPIN(U_E_INDEX, DIR)
@@ -1453,13 +1453,13 @@
 #endif
 
 // The V axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 8 && !defined(V_DIAG_PIN) && !defined(V_STEP_PIN) && !PIN_EXISTS(V_CS_PIN)
+#if NUM_AXES >= 8 && !defined(V_DIAG_PIN) && !defined(V_STEP_PIN) && !PIN_EXISTS(V_CS_PIN)
   #define V_E_INDEX INCREMENT(U_E_INDEX)
 #else
   #define V_E_INDEX U_E_INDEX
 #endif
 
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #ifndef V_STEP_PIN
     #define V_STEP_PIN   _EPIN(V_E_INDEX, STEP)
     #define V_DIR_PIN    _EPIN(V_E_INDEX, DIR)
@@ -1539,13 +1539,13 @@
 #endif
 
 // The W axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 9 && !defined(W_DIAG_PIN) && !defined(W_STEP_PIN) && !PIN_EXISTS(W_CS_PIN)
+#if NUM_AXES >= 9 && !defined(W_DIAG_PIN) && !defined(W_STEP_PIN) && !PIN_EXISTS(W_CS_PIN)
   #define W_E_INDEX INCREMENT(V_E_INDEX)
 #else
   #define W_E_INDEX V_E_INDEX
 #endif
 
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #ifndef W_STEP_PIN
     #define W_STEP_PIN   _EPIN(W_E_INDEX, STEP)
     #define W_DIR_PIN    _EPIN(W_E_INDEX, DIR)

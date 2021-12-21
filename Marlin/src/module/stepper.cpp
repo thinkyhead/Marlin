@@ -435,27 +435,27 @@ xyze_int8_t Stepper::count_direction{0};
   #define Z_APPLY_STEP(v,Q) Z_STEP_WRITE(v)
 #endif
 
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #define I_APPLY_DIR(v,Q) I_DIR_WRITE(v)
   #define I_APPLY_STEP(v,Q) I_STEP_WRITE(v)
 #endif
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #define J_APPLY_DIR(v,Q) J_DIR_WRITE(v)
   #define J_APPLY_STEP(v,Q) J_STEP_WRITE(v)
 #endif
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #define K_APPLY_DIR(v,Q) K_DIR_WRITE(v)
   #define K_APPLY_STEP(v,Q) K_STEP_WRITE(v)
 #endif
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #define U_APPLY_DIR(v,Q) U_DIR_WRITE(v)
   #define U_APPLY_STEP(v,Q) U_STEP_WRITE(v)
 #endif
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #define V_APPLY_DIR(v,Q) V_DIR_WRITE(v)
   #define V_APPLY_STEP(v,Q) V_STEP_WRITE(v)
 #endif
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #define W_APPLY_DIR(v,Q) W_DIR_WRITE(v)
   #define W_APPLY_STEP(v,Q) W_STEP_WRITE(v)
 #endif
@@ -498,7 +498,7 @@ xyze_int8_t Stepper::count_direction{0};
 void Stepper::enable_axis(const AxisEnum axis) {
   #define _CASE_ENABLE(N) case N##_AXIS: ENABLE_AXIS_##N(); break;
   switch (axis) {
-    LINEAR_AXIS_CODE(
+    NUM_AXIS_CODE(
       _CASE_ENABLE(X), _CASE_ENABLE(Y), _CASE_ENABLE(Z),
       _CASE_ENABLE(I), _CASE_ENABLE(J), _CASE_ENABLE(K),
       _CASE_ENABLE(U), _CASE_ENABLE(V), _CASE_ENABLE(W)
@@ -515,7 +515,7 @@ bool Stepper::disable_axis(const AxisEnum axis) {
   if (can_disable) {
     #define _CASE_DISABLE(N) case N##_AXIS: DISABLE_AXIS_##N(); break;
     switch (axis) {
-      LINEAR_AXIS_CODE(
+      NUM_AXIS_CODE(
         _CASE_DISABLE(X), _CASE_DISABLE(Y), _CASE_DISABLE(Z),
         _CASE_DISABLE(I), _CASE_DISABLE(J), _CASE_DISABLE(K),
         _CASE_DISABLE(U), _CASE_DISABLE(V), _CASE_DISABLE(W)
@@ -561,7 +561,7 @@ bool Stepper::disable_axis(const AxisEnum axis) {
 
 void Stepper::enable_all_steppers() {
   TERN_(AUTO_POWER_CONTROL, powerManager.power_on());
-  LINEAR_AXIS_CODE(
+  NUM_AXIS_CODE(
     enable_axis(X_AXIS), enable_axis(Y_AXIS), enable_axis(Z_AXIS),
     enable_axis(I_AXIS), enable_axis(J_AXIS), enable_axis(K_AXIS),
     enable_axis(U_AXIS), enable_axis(V_AXIS), enable_axis(W_AXIS)
@@ -572,7 +572,7 @@ void Stepper::enable_all_steppers() {
 }
 
 void Stepper::disable_all_steppers() {
-  LINEAR_AXIS_CODE(
+  NUM_AXIS_CODE(
     disable_axis(X_AXIS), disable_axis(Y_AXIS), disable_axis(Z_AXIS),
     disable_axis(I_AXIS), disable_axis(J_AXIS), disable_axis(K_AXIS),
     disable_axis(U_AXIS), disable_axis(V_AXIS), disable_axis(W_AXIS)
@@ -1707,7 +1707,7 @@ void Stepper::pulse_phase_isr() {
     const bool is_page = IS_PAGE(current_block);
 
     #if ENABLED(DIRECT_STEPPING)
-      // Direct stepping is currently not ready for LINEAR_AXES >= 4
+      // Direct stepping is currently not ready for NUM_AXES >= 4
       if (is_page) {
 
         #if STEPPER_PAGE_FORMAT == SP_4x4D_128
@@ -1975,7 +1975,7 @@ uint32_t Stepper::block_phase_isr() {
     // If current block is finished, reset pointer and finalize state
     if (step_events_completed >= step_event_count) {
       #if ENABLED(DIRECT_STEPPING)
-        // Direct stepping is currently not ready for LINEAR_AXES >= 4
+        // Direct stepping is currently not ready for NUM_AXES >= 4
         #if STEPPER_PAGE_FORMAT == SP_4x4D_128
           #define PAGE_SEGMENT_UPDATE_POS(AXIS) \
             count_position[_AXIS(AXIS)] += page_step_state.bd[_AXIS(AXIS)] - 128 * 7;
@@ -2283,7 +2283,7 @@ uint32_t Stepper::block_phase_isr() {
       #endif
 
       axis_bits_t axis_bits = 0;
-      LINEAR_AXIS_CODE(
+      NUM_AXIS_CODE(
         if (X_MOVE_TEST)            SBI(axis_bits, A_AXIS),
         if (Y_MOVE_TEST)            SBI(axis_bits, B_AXIS),
         if (Z_MOVE_TEST)            SBI(axis_bits, C_AXIS),
@@ -2855,7 +2855,7 @@ void Stepper::init() {
 
   // Init direction bits for first moves
   set_directions(0
-    LINEAR_AXIS_GANG(
+    NUM_AXIS_GANG(
       | TERN0(INVERT_X_DIR, _BV(X_AXIS)),
       | TERN0(INVERT_Y_DIR, _BV(Y_AXIS)),
       | TERN0(INVERT_Z_DIR, _BV(Z_AXIS)),
@@ -3014,7 +3014,7 @@ int32_t Stepper::triggered_position(const AxisEnum axis) {
 
 void Stepper::report_a_position(const xyz_long_t &pos) {
   SERIAL_ECHOLNPGM_P(
-    LIST_N(DOUBLE(LINEAR_AXES),
+    LIST_N(DOUBLE(NUM_AXES),
       TERN(SAYS_A, PSTR(STR_COUNT_A), PSTR(STR_COUNT_X)), pos.x,
       TERN(SAYS_B, PSTR("B:"), SP_Y_LBL), pos.y,
       TERN(SAYS_C, PSTR("C:"), SP_Z_LBL), pos.z,
@@ -3174,7 +3174,7 @@ void Stepper::report_positions() {
 
           const bool z_direction = direction ^ BABYSTEP_INVERT_Z;
 
-          LINEAR_AXIS_CODE(
+          NUM_AXIS_CODE(
             enable_axis(X_AXIS), enable_axis(Y_AXIS), enable_axis(Z_AXIS),
             enable_axis(I_AXIS), enable_axis(J_AXIS), enable_axis(K_AXIS),
             enable_axis(U_AXIS), enable_axis(V_AXIS), enable_axis(W_AXIS)
@@ -3182,7 +3182,7 @@ void Stepper::report_positions() {
 
           DIR_WAIT_BEFORE();
 
-          const xyz_byte_t old_dir = LINEAR_AXIS_ARRAY(
+          const xyz_byte_t old_dir = NUM_AXIS_ARRAY(
             X_DIR_READ(), Y_DIR_READ(), Z_DIR_READ(),
             I_DIR_READ(), J_DIR_READ(), K_DIR_READ(),
             U_DIR_READ(), V_DIR_READ(), W_DIR_READ()
@@ -3307,22 +3307,22 @@ void Stepper::report_positions() {
 
       } break;
 
-      #if LINEAR_AXES >= 4
+      #if NUM_AXES >= 4
         case I_AXIS: BABYSTEP_AXIS(I, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 5
+      #if NUM_AXES >= 5
         case J_AXIS: BABYSTEP_AXIS(J, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 6
+      #if NUM_AXES >= 6
         case K_AXIS: BABYSTEP_AXIS(K, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 7
+      #if NUM_AXES >= 7
         case U_AXIS: BABYSTEP_AXIS(U, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 8
+      #if NUM_AXES >= 8
         case V_AXIS: BABYSTEP_AXIS(V, 0, direction); break;
       #endif
-      #if LINEAR_AXES >= 9
+      #if NUM_AXES >= 9
         case W_AXIS: BABYSTEP_AXIS(W, 0, direction); break;
       #endif
 
@@ -3540,7 +3540,7 @@ void Stepper::report_positions() {
         SET_OUTPUT(Z4_MS3_PIN);
       #endif
     #endif
-    #if LINEAR_AXES >= 4
+    #if NUM_AXES >= 4
       #if HAS_I_MS_PINS
         SET_OUTPUT(I_MS1_PIN);
         SET_OUTPUT(I_MS2_PIN);
@@ -3549,7 +3549,7 @@ void Stepper::report_positions() {
         #endif
       #endif
     #endif
-    #if LINEAR_AXES >= 5
+    #if NUM_AXES >= 5
       #if HAS_J_MS_PINS
         SET_OUTPUT(J_MS1_PIN);
         SET_OUTPUT(J_MS2_PIN);
@@ -3558,7 +3558,7 @@ void Stepper::report_positions() {
         #endif
       #endif
     #endif
-    #if LINEAR_AXES >= 6
+    #if NUM_AXES >= 6
       #if HAS_K_MS_PINS
         SET_OUTPUT(K_MS1_PIN);
         SET_OUTPUT(K_MS2_PIN);
@@ -3567,7 +3567,7 @@ void Stepper::report_positions() {
         #endif
       #endif
     #endif
-    #if LINEAR_AXES >= 7
+    #if NUM_AXES >= 7
       #if HAS_U_MS_PINS
         SET_OUTPUT(U_MS1_PIN);
         SET_OUTPUT(U_MS2_PIN);
@@ -3576,7 +3576,7 @@ void Stepper::report_positions() {
         #endif
       #endif
     #endif
-    #if LINEAR_AXES >= 8
+    #if NUM_AXES >= 8
       #if HAS_V_MS_PINS
         SET_OUTPUT(V_MS1_PIN);
         SET_OUTPUT(V_MS2_PIN);
@@ -3585,7 +3585,7 @@ void Stepper::report_positions() {
         #endif
       #endif
     #endif
-    #if LINEAR_AXES >= 9
+    #if NUM_AXES >= 9
       #if HAS_W_MS_PINS
         SET_OUTPUT(W_MS1_PIN);
         SET_OUTPUT(W_MS2_PIN);

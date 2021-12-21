@@ -48,7 +48,7 @@
   #define MIN_ARC_SEGMENT_MM MAX_ARC_SEGMENT_MM
 #endif
 
-#define ARC_LIJKUVW_CODE(L,I,J,K,U,V,W)    CODE_N(SUB2(LINEAR_AXES),L,I,J,K,U,V,W)
+#define ARC_LIJKUVW_CODE(L,I,J,K,U,V,W)    CODE_N(SUB2(NUM_AXES),L,I,J,K,U,V,W)
 #define ARC_LIJKUVWE_CODE(L,I,J,K,U,V,W,E) ARC_LIJKUVW_CODE(L,I,J,K,U,V,W); CODE_ITEM_E(E)
 
 /**
@@ -183,7 +183,7 @@ void plan_arc(
 
   // Return if the move is near zero
   if (flat_mm < 0.0001f
-    GANG_N(SUB2(LINEAR_AXES),
+    GANG_N(SUB2(NUM_AXES),
       && travel_L < 0.0001f,
       && travel_I < 0.0001f,
       && travel_J < 0.0001f,

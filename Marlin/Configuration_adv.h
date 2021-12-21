@@ -1993,7 +1993,7 @@
 
 /**
  * Safe bed leveling start coordinates. If enabled, the respective axis is moved to the specified position at the beginning of the bed leveling procedure.
- * Required e.g. with LINEAR_AXES >= 4, if Z probe is not perpendicular to the bed after homing.
+ * Required e.g. with NUM_AXES >= 4, if Z probe is not perpendicular to the bed after homing.
  * Values must be chosen so that the bed is oriented horizontally and so that the Z-probe is oriented vertically.
  */
 //#define SAFE_BED_LEVELING_START_X 0.0
@@ -2408,7 +2408,7 @@
 
   /**
    * Extra G-code to run while executing tool-change commands. Can be used to use an additional
-   * stepper motor (I axis, see option LINEAR_AXES in Configuration.h) to drive the tool-changer.
+   * stepper motor (I axis, see option NUM_AXES in Configuration.h) to drive the tool-changer.
    */
   //#define EVENT_GCODE_TOOLCHANGE_T0 "G28 A\nG1 A0" // Extra G-code to run while executing tool-change command T0
   //#define EVENT_GCODE_TOOLCHANGE_T1 "G1 A10"       // Extra G-code to run while executing tool-change command T1

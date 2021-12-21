@@ -97,22 +97,22 @@ void lcd_move_x() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_X), X_AXIS); }
 #if HAS_Z_AXIS
   void lcd_move_z() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_Z), Z_AXIS); }
 #endif
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   void lcd_move_i() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_I), I_AXIS); }
 #endif
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   void lcd_move_j() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_J), J_AXIS); }
 #endif
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   void lcd_move_k() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_K), K_AXIS); }
 #endif
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   void lcd_move_u() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_U), U_AXIS); }
 #endif
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   void lcd_move_v() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_V), V_AXIS); }
 #endif
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   void lcd_move_w() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_W), W_AXIS); }
 #endif
 
@@ -263,22 +263,22 @@ void menu_move() {
     #if HAS_Z_AXIS
       SUBMENU(MSG_MOVE_Z, []{ _menu_move_distance(Z_AXIS, lcd_move_z); });
     #endif
-    #if LINEAR_AXES >= 4
+    #if NUM_AXES >= 4
       SUBMENU(MSG_MOVE_I, []{ _menu_move_distance(I_AXIS, lcd_move_i); });
     #endif
-    #if LINEAR_AXES >= 5
+    #if NUM_AXES >= 5
       SUBMENU(MSG_MOVE_J, []{ _menu_move_distance(J_AXIS, lcd_move_j); });
     #endif
-    #if LINEAR_AXES >= 6
+    #if NUM_AXES >= 6
       SUBMENU(MSG_MOVE_K, []{ _menu_move_distance(K_AXIS, lcd_move_k); });
     #endif
-    #if LINEAR_AXES >= 7
+    #if NUM_AXES >= 7
       SUBMENU(MSG_MOVE_U, []{ _menu_move_distance(U_AXIS, lcd_move_u); });
     #endif
-    #if LINEAR_AXES >= 8
+    #if NUM_AXES >= 8
       SUBMENU(MSG_MOVE_V, []{ _menu_move_distance(V_AXIS, lcd_move_v); });
     #endif
-    #if LINEAR_AXES >= 9
+    #if NUM_AXES >= 9
       SUBMENU(MSG_MOVE_W, []{ _menu_move_distance(W_AXIS, lcd_move_w); });
     #endif
   }
@@ -363,22 +363,22 @@ void menu_move() {
     #if HAS_Z_AXIS
       GCODES_ITEM_N(Z_AXIS, MSG_AUTO_HOME_A, PSTR("G28Z"));
     #endif
-    #if LINEAR_AXES >= 4
+    #if NUM_AXES >= 4
       GCODES_ITEM_N(I_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS4_STR));
     #endif
-    #if LINEAR_AXES >= 5
+    #if NUM_AXES >= 5
       GCODES_ITEM_N(J_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS5_STR));
     #endif
-    #if LINEAR_AXES >= 6
+    #if NUM_AXES >= 6
       GCODES_ITEM_N(K_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS6_STR));
     #endif
-    #if LINEAR_AXES >= 7
+    #if NUM_AXES >= 7
       GCODES_ITEM_N(U_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS7_STR));
     #endif
-    #if LINEAR_AXES >= 8
+    #if NUM_AXES >= 8
       GCODES_ITEM_N(V_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS8_STR));
     #endif
-    #if LINEAR_AXES >= 9
+    #if NUM_AXES >= 9
       GCODES_ITEM_N(W_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS9_STR));
     #endif
 
@@ -425,22 +425,22 @@ void menu_motion() {
       #if HAS_Z_AXIS
         GCODES_ITEM_N(Z_AXIS, MSG_AUTO_HOME_A, PSTR("G28Z"));
       #endif
-      #if LINEAR_AXES >= 4
+      #if NUM_AXES >= 4
         GCODES_ITEM_N(I_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS4_STR));
       #endif
-      #if LINEAR_AXES >= 5
+      #if NUM_AXES >= 5
         GCODES_ITEM_N(J_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS5_STR));
       #endif
-      #if LINEAR_AXES >= 6
+      #if NUM_AXES >= 6
         GCODES_ITEM_N(K_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS6_STR));
       #endif
-      #if LINEAR_AXES >= 7
+      #if NUM_AXES >= 7
         GCODES_ITEM_N(U_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS7_STR));
       #endif
-      #if LINEAR_AXES >= 8
+      #if NUM_AXES >= 8
         GCODES_ITEM_N(V_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS8_STR));
       #endif
-      #if LINEAR_AXES >= 9
+      #if NUM_AXES >= 9
         GCODES_ITEM_N(W_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS9_STR));
       #endif
     #endif

@@ -38,28 +38,28 @@
   #if M91x_USE(X) || M91x_USE(X2)
     #define M91x_SOME_X 1
   #endif
-  #if LINEAR_AXES >= 2 && (M91x_USE(Y) || M91x_USE(Y2))
+  #if NUM_AXES >= 2 && (M91x_USE(Y) || M91x_USE(Y2))
     #define M91x_SOME_Y 1
   #endif
   #if HAS_Z_AXIS && (M91x_USE(Z) || M91x_USE(Z2) || M91x_USE(Z3) || M91x_USE(Z4))
     #define M91x_SOME_Z 1
   #endif
-  #if LINEAR_AXES >= 4 && M91x_USE(I)
+  #if NUM_AXES >= 4 && M91x_USE(I)
     #define M91x_USE_I 1
   #endif
-  #if LINEAR_AXES >= 5 && M91x_USE(J)
+  #if NUM_AXES >= 5 && M91x_USE(J)
     #define M91x_USE_J 1
   #endif
-  #if LINEAR_AXES >= 6 && M91x_USE(K)
+  #if NUM_AXES >= 6 && M91x_USE(K)
     #define M91x_USE_K 1
   #endif
-  #if LINEAR_AXES >= 7 && M91x_USE(U)
+  #if NUM_AXES >= 7 && M91x_USE(U)
     #define M91x_USE_U 1
   #endif
-  #if LINEAR_AXES >= 8 && M91x_USE(V)
+  #if NUM_AXES >= 8 && M91x_USE(V)
     #define M91x_USE_V 1
   #endif
-  #if LINEAR_AXES >= 9 && M91x_USE(W)
+  #if NUM_AXES >= 9 && M91x_USE(W)
     #define M91x_USE_W 1
   #endif
 
@@ -467,7 +467,7 @@
 
     bool report = true;
     const uint8_t index = parser.byteval('I');
-    LOOP_LINEAR_AXES(i) if (parser.seen(AXIS_CHAR(i))) {
+    LOOP_NUM_AXES(i) if (parser.seen(AXIS_CHAR(i))) {
       const int16_t value = parser.value_int();
       report = false;
       switch (i) {

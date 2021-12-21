@@ -92,7 +92,7 @@ void GcodeSuite::M92() {
 
 void GcodeSuite::M92_report(const bool forReplay/*=true*/, const int8_t e/*=-1*/) {
   report_heading_etc(forReplay, F(STR_STEPS_PER_UNIT));
-  SERIAL_ECHOPGM_P(LIST_N(DOUBLE(LINEAR_AXES),
+  SERIAL_ECHOPGM_P(LIST_N(DOUBLE(NUM_AXES),
     PSTR("  M92 X"), LINEAR_UNIT(planner.settings.axis_steps_per_mm[X_AXIS]),
     SP_Y_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Y_AXIS]),
     SP_Z_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Z_AXIS]),

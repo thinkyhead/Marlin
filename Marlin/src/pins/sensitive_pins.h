@@ -155,7 +155,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
 
   #if PIN_EXISTS(I_MIN)
     #define _I_MIN I_MIN_PIN,
@@ -201,7 +201,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
 
   #if PIN_EXISTS(J_MIN)
     #define _J_MIN J_MIN_PIN,
@@ -247,7 +247,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
 
   #if PIN_EXISTS(K_MIN)
     #define _K_MIN K_MIN_PIN,
@@ -293,7 +293,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #if PIN_EXISTS(U_MIN)
     #define _U_MIN U_MIN_PIN,
   #else
@@ -333,7 +333,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #if PIN_EXISTS(V_MIN)
     #define _V_MIN V_MIN_PIN,
   #else
@@ -373,7 +373,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #if PIN_EXISTS(W_MIN)
     #define _W_MIN W_MIN_PIN,
   #else

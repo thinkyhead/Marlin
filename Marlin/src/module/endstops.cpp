@@ -484,7 +484,7 @@ void Endstops::event_handler() {
   prev_hit_state = hit_state;
   if (hit_state) {
     #if HAS_STATUS_MESSAGE
-      char LINEAR_AXIS_LIST(chrX = ' ', chrY = ' ', chrZ = ' ', chrI = ' ', chrJ = ' ', chrK = ' ', chrU = ' ', chrV = ' ', chrW = ' '),
+      char NUM_AXIS_LIST(chrX = ' ', chrY = ' ', chrZ = ' ', chrI = ' ', chrJ = ' ', chrK = ' ', chrU = ' ', chrV = ' ', chrW = ' '),
            chrP = ' ';
       #define _SET_STOP_CHAR(A,C) (chr## A = C)
     #else
@@ -510,7 +510,7 @@ void Endstops::event_handler() {
 
     SERIAL_ECHO_START();
     SERIAL_ECHOPGM(STR_ENDSTOPS_HIT);
-    LINEAR_AXIS_CODE(
+    NUM_AXIS_CODE(
        ENDSTOP_HIT_TEST_X(),
        ENDSTOP_HIT_TEST_Y(),
        ENDSTOP_HIT_TEST_Z(),
@@ -530,9 +530,9 @@ void Endstops::event_handler() {
 
     TERN_(HAS_STATUS_MESSAGE,
       ui.status_printf(0,
-        F(S_FMT GANG_N_1(LINEAR_AXES, " %c") " %c"),
+        F(S_FMT GANG_N_1(NUM_AXES, " %c") " %c"),
         GET_TEXT(MSG_LCD_ENDSTOPS),
-        LINEAR_AXIS_LIST(chrX, chrY, chrZ, chrI, chrJ, chrK, chrU, chrV, chrW), chrP
+        NUM_AXIS_LIST(chrX, chrY, chrZ, chrI, chrJ, chrK, chrU, chrV, chrW), chrP
       )
     );
 
@@ -1096,7 +1096,7 @@ void Endstops::update() {
     #define PROCESS_ENDSTOP_Z(MINMAX) PROCESS_DUAL_ENDSTOP(Z, MINMAX)
   #endif
 
-  #if HAS_G38_PROBE // TODO (DerAndere): Add support for LINEAR_AXES >= 4
+  #if HAS_G38_PROBE // TODO (DerAndere): Add support for NUM_AXES >= 4
     #define _G38_OPEN_STATE TERN(G38_PROBE_AWAY, (G38_move >= 4), LOW)
     // For G38 moves check the probe's pin for ALL movement
     if (G38_move && TEST_ENDSTOP(_ENDSTOP(Z, TERN(USES_Z_MIN_PROBE_PIN, MIN_PROBE, MIN))) != _G38_OPEN_STATE) {
@@ -1222,7 +1222,7 @@ void Endstops::update() {
     }
   #endif
 
-  #if LINEAR_AXES >= 4
+  #if NUM_AXES >= 4
     if (stepper.axis_is_moving(I_AXIS)) {
       if (stepper.motor_direction(I_AXIS_HEAD)) { // -direction
         #if HAS_I_MIN || (I_SPI_SENSORLESS && I_HOME_TO_MIN)
@@ -1237,7 +1237,7 @@ void Endstops::update() {
     }
   #endif
 
-  #if LINEAR_AXES >= 5
+  #if NUM_AXES >= 5
     if (stepper.axis_is_moving(J_AXIS)) {
       if (stepper.motor_direction(J_AXIS_HEAD)) { // -direction
         #if HAS_J_MIN || (J_SPI_SENSORLESS && J_HOME_TO_MIN)
@@ -1252,7 +1252,7 @@ void Endstops::update() {
     }
   #endif
 
-  #if LINEAR_AXES >= 6
+  #if NUM_AXES >= 6
     if (stepper.axis_is_moving(K_AXIS)) {
       if (stepper.motor_direction(K_AXIS_HEAD)) { // -direction
         #if HAS_K_MIN || (K_SPI_SENSORLESS && K_HOME_TO_MIN)
@@ -1267,7 +1267,7 @@ void Endstops::update() {
     }
   #endif
 
-  #if LINEAR_AXES >= 7
+  #if NUM_AXES >= 7
     if (stepper.axis_is_moving(U_AXIS)) {
       if (stepper.motor_direction(U_AXIS_HEAD)) { // -direction
         #if HAS_U_MIN || (U_SPI_SENSORLESS && U_HOME_TO_MIN)
@@ -1282,7 +1282,7 @@ void Endstops::update() {
     }
   #endif
 
-  #if LINEAR_AXES >= 8
+  #if NUM_AXES >= 8
     if (stepper.axis_is_moving(V_AXIS)) {
       if (stepper.motor_direction(V_AXIS_HEAD)) { // -direction
         #if HAS_V_MIN || (V_SPI_SENSORLESS && V_HOME_TO_MIN)
@@ -1297,7 +1297,7 @@ void Endstops::update() {
     }
   #endif
 
-  #if LINEAR_AXES >= 9
+  #if NUM_AXES >= 9
     if (stepper.axis_is_moving(W_AXIS)) {
       if (stepper.motor_direction(W_AXIS_HEAD)) { // -direction
         #if HAS_W_MIN || (W_SPI_SENSORLESS && W_HOME_TO_MIN)

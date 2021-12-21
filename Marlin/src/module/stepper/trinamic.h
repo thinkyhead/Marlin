@@ -92,22 +92,22 @@ typedef struct {
 #if HAS_Z_AXIS && !defined(CHOPPER_TIMING_Z)
   #define CHOPPER_TIMING_Z CHOPPER_TIMING
 #endif
-#if LINEAR_AXES >= 4 && !defined(CHOPPER_TIMING_I)
+#if NUM_AXES >= 4 && !defined(CHOPPER_TIMING_I)
   #define CHOPPER_TIMING_I CHOPPER_TIMING
 #endif
-#if LINEAR_AXES >= 5 && !defined(CHOPPER_TIMING_J)
+#if NUM_AXES >= 5 && !defined(CHOPPER_TIMING_J)
   #define CHOPPER_TIMING_J CHOPPER_TIMING
 #endif
-#if LINEAR_AXES >= 6 && !defined(CHOPPER_TIMING_K)
+#if NUM_AXES >= 6 && !defined(CHOPPER_TIMING_K)
   #define CHOPPER_TIMING_K CHOPPER_TIMING
 #endif
-#if LINEAR_AXES >= 7 && !defined(CHOPPER_TIMING_U)
+#if NUM_AXES >= 7 && !defined(CHOPPER_TIMING_U)
   #define CHOPPER_TIMING_U CHOPPER_TIMING
 #endif
-#if LINEAR_AXES >= 8 && !defined(CHOPPER_TIMING_V)
+#if NUM_AXES >= 8 && !defined(CHOPPER_TIMING_V)
   #define CHOPPER_TIMING_V CHOPPER_TIMING
 #endif
-#if LINEAR_AXES >= 9 && !defined(CHOPPER_TIMING_W)
+#if NUM_AXES >= 9 && !defined(CHOPPER_TIMING_W)
   #define CHOPPER_TIMING_W CHOPPER_TIMING
 #endif
 #if HAS_EXTRUDERS && !defined(CHOPPER_TIMING_E)

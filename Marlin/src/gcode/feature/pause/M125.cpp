@@ -69,24 +69,14 @@ void GcodeSuite::M125() {
   // Move XY axes to filament change position or given position
   if (parser.seenval('X')) park_point.x = RAW_X_POSITION(parser.linearval('X'));
   if (parser.seenval('Y')) park_point.y = RAW_X_POSITION(parser.linearval('Y'));
-  #if LINEAR_AXES >= 4
-    if (parser.seenval(AXIS4_NAME)) park_point.i = RAW_X_POSITION(parser.linearval(AXIS4_NAME));
-  #endif
-  #if LINEAR_AXES >= 5
-    if (parser.seenval(AXIS5_NAME)) park_point.j = RAW_X_POSITION(parser.linearval(AXIS5_NAME));
-  #endif
-  #if LINEAR_AXES >= 6
-    if (parser.seenval(AXIS6_NAME)) park_point.k = RAW_X_POSITION(parser.linearval(AXIS6_NAME));
-  #endif
-  #if LINEAR_AXES >= 7
-    if (parser.seenval(AXIS7_NAME)) park_point.u = RAW_X_POSITION(parser.linearval(AXIS7_NAME));
-  #endif
-  #if LINEAR_AXES >= 8
-    if (parser.seenval(AXIS8_NAME)) park_point.v = RAW_X_POSITION(parser.linearval(AXIS8_NAME));
-  #endif
-  #if LINEAR_AXES >= 9
-    if (parser.seenval(AXIS9_NAME)) park_point.w = RAW_X_POSITION(parser.linearval(AXIS9_NAME));
-  #endif
+  SECONDARY_AXIS_CODE(
+    if (parser.seenval(AXIS4_NAME)) park_point.i = RAW_X_POSITION(parser.linearval(AXIS4_NAME)),
+    if (parser.seenval(AXIS5_NAME)) park_point.j = RAW_X_POSITION(parser.linearval(AXIS5_NAME)),
+    if (parser.seenval(AXIS6_NAME)) park_point.k = RAW_X_POSITION(parser.linearval(AXIS6_NAME)),
+    if (parser.seenval(AXIS7_NAME)) park_point.u = RAW_X_POSITION(parser.linearval(AXIS7_NAME)),
+    if (parser.seenval(AXIS8_NAME)) park_point.v = RAW_X_POSITION(parser.linearval(AXIS8_NAME)),
+    if (parser.seenval(AXIS9_NAME)) park_point.w = RAW_X_POSITION(parser.linearval(AXIS9_NAME)),
+  );
 
   // Lift Z axis
   if (parser.seenval('Z')) park_point.z = parser.linearval('Z');

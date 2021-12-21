@@ -50,7 +50,7 @@ void GcodeSuite::M206() {
   if (parser.seen('Z'))
     set_home_offset(Y_AXIS, parser.value_linear_units());
   #endif
-  #if LINEAR_AXES >= 4
+  #if NUM_AXES >= 4
     if (parser.seen(AXIS4_NAME))
       #if HAS_ROTATIONAL_AXIS4
         set_home_offset(I_AXIS, parser.value_float());
@@ -58,7 +58,7 @@ void GcodeSuite::M206() {
         set_home_offset(I_AXIS, parser.value_linear_units());
       #endif
   #endif
-  #if LINEAR_AXES >= 5
+  #if NUM_AXES >= 5
     if (parser.seen(AXIS5_NAME))
       #if HAS_ROTATIONAL_AXIS5
         set_home_offset(J_AXIS, parser.value_float());
@@ -66,7 +66,7 @@ void GcodeSuite::M206() {
         set_home_offset(J_AXIS, parser.value_linear_units());
       #endif
   #endif
-  #if LINEAR_AXES >= 6
+  #if NUM_AXES >= 6
     if (parser.seen(AXIS6_NAME))
       #if HAS_ROTATIONAL_AXIS6
         set_home_offset(K_AXIS, parser.value_float());
@@ -74,7 +74,7 @@ void GcodeSuite::M206() {
         set_home_offset(K_AXIS, parser.value_linear_units());
       #endif
   #endif
-  #if LINEAR_AXES >= 7
+  #if NUM_AXES >= 7
     if (parser.seen(AXIS7_NAME))
       #if HAS_ROTATIONAL_AXIS7
         set_home_offset(U_AXIS, parser.value_float());
@@ -82,7 +82,7 @@ void GcodeSuite::M206() {
         set_home_offset(U_AXIS, parser.value_linear_units());
       #endif
   #endif
-  #if LINEAR_AXES >= 8
+  #if NUM_AXES >= 8
     if (parser.seen(AXIS8_NAME))
       #if HAS_ROTATIONAL_AXIS8
         set_home_offset(V_AXIS, parser.value_float());
@@ -90,7 +90,7 @@ void GcodeSuite::M206() {
         set_home_offset(V_AXIS, parser.value_linear_units());
       #endif
   #endif
-  #if LINEAR_AXES >= 9
+  #if NUM_AXES >= 9
     if (parser.seen(AXIS9_NAME))
       #if HAS_ROTATIONAL_AXIS9
         set_home_offset(W_AXIS, parser.value_float());
@@ -111,7 +111,7 @@ void GcodeSuite::M206_report(const bool forReplay/*=true*/) {
   report_heading_etc(forReplay, F(STR_HOME_OFFSET));
   SERIAL_ECHOLNPGM_P(
     #if IS_CARTESIAN
-      LIST_N(DOUBLE(LINEAR_AXES),
+      LIST_N(DOUBLE(NUM_AXES),
         PSTR("  M206 X"), LINEAR_UNIT(home_offset.x),
         SP_Y_STR, LINEAR_UNIT(home_offset.y),
         SP_Z_STR, LINEAR_UNIT(home_offset.z),
@@ -143,7 +143,7 @@ void GcodeSuite::M428() {
   if (homing_needed_error()) return;
 
   xyz_float_t diff;
-  LOOP_LINEAR_AXES(i) {
+  LOOP_NUM_AXES(i) {
     diff[i] = base_home_pos((AxisEnum)i) - current_position[i];
     if (!WITHIN(diff[i], -20, 20) && home_dir((AxisEnum)i) > 0)
       diff[i] = -current_position[i];
@@ -155,7 +155,7 @@ void GcodeSuite::M428() {
     }
   }
 
-  LOOP_LINEAR_AXES(i) set_home_offset((AxisEnum)i, diff[i]);
+  LOOP_NUM_AXES(i) set_home_offset((AxisEnum)i, diff[i]);
   report_current_position();
   LCD_MESSAGE(MSG_HOME_OFFSETS_APPLIED);
   BUZZ(100, 659);

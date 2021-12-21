@@ -152,7 +152,7 @@
 /**
  * Define the number of coordinated axes.
  * See https://github.com/DerAndere1/Marlin/wiki
- * Each linear axis gets its own stepper control and endstop:
+ * Each axis gets its own stepper control and endstop:
  *
  *   Steppers: *_STEP_PIN, *_ENABLE_PIN, *_DIR_PIN, *_ENABLE_ON
  *   Endstops: *_STOP_PIN, USE_*MIN_PLUG, USE_*MAX_PLUG
@@ -163,11 +163,11 @@
  *
  * :[3, 4, 5, 6, 7, 8, 9]
  */
-//#define LINEAR_AXES 3
+//#define NUM_AXES 3
 
 /**
  * Settings for additional axes:
- * Set HAS_ROTATIONAL_AXIS[4/5/6...] to "true" for rotational axes and to "false for secondary linear axes.
+ * Set HAS_ROTATIONAL_AXIS[4/5/6...] to "true" for rotational axes and to "false" for secondary linear axes.
  * Angular distances along rotational axes are in units of degrees.
  *
  * AXIS[4/5/6...]_NAME defines the axis code that is used in G-code commands to
@@ -181,27 +181,27 @@
  * Regardless of the settings, firmware-internal axis IDs are
  * I (AXIS4), J (AXIS5), K (AXIS6), U (AXIS7), V (AXIS8), W (AXIS9).
  */
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #define HAS_ROTATIONAL_AXIS4 true
   #define AXIS4_NAME 'A' // :['A', 'B', 'C', 'U', 'V', 'W']
 #endif
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #define HAS_ROTATIONAL_AXIS5 true // "true" requires HAS_ROTATIONAL_AXIS4 true
   #define AXIS5_NAME 'B' // :['B', 'C', 'U', 'V', 'W']
 #endif
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #define HAS_ROTATIONAL_AXIS6 true // "true" requires that all axes above are also rotational
   #define AXIS6_NAME 'C' // :['C', 'U', 'V', 'W']
 #endif
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #define HAS_ROTATIONAL_AXIS7 false // "true" requires that all axes above are also rotational
   #define AXIS7_NAME 'U' // :['U', 'V', 'W']
 #endif
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #define HAS_ROTATIONAL_AXIS8 false // "true" requires that all axes above are also rotational
   #define AXIS8_NAME 'V' // :['V', 'W']
 #endif
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #define HAS_ROTATIONAL_AXIS9 false // "true" requires that all axes above are also rotational
   #define AXIS9_NAME 'W' // :['W']
 #endif

@@ -686,12 +686,12 @@
  * Number of Linear Axes (e.g., XYZIJKUVW)
  * All the logical axes except for the tool (E) axis
  */
-#ifndef LINEAR_AXES
-  #define LINEAR_AXES XYZ
+#ifndef NUM_AXES
+  #define NUM_AXES XYZ
 #endif
-#if LINEAR_AXES >= XY
+#if NUM_AXES >= XY
   #define HAS_Y_AXIS 1
-  #if LINEAR_AXES >= XYZ
+  #if NUM_AXES >= XYZ
     #define HAS_Z_AXIS 1
   #endif
 #endif
@@ -700,18 +700,18 @@
  * Number of Primary Linear Axes (e.g. XYZ)
  * X, XY, or XYZ axes
  */
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #define PRIMARY_LINEAR_AXES 3
 #else
-  #define PRIMARY_LINEAR_AXES LINEAR_AXES
+  #define PRIMARY_LINEAR_AXES NUM_AXES
 #endif
 
 /**
  * Number of Secondary Axes (e.g. IJKUVW)
  * All axes exept for XYZE axes
  */
-#if LINEAR_AXES >= 4
-  #define SECONDARY_AXES SUB3(LINEAR_AXES)
+#if NUM_AXES >= 4
+  #define SECONDARY_AXES SUB3(NUM_AXES)
 #else
   #define SECONDARY_AXES 0
 #endif
@@ -740,7 +740,7 @@
  * Number of Rotational Axes (e.g. IJK)
  * All the axes for which HAS_ROTATIONAL_AXIS* is true
  */
-#define SECONDARY_LINEAR_AXES (LINEAR_AXES - PRIMARY_LINEAR_AXES - ROTATIONAL_AXES)
+#define SECONDARY_LINEAR_AXES (NUM_AXES - PRIMARY_LINEAR_AXES - ROTATIONAL_AXES)
 
 /**
  * Number of Logical Axes (e.g., XYZIJKUVWE)
@@ -748,9 +748,9 @@
  * Delta maps stepper-specific values to ABC steppers.
  */
 #if HAS_EXTRUDERS
-  #define LOGICAL_AXES INCREMENT(LINEAR_AXES)
+  #define LOGICAL_AXES INCREMENT(NUM_AXES)
 #else
-  #define LOGICAL_AXES LINEAR_AXES
+  #define LOGICAL_AXES NUM_AXES
 #endif
 
 /**
@@ -768,7 +768,7 @@
  *  distinguished.
  */
 #if ENABLED(DISTINCT_E_FACTORS) && E_STEPPERS > 1
-  #define DISTINCT_AXES (LINEAR_AXES + E_STEPPERS)
+  #define DISTINCT_AXES (NUM_AXES + E_STEPPERS)
   #define DISTINCT_E E_STEPPERS
   #define E_INDEX_N(E) (E)
 #else
@@ -1276,22 +1276,22 @@
 #if HAS_Z_AXIS && !defined(INVERT_Z_DIR)
   #define INVERT_Z_DIR false
 #endif
-#if LINEAR_AXES >= 4 && !defined(INVERT_I_DIR)
+#if NUM_AXES >= 4 && !defined(INVERT_I_DIR)
   #define INVERT_I_DIR false
 #endif
-#if LINEAR_AXES >= 5 && !defined(INVERT_J_DIR)
+#if NUM_AXES >= 5 && !defined(INVERT_J_DIR)
   #define INVERT_J_DIR false
 #endif
-#if LINEAR_AXES >= 6 && !defined(INVERT_K_DIR)
+#if NUM_AXES >= 6 && !defined(INVERT_K_DIR)
   #define INVERT_K_DIR false
 #endif
-#if LINEAR_AXES >= 7 && !defined(INVERT_U_DIR)
+#if NUM_AXES >= 7 && !defined(INVERT_U_DIR)
   #define INVERT_U_DIR false
 #endif
-#if LINEAR_AXES >= 8 && !defined(INVERT_V_DIR)
+#if NUM_AXES >= 8 && !defined(INVERT_V_DIR)
   #define INVERT_V_DIR false
 #endif
-#if LINEAR_AXES >= 9 && !defined(INVERT_W_DIR)
+#if NUM_AXES >= 9 && !defined(INVERT_W_DIR)
   #define INVERT_W_DIR false
 #endif
 #if HAS_EXTRUDERS && !defined(INVERT_E_DIR)

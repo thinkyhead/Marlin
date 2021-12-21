@@ -83,7 +83,7 @@
 
     #if ENABLED(SENSORLESS_HOMING)
       sensorless_t stealth_states {
-          LINEAR_AXIS_LIST(tmc_enable_stallguard(stepperX), tmc_enable_stallguard(stepperY), false, false, false, false, false, false, false)
+          NUM_AXIS_LIST(tmc_enable_stallguard(stepperX), tmc_enable_stallguard(stepperY), false, false, false, false, false, false, false)
         , false
           #if AXIS_HAS_STALLGUARD(X2)
             || tmc_enable_stallguard(stepperX2)
@@ -223,7 +223,7 @@ void GcodeSuite::G28() {
 
   #if ENABLED(MARLIN_DEV_MODE)
     if (parser.seen_test('S')) {
-      LOOP_LINEAR_AXES(a) set_axis_is_at_home((AxisEnum)a);
+      LOOP_NUM_AXES(a) set_axis_is_at_home((AxisEnum)a);
       sync_plan_position();
       SERIAL_ECHOLNPGM("Simulated Homing");
       report_current_position();
@@ -383,12 +383,12 @@ void GcodeSuite::G28() {
     #define _UNSAFE(A) (homeZ && TERN0(Z_SAFE_HOMING, axes_should_home(_BV(A##_AXIS))))
 
     const bool homeZ = TERN0(HAS_Z_AXIS, parser.seen_test('Z')),
-               LINEAR_AXIS_LIST(              // Other axes should be homed before Z safe-homing
+               NUM_AXIS_LIST(              // Other axes should be homed before Z safe-homing
                  needX = _UNSAFE(X), needY = _UNSAFE(Y), needZ = false, // UNUSED
                  needI = _UNSAFE(I), needJ = _UNSAFE(J), needK = _UNSAFE(K),
                  needU = _UNSAFE(U), needV = _UNSAFE(V), needW = _UNSAFE(W)
                ),
-               LINEAR_AXIS_LIST(              // Home each axis if needed or flagged
+               NUM_AXIS_LIST(              // Home each axis if needed or flagged
                  homeX = needX || parser.seen_test('X'),
                  homeY = needY || parser.seen_test('Y'),
                  homeZZ = homeZ,
@@ -396,12 +396,12 @@ void GcodeSuite::G28() {
                  homeK = needK || parser.seen_test(AXIS6_NAME), homeU = needU || parser.seen_test(AXIS7_NAME),
                  homeV = needV || parser.seen_test(AXIS8_NAME), homeW = needW || parser.seen_test(AXIS9_NAME),
                ),
-               home_all = LINEAR_AXIS_GANG(   // Home-all if all or none are flagged
+               home_all = NUM_AXIS_GANG(   // Home-all if all or none are flagged
                     homeX == homeX, && homeY == homeX, && homeZ == homeX,
                  && homeI == homeX, && homeJ == homeX, && homeK == homeX,
                  && homeU == homeX, && homeV == homeX, && homeW == homeX
                ),
-               LINEAR_AXIS_LIST(
+               NUM_AXIS_LIST(
                  doX = home_all || homeX, doY = home_all || homeY, doZ = home_all || homeZ,
                  doI = home_all || homeI, doJ = home_all || homeJ, doK = home_all || homeK,
                  doU = home_all || homeU, doV = home_all || homeV, doW = home_all || homeW
@@ -417,7 +417,7 @@ void GcodeSuite::G28() {
 
     const float z_homing_height = parser.seenval('R') ? parser.value_linear_units() : Z_HOMING_HEIGHT;
 
-    if (z_homing_height && (LINEAR_AXIS_GANG(doX, || doY, || TERN0(Z_SAFE_HOMING, doZ), || doI, || doJ, || doK, || doU, || doV, || doW))) {
+    if (z_homing_height && (NUM_AXIS_GANG(doX, || doY, || TERN0(Z_SAFE_HOMING, doZ), || doI, || doJ, || doK, || doU, || doV, || doW))) {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Raise Z (before homing) by ", z_homing_height);
       do_z_clearance(z_homing_height);
@@ -476,24 +476,14 @@ void GcodeSuite::G28() {
       }
     #endif
 
-    #if LINEAR_AXES >= 4
-      if (doI) homeaxis(I_AXIS);
-    #endif
-    #if LINEAR_AXES >= 5
-      if (doJ) homeaxis(J_AXIS);
-    #endif
-    #if LINEAR_AXES >= 6
-      if (doK) homeaxis(K_AXIS);
-    #endif
-    #if LINEAR_AXES >= 7
-      if (doU) homeaxis(U_AXIS);
-    #endif
-    #if LINEAR_AXES >= 8
-      if (doV) homeaxis(V_AXIS);
-    #endif
-    #if LINEAR_AXES >= 9
-      if (doW) homeaxis(W_AXIS);
-    #endif
+    SECONDARY_AXIS_CODE(
+      if (doI) homeaxis(I_AXIS),
+      if (doJ) homeaxis(J_AXIS),
+      if (doK) homeaxis(K_AXIS),
+      if (doU) homeaxis(U_AXIS),
+      if (doV) homeaxis(V_AXIS),
+      if (doW) homeaxis(W_AXIS)
+    );
 
     sync_plan_position();
 
@@ -605,7 +595,7 @@ void GcodeSuite::G28() {
     // If not, this will need a PROGMEM directive and an accessor.
     #define _EN_ITEM(N) , E_AXIS
     static constexpr AxisEnum L64XX_axis_xref[MAX_L64XX] = {
-      LINEAR_AXIS_LIST(X_AXIS, Y_AXIS, Z_AXIS, I_AXIS, J_AXIS, K_AXIS, U_AXIS, V_AXIS, W_AXIS),
+      NUM_AXIS_LIST(X_AXIS, Y_AXIS, Z_AXIS, I_AXIS, J_AXIS, K_AXIS, U_AXIS, V_AXIS, W_AXIS),
       X_AXIS, Y_AXIS, Z_AXIS, Z_AXIS, Z_AXIS
       REPEAT(E_STEPPERS, _EN_ITEM)
     };

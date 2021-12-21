@@ -79,7 +79,7 @@ constexpr uint8_t ui8_to_percent(const uint8_t i) { return (int(i) * 100 + 127) 
 
 const xyze_char_t axis_codes LOGICAL_AXIS_ARRAY('E', 'X', 'Y', 'Z', AXIS4_NAME, AXIS5_NAME, AXIS6_NAME, AXIS7_NAME, AXIS8_NAME, AXIS9_NAME);
 
-#if LINEAR_AXES <= XYZ
+#if NUM_AXES <= XYZ
   #define AXIS_CHAR(A) ((char)('X' + A))
 #else
   #define AXIS_CHAR(A) axis_codes[A]

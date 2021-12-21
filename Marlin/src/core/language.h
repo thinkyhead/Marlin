@@ -374,7 +374,7 @@
 #define LCD_STR_E STR_E
 
 // Extra Axis and Endstop Names
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #if AXIS4_NAME == 'A'
     #define AXIS4_STR "A"
     #define STR_I_MIN "a_min"
@@ -406,7 +406,7 @@
   #define AXIS4_STR   ""
 #endif
 
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #if AXIS5_NAME == 'B'
     #define AXIS5_STR "B"
     #define STR_J_MIN "b_min"
@@ -434,7 +434,7 @@
   #define AXIS5_STR   ""
 #endif
 
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #if AXIS6_NAME == 'C'
     #define AXIS6_STR "C"
     #define STR_K_MIN "c_min"
@@ -458,7 +458,7 @@
   #define AXIS6_STR   ""
 #endif
 
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #if AXIS7_NAME == 'U'
     #define AXIS7_STR "U"
     #define STR_U_MIN "u_min"
@@ -478,7 +478,7 @@
   #define AXIS7_STR   ""
 #endif
 
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #if AXIS8_NAME == 'V'
     #define AXIS8_STR "V"
     #define STR_V_MIN "v_min"
@@ -494,7 +494,7 @@
   #define AXIS8_STR   ""
 #endif
 
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #if AXIS9_NAME == 'W'
     #define AXIS9_STR "W"
     #define STR_W_MIN "w_min"

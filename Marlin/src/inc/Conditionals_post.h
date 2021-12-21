@@ -108,22 +108,22 @@
 #else
   #undef CONTROLLER_FAN_USE_Z_ONLY
 #endif
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #define I_MAX_LENGTH (I_MAX_POS - (I_MIN_POS))
 #endif
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #define J_MAX_LENGTH (J_MAX_POS - (J_MIN_POS))
 #endif
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #define K_MAX_LENGTH (K_MAX_POS - (K_MIN_POS))
 #endif
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #define U_MAX_LENGTH (U_MAX_POS - (U_MIN_POS))
 #endif
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #define V_MAX_LENGTH (V_MAX_POS - (V_MIN_POS))
 #endif
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #define W_MAX_LENGTH (W_MAX_POS - (W_MIN_POS))
 #endif
 
@@ -134,22 +134,22 @@
 #if HAS_Y_AXIS && !defined(Y_BED_SIZE)
   #define Y_BED_SIZE Y_MAX_LENGTH
 #endif
-#if LINEAR_AXES >= 4 && !defined(I_BED_SIZE)
+#if NUM_AXES >= 4 && !defined(I_BED_SIZE)
   #define I_BED_SIZE I_MAX_LENGTH
 #endif
-#if LINEAR_AXES >= 5 && !defined(J_BED_SIZE)
+#if NUM_AXES >= 5 && !defined(J_BED_SIZE)
   #define J_BED_SIZE J_MAX_LENGTH
 #endif
-#if LINEAR_AXES >= 6 && !defined(K_BED_SIZE)
+#if NUM_AXES >= 6 && !defined(K_BED_SIZE)
   #define K_BED_SIZE K_MAX_LENGTH
 #endif
-#if LINEAR_AXES >= 7 && !defined(U_BED_SIZE)
+#if NUM_AXES >= 7 && !defined(U_BED_SIZE)
   #define U_BED_SIZE U_MAX_LENGTH
 #endif
-#if LINEAR_AXES >= 8 && !defined(V_BED_SIZE)
+#if NUM_AXES >= 8 && !defined(V_BED_SIZE)
   #define V_BED_SIZE V_MAX_LENGTH
 #endif
-#if LINEAR_AXES >= 9 && !defined(W_BED_SIZE)
+#if NUM_AXES >= 9 && !defined(W_BED_SIZE)
   #define W_BED_SIZE W_MAX_LENGTH
 #endif
 
@@ -252,42 +252,42 @@
   #define Z_HOME_POS TERN(Z_HOME_TO_MIN, Z_MIN_POS, Z_MAX_POS)
 #endif
 
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #ifdef MANUAL_I_HOME_POS
     #define I_HOME_POS MANUAL_I_HOME_POS
   #else
     #define I_HOME_POS TERN(I_HOME_TO_MIN, I_MIN_POS, I_MAX_POS)
   #endif
 #endif
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #ifdef MANUAL_J_HOME_POS
     #define J_HOME_POS MANUAL_J_HOME_POS
   #else
     #define J_HOME_POS TERN(J_HOME_TO_MIN, J_MIN_POS, J_MAX_POS)
   #endif
 #endif
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #ifdef MANUAL_K_HOME_POS
     #define K_HOME_POS MANUAL_K_HOME_POS
   #else
     #define K_HOME_POS TERN(K_HOME_TO_MIN, K_MIN_POS, K_MAX_POS)
   #endif
 #endif
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #ifdef MANUAL_U_HOME_POS
     #define U_HOME_POS MANUAL_U_HOME_POS
   #else
     #define U_HOME_POS (U_HOME_DIR < 0 ? U_MIN_POS : U_MAX_POS)
   #endif
 #endif
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #ifdef MANUAL_V_HOME_POS
     #define V_HOME_POS MANUAL_V_HOME_POS
   #else
     #define V_HOME_POS (V_HOME_DIR < 0 ? V_MIN_POS : V_MAX_POS)
   #endif
 #endif
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #ifdef MANUAL_W_HOME_POS
     #define W_HOME_POS MANUAL_W_HOME_POS
   #else
@@ -1658,7 +1658,7 @@
   #endif
 #endif
 
-#if LINEAR_AXES >= 4
+#if NUM_AXES >= 4
   #if PIN_EXISTS(I_ENABLE) || AXIS_IS_L64XX(I) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(I))
     #define HAS_I_ENABLE 1
   #endif
@@ -1678,7 +1678,7 @@
   #undef DISABLE_INACTIVE_I
 #endif
 
-#if LINEAR_AXES >= 5
+#if NUM_AXES >= 5
   #if PIN_EXISTS(J_ENABLE) || AXIS_IS_L64XX(J) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(J))
     #define HAS_J_ENABLE 1
   #endif
@@ -1698,7 +1698,7 @@
   #undef DISABLE_INACTIVE_J
 #endif
 
-#if LINEAR_AXES >= 6
+#if NUM_AXES >= 6
   #if PIN_EXISTS(K_ENABLE) || AXIS_IS_L64XX(K) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(K))
     #define HAS_K_ENABLE 1
   #endif
@@ -1718,7 +1718,7 @@
   #undef DISABLE_INACTIVE_K
 #endif
 
-#if LINEAR_AXES >= 7
+#if NUM_AXES >= 7
   #if PIN_EXISTS(U_ENABLE) || AXIS_IS_L64XX(U) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(U))
     #define HAS_U_ENABLE 1
   #endif
@@ -1738,7 +1738,7 @@
   #undef DISABLE_INACTIVE_U
 #endif
 
-#if LINEAR_AXES >= 8
+#if NUM_AXES >= 8
   #if PIN_EXISTS(V_ENABLE) || AXIS_IS_L64XX(V) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(V))
     #define HAS_V_ENABLE 1
   #endif
@@ -1758,7 +1758,7 @@
   #undef DISABLE_INACTIVE_V
 #endif
 
-#if LINEAR_AXES >= 9
+#if NUM_AXES >= 9
   #if PIN_EXISTS(W_ENABLE) || AXIS_IS_L64XX(W) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(W))
     #define HAS_W_ENABLE 1
   #endif
@@ -2077,22 +2077,22 @@
     #if HAS_Z_AXIS
       #define Z_SPI_SENSORLESS Z_SENSORLESS
     #endif
-    #if LINEAR_AXES >= 4
+    #if NUM_AXES >= 4
       #define I_SPI_SENSORLESS I_SENSORLESS
     #endif
-    #if LINEAR_AXES >= 5
+    #if NUM_AXES >= 5
       #define J_SPI_SENSORLESS J_SENSORLESS
     #endif
-    #if LINEAR_AXES >= 6
+    #if NUM_AXES >= 6
       #define K_SPI_SENSORLESS K_SENSORLESS
     #endif
-    #if LINEAR_AXES >= 7
+    #if NUM_AXES >= 7
       #define U_SPI_SENSORLESS U_SENSORLESS
     #endif
-    #if LINEAR_AXES >= 8
+    #if NUM_AXES >= 8
       #define V_SPI_SENSORLESS V_SENSORLESS
     #endif
-    #if LINEAR_AXES >= 9
+    #if NUM_AXES >= 9
       #define W_SPI_SENSORLESS W_SENSORLESS
     #endif
   #endif
@@ -2120,22 +2120,22 @@
   #ifndef Z4_INTERPOLATE
     #define Z4_INTERPOLATE INTERPOLATE
   #endif
-  #if LINEAR_AXES >= 4 && !defined(I_INTERPOLATE)
+  #if NUM_AXES >= 4 && !defined(I_INTERPOLATE)
     #define I_INTERPOLATE INTERPOLATE
   #endif
-  #if LINEAR_AXES >= 5 && !defined(J_INTERPOLATE)
+  #if NUM_AXES >= 5 && !defined(J_INTERPOLATE)
     #define J_INTERPOLATE INTERPOLATE
   #endif
-  #if LINEAR_AXES >= 6 && !defined(K_INTERPOLATE)
+  #if NUM_AXES >= 6 && !defined(K_INTERPOLATE)
     #define K_INTERPOLATE INTERPOLATE
   #endif
-  #if LINEAR_AXES >= 7 && !defined(U_INTERPOLATE)
+  #if NUM_AXES >= 7 && !defined(U_INTERPOLATE)
     #define U_INTERPOLATE INTERPOLATE
   #endif
-  #if LINEAR_AXES >= 8 && !defined(V_INTERPOLATE)
+  #if NUM_AXES >= 8 && !defined(V_INTERPOLATE)
     #define V_INTERPOLATE INTERPOLATE
   #endif
-  #if LINEAR_AXES >= 9 && !defined(W_INTERPOLATE)
+  #if NUM_AXES >= 9 && !defined(W_INTERPOLATE)
     #define W_INTERPOLATE INTERPOLATE
   #endif
   #ifndef E0_INTERPOLATE
