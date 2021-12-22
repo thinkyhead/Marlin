@@ -194,7 +194,7 @@ void BedMeshBase::_drawMesh(CommandProcessor &cmd, int16_t x, int16_t y, int16_t
 }
 
 uint8_t BedMeshBase::pointToTag(uint8_t x, uint8_t y) {
-  return x >= 0 && x < GRID_MAX_POINTS_X && y >= 0 && y < GRID_MAX_POINTS_Y ? y * (GRID_MAX_POINTS_X) + x + 10 : 0;
+  return WITHIN(x, 0, GRID_MAX_POINTS_X - 1) && WITHIN(y, 0, GRID_MAX_POINTS_Y - 1) ? y * (GRID_MAX_POINTS_X) + x + 10 : 0;
 }
 
 bool BedMeshBase::tagToPoint(uint8_t tag, xy_uint8_t &pt) {

@@ -77,7 +77,7 @@ const char *FilesScreen::getSelectedFilename(bool shortName) {
 }
 
 void FilesScreen::drawSelectedFile() {
-  if(mydata.selected_tag == 0xFF) return;
+  if (mydata.selected_tag == 0xFF) return;
   FileList files;
   files.seek(getSelectedFileIndex(), true);
   mydata.flags.is_dir = files.isDir();
@@ -222,14 +222,12 @@ bool FilesScreen::onTouchEnd(uint8_t tag) {
       ConfirmStartPrintDialogBox::show(getSelectedFileIndex());
       return true;
     case 242: // Previous page
-      if (mydata.cur_page > 0) {
-        gotoPage(mydata.cur_page-1);
-      }
+      if (mydata.cur_page > 0)
+        gotoPage(mydata.cur_page - 1);
       break;
     case 243: // Next page
-      if (mydata.cur_page < (mydata.num_page-1)) {
-        gotoPage(mydata.cur_page+1);
-      }
+      if (mydata.cur_page < (mydata.num_page - 1))
+        gotoPage(mydata.cur_page + 1);
       break;
     case 244: // Select directory
       {
