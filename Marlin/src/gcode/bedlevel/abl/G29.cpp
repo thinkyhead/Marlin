@@ -41,6 +41,11 @@
   #include "../../../module/temperature.h"
 #endif
 
+#if ENABLED(PROBING_HEATERS_OFF)
+  #include "../../../module/temperature.h"
+  #include "../../../module/printcounter.h"
+#endif
+
 #if HAS_STATUS_MESSAGE
   #include "../../../lcd/marlinui.h"
 #endif
@@ -226,6 +231,10 @@ G29_TYPE GcodeSuite::G29() {
   reset_stepper_timeout();
 
   const bool seenQ = EITHER(DEBUG_LEVELING_FEATURE, PROBE_MANUALLY) && parser.seen_test('Q');
+
+  #if ENABLED(PROBING_HEATERS_OFF)
+    const bool respect_leveling_heatup_settings = parser.boolval('U', true);
+  #endif
 
   // G29 Q is also available if debugging
   #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -890,6 +899,16 @@ G29_TYPE GcodeSuite::G29() {
   report_current_position();
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE));
+
+  #if ENABLED(PROBING_HEATERS_OFF)
+    // If we're going to print then we must ensure we are back on temperature before we continue
+    if (respect_leveling_heatup_settings && TERN1(HAS_PROBE_SETTINGS, probe.settings.turn_heaters_off && probe.settings.stabilize_temperatures_after_probing) && (queue.has_commands_queued() || planner.has_blocks_queued() || print_job_timer.isRunning())) {
+      //SERIAL_ECHOLNPGM("Wait for reheat before continuing");
+      ui.set_status("Wait for reheat...");
+      thermalManager.wait_for_hotend(active_extruder);
+      thermalManager.wait_for_bed_heating();
+    }
+  #endif
 
   G29_RETURN(isnan(abl.measured_z));
 

@@ -55,6 +55,11 @@
   #include "../../lcd/e3v2/enhanced/dwin.h"
 #endif
 
+#if BOTH(Z_SAFE_HOMING, PROBING_HEATERS_OFF)
+  #include "../../module/temperature.h"
+  #include "../../module/printcounter.h"
+#endif
+
 #if HAS_L64XX                         // set L6470 absolute position registers to counts
   #include "../../libs/L64XX/L64XX_Marlin.h"
 #endif
@@ -215,6 +220,10 @@ void GcodeSuite::G28() {
   TERN_(LASER_MOVE_G28_OFF, cutter.set_inline_enabled(false));  // turn off laser
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_HOMING));
+
+  #if BOTH(Z_SAFE_HOMING, PROBING_HEATERS_OFF)
+    const bool respect_leveling_heatup_settings = parser.boolval('U', true);
+  #endif
 
   #if ENABLED(DUAL_X_CARRIAGE)
     bool IDEX_saved_duplication_state = extruder_duplication_enabled;
@@ -438,6 +447,16 @@ void GcodeSuite::G28() {
 
         TERN(Z_SAFE_HOMING, home_z_safely(), homeaxis(Z_AXIS));
         probe.move_z_after_homing();
+
+        #if BOTH(Z_SAFE_HOMING, PROBING_HEATERS_OFF)
+          // If we're going to print then we must ensure we are back on temperature before we continue
+          if (respect_leveling_heatup_settings && TERN1(HAS_PROBE_SETTINGS, probe.settings.turn_heaters_off && probe.settings.stabilize_temperatures_after_probing) && (queue.has_commands_queued() || planner.has_blocks_queued() || print_job_timer.isRunning())) {
+            //SERIAL_ECHOLNPGM("Waiting to reheat before continuing");
+            ui.set_status("Waiting for heat-up...");
+            thermalManager.wait_for_hotend(active_extruder);
+            thermalManager.wait_for_bed_heating();
+          }
+        #endif
       }
     #endif
 
