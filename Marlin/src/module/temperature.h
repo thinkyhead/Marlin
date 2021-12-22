@@ -209,6 +209,9 @@ typedef struct TempInfo {
 // A PWM heater with temperature sensor
 typedef struct HeaterInfo : public TempInfo {
   celsius_t target;
+  #if ENABLED(PROBING_HEATERS_OFF)
+    int16_t paused_target;
+  #endif
   uint8_t soft_pwm_amount;
 } heater_info_t;
 

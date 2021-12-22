@@ -351,27 +351,15 @@ FORCE_INLINE void probe_specific_action(const bool deploy) {
 
 #if EITHER(PREHEAT_BEFORE_PROBING, PREHEAT_BEFORE_LEVELING)
 
-  #if ENABLED(PREHEAT_BEFORE_PROBING)
-    #ifndef PROBING_NOZZLE_TEMP
-      #define PROBING_NOZZLE_TEMP 0
-    #endif
-    #ifndef PROBING_BED_TEMP
-      #define PROBING_BED_TEMP 0
-    #endif
-  #endif
-
   /**
    * Do preheating as required before leveling or probing.
    *  - If a preheat input is higher than the current target, raise the target temperature.
    *  - If a preheat input is higher than the current temperature, wait for stabilization.
    */
   void Probe::preheat_for_probing(const celsius_t hotend_temp, const celsius_t bed_temp) {
-    #if HAS_HOTEND && (PROBING_NOZZLE_TEMP || LEVELING_NOZZLE_TEMP)
-      #define WAIT_FOR_NOZZLE_HEAT
-    #endif
-    #if HAS_HEATED_BED && (PROBING_BED_TEMP || LEVELING_BED_TEMP)
-      #define WAIT_FOR_BED_HEAT
-    #endif
+    // Temperatures is MAX(current_target, settings_temp)
+    const celsius_t hotendPreheat = thermalManager.degTargetHotend(0) < hotend_temp ? hotend_temp : thermalManager.degTargetHotend(0),
+                       bedPreheat = thermalManager.degTargetBed()     < bed_temp    ? bed_temp    : thermalManager.degTargetBed();
 
     LCD_MESSAGE(MSG_PREHEATING);
 
@@ -398,8 +386,13 @@ FORCE_INLINE void probe_specific_action(const bool deploy) {
 
     DEBUG_EOL();
 
-    TERN_(WAIT_FOR_NOZZLE_HEAT, if (hotend_temp > thermalManager.wholeDegHotend(0) + (TEMP_WINDOW)) thermalManager.wait_for_hotend(0));
-    TERN_(WAIT_FOR_BED_HEAT,    if (bed_temp    > thermalManager.wholeDegBed() + (TEMP_BED_WINDOW)) thermalManager.wait_for_bed_heating());
+    // Set temperatures if set
+    if (hotendPreheat) thermalManager.setTargetHotend(hotendPreheat, 0);
+    if (bedPreheat)    thermalManager.setTargetBed(bedPreheat);
+
+    // Wait for temperatures to be reached if we aren't near the preheat temps
+    if (!thermalManager.degHotendNear(0, hotendPreheat)) thermalManager.wait_for_hotend(0);
+    if (!thermalManager.degBedNear(bedPreheat)) thermalManager.wait_for_bed_heating();
   }
 
 #endif
@@ -465,7 +458,7 @@ bool Probe::set_deployed(const bool deploy) {
   #endif
 
   // If preheating is required before any probing...
-  TERN_(PREHEAT_BEFORE_PROBING, if (deploy) preheat_for_probing(PROBING_NOZZLE_TEMP, PROBING_BED_TEMP));
+  TERN_(PREHEAT_BEFORE_PROBING, if (deploy) preheat_for_probing(settings.preheat_hotend_temp, settings.preheat_bed_temp));
 
   do_blocking_move_to(old_xy);
   endstops.enable_z_probe(deploy);
@@ -517,9 +510,8 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
     set_homing_current(true);                                 // The "homing" current also applies to probing
   #endif
 
-  TERN_(HAS_QUIET_PROBING, set_probing_paused(true));
-
   // Move down until the probe is triggered
+  //SERIAL_ECHOLNPGM("probe_down_to_z: do_blocking_move_to_z");
   do_blocking_move_to_z(z, fr_mm_s);
 
   // Check to see if the probe was triggered
@@ -569,7 +561,7 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
    * @details Init tare pin to ON state for a strain gauge, otherwise OFF
    */
   void Probe::tare_init() {
-    OUT_WRITE(PROBE_TARE_PIN, !PROBE_TARE_STATE);
+    OUT_WRITE(PROBE_TARE_PIN, PROBE_TARE_STATE == LOW ? HIGH : LOW);
   }
 
   /**

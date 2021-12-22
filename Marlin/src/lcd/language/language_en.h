@@ -304,7 +304,7 @@ namespace Language_en {
   LSTR MSG_BED_Z                          = _UxGT("Bed Z");
   LSTR MSG_NOZZLE                         = _UxGT("Nozzle");
   LSTR MSG_NOZZLE_N                       = _UxGT("Nozzle ~");
-  LSTR MSG_NOZZLE_PARKED                  = _UxGT("Nozzle Parked");
+  LSTR MSG_NOZZLE_PARKED                  = _UxGT("Load/unload filament");
   LSTR MSG_NOZZLE_STANDBY                 = _UxGT("Nozzle Standby");
   LSTR MSG_CONFIGURATION_PROBE            = _UxGT("Probe settings");
   LSTR MSG_PROBING_HEATERS_OFF            = _UxGT("Improve accuracy");

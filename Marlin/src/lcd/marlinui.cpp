@@ -1549,6 +1549,8 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
     #endif
     IF_DISABLED(SDSUPPORT, print_job_timer.stop());
     TERN_(HOST_PROMPT_SUPPORT, hostui.prompt_open(PROMPT_INFO, F("UI Aborted"), FPSTR(DISMISS_STR)));
+    queue.clear();
+    print_job_timer.stop();
     LCD_MESSAGE(MSG_PRINT_ABORTED);
     TERN_(HAS_LCD_MENU, return_to_status());
   }
@@ -1746,7 +1748,7 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
     const PauseMode mode/*=PAUSE_MODE_SAME*/,
     const uint8_t extruder/*=active_extruder*/
   ) {
-    pause_mode = mode;
+    TERN_(M600_PURGE_MORE_RESUMABLE, pause_mode = mode);
     ExtUI::pauseModeStatus = message;
     switch (message) {
       case PAUSE_MESSAGE_PARKING:  ExtUI::onUserConfirmRequired(GET_TEXT_F(MSG_PAUSE_PRINT_PARKING)); break;

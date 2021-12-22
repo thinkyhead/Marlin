@@ -1582,11 +1582,11 @@ void prepare_line_to_destination() {
 
     if (is_home_dir) {
 
+      endstops.validate_homing_move();
+
       #if HOMING_Z_WITH_PROBE && HAS_QUIET_PROBING
         if (axis == Z_AXIS && final_approach) probe.set_probing_paused(false);
       #endif
-
-      endstops.validate_homing_move();
 
       // Re-enable stealthChop if used. Disable diag1 pin on driver.
       TERN_(SENSORLESS_HOMING, end_sensorless_homing_per_axis(axis, stealth_states));

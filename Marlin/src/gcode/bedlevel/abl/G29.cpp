@@ -608,8 +608,7 @@ G29_TYPE GcodeSuite::G29() {
     abl.measured_z = 0;
 
     #if ABL_USES_GRID
-
-      bool zig = PR_OUTER_SIZE & 1;  // Always end at RIGHT and BACK_PROBE_BED_POSITION
+      bool zig = 1;
 
       abl.measured_z = 0;
 
