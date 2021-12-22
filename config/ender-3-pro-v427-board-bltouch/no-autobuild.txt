@@ -1,0 +1,1 @@
+Community Firmware releases are not automatically building this folder
