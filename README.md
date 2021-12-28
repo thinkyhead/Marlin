@@ -4,6 +4,8 @@
 
 forked from [Marlin 2](https://github.com/MarlinFirmware/Marlin/releases)
 
+**NOTE:** This is compiled for the ZNP Robin 1.3 board, which ships with some Neptune 2's and all Neptune 2S's. It is not built to be compatible with the ZNP Robin Nano 1.2 board. A few changes could work, but I do not know the stepper drivers needed. 
+
 Special thanks to:
 
 - A person in the Elgoo Neptune Facebook group for pointing me in the right direction. I am not sure they want to be public, so keeping them anonymous.
@@ -26,4 +28,3 @@ Special thanks to:
 ## Customization
 
 All the source is in the repo, so feel free to fork or download. I am no expert at this, so consult the main [Marlin repo](https://github.com/MarlinFirmware/Marlin/) for more details.
-
