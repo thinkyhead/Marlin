@@ -9,7 +9,9 @@ Special thanks to:
 - A person in the Elgoo Neptune Facebook group for pointing me in the right direction. I am not sure they want to be public, so keeping them anonymous.
 - [Toylerrr](https://github.com/Toylerrr) for sharing how to get thumbnails from cure to show up. He also has a repo if you would like to install [Neptune 2 profiles in Cura](https://github.com/Toylerrr/ELEGOO_Neptune2_Cura)
 
-## Basic setup and installation
+## Basic setup and installation video
+
+[![Alt text](https://user-images.githubusercontent.com/10281380/147587533-8ea6de5a-b71b-4a99-885e-898438671a38.png)](https://youtu.be/-Y1lWI2KnlA)
 
 ## Cura thumbnail preview as provided by [Toylerrr](https://github.com/Toylerrr)
 
@@ -24,3 +26,4 @@ Special thanks to:
 ## Customization
 
 All the source is in the repo, so feel free to fork or download. I am no expert at this, so consult the main [Marlin repo](https://github.com/MarlinFirmware/Marlin/) for more details.
+
