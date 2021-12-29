@@ -30,8 +30,8 @@
  * ***************************************/
 
 #include "../../../inc/MarlinConfigPre.h"
-#if ENABLED(EXTENSIBLE_UI)
 
+#if ENABLED(FORCE10SPRODISPLAY)
 
 #include "FileNavigator.h"
 
@@ -63,12 +63,12 @@ void FileNavigator::reset() {
 void FileNavigator::refresh() { filelist.refresh(); }
 
 
-bool FileNavigator::getIndexisDir(uint16_t index){
+bool FileNavigator::getIndexisDir(uint16_t index) {
   filelist.seek(index);
   return filelist.isDir();
 }
 
-const char *FileNavigator::getIndexName(uint16_t index){
+const char *FileNavigator::getIndexName(uint16_t index) {
   filelist.seek(index);
   return filelist.shortFilename();
 }
@@ -94,23 +94,19 @@ void FileNavigator::getFiles(uint16_t index) {
   }
   lastindex = index;
 
-
   // Clear currently drawn screen
-  for (int i = 0; i < DISPLAY_FILES; i++)
-  {
+  for (int i = 0; i < DISPLAY_FILES; i++) {
     for (int j = 0; j < 20; j++)
       rtscheck.RTS_SndData(0, SDFILE_ADDR + (i * 20) + j);
   }
 
-  for (int j = 0; j < 10; j++)
-  {
+  for (int j = 0; j < 10; j++) {
     rtscheck.RTS_SndData(0, Printfilename + j);  //clean screen.
     rtscheck.RTS_SndData(0, Choosefilename + j); //clean filename
   }
   for (int j = 0; j < 8; j++)
     rtscheck.RTS_SndData(0, FilenameCount + j);
-  for (int j = 1; j <= DISPLAY_FILES; j++)
-  {
+  for (int j = 1; j <= DISPLAY_FILES; j++) {
     rtscheck.RTS_SndData(10, FilenameIcon + j);
     rtscheck.RTS_SndData(10, FilenameIcon1 + j);
   }
@@ -122,14 +118,13 @@ void FileNavigator::getFiles(uint16_t index) {
     rtscheck.RTS_SndData("Up Directory", SDFILE_ADDR);
     fcnt++;
   }
-  else if(currentindex == DISPLAY_FILES && folderdepth > 0)
+  else if (currentindex == DISPLAY_FILES && folderdepth > 0)
     currentindex--;
 
   for (uint16_t seek = currentindex; seek < currentindex + files; seek++) {
     if (filelist.seek(seek)) {
       const int filelen = strlen(filelist.filename());
-      if(filelen > 20)
-      {
+      if (filelen > 20) {
         char *buf = (char *)filelist.filename();
         //char buf[filelen];
         //strcpy(&buf[filelen], filelist.filename());
@@ -139,13 +134,11 @@ void FileNavigator::getFiles(uint16_t index) {
       else
         rtscheck.RTS_SndData(filelist.filename(), (SDFILE_ADDR + (fcnt * 20)));
 
-      if (filelist.isDir())
-      {
+      if (filelist.isDir()) {
         rtscheck.RTS_SndData((uint8_t)4, FilenameIcon + (fcnt+1));
         rtscheck.RTS_SndData((unsigned long)0x041F, (FilenameNature + ((1+fcnt) * 16))); // Change BG of selected line to Blue
       }
-      else
-      {
+      else {
         rtscheck.RTS_SndData((uint8_t)0, FilenameIcon + (fcnt+1));
         rtscheck.RTS_SndData((unsigned long)0xFFFF, (FilenameNature + ((1+fcnt) * 16))); // white
       }
@@ -186,4 +179,5 @@ void FileNavigator::upDIR() {
 }
 
 char* FileNavigator::getCurrentFolderName() { return currentfoldername; }
-#endif
+
+#endif // FORCE10SPRODISPLAY
