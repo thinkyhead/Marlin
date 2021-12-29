@@ -529,7 +529,7 @@ void _Decorate_Menu_Item(uint8_t row, uint8_t icon, bool more) {
 }
 
 void CrealityDWINClass::Draw_Menu_Item(uint8_t row, uint8_t icon/*=0*/, const char * label1, const char * label2, bool more/*=false*/, bool centered/*=false*/) {
-  const uint8_t label_offset_y = (label1 || label2) ? MENU_CHR_H * 3 / 5 : 0,
+  const uint8_t label_offset_y = (label1 && label2) ? MENU_CHR_H * 3 / 5 : 0,
                 label1_offset_x = !centered ? LBLX : LBLX * 4/5 + _MAX(LBLX * 1U/5, (DWIN_WIDTH - LBLX - (label1 ? strlen(label1) : 0) * MENU_CHR_W) / 2),
                 label2_offset_x = !centered ? LBLX : LBLX * 4/5 + _MAX(LBLX * 1U/5, (DWIN_WIDTH - LBLX - (label2 ? strlen(label2) : 0) * MENU_CHR_W) / 2);
   if (label1) DWIN_Draw_String(false, DWIN_FONT_MENU, Color_White, Color_Bg_Black, label1_offset_x, MBASE(row) - 1 - label_offset_y, label1); // Draw Label
@@ -538,7 +538,7 @@ void CrealityDWINClass::Draw_Menu_Item(uint8_t row, uint8_t icon/*=0*/, const ch
 }
 
 void CrealityDWINClass::Draw_Menu_Item(uint8_t row, uint8_t icon/*=0*/, FSTR_P const flabel1, FSTR_P const flabel2, bool more/*=false*/, bool centered/*=false*/) {
-  const uint8_t label_offset_y = (flabel1 || flabel2) ? MENU_CHR_H * 3 / 5 : 0,
+  const uint8_t label_offset_y = (flabel1 && flabel2) ? MENU_CHR_H * 3 / 5 : 0,
                 label1_offset_x = !centered ? LBLX : LBLX * 4/5 + _MAX(LBLX * 1U/5, (DWIN_WIDTH - LBLX - (flabel1 ? strlen_P(FTOP(flabel1)) : 0) * MENU_CHR_W) / 2),
                 label2_offset_x = !centered ? LBLX : LBLX * 4/5 + _MAX(LBLX * 1U/5, (DWIN_WIDTH - LBLX - (flabel2 ? strlen_P(FTOP(flabel2)) : 0) * MENU_CHR_W) / 2);
   if (flabel1) DWIN_Draw_String(false, DWIN_FONT_MENU, Color_White, Color_Bg_Black, label1_offset_x, MBASE(row) - 1 - label_offset_y, flabel1); // Draw Label
@@ -1020,9 +1020,7 @@ void CrealityDWINClass::Update_Status_Bar(bool refresh/*=false*/) {
   int8_t pos = len;
   if (pos > 30) {
     pos -= msgscrl;
-    len = pos;
-    if (len > 30)
-      len = 30;
+    len = _MIN((size_t)pos, (size_t)30);
     char dispmsg[len + 1];
     if (pos >= 0) {
       LOOP_L_N(i, len) dispmsg[i] = statusmsg[i + msgscrl];
@@ -1616,7 +1614,7 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
             Popup_Handler(MoveWait);
             if (use_probe) {
               #if HAS_BED_PROBE
-                sprintf_P(cmd, PSTR("G0 F4000\nG0 Z10\nG0 X%s Y%s"), dtostrf(X_MAX_POS / 2.0f - probe.offset.x, 1, 3, str_1), dtostrf(Y_MAX_POS / 2.0f - probe.offset.y, 1, 3, str_2));
+                sprintf_P(cmd, PSTR("G0 F4000\nG0 Z10\nG0 X%s Y%s"), dtostrf((X_BED_SIZE + X_MIN_POS) / 2.0f - probe.offset.x, 1, 3, str_1), dtostrf((Y_BED_SIZE + Y_MIN_POS) / 2.0f - probe.offset.y, 1, 3, str_2));
                 gcode.process_subcommands_now(cmd);
                 planner.synchronize();
                 Popup_Handler(ManualProbing);
@@ -4615,7 +4613,7 @@ void CrealityDWINClass::File_Control() {
         if (PENDING(millis(), time)) return;
         time = millis() + 200;
         pos -= filescrl;
-        len = _MIN(pos, MENU_CHAR_LIMIT);
+        len = _MIN((size_t)pos, (size_t)MENU_CHAR_LIMIT);
         char name[len + 1];
         if (pos >= 0) {
           LOOP_L_N(i, len) name[i] = filename[i + filescrl];
@@ -4711,14 +4709,13 @@ void CrealityDWINClass::Print_Screen_Control() {
               card.startOrResumeFilePrinting();
               TERN_(POWER_LOSS_RECOVERY, recovery.prepare());
             #else
-              char cmnd[20];
               #if HAS_HEATED_BED
-                cmnd[sprintf_P(cmnd, PSTR("M140 S%i"), pausebed)] = '\0';
-                gcode.process_subcommands_now(cmnd);
+                cmd[sprintf_P(cmd, PSTR("M140 S%i"), pausebed)] = '\0';
+                gcode.process_subcommands_now(cmd);
               #endif
               #if HAS_EXTRUDERS
-                cmnd[sprintf_P(cmnd, PSTR("M109 S%i"), pausetemp)] = '\0';
-                gcode.process_subcommands_now(cmnd);
+                cmd[sprintf_P(cmd, PSTR("M109 S%i"), pausetemp)] = '\0';
+                gcode.process_subcommands_now(cmd);
               #endif
               TERN_(HAS_FAN, thermalManager.fan_speed[0] = pausefan);
               planner.synchronize();
@@ -5421,7 +5418,10 @@ void MarlinUI::init() {
     switch (message) {
       case PAUSE_MESSAGE_INSERT:  CrealityDWIN.Confirm_Handler(FilInsert);  break;
       case PAUSE_MESSAGE_PURGE:
-      case PAUSE_MESSAGE_OPTION:  CrealityDWIN.Popup_Handler(PurgeMore);    break;
+      case PAUSE_MESSAGE_OPTION:
+        pause_menu_response = PAUSE_RESPONSE_WAIT_FOR;
+        CrealityDWIN.Popup_Handler(PurgeMore);
+        break;
       case PAUSE_MESSAGE_HEAT:    CrealityDWIN.Confirm_Handler(HeaterTime); break;
       case PAUSE_MESSAGE_WAITING: CrealityDWIN.Draw_Print_Screen();         break;
       default: break;

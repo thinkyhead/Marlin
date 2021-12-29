@@ -1065,7 +1065,7 @@ namespace ExtUI {
     return isPrinting() && (isPrintingFromMediaPaused() || print_job_timer.isPaused());
   }
 
-  bool isMediaInserted() { return TERN0(SDSUPPORT, IS_SD_INSERTED()); }
+  bool isMediaInserted() { return TERN0(SDSUPPORT, IS_SD_INSERTED() || card.isMounted()); }
 
   void pausePrint()  { ui.pause_print(); }
   void resumePrint() { ui.resume_print(); }
