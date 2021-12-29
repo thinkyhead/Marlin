@@ -2961,7 +2961,11 @@ void HMI_Control() {
   void HMI_Leveling() {
     Popup_Window_Leveling();
     DWIN_UpdateLCD();
-    queue.inject(F("G28O\nG29"));
+    #ifdef MAIN_MENU_ITEM_1_GCODE
+      queue.inject(F(MAIN_MENU_ITEM_1_GCODE));
+    #else
+      queue.inject(F("G28O\nG29\nG28\nG1Z0"));
+    #endif
   }
 #endif
 
