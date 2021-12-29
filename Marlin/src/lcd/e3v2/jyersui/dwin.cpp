@@ -3335,12 +3335,10 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
             Draw_Menu_Item(INFO_VERSION, ICON_Version, F(SHORT_BUILD_VERSION), nullptr, false, true);
             Draw_Menu_Item(INFO_CONTACT, ICON_Contact, F(CORP_WEBSITE), nullptr, false, true);
           }
-          else {
-            if (menu == Info)
-              Draw_Menu(Control, CONTROL_INFO);
-            else
-              Draw_Main_Menu(3);
-          }
+          else if (menu == Info)
+            Draw_Menu(Control, CONTROL_INFO);
+          else
+            Draw_Main_Menu(3);
           break;
       }
       break;
@@ -3390,10 +3388,7 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
               if (draw)
                 Draw_Menu_Item(row, ICON_Tilt, F("Autotilt Current Mesh"));
               else {
-                if (ubl.storage_slot < 0) {
-                  Popup_Handler(MeshSlot);
-                  break;
-                }
+                if (ubl.storage_slot < 0) { Popup_Handler(MeshSlot); break; }
                 Popup_Handler(Home);
                 gcode.home_all_axes(true);
                 Popup_Handler(Level);
@@ -3465,16 +3460,10 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
               Draw_Menu_Item(row, ICON_Mesh, F("Manual Tuning"), nullptr, true);
             else {
               #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
-                if (!leveling_is_valid()) {
-                  Confirm_Handler(InvalidMesh);
-                  break;
-                }
+                if (!leveling_is_valid()) { Confirm_Handler(InvalidMesh); break; }
               #endif
               #if ENABLED(AUTO_BED_LEVELING_UBL)
-                if (ubl.storage_slot < 0) {
-                  Popup_Handler(MeshSlot);
-                  break;
-                }
+                if (ubl.storage_slot < 0) { Popup_Handler(MeshSlot); break; }
               #endif
               if (axes_should_home()) {
                 Popup_Handler(Home);
@@ -3506,10 +3495,7 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
               Draw_Menu_Item(row, ICON_Mesh, GET_TEXT(MSG_MESH_VIEW), nullptr, true);
             else {
               #if ENABLED(AUTO_BED_LEVELING_UBL)
-                if (ubl.storage_slot < 0) {
-                  Popup_Handler(MeshSlot);
-                  break;
-                }
+                if (ubl.storage_slot < 0) { Popup_Handler(MeshSlot); break; }
               #endif
               Draw_Menu(LevelView);
             }
@@ -3533,10 +3519,7 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
             if (draw)
               Draw_Menu_Item(row, ICON_ReadEEPROM, F("Load Mesh"));
             else {
-              if (ubl.storage_slot < 0) {
-                Popup_Handler(MeshSlot);
-                break;
-              }
+              if (ubl.storage_slot < 0) { Popup_Handler(MeshSlot); break; }
               gcode.process_subcommands_now(F("G29 L"));
               planner.synchronize();
               AudioFeedback(true);
@@ -3546,10 +3529,7 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
             if (draw)
               Draw_Menu_Item(row, ICON_WriteEEPROM, F("Save Mesh"));
             else {
-              if (ubl.storage_slot < 0) {
-                Popup_Handler(MeshSlot);
-                break;
-              }
+              if (ubl.storage_slot < 0) { Popup_Handler(MeshSlot); break; }
               gcode.process_subcommands_now(F("G29 S"));
               planner.synchronize();
               AudioFeedback(true);
@@ -4699,9 +4679,8 @@ void CrealityDWINClass::File_Control() {
         card.cd(card.filename);
         Draw_SD_List();
       }
-      else {
+      else
         card.openAndPrintFile(card.filename);
-      }
     }
   }
   DWIN_UpdateLCD();
@@ -5432,6 +5411,7 @@ void MarlinUI::init() {
     DWIN_UpdateLCD();
     delay(20);
   }
+
   DWIN_JPG_CacheTo1(Language_English);
   CrealityDWIN.Redraw_Screen();
 }
