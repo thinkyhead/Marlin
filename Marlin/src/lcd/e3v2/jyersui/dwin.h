@@ -55,6 +55,7 @@ enum menuID : uint8_t {
       ZOffset,
       Preheat,
       ChangeFilament,
+      HostActions,
     Control,
       TempMenu,
         PID,
@@ -73,6 +74,8 @@ enum menuID : uint8_t {
         Steps,
       Visual,
         ColorSettings,
+      HostSettings,
+        ActionCommands,
       Advanced,
         ProbeMenu,
       Info,
@@ -164,6 +167,11 @@ public:
     uint8_t status_area_text : 4;
     uint8_t coordinates_text : 4;
     uint8_t coordinates_split_line : 4;
+    #if ENABLED(HOST_ACTION_COMMANDS)
+      uint64_t host_action_label_1 : 48;
+      uint64_t host_action_label_2 : 48;
+      uint64_t host_action_label_3 : 48;
+    #endif
   } eeprom_settings;
 
   static constexpr const char * const color_names[11] = { "Default", "White", "Green", "Cyan", "Blue", "Magenta", "Red", "Orange", "Yellow", "Brown", "Black" };
