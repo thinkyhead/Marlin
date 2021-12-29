@@ -1473,9 +1473,10 @@ void HMI_Popup() {
 void HMI_Init() {
   HMI_SDCardInit();
 
+  constexpr uint16_t bartop = TERN(TALLER_BOOT_SCREEN, 450, 260);
   for (uint16_t t = 0; t <= 100; t += 2) {
-    DWINUI::Draw_Icon(ICON_Bar, 15, 260);
-    DWIN_Draw_Rectangle(1, HMI_data.Background_Color, 15 + t * 242 / 100, 260, 257, 280);
+    DWINUI::Draw_Icon(ICON_Bar, 15, bartop);
+    DWIN_Draw_Rectangle(1, HMI_data.Background_Color, 15 + t * 242 / 100, bartop, 257, bartop + 20);
     DWIN_UpdateLCD();
     delay(20);
   }
