@@ -27,8 +27,20 @@
 
 /**
  * Marlin release version identifier
+ *
+ * Notes:
+ *   N2-1.3-STOCK  = 1.3 Board + Stock Neptune 2 (Single fan + Manual Bed Level)
+ *   N2-1.3-BLT    = 1.3 Board + BLTouch + Single Stock Fan
+ *   N2-1.3-MBL-DF = 1.3 Board + Manual Bed Level + Dual Fan
+ *   N2-1.3-BLT-DF = 1.3 Board + BLTouch + Dual Fan
+ *   N2-1.3-ST-LA  = 1.3 Board + Stock Neptune 2 + Linear Advance
+ * TODO:
+ *   N2-1.2-STOCK  = 1.2 Board + Stock Neptune 2 (Single fan + Manual Bed Level)
+ *   N2-1.2-BLT    = 1.2 Board + BLTouch + Single Stock Fan
+ *   N2-1.2-MBL-DF = 1.2 Board + Manual Bed Level + Dual Fan
+ *   N2-1.2-BLT-DF = 1.2 Board + BLTouch + Dual Fan
  */
-//#define SHORT_BUILD_VERSION "2.0.9.3"
+#define SHORT_BUILD_VERSION "2.0.9.3-N2-1.3-BLT-DF"
 
 /**
  * Verbose version identifier which should contain a reference to the location
@@ -41,12 +53,12 @@
  * here we define this default string as the date where the latest release
  * version was tagged.
  */
-//#define STRING_DISTRIBUTION_DATE "2021-12-25"
+#define STRING_DISTRIBUTION_DATE "2021-12-29"
 
 /**
  * Defines a generic printer name to be output to the LCD after booting Marlin.
  */
-//#define MACHINE_NAME "3D Printer"
+#define MACHINE_NAME "Elegoo Neptune 2"
 
 /**
  * The SOURCE_CODE_URL is the location where users will find the Marlin Source
@@ -54,7 +66,7 @@
  * has a distinct Github fork— the Source Code URL should just be the main
  * Marlin repository.
  */
-//#define SOURCE_CODE_URL "github.com/MarlinFirmware/Marlin"
+#define SOURCE_CODE_URL "github.com/just-trey/Marlin/tree/N2-COLOR-UI"
 
 /**
  * Default generic printer UUID.
