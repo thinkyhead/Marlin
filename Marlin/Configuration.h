@@ -1196,7 +1196,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 10
+#define PROBING_MARGIN 20
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (4000)
@@ -2797,17 +2797,18 @@
 
 /* Neptune 2 Custom Theme (adjustments for better clarity) */
 
-#define COLOR_GRAYER            0xAD75 // #F70019
+#define COLOR_GRAYER            0x8C51 // #8D8D8D
+#define COLOR_ELEGOO_RED        0xF000 // #F80000
 
 #define COLOR_BACKGROUND        COLOR_BLACK
-#define COLOR_SELECTION_BG      COLOR_RED
+#define COLOR_SELECTION_BG      COLOR_ELEGOO_RED
 #define COLOR_WEBSITE_URL       COLOR_CYAN
 #define COLOR_INACTIVE          COLOR_GRAYER
 #define COLOR_COLD              COLOR_CYAN
-#define COLOR_HOTEND            COLOR_RED
-#define COLOR_HEATED_BED        COLOR_RED
-#define COLOR_CHAMBER           COLOR_RED
-#define COLOR_COOLER            COLOR_RED
+#define COLOR_HOTEND            COLOR_ELEGOO_RED
+#define COLOR_HEATED_BED        COLOR_ELEGOO_RED
+#define COLOR_CHAMBER           COLOR_ELEGOO_RED
+#define COLOR_COOLER            COLOR_ELEGOO_RED
 #define COLOR_FAN               COLOR_CYAN
 #define COLOR_AXIS_HOMED        COLOR_VIVID_GREEN
 #define COLOR_AXIS_NOT_HOMED    COLOR_YELLOW
@@ -2815,21 +2816,21 @@
 #define COLOR_RATE_ALTERED      COLOR_YELLOW
 #define COLOR_PRINT_TIME        COLOR_AQUA
 #define COLOR_PROGRESS_FRAME    COLOR_WHITE
-#define COLOR_PROGRESS_BAR      COLOR_RED
+#define COLOR_PROGRESS_BAR      COLOR_ELEGOO_RED
 #define COLOR_PROGRESS_BG       COLOR_BLACK
-#define COLOR_STATUS_MESSAGE    COLOR_YELLOW
+#define COLOR_STATUS_MESSAGE    COLOR_WHITE
 #define COLOR_CONTROL_ENABLED   COLOR_WHITE
 #define COLOR_CONTROL_DISABLED  COLOR_GRAYER
-#define COLOR_CONTROL_CANCEL    COLOR_RED
+#define COLOR_CONTROL_CANCEL    COLOR_ELEGOO_RED
 #define COLOR_CONTROL_CONFIRM   COLOR_VIVID_GREEN
 #define COLOR_BUSY              COLOR_SILVER
-#define COLOR_MENU_TEXT         COLOR_YELLOW
+#define COLOR_MENU_TEXT         COLOR_WHITE
 #define COLOR_MENU_VALUE        COLOR_WHITE
 #define COLOR_SLIDER            COLOR_WHITE
 #define COLOR_SLIDER_INACTIVE   COLOR_GRAYER
 #define COLOR_UBL               COLOR_WHITE
 #define COLOR_TOUCH_CALIBRATION COLOR_WHITE
-#define COLOR_KILL_SCREEN_BG    COLOR_RED
+#define COLOR_KILL_SCREEN_BG    COLOR_ELEGOO_RED
 #define COLOR_KILL_SCREEN_TEXT  COLOR_WHITE
 
 /**
