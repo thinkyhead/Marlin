@@ -607,9 +607,10 @@
     #define DEFAULT_Ki_LIST {   1.08,   1.08 }
     #define DEFAULT_Kd_LIST { 114.00, 114.00 }
   #else
-    #define DEFAULT_Kp  22.20
-    #define DEFAULT_Ki   1.08
-    #define DEFAULT_Kd 114.00
+    // tuned for my Elegoo Neptune 2, but you should tune on you own machine once you haev it setup
+    #define DEFAULT_Kp  25.47
+    #define DEFAULT_Ki   2.11
+    #define DEFAULT_Kd  76.90
   #endif
 #endif // PIDTEMP
 
@@ -648,9 +649,11 @@
 
   // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-  #define DEFAULT_bedKp 10.00
-  #define DEFAULT_bedKi .023
-  #define DEFAULT_bedKd 305.4
+
+  // tuned for my Elegoo Neptune 2, but you should tune on you own machine once you haev it setup
+  #define DEFAULT_bedKp 31.30
+  #define DEFAULT_bedKi 6.02
+  #define DEFAULT_bedKd 108.50
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -848,7 +851,7 @@
 #define I_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 #define J_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 #define K_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
-#define Z_MIN_PROBE_ENDSTOP_INVERTING true // Set to true to invert the logic of the probe.
+#define Z_MIN_PROBE_ENDSTOP_INVERTING false // Set to true to invert the logic of the probe.
 
 /**
  * Stepper Drivers
@@ -2791,6 +2794,43 @@
 #if ENABLED(TFT_LVGL_UI)
   //#define MKS_WIFI_MODULE  // MKS WiFi module
 #endif
+
+/* Neptune 2 Custom Theme (adjustments for better clarity) */
+
+#define COLOR_GRAYER            0xAD75 // #F70019
+
+#define COLOR_BACKGROUND        COLOR_BLACK
+#define COLOR_SELECTION_BG      COLOR_RED
+#define COLOR_WEBSITE_URL       COLOR_CYAN
+#define COLOR_INACTIVE          COLOR_GRAYER
+#define COLOR_COLD              COLOR_CYAN
+#define COLOR_HOTEND            COLOR_RED
+#define COLOR_HEATED_BED        COLOR_RED
+#define COLOR_CHAMBER           COLOR_RED
+#define COLOR_COOLER            COLOR_RED
+#define COLOR_FAN               COLOR_CYAN
+#define COLOR_AXIS_HOMED        COLOR_VIVID_GREEN
+#define COLOR_AXIS_NOT_HOMED    COLOR_YELLOW
+#define COLOR_RATE_100          COLOR_VIVID_GREEN
+#define COLOR_RATE_ALTERED      COLOR_YELLOW
+#define COLOR_PRINT_TIME        COLOR_AQUA
+#define COLOR_PROGRESS_FRAME    COLOR_WHITE
+#define COLOR_PROGRESS_BAR      COLOR_RED
+#define COLOR_PROGRESS_BG       COLOR_BLACK
+#define COLOR_STATUS_MESSAGE    COLOR_YELLOW
+#define COLOR_CONTROL_ENABLED   COLOR_WHITE
+#define COLOR_CONTROL_DISABLED  COLOR_GRAYER
+#define COLOR_CONTROL_CANCEL    COLOR_RED
+#define COLOR_CONTROL_CONFIRM   COLOR_VIVID_GREEN
+#define COLOR_BUSY              COLOR_SILVER
+#define COLOR_MENU_TEXT         COLOR_YELLOW
+#define COLOR_MENU_VALUE        COLOR_WHITE
+#define COLOR_SLIDER            COLOR_WHITE
+#define COLOR_SLIDER_INACTIVE   COLOR_GRAYER
+#define COLOR_UBL               COLOR_WHITE
+#define COLOR_TOUCH_CALIBRATION COLOR_WHITE
+#define COLOR_KILL_SCREEN_BG    COLOR_RED
+#define COLOR_KILL_SCREEN_TEXT  COLOR_WHITE
 
 /**
  * TFT Rotation. Set to one of the following values:
