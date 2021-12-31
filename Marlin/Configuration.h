@@ -21,6 +21,8 @@
  */
 #pragma once
 
+#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.3/BLTOUCH-DUALFAN"
+
 /**
  * Configuration.h
  *
@@ -36,12 +38,6 @@
  * Advanced settings can be found in Configuration_adv.h
  */
 #define CONFIGURATION_H_VERSION 02000903
-
-/**
- * CUSTOM (NON-STANDARD PARAMETER TO SIMPLIFY CUSTOMIZATION
- *
- */
-#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -78,6 +74,53 @@
 #define STRING_CONFIG_H_AUTHOR "(Trey Wentz, Neptune 2 - Marlin 2 Color UI)" // Who made the changes.
 #define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
+// @section custom overrides
+/**
+ * Consolidated list of overrides that are not required in this file. They either simplify
+ * managing multiple configurations or override values specified in other files.
+ */
+
+#define FIRMWARE_BIN elegoo.bin // Name of the firmware file output to support elegoo's locked bootloader
+#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
+
+/* Neptune 2 Custom Theme (adjustments for better clarity) */
+
+#define COLOR_GRAYER            0x8C51 // #8D8D8D
+#define COLOR_ELEGOO_RED        0xF000 // #F80000
+
+#define COLOR_BACKGROUND        COLOR_BLACK
+#define COLOR_SELECTION_BG      COLOR_ELEGOO_RED
+#define COLOR_WEBSITE_URL       COLOR_CYAN
+#define COLOR_INACTIVE          COLOR_GRAYER
+#define COLOR_COLD              COLOR_CYAN
+#define COLOR_HOTEND            COLOR_ELEGOO_RED
+#define COLOR_HEATED_BED        COLOR_ELEGOO_RED
+#define COLOR_CHAMBER           COLOR_ELEGOO_RED
+#define COLOR_COOLER            COLOR_ELEGOO_RED
+#define COLOR_FAN               COLOR_CYAN
+#define COLOR_AXIS_HOMED        COLOR_VIVID_GREEN
+#define COLOR_AXIS_NOT_HOMED    COLOR_YELLOW
+#define COLOR_RATE_100          COLOR_VIVID_GREEN
+#define COLOR_RATE_ALTERED      COLOR_YELLOW
+#define COLOR_PRINT_TIME        COLOR_AQUA
+#define COLOR_PROGRESS_FRAME    COLOR_WHITE
+#define COLOR_PROGRESS_BAR      COLOR_ELEGOO_RED
+#define COLOR_PROGRESS_BG       COLOR_BLACK
+#define COLOR_STATUS_MESSAGE    COLOR_WHITE
+#define COLOR_CONTROL_ENABLED   COLOR_WHITE
+#define COLOR_CONTROL_DISABLED  COLOR_GRAYER
+#define COLOR_CONTROL_CANCEL    COLOR_ELEGOO_RED
+#define COLOR_CONTROL_CONFIRM   COLOR_VIVID_GREEN
+#define COLOR_BUSY              COLOR_SILVER
+#define COLOR_MENU_TEXT         COLOR_WHITE
+#define COLOR_MENU_VALUE        COLOR_WHITE
+#define COLOR_SLIDER            COLOR_WHITE
+#define COLOR_SLIDER_INACTIVE   COLOR_GRAYER
+#define COLOR_UBL               COLOR_WHITE
+#define COLOR_TOUCH_CALIBRATION COLOR_WHITE
+#define COLOR_KILL_SCREEN_BG    COLOR_ELEGOO_RED
+#define COLOR_KILL_SCREEN_TEXT  COLOR_WHITE
+
 /**
  * *** VENDORS PLEASE READ ***
  *
@@ -103,7 +146,7 @@
 // Choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
   #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V1_3_F4
-  //#define MOTHERBOARD BOARD_MKS_ROBIN_NAN)  //Use this for ZNP Robin Nano 1.2 board
+  //#define MOTHERBOARD BOARD_MKS_ROBIN_NANO)  //Use this for ZNP Robin Nano 1.2 board
 #endif
 
 /**
@@ -562,7 +605,7 @@
 // Above this temperature the heater will be switched off.
 // This can protect components from overheating, but NOT from shorts and failures.
 // (Use MINTEMP for thermistor short/failure protection.)
-#define HEATER_0_MAXTEMP 275
+#define HEATER_0_MAXTEMP 270
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
 #define HEATER_3_MAXTEMP 275
@@ -570,7 +613,7 @@
 #define HEATER_5_MAXTEMP 275
 #define HEATER_6_MAXTEMP 275
 #define HEATER_7_MAXTEMP 275
-#define BED_MAXTEMP      120
+#define BED_MAXTEMP      110
 #define CHAMBER_MAXTEMP  60
 
 /**
@@ -650,7 +693,7 @@
   // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
 
-  // tuned for my Elegoo Neptune 2, but you should tune on you own machine once you haev it setup
+  // tuned for Elegoo Neptune 2, but you should tune on you own machine once you haev it setup
   #define DEFAULT_bedKp 31.30
   #define DEFAULT_bedKi 6.02
   #define DEFAULT_bedKd 108.50
@@ -1024,7 +1067,7 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-#define S_CURVE_ACCELERATION
+//#define S_CURVE_ACCELERATION
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -1374,7 +1417,7 @@
  */
 //#define Z_IDLE_HEIGHT Z_HOME_POS
 
-//#define Z_HOMING_HEIGHT  4      // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
+#define Z_HOMING_HEIGHT  4        // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
                                   // Be sure to have this much clearance over your Z_MAX_POS to prevent grinding.
 
 //#define Z_AFTER_HOMING  10      // (mm) Height to move to after homing Z
@@ -1440,7 +1483,7 @@
 #endif
 
 #if EITHER(MIN_SOFTWARE_ENDSTOPS, MAX_SOFTWARE_ENDSTOPS)
-  //#define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
+  #define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
 #endif
 
 /**
@@ -1569,16 +1612,13 @@
  * these options to restore the prior leveling state or to always enable
  * leveling immediately after G28.
  */
-//#define RESTORE_LEVELING_AFTER_G28
+#define RESTORE_LEVELING_AFTER_G28
 //#define ENABLE_LEVELING_AFTER_G28
 
 /**
  * Auto-leveling needs preheating
  */
-#if ENABLED(HAS_BLTOUCH)
-  #define PREHEAT_BEFORE_LEVELING
-#endif
-
+//#define PREHEAT_BEFORE_LEVELING
 #if ENABLED(PREHEAT_BEFORE_LEVELING)
   #define LEVELING_NOZZLE_TEMP 180   // (°C) Only applies to E0 at this time
   #define LEVELING_BED_TEMP     50
@@ -1682,7 +1722,7 @@
   //=================================== Mesh ==================================
   //===========================================================================
 
-  #define MESH_INSET 15         // Set Mesh bounds as an inset region of the bed
+  #define MESH_INSET 20         // Set Mesh bounds as an inset region of the bed
   #define GRID_MAX_POINTS_X 3    // Don't use more than 7 points per axis, implementation limited.
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
@@ -1699,7 +1739,7 @@
 #if ENABLED(LCD_BED_LEVELING)
   #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
   #define LCD_PROBE_Z_RANGE 4     // (mm) Z Range centered on Z_MIN_POS for LCD Z adjustment
-  #define MESH_EDIT_MENU        // Add a menu to edit mesh points
+  //#define MESH_EDIT_MENU        // Add a menu to edit mesh points
 #endif
 
 // Add a menu item to move between bed corners for manual bed adjustment
@@ -1918,7 +1958,7 @@
 
 #if ENABLED(NOZZLE_PARK_FEATURE)
   // Specify a park position as { X, Y, Z_raise }
-  #define NOZZLE_PARK_POINT { 5, 5, 5 }
+  #define NOZZLE_PARK_POINT { (X_MIN_POS + 10), (Y_MAX_POS - 10), 20 }
   //#define NOZZLE_PARK_X_ONLY          // X move only is required to park
   //#define NOZZLE_PARK_Y_ONLY          // Y move only is required to park
   #define NOZZLE_PARK_Z_RAISE_MIN   2   // (mm) Always raise Z by at least this distance
@@ -2794,44 +2834,6 @@
 #if ENABLED(TFT_LVGL_UI)
   //#define MKS_WIFI_MODULE  // MKS WiFi module
 #endif
-
-/* Neptune 2 Custom Theme (adjustments for better clarity) */
-
-#define COLOR_GRAYER            0x8C51 // #8D8D8D
-#define COLOR_ELEGOO_RED        0xF000 // #F80000
-
-#define COLOR_BACKGROUND        COLOR_BLACK
-#define COLOR_SELECTION_BG      COLOR_ELEGOO_RED
-#define COLOR_WEBSITE_URL       COLOR_CYAN
-#define COLOR_INACTIVE          COLOR_GRAYER
-#define COLOR_COLD              COLOR_CYAN
-#define COLOR_HOTEND            COLOR_ELEGOO_RED
-#define COLOR_HEATED_BED        COLOR_ELEGOO_RED
-#define COLOR_CHAMBER           COLOR_ELEGOO_RED
-#define COLOR_COOLER            COLOR_ELEGOO_RED
-#define COLOR_FAN               COLOR_CYAN
-#define COLOR_AXIS_HOMED        COLOR_VIVID_GREEN
-#define COLOR_AXIS_NOT_HOMED    COLOR_YELLOW
-#define COLOR_RATE_100          COLOR_VIVID_GREEN
-#define COLOR_RATE_ALTERED      COLOR_YELLOW
-#define COLOR_PRINT_TIME        COLOR_AQUA
-#define COLOR_PROGRESS_FRAME    COLOR_WHITE
-#define COLOR_PROGRESS_BAR      COLOR_ELEGOO_RED
-#define COLOR_PROGRESS_BG       COLOR_BLACK
-#define COLOR_STATUS_MESSAGE    COLOR_WHITE
-#define COLOR_CONTROL_ENABLED   COLOR_WHITE
-#define COLOR_CONTROL_DISABLED  COLOR_GRAYER
-#define COLOR_CONTROL_CANCEL    COLOR_ELEGOO_RED
-#define COLOR_CONTROL_CONFIRM   COLOR_VIVID_GREEN
-#define COLOR_BUSY              COLOR_SILVER
-#define COLOR_MENU_TEXT         COLOR_WHITE
-#define COLOR_MENU_VALUE        COLOR_WHITE
-#define COLOR_SLIDER            COLOR_WHITE
-#define COLOR_SLIDER_INACTIVE   COLOR_GRAYER
-#define COLOR_UBL               COLOR_WHITE
-#define COLOR_TOUCH_CALIBRATION COLOR_WHITE
-#define COLOR_KILL_SCREEN_BG    COLOR_ELEGOO_RED
-#define COLOR_KILL_SCREEN_TEXT  COLOR_WHITE
 
 /**
  * TFT Rotation. Set to one of the following values:

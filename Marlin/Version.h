@@ -31,13 +31,11 @@
  * Notes:
  *   N2-1.3-STOCK  = 1.3 Board + Stock Neptune 2 (Single fan + Manual Bed Level)
  *   N2-1.3-BLT    = 1.3 Board + BLTouch + Single Stock Fan
- *   N2-1.3-MBL-DF = 1.3 Board + Manual Bed Level + Dual Fan
  *   N2-1.3-BLT-DF = 1.3 Board + BLTouch + Dual Fan
  *   N2-1.3-ST-LA  = 1.3 Board + Stock Neptune 2 + Linear Advance
  * TODO:
  *   N2-1.2-STOCK  = 1.2 Board + Stock Neptune 2 (Single fan + Manual Bed Level)
  *   N2-1.2-BLT    = 1.2 Board + BLTouch + Single Stock Fan
- *   N2-1.2-MBL-DF = 1.2 Board + Manual Bed Level + Dual Fan
  *   N2-1.2-BLT-DF = 1.2 Board + BLTouch + Dual Fan
  */
 #define SHORT_BUILD_VERSION "2.0.9.3-N2-1.3-BLT-DF"
@@ -66,7 +64,7 @@
  * has a distinct Github fork— the Source Code URL should just be the main
  * Marlin repository.
  */
-#define SOURCE_CODE_URL "github.com/just-trey/Marlin/tree/N2-COLOR-UI"
+//#define SOURCE_CODE_URL "github.com/MarlinFirmware/Marlin"
 
 /**
  * Default generic printer UUID.
