@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.3/BLTOUCH _LINEAR_ADVANCE"
+#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.3/BLTOUCH_LINEAR_ADVANCE"
 
 /**
  * Configuration.h
