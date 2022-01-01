@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.3/STOCK_LINEAR_ADVANCE"
+#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/STOCK_LINEAR_ADVANCE"
 
 /**
  * Configuration_adv.h

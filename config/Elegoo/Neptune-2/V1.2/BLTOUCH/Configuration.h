@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/STOCK"
+#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/BLTOUCH"
 
 /**
  * Configuration.h
@@ -84,7 +84,7 @@
 // This only works with BOARD_MKS_ROBIN_NANO
 // for BOARD_MKS_ROBIN_NANO_V1_3_F4 manually rename Robin_nano35.bin to elegoo.bin after build
 #define FIRMWARE_BIN elegoo.bin
-//#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
+#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
 
 /* Neptune 2 Custom Theme (adjustments for better clarity) */
 

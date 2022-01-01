@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.3/BLTOUCH"
+#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/BLTOUCH"
 
 /**
  * Configuration_adv.h

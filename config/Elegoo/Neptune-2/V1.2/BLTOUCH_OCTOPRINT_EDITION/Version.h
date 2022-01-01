@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/STOCK_LINEAR_ADVANCE"
+#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/BLTOUCH_OCTOPRINT_EDITION"
 
 ////////////////////////////
 // VENDOR VERSION EXAMPLE //
@@ -31,7 +31,7 @@
  * Marlin release version identifier
  *
  */
-#define SHORT_BUILD_VERSION "2.0.9.3-N2-1.3-LA"
+#define SHORT_BUILD_VERSION "2.0.9.3-N2-1.3-BLTOUCH-OE"
 
 /**
  * Verbose version identifier which should contain a reference to the location
