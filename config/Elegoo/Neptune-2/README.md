@@ -95,13 +95,13 @@ NOTE: the last four steps may seem a little odd, but I can confirm this is worki
 
 ### Z Offest See=ttings Wizard Location
 
-1. *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> PID AUTOTUNE BED*
+1. *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> Probe Offsets*
 
 ### Live Z Offset (Baby Stepping) Location
 
 While printing: 
 
-*settings icon -> Tune -> NEXT ARROW (>) -> HERE*
+*settings icon -> Tune -> NEXT ARROW (>) -> Probe Z Offset*
 
 ### Dual Fan BT Touch Probe offsets
 
