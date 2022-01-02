@@ -84,11 +84,11 @@ The following items are not supported:
 
 *Did you know?* - Elegoo ships with some default values for this, but they can vary with *every* machine. PID tuning is a safety feature, and unless you want my machine's values, I suggest you do this.
 
-1. From the main screen click on *settings icon -> -> -> ->*
+1. From the main screen click on *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> PID AUTOTUNE E1*
 1. The nozzle will heat up and down for a few minutes. When completed, the screen will display a confirmation message on the bottom of the status screen.
-1. From the main screen click on *settings icon -> -> -> ->*
+1. From the main screen click on *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> PID AUTOTUNE BED*
 1. The bed will heat up and down for a few minutes. When completed, the screen will display a confirmation message on the bottom of the status screen.
-1. From the main screen click on the *settings icon -> -> -> ->*
+1. From the main screen click on the *settings icon -> Configuration -> NEXT ARROW (>) -> Store settings*
 
 ## Donation Request
 
@@ -102,4 +102,4 @@ You can learn more about the Tyler Wentz Memorial Fund fund at: https://twentz.c
 
 ---
 
-Have fun and Happy Printing!
+Have fun click aroudn the interface let me knw if you have any issues and Happy Printing!
