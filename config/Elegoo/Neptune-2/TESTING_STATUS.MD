@@ -26,10 +26,13 @@ If after homing your display is red and displays
 
 > Homing failed, Printer halted, Please reset 
 
-Reboot the printer, then click on *settings icon -> -> -> ->*
+Reboot the printer, then click on *SETTINGS ICON -> Configuration -> NEXT ARROW (>) -> Load Settings*. You will hear a beep. Go back to the home screen and try to level again. Sometimes this needs to be done a couple times (twice is the most I have had to try). Once you get the machine to sucessfully level this issue does not return unless you reflash the firmware.
+
+I plan to open an issue on this in the Marlin base repository. 
+
 ## Screen calibration freezes 
 
-After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again and you see 2 calibraiton touch points on the screen. I have never had to do this more than twice. 
+After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again and you see 2 calibraiton touch points on the screen. I have never had to do this more than twice.
 
 ## Machine Keeps Rebooting
 
@@ -44,5 +47,3 @@ Solution: Ensure your baudrate is set to 250000 or AUTO. If that does not resolv
 Q. Why only one file? What happend to the `elegoo.txt` file and the fonts and images?
 
 A. Marlin 2 does not use any addional files for the provided configurations. IF you were to compile using LVGL you would get an `assets` folder as well. 
-
-
