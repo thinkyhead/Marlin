@@ -18,10 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated [README.md](README.md)
 - Updated BLTOUCH auto level to a 5x5 grid
-- updated `Z_MAX_POS` from `260` to `250`
+- Updated `Z_MAX_POS` from `260` to `250`
+- Renamed TESTING_STATUS.MD to TESTING_STATUS.md
 
 ### Fixed
-- Resovled `Homing Failed` configuration issue on install - [@P4ND4-1100010](https://github.com/P4ND4-1100010) - thank you!
+- Found a relaibe way around `Homing Failed` configuration issue on install. I still thill think it's an odd fix but thank you [@P4ND4-1100010](https://github.com/P4ND4-1100010)!
 
 ## [Marlin-2.0.9.3-elegoo] - 2021-01-01
 
