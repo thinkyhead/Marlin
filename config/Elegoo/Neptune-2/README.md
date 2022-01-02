@@ -1,4 +1,4 @@
-** NOTICE: ** Several people are still testing this. If you want something more stable, you may want to wait. You can see the current testing status, known issues, workarounds, and faq's here.
+** NOTICE: ** Several people are still testing this. If you want something more stable, you may want to wait. You can see the [current testing status, known issues, workarounds, and faq's here](https://github.com/just-trey/Marlin/blob/elegoo-neptune-2/config/Elegoo/Neptune-2/TESTING_STATUS.MD).
 
 # Marlin 2.x - Color UI - 3D Printer Firmware compiled for Elegoo Neptune 2
 
@@ -92,9 +92,11 @@ Please note: After you click the bottom right calibration point, reboot your mac
 
 Please consider donating to support the Tyler Wentz Memorial Fund if you find this helpful.
 
-[![Donate](https://user-images.githubusercontent.com/10281380/147870358-4752f28e-21ac-43e5-89c9-25ad967d2b4f.png))](https://golf.twentz.com/donations)
+[![Donate](https://user-images.githubusercontent.com/10281380/147870647-23f016bf-29f9-41ec-a78f-81ef9633ff23.png))](https://golf.twentz.com/donations)
 
 My son, Tyler Wentz, passed away after having a bodysurfing accident in 2015. We established a 501(c) (3) nonprofit organization to raise money to provide two scholarships in our community to deserving students. We are 100% volunteer-driven, and 100% of donations (less the 2.7% Square Processing Fee) will go straight towards supporting the scholarships. 
+
+You can learn more about the Tyler Wentz Memorial Fund fund at: https://twentz.com/ 
 
 ---
 
