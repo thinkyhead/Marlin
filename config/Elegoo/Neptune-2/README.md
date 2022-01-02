@@ -92,6 +92,8 @@ Please note: After you click the bottom right calibration point, reboot your mac
 
 Please consider donating to support the Tyler Wentz Memorial Fund if you find this helpful.
 
+[![Donate](https://user-images.githubusercontent.com/10281380/147870358-4752f28e-21ac-43e5-89c9-25ad967d2b4f.png))](https://golf.twentz.com/donations)
+
 My son, Tyler Wentz, passed away after having a bodysurfing accident in 2015. We established a 501(c) (3) nonprofit organization to raise money to provide two scholarships in our community to deserving students. We are 100% volunteer-driven, and 100% of donations (less the 2.7% Square Processing Fee) will go straight towards supporting the scholarships. 
 
 ---
