@@ -77,8 +77,8 @@ The following items are not supported:
 1. Click in the middle of the screen around the Y and the homing screen will display.
 1. Click on the Home icon.
 1. Did you get the RED Error Screen?
-  - Yes? - How to resolve is here.
-  - No? - I'm jealous. Have fun!
+   - Yes? - [How to resolve is here](TESTING_STATUS.MD#homing-failed).
+   - No? - I'm jealous. Have fun!
 
 ## (Optional, but recommended) PID AUTOTUNE your machine.
 
