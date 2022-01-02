@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.9.3-N2-beta1] - 2021-01-01
+## [2.0.9.3-N2-beta1] - 2021-01-02
 
 ### Added
 - This changelog
@@ -22,13 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed TESTING_STATUS.MD to TESTING_STATUS.md
 
 ### Fixed
-- Found a relaibe way around `Homing Failed` configuration issue on install. I still thill think it's an odd fix but thank you [@P4ND4-1100010](https://github.com/P4ND4-1100010)!
+- Found a reliable way around the `Homing Failed` configuration issue on install. I still think it's an odd fix but thank you [@P4ND4-1100010](https://github.com/P4ND4-1100010)!
 
 ## [Marlin-2.0.9.3-elegoo] - 2021-01-01
 
 ### Added
 - Implemntaiton of COLOR-UI instan of LVGL
-- Cutsom Theme for COLOR-UI
+- Custom Theme for COLOR-UI
 - Enabled [S-Curve Acceleration](https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained)
 - Enabled Adaptive Step Smoothing
 - Enabled ARC Support Enabled

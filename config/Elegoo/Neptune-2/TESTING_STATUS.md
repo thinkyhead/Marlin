@@ -16,7 +16,7 @@ The following items have not been tested in any configuration:
   - Filamanet runout detection
   - Resume on power failure
 
-Only the v1.3 STOCK and v1.3 BLTOUCH have been installed and confirmed to be working.
+1.3 STOCK, v1.3 BLTOUCH, v1.2 BLTOUCH have been installed and confirmed to load.
 
 # Known issues and workarounds
 
