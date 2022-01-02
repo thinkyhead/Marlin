@@ -66,7 +66,9 @@ The following items are not supported:
 1. The firmware will install.
 1. `I'm not sure if you get this EEPROM warning here` - You may get an EEPROM version warning (can someone send me a screenshot?) If you do, click the checkmark.
 1. Once installed, click on the calibration touchpoints. When the touch calibration is complete, it will display a confirmation message. You may think it froze but give it a little time.
-Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice. 
+
+   Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice. 
+
 1. `Or you may get the EEPROM warning here` - need confirmation`
 
 ## What to do next
