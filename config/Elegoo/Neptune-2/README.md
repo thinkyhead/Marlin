@@ -1,6 +1,6 @@
 ** NOTICE: ** Several people are still testing this. If you want something more stable, you may want to wait. You can see the [current testing status, known issues, workarounds, and faq's here](TESTING_STATUS.md).
 
-(A changelog is now availble here)[CHANGELOG.md]
+(A changelog is now available here)[CHANGELOG.md]
 
 # Marlin 2.x - Color UI - 3D Printer Firmware compiled for Elegoo Neptune 2
 
@@ -70,14 +70,14 @@ NOTE: the last four steps may seem a little odd, but I can confirm this is worki
 2. Put the sd card in with the appropriate `elegoo.bin` file... *Reminder: Did I mention to make sure you have the correct version for your board?*
 3. Turn on your printer.
 4. The firmware will install.
-5. if a screen appears asking to set the EEPROM click the checkmark.
+5. if a screen appears asking to set the EEPROM, click the checkmark.
 6. Once installed, click on the calibration touchpoints. When the touch calibration is complete, it will display a confirmation message. You may think it froze but give it a little time.
 
-   Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice when installing the firmware. This may be a unique issue to me becaseu I have had it since I woned the machinne
+   Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice when installing the firmware. This may be a unique issue to me because I have had it since I bought this printer.
 
-7. If you did reset your EEPROM on Step 5 you are good to go. If not proceed to step 8. 
+7. If you reset your EEPROM on Step 5, you are good to go. If not, proceed to step 8. 
 8. Click *SETTINGS ICON -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Initialize EEPROM*
-9.  Click the Check on the confirmation screen
+9. Click the Check on the confirmation screen
 10. reboot your machine
 11. Click the calibration touchpoints again if they come up
   
@@ -93,20 +93,18 @@ NOTE: the last four steps may seem a little odd, but I can confirm this is worki
 
 ## TIPS
 
-### Z Offest See=ttings Wizard Location
+### Z Offest Wizard Location
 
-1. *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> Probe Offsets*
+Located at: *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> Probe Offsets*
 
 ### Live Z Offset (Baby Stepping) Location
 
-While printing: 
-
-*settings icon -> Tune -> NEXT ARROW (>) -> Probe Z Offset*
+While printing:  *settings icon -> Tune -> NEXT ARROW (>) -> Probe Z Offset*
 
 ### Dual Fan BT Touch Probe offsets
 
-If you happen to use [this dual fan printhead](https://www.thingiverse.com/thing:4949488), the X offset is 47.5, and the Y offest is 0 
-You can set this at: *settings icon -> Tune -> NEXT ARROW (>) -> HERE*
+If you happen to use [this dual fan printhead](https://www.thingiverse.com/thing:4949488), the X offset is 47.5
+You can set this at: *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> Probe Offsets*
 
 ## Donation Request
 
