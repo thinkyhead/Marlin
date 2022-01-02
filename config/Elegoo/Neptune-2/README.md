@@ -24,8 +24,9 @@ All versions provided come with these features.
    - Update many configuration values (including ESTEPS) right on the screen
    - PID Autotuning for the nozzle AND bed from the UI.  
 1. [S-Curve Acceleration](https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained)
-1. ARC Support (I am not sure this is new or not)
+1. ARC Support Enabled
 1. **M117** Change filament at layer.
+1. Touchscreen will turn off after 2 min (tap it to turn it back on)
 1. The progress screen will update if you are printing from Octoprint.
 
 BLTouch versions also include:
@@ -64,22 +65,12 @@ The following items are not supported:
 1. Put the sd card in with the appropriate `elegoo.bin` file... *Reminder: Did I mention to make sure you have the correct version for your board?*
 1. Turn on your printer.
 1. The firmware will install.
-1. `I'm not sure if you get this EEPROM warning here` - You may get an EEPROM version warning (can someone send me a screenshot?) If you do, click the checkmark.
 1. Once installed, click on the calibration touchpoints. When the touch calibration is complete, it will display a confirmation message. You may think it froze but give it a little time.
 
-   Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice. 
+   Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice when installing the firware. 
 
-1. `Or you may get the EEPROM warning here` - need confirmation`
-
-## What to do next
-**Confirm you can home the machine** this is a known issue with a workaround 
-
-1. Click in the middle of the screen around the Y and the homing screen will display.
-1. Click on the Home icon.
-1. Did you get the RED Error Screen?
-   - Yes? - [How to resolve is here](TESTING_STATUS.MD#homing-failed).
-   - No? - I'm jealous. Have fun!
-
+1. *SETTINGS ICON -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> initialize EEPROM*
+   
 ## (Optional, but recommended) PID AUTOTUNE your machine.
 
 *Did you know?* - Elegoo ships with some default values for this, but they can vary with *every* machine. PID tuning is a safety feature, and unless you want my machine's values, I suggest you do this.
@@ -90,6 +81,22 @@ The following items are not supported:
 1. The bed will heat up and down for a few minutes. When completed, the screen will display a confirmation message on the bottom of the status screen.
 1. From the main screen click on the *settings icon -> Configuration -> NEXT ARROW (>) -> Store settings*
 
+## TIPS
+
+### Z Offest See=ttings Wizard Location
+
+1. *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> PID AUTOTUNE BED*
+
+### Live Z Offset (Baby Stepping) Location
+
+While printing: 
+
+*settings icon -> Tune -> NEXT ARROW (>) -> HERE*
+
+### Dual Fan BT Touch Probe offsets
+
+If you happen to use [this dual fan printhead](https://www.thingiverse.com/thing:4949488), the X offset is 47.5 and the Y offest is 0 you can set this at 
+
 ## Donation Request
 
 Please consider donating to support the Tyler Wentz Memorial Fund if you find this helpful.
@@ -99,6 +106,11 @@ Please consider donating to support the Tyler Wentz Memorial Fund if you find th
 My son, Tyler Wentz, passed away after having a bodysurfing accident in 2015. We established a 501(c) (3) nonprofit organization to raise money to provide two scholarships in our community to deserving students. We are 100% volunteer-driven, and 100% of donations (less the 2.7% Square Processing Fee) will go straight towards supporting the scholarships. 
 
 You can learn more about the Tyler Wentz Memorial Fund fund at: https://twentz.com/ 
+
+## Possible TODO's (PR's accepted)
+
+1. Provide a configuration with linear advance on
+2. Automate configuration building
 
 ---
 
