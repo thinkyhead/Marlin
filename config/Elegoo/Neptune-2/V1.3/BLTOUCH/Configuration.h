@@ -2871,13 +2871,12 @@
   //#define TOUCH_IDLE_SLEEP 300 // (secs) Turn off the TFT backlight if set (5mn)
 
   #define TOUCH_SCREEN_CALIBRATION
-    //ZNP Robin Nano TFT35
-    #define TOUCH_CALIBRATION_X            18150
-    #define TOUCH_CALIBRATION_Y           -11600
-    #define TOUCH_OFFSET_X                   -55
-    #define TOUCH_OFFSET_Y                   340
-    #define TOUCH_ORIENTATION TOUCH_LANDSCAPE
 
+  //#define TOUCH_CALIBRATION_X 12316
+  //#define TOUCH_CALIBRATION_Y -8981
+  //#define TOUCH_OFFSET_X        -43
+  //#define TOUCH_OFFSET_Y        257
+  //#define TOUCH_ORIENTATION TOUCH_LANDSCAPE
 
   #if BOTH(TOUCH_SCREEN_CALIBRATION, EEPROM_SETTINGS)
     #define TOUCH_CALIBRATION_AUTO_SAVE // Auto save successful calibration values to EEPROM
