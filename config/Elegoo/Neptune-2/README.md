@@ -44,7 +44,7 @@ The following items are not supported:
 
 ## Getting things ready
 
-1. Download this zip file.
+1. Download this [zip](https://github.com/just-trey/Marlin/releases/download/Marlin-2.0.9.3-elegoo/Elegoo.zip) file.
 2. extract the zip file on your computer
 3. Copy the desired `elegoo.bin` configuration to your SD Card. No other files are needed to install.  
    
