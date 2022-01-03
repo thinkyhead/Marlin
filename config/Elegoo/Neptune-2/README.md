@@ -125,6 +125,10 @@ A: There are two ways to identify what version board you have.
   - Visual confirmation (more effort, but if you are not running stock firmware, the only way): 	
   - Power off, unplug and remove the bottom plate cover from your machine (Note: One screw that attaches near the LCD is shorter than the rest. Be sure to put that screw back in the same place when you put it back together, or you can crack or put a dimple on the top of the case) 
   - The version Number is printed diectly on the board
+
+    ![1-2board](https://user-images.githubusercontent.com/10281380/147952867-216f31e7-3df8-4679-9e6e-3f61c7d24c45.jpg)
+    ![1-3board](https://user-images.githubusercontent.com/10281380/147952884-c4643537-1928-45d9-ae86-38522722a18b.jpg)
+
   
 ## Donation Request
 
