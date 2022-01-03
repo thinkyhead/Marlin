@@ -106,6 +106,26 @@ While printing:  *settings icon -> Tune -> NEXT ARROW (>) -> Probe Z Offset*
 If you happen to use [this dual fan printhead](https://www.thingiverse.com/thing:4949488), the X offset is 47.5
 You can set this at: *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> Probe Offsets*
 
+# FAQ's
+
+Q. Why only one file? What happened to the `elegoo.txt` file and the fonts and images?
+
+A. Marlin 2 does not use any additional files for the provided configurations. If you were to compile using LVGL, you would also get an `assets` folder. 
+
+Q. The touch screen does not seem very responsive. Especially at the bottom of the screen. What's up with that?
+
+A. Yup. The color depth is also horrendous! So I choose very bright colors for the theme. If you know of a better quality compatible screen, I'd love to hear about it. I think a corner was cut on the machine to help keep costs down, which is very fair! 
+
+Q: How do I know what version board I have?
+A: There are two ways to identify what version board you have. 
+  - Via the stock firmware interface:
+    - From the main screen, click on * Settings -> About *
+    - If the *Firmware* version is 1.x.x, you have a 1.2 board.
+    - If the *Firmware* version is 2.x.x, you have a 1.3 board.
+  - Visual confirmation (more effort, but if you are not running stock firmware, the only way): 	
+  - Power off, unplug and remove the bottom plate cover from your machine (Note: One screw that attaches near the LCD is shorter than the rest. Be sure to put that screw back in the same place when you put it back together, or you can crack or put a dimple on the top of the case) 
+  - The version Number is printed diectly on the board
+  
 ## Donation Request
 
 Please consider donating to support the Tyler Wentz Memorial Fund if you find this helpful.
@@ -120,6 +140,7 @@ You can learn more about the Tyler Wentz Memorial Fund fund at: https://twentz.c
 
 1. Provide a configuration with linear advance on
 2. Automate configuration building
+3. Version for Deptune 2D
 
 ---
 

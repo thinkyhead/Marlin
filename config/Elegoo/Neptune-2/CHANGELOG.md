@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Update and linked issue in TESTING_STATUS.md and fixed typo in readme - 2021-01-02
+- Moved FAQ's to main reasme and added how to find the board version - 2021-01-03
 ## [2.0.9.3-N2-beta1] - 2021-01-02
 
 ### Added

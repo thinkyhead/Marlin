@@ -41,13 +41,3 @@ After you click the bottom right calibration point, reboot your machine if it pr
 ## Pronterface/Otoprint Won't Connect
 
 **Solution:** Ensure your baudrate is set to 250000 or AUTO. If that does not resolve it and you are using a hub. Try connecting directly. 
-
-# FAQ's
-
-Q. Why only one file? What happened to the `elegoo.txt` file and the fonts and images?
-
-A. Marlin 2 does not use any additional files for the provided configurations. If you were to compile using LVGL, you would also get an `assets` folder. 
-
-Q. The touch screen does not seem very responsive. Especially at the bottom of the screen. What's up with that?
-
-A. Yup. The color depth is also horrendous! So I choose very bright colors for the theme. If you know of a better quality compatible screen, I'd love to hear about it. I think a corner was cut on the machine to help keep costs down, which is very fair! 
