@@ -1,6 +1,6 @@
 ** NOTICE: ** Several people are still testing this. If you want something more stable, you may want to wait. You can see the [current testing status, known issues, workarounds, and faq's here](TESTING_STATUS.md).
 
-(A changelog is now available here)[CHANGELOG.md]
+[A changelog is now available here](CHANGELOG.md)
 
 # Marlin 2.x - Color UI - 3D Printer Firmware compiled for Elegoo Neptune 2
 
