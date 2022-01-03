@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-fixed typo in readme - 2021-01-02
+- Update and linked issue in TESTING_STATUS.md and fixed typo in readme - 2021-01-02
 ## [2.0.9.3-N2-beta1] - 2021-01-02
 
 ### Added
