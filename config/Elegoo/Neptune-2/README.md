@@ -35,7 +35,7 @@ All versions provided come with these features.
 BLTouch versions also include:
 1. Z Level Offset Wizard
 1. **Live Z** Support
-1. Bad tramming wizard option (I mean, you still need to level every once and a while)
+1. Bed tramming wizard option (I mean, you still need to level every once and a while)
 
 # Do I lose any features if I use this?
 
