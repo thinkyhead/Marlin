@@ -42,6 +42,6 @@ fixed typo in readme - 2021-01-02
 - Enabled **Live Z** Support
 - Enabled Bed tramming wizard option (I mean, you still need to level every once and a while)
 
-[Unreleased]: https://github.com/just-trey/Marlin/compare/2.0.9.3-N2-beta1...HEAD
+[Unreleased]: https://github.com/just-trey/Marlin/compare/2.0.9.3-N2-beta1...elegoo-neptune-2
 [2.0.9.3-N2-beta1]: https://github.com/just-trey/Marlin/compare/Marlin-2.0.9.3-elegoo...2.0.9.3-N2-beta1
 [Marlin-2.0.9.3-elegoo]: https://github.com/just-trey/Marlin/releases/tag/Marlin-2.0.9.3-elegoo
