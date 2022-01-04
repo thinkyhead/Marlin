@@ -1,6 +1,12 @@
 ** NOTICE: ** Several people are still testing this. If you want something more stable, you may want to wait. You can see the [current testing status, known issues, workarounds, and faq's here](TESTING_STATUS.md).
 
-[A changelog is now available here](CHANGELOG.md)
+[CHANGELOG](CHANGELOG.md)
+
+## Disclaimer
+
+The code within this repository comes with no guarantee, the use of this code is your responsibility.
+
+I take NO responsibility and/or liability for how you choose to use any of the source code available here. By using any of the files available in this repository, you understand that you are AGREEING TO USE AT YOOR OWN RISK
 
 # Marlin 2.x - Color UI - 3D Printer Firmware compiled for Elegoo Neptune 2
 
@@ -139,6 +145,9 @@ Please consider donating to support the Tyler Wentz Memorial Fund if you find th
 My son, Tyler Wentz, passed away after having a bodysurfing accident in 2015. We established a 501(c) (3) nonprofit organization to raise money to provide two scholarships in our community to deserving students. We are 100% volunteer-driven, and 100% of donations (less the 2.7% Square Processing Fee) will go straight towards supporting the scholarships. 
 
 You can learn more about the Tyler Wentz Memorial Fund fund at: https://twentz.com/ 
+
+
+---
 
 ## Possible TODO's (PR's accepted)
 
