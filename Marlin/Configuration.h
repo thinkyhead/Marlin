@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/STOCK"
+#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.3/BLTOUCH"
 
 /**
  * Configuration.h
@@ -84,7 +84,7 @@
 // This only works with BOARD_MKS_ROBIN_NANO
 // for BOARD_MKS_ROBIN_NANO_V1_3_F4 manually rename Robin_nano35.bin to elegoo.bin after build
 #define FIRMWARE_BIN elegoo.bin
-//#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
+#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
 
 /* Neptune 2 Custom Theme (adjustments for better clarity) */
 
@@ -147,8 +147,8 @@
 
 // Choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  //#define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V1_3_F4
-  #define MOTHERBOARD BOARD_MKS_ROBIN_NANO  //Use this for ZNP Robin Nano 1.2 board
+  #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V1_3_F4
+  // #define MOTHERBOARD BOARD_MKS_ROBIN_NANO  //Use this for ZNP Robin Nano 1.2 board
 #endif
 
 /**
@@ -2868,7 +2868,7 @@
   #define BUTTON_DELAY_EDIT  50 // (ms) Button repeat delay for edit screens
   #define BUTTON_DELAY_MENU 250 // (ms) Button repeat delay for menus
 
-  #define TOUCH_IDLE_SLEEP 120 // (secs) Turn off the TFT backlight if set (5mn)
+  //#define TOUCH_IDLE_SLEEP 120 // (secs) Turn off the TFT backlight if set (5mn)
 
   #define TOUCH_SCREEN_CALIBRATION
 
