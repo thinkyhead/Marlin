@@ -86,6 +86,18 @@
 #define FIRMWARE_BIN elegoo.bin
 #define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
 
+// Define missing pins
+#define POWER_LOSS_PIN                    PA2
+#define FIL_RUNOUT_PIN                    PA4
+#define FIL_RUNOUT2_PIN                   PE6
+#define MT_DET_PIN_STATE                  LOW
+
+// Define missing pins for BOARD_MKS_ROBIN_NANO_V1_3_F4
+#define TFT_320x240
+
+//does this shut this thing up?
+#define BEEPER_PIN                        -1
+
 /* Neptune 2 Custom Theme (adjustments for better clarity) */
 
 #define COLOR_GRAYER            0x8C51 // #8D8D8D
@@ -1241,7 +1253,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 35
+#define PROBING_MARGIN 15
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (4000)

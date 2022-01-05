@@ -54,6 +54,8 @@ The following items are not supported:
 
 ## Getting things ready
 
+NOTE: I recommend you use a sd card 8gb or less for installing. Using anything larger has been an issue with some users. [If you do not have one this is the one I use (non-affiliate link)](https://amzn.to/3JIOzYL)
+
 1. [Download the latest version here](https://github.com/just-trey/Marlin/releases/latest/download/Elegoo.zip).
 2. Extract the zip file on your computer
 3. Copy the desired `elegoo.bin` configuration to your SD Card. No other files are needed to install.  
@@ -86,6 +88,7 @@ NOTE: the last four steps may seem a little odd, but I can confirm this is worki
 9. Click the Check on the confirmation screen
 10. reboot your machine
 11. Click the calibration touchpoints again if they come up
+12. Remove the SD Card from your machine
   
 ## (Optional, but recommended) PID AUTOTUNE your machine.
 
@@ -110,7 +113,7 @@ While printing:  *settings icon -> Tune -> NEXT ARROW (>) -> Probe Z Offset*
 ### Dual Fan BT Touch Probe offsets
 
 If you happen to use [this dual fan printhead](https://www.thingiverse.com/thing:4949488), the X offset is 47.5
-You can set this at: *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> Probe Offsets*
+You can set this at: *settings icon -> Configuration -> Advanced Settings -> Probe Offsets*
 
 # FAQ's
 
