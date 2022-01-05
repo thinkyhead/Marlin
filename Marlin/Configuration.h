@@ -90,10 +90,6 @@
 #define FIL_RUNOUT2_PIN                   PE6
 #define MT_DET_PIN_STATE                  LOW
 
-
-//does this shut this thing up? --remove when ready
-#define BEEPER_PIN                        -1
-
 /* Neptune 2 Custom Theme (adjustments for better clarity) */
 
 #define COLOR_GRAYER            0x8C51 // #8D8D8D
