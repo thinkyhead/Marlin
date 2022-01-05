@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update and linked issue in TESTING_STATUS.md and fixed typo in readme - 2021-01-02
 - Moved FAQ's to main reasme and added how to find the board version - 2021-01-03
 - Disabled TOUCH_IDLE_SLEEP due to screen still reacting to touches when clicked to wake - 2021-01-03
+- Updated Readme with a few minor content changes - 2021-01-03
 
 ## [2.0.9.3-N2-beta1] - 2021-01-02
 
