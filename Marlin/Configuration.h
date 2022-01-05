@@ -86,8 +86,6 @@
 
 // Define missing pins
 #define POWER_LOSS_PIN                    PA2
-#define FIL_RUNOUT_PIN                    PA4
-#define FIL_RUNOUT2_PIN                   PE6
 #define MT_DET_PIN_STATE                  LOW
 
 /* Neptune 2 Custom Theme (adjustments for better clarity) */
