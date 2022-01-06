@@ -80,9 +80,6 @@
 
 //#define IS_BOARD_1_2  // Enable if you have the 1.2 board, disable for 1.3 board
 #define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
-// Name of the firmware file output to support Elegoo's locked bootloader
-#define FIRMWARE_BIN  elegoo.bin // For 1.3 board the file needs to be renamed manually
-
 // Define missing pins
 #define POWER_LOSS_PIN          PA2
 #define MT_DET_PIN_STATE        LOW
@@ -1261,7 +1258,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { 32.55, -7, 0 }
+#define NOZZLE_TO_PROBE_OFFSET { 32.55, -3, 0 }
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
