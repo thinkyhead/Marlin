@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -20,8 +20,6 @@
  *
  */
 #pragma once
-
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.2/STOCK_LINEAR_ADVANCE"
 
 /**
  * Configuration.h
@@ -71,23 +69,25 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(Trey Wentz, Neptune 2 - Marlin 2 Color UI)" // Who made the changes.
-#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
+#define STRING_CONFIG_H_AUTHOR "(Trey Wentz and EvilGremlin, Neptune 2 - Marlin 2 Color UI)" // Who made the changes.
+//#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
-// @section custom overrides
+// @section custom
 /**
  * Consolidated list of overrides that are not required in this file. They either simplify
  * managing multiple configurations or override values specified in other files.
  */
 
-// Name of the firmware file output to support elegoo's locked bootloader
-// This only works with BOARD_MKS_ROBIN_NANO
-// for BOARD_MKS_ROBIN_NANO_V1_3_F4 manually rename Robin_nano35.bin to elegoo.bin after build
-#define FIRMWARE_BIN elegoo.bin
-//#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
+//#define IS_BOARD_1_2  // Enable if you have the 1.2 board, disable for 1.3 board
+#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
+// Name of the firmware file output to support Elegoo's locked bootloader
+#define FIRMWARE_BIN  elegoo.bin // For 1.3 board the file needs to be renamed manually
+
+// Define missing pins
+#define POWER_LOSS_PIN          PA2
+#define MT_DET_PIN_STATE        LOW
 
 /* Neptune 2 Custom Theme (adjustments for better clarity) */
-
 #define COLOR_GRAYER            0x8C51 // #8D8D8D
 
 #define COLOR_BACKGROUND        COLOR_BLACK
@@ -146,9 +146,15 @@
 // @section machine
 
 // Choose the name from boards.h that matches your setup
+// NOTE for platformio.ini:
+// For ZNP Robin Nano 1.2 - set default_envs = mks_robin_nano35
+// For ZNP Robin Nano 1.3 - default_envs = mks_robin_nano_v1_3_f4
 #ifndef MOTHERBOARD
-  //#define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V1_3_F4
-  #define MOTHERBOARD BOARD_MKS_ROBIN_NANO  //Use this for ZNP Robin Nano 1.2 board
+  #if ENABLED(IS_BOARD_1_2)
+    #define MOTHERBOARD BOARD_MKS_ROBIN_NANO
+  #else
+    #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V1_3_F4
+  #endif
 #endif
 
 /**
@@ -173,7 +179,7 @@
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
 #define BAUDRATE 250000
-//#define BAUD_RATE_GCODE     // Enable G-code M575 to set the baud rate
+#define BAUD_RATE_GCODE     // Enable G-code M575 to set the baud rate
 
 /**
  * Select a secondary serial port on the board to use for communication with the host.
@@ -426,6 +432,9 @@
   //#define PSU_DEFAULT_OFF         // Keep power off until enabled directly with M80
   //#define PSU_POWERUP_DELAY 250   // (ms) Delay for the PSU to warm up to full power
 
+  //#define POWER_OFF_TIMER               // Enable M81 D<seconds> to power off after a delay
+  //#define POWER_OFF_WAIT_FOR_COOLDOWN   // Enable M81 S to power off only after cooldown
+
   //#define PSU_POWERUP_GCODE  "M355 S1"  // G-code to run after power-on (e.g., case light on)
   //#define PSU_POWEROFF_GCODE "M355 S0"  // G-code to run before power-off (e.g., case light off)
 
@@ -436,11 +445,13 @@
     #define AUTO_POWER_CONTROLLERFAN
     #define AUTO_POWER_CHAMBER_FAN
     #define AUTO_POWER_COOLER_FAN
-    //#define AUTO_POWER_E_TEMP        50 // (°C) Turn on PSU if any extruder is over this temperature
-    //#define AUTO_POWER_CHAMBER_TEMP  30 // (°C) Turn on PSU if the chamber is over this temperature
-    //#define AUTO_POWER_COOLER_TEMP   26 // (°C) Turn on PSU if the cooler is over this temperature
     #define POWER_TIMEOUT              30 // (s) Turn off power if the machine is idle for this duration
     //#define POWER_OFF_DELAY          60 // (s) Delay of poweroff after M81 command. Useful to let fans run for extra time.
+  #endif
+  #if EITHER(AUTO_POWER_CONTROL, POWER_OFF_WAIT_FOR_COOLDOWN)
+    //#define AUTO_POWER_E_TEMP        50 // (°C) PSU on if any extruder is over this temperature
+    //#define AUTO_POWER_CHAMBER_TEMP  30 // (°C) PSU on if the chamber is over this temperature
+    //#define AUTO_POWER_COOLER_TEMP   26 // (°C) PSU on if the cooler is over this temperature
   #endif
 #endif
 
@@ -1089,6 +1100,8 @@
   #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
   // Force the use of the probe for Z-axis homing
   #define USE_PROBE_FOR_Z_HOMING
+#else
+  #define PROBE_MANUALLY
 #endif
 
 /**
@@ -1144,7 +1157,18 @@
  * The BLTouch probe uses a Hall effect sensor and emulates a servo.
  */
 #if ENABLED(HAS_BLTOUCH)
-	#define BLTOUCH
+  #define BLTOUCH
+#endif
+
+/**
+ * MagLev V4 probe by MDD
+ *
+ * This probe is deployed and activated by powering a built-in electromagnet.
+ */
+//#define MAGLEV4
+#if ENABLED(MAGLEV4)
+  //#define MAGLEV_TRIGGER_PIN 11     // Set to the connected digital output
+  #define MAGLEV_TRIGGER_DELAY 15     // Changing this risks overheating the coil
 #endif
 
 /**
@@ -1241,7 +1265,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 35
+#define PROBING_MARGIN 10
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (4000)
@@ -1724,7 +1748,7 @@
   //=================================== Mesh ==================================
   //===========================================================================
 
-  #define MESH_INSET 20         // Set Mesh bounds as an inset region of the bed
+  #define MESH_INSET 20          // Set Mesh bounds as an inset region of the bed
   #define GRID_MAX_POINTS_X 3    // Don't use more than 7 points per axis, implementation limited.
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
@@ -2180,7 +2204,7 @@
  *
  * Use CRC checks and retries on the SD communication.
  */
-#define SD_CHECK_AND_RETRY
+//#define SD_CHECK_AND_RETRY
 
 /**
  * LCD Menu Items
@@ -2674,6 +2698,11 @@
 #endif
 
 //
+// CR-6 OEM touch screen. A DWIN display with touch.
+//
+//#define DWIN_CREALITY_TOUCHLCD
+
+//
 // Touch-screen LCD for Malyan M200/M300 printers
 //
 //#define MALYAN_LCD
@@ -2704,6 +2733,12 @@
 #if ENABLED(NEXTION_TFT)
   #define LCD_SERIAL_PORT 1  // Default is 1 for Nextion
 #endif
+
+//
+// PanelDue touch controller by Escher3D
+// http://escher3d.com/pages/order/products/product2.php
+//
+//#define PANELDUE
 
 //
 // Third-party or vendor-customized controller interfaces.
@@ -2809,13 +2844,13 @@
   #define TFT_DRIVER AUTO
 
   // Interface. Enable one of the following options:
-  //#define TFT_INTERFACE_FSMC
+  #define TFT_INTERFACE_FSMC
   //#define TFT_INTERFACE_SPI
 
   // TFT Resolution. Enable one of the following options:
   //#define TFT_RES_320x240
   //#define TFT_RES_480x272
-  //#define TFT_RES_480x320
+  #define TFT_RES_480x320
   //#define TFT_RES_1024x600
 #endif
 
@@ -2868,7 +2903,7 @@
   #define BUTTON_DELAY_EDIT  50 // (ms) Button repeat delay for edit screens
   #define BUTTON_DELAY_MENU 250 // (ms) Button repeat delay for menus
 
-  //#define TOUCH_IDLE_SLEEP 120 // (secs) Turn off the TFT backlight if set (5mn)
+  //#define TOUCH_IDLE_SLEEP 300 // (secs) Turn off the TFT backlight if set (5mn)
 
   #define TOUCH_SCREEN_CALIBRATION
 
