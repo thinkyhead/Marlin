@@ -78,8 +78,9 @@
  * managing multiple configurations or override values specified in other files.
  */
 
-#define IS_BOARD_1_3            true // True if you have the 1.3 board, false for 1.2 board
-#define HAS_BLTOUCH   // Enable if you want to use BLTOUCH
+#define IS_BOARD_1_3            true  // True if you have the 1.3 board, false for 1.2 board
+#define IS_2D                   false // True if you have a Neptuen 2d (Dual extruder)
+#define HAS_BLTOUCH             true  // Enable if you have a BlTouch, false fo no BlTouch
 // Define missing pins
 #define POWER_LOSS_PIN          PA2
 #define MT_DET_PIN_STATE        LOW
@@ -904,7 +905,11 @@
 #define I_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 #define J_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 #define K_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
-#define Z_MIN_PROBE_ENDSTOP_INVERTING true // Set to true to invert the logic of the probe.
+#if HAS_BLTOUCH
+  #define Z_MIN_PROBE_ENDSTOP_INVERTING false // Set to true to invert the logic of the probe.
+#else
+  #define Z_MIN_PROBE_ENDSTOP_INVERTING true // Set to true to invert the logic of the probe.
+#endif
 
 /**
  * Stepper Drivers
@@ -1093,7 +1098,7 @@
  * The probe replaces the Z-MIN endstop and is used for Z homing.
  * (Automatically enables USE_PROBE_FOR_Z_HOMING.)
  */
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
   // Force the use of the probe for Z-axis homing
   #define USE_PROBE_FOR_Z_HOMING
@@ -1153,7 +1158,7 @@
 /**
  * The BLTouch probe uses a Hall effect sensor and emulates a servo.
  */
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define BLTOUCH
 #endif
 
@@ -1262,7 +1267,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 10
+#define PROBING_MARGIN 15
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (4000)
@@ -1625,7 +1630,7 @@
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
 //#define AUTO_BED_LEVELING_UBL
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define AUTO_BED_LEVELING_BILINEAR
 #else
   #define MESH_BED_LEVELING
@@ -1827,7 +1832,7 @@
  * - Allows Z homing only when XY positions are known and trusted.
  * - If stepper drivers sleep, XY homing may be required again before Z homing.
  */
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define Z_SAFE_HOMING
 #endif
 

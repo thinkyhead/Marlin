@@ -1093,7 +1093,7 @@
  * The probe replaces the Z-MIN endstop and is used for Z homing.
  * (Automatically enables USE_PROBE_FOR_Z_HOMING.)
  */
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
   // Force the use of the probe for Z-axis homing
   #define USE_PROBE_FOR_Z_HOMING
@@ -1153,7 +1153,7 @@
 /**
  * The BLTouch probe uses a Hall effect sensor and emulates a servo.
  */
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define BLTOUCH
 #endif
 
@@ -1625,7 +1625,7 @@
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
 //#define AUTO_BED_LEVELING_UBL
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define AUTO_BED_LEVELING_BILINEAR
 #else
   #define MESH_BED_LEVELING
@@ -1827,7 +1827,7 @@
  * - Allows Z homing only when XY positions are known and trusted.
  * - If stepper drivers sleep, XY homing may be required again before Z homing.
  */
-#if ENABLED(HAS_BLTOUCH)
+#if HAS_BLTOUCH
   #define Z_SAFE_HOMING
 #endif
 
