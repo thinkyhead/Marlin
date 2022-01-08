@@ -80,7 +80,7 @@
 
 #define IS_BOARD_1_3            true  // True if you have the 1.3 board, false for 1.2 board
 #define IS_2D                   false // True if you have a Neptuen 2d (Dual extruder)
-#define HAS_BLTOUCH             true  // Enable if you have a BlTouch, false fo no BlTouch
+#define HAS_BLTOUCH             false  // Enable if you have a BlTouch, false fo no BlTouch
 // Define missing pins
 #define POWER_LOSS_PIN          PA2
 #define MT_DET_PIN_STATE        LOW
