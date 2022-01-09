@@ -68,9 +68,10 @@ NOTE: I recommend you use an sd card 8gb or less FAT Formatted for installing. U
 
    - All firmware and configurations for 1.2 boards are in the 1.2 directory
    - All firmware and configurations for 1.3 boards are in the 1.3 directory
-   - If you *DO NOT* have a BLOTUCH, use the file in the STOCK directory
-   - If you *DO* have a BLOTUCH, use the file in the BLOTUCH directory
-   - Neptune 2d version are avaiable with STOCK and BLOTUCH support following the same structre
+   - If you *DO NOT* have a BLTOUCH, use the file in the STOCK directory
+   - If you *DO* have a BLTOUCH, use the file in the BLTOUCH directory
+   - Neptune 2d version are avaiable with STOCK and BLTOUCH support following the same structre
+
 ## Install
 
 1. Power off your printer
