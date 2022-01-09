@@ -11,11 +11,7 @@ I'll take whatever anyone is interested in helping with
 
 ## Testing status
 
-The following item has not been tested in any configuration:
-
-  - Resume on power failure
-
-All versions have been installed and confirmed to load.
+The 1.3 BLTouch Version for tne Neptune 2 and 2d are confirmed to be working in this release. 
 
 # Known issues and workarounds
 
@@ -27,7 +23,7 @@ If after homing, your display is red and displays
 
 Reboot the printer, then click on *SETTINGS ICON -> Configuration -> NEXT ARROW (>) -> Factory Reset*. You will hear a beep. Go back to the home screen and try to level again. Sometimes this needs to be done a couple of times (twice is the most I have had to try). Once you get the machine homed successfully, this issue does not return unless you reflash the firmware.
 
-This issue is being tracked at [#23436](https://github.com/MarlinFirmware/Marlin/issues/23436) in the official Marlin repository. 
+This issue [#23436](https://github.com/MarlinFirmware/Marlin/issues/23436) is closed and you shoud no longer encounter this error. 
 
 ## Screen calibration freezes 
 
