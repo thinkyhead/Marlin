@@ -4,9 +4,9 @@
 
 ## Disclaimer
 
-The code within this repository comes with no guarantee, the use of this code is your responsibility.
+The code within this repository comes with no guarantee; the use of this code is your responsibility.
 
-I take NO responsibility and/or liability for how you choose to use any of the source code available here. By using any of the files available in this repository, you understand that you are AGREEING TO USE AT YOOR OWN RISK
+I take NO responsibility and liability for how you choose to use any of the source code available here. By using any of the files available in this repository, you understand that you are AGREEING TO USE AT YOUR OWN RISK
 
 # Marlin 2.x - Color UI - 3D Printer Firmware compiled for Elegoo Neptune 2
 
@@ -28,7 +28,7 @@ All versions provided come with these features.
 1. A safe version of alternative firmware.
    - I found a few configurations online and in repos that were not appropriately configured (Thermal runway protection was off or busted) 
 1. An alternative UI
-   - Not as "pretty", but much more helpful
+   - Not as "pretty," but much more helpful
    - Update many configuration values (including ESTEPS) right on the screen
    - PID Autotuning for the nozzle AND bed from the UI.  
 1. [S-Curve Acceleration](https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained)
@@ -81,7 +81,7 @@ NOTE: the last four steps may seem a little odd, but I can confirm this is worki
 5. if a screen appears asking to set the EEPROM, click the checkmark.
 6. Once installed, click on the calibration touchpoints. When the touch calibration is complete, it will display a confirmation message. You may think it froze but give it a little time.
 
-   Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice when installing the firmware. This may be a unique issue to me because I have had it since I bought this printer.
+   Please note: After you click the bottom right calibration point, reboot your machine if it prompts you to click the top left again. I have never had to do this more than twice when installing the firmware. This may be a unique issue because I have had it since I bought this printer.
 
 7. If you reset your EEPROM on Step 5, you are good to go. If not, proceed to step 8. 
 8. Click *SETTINGS ICON -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Initialize EEPROM*
@@ -133,7 +133,7 @@ A: There are two ways to identify what version board you have.
     - If the *Firmware* version is 2.x.x, you have a 1.3 board.
   - Visual confirmation (more effort, but if you are not running stock firmware, the only way): 	
   - Power off, unplug and remove the bottom plate cover from your machine (Note: One screw that attaches near the LCD is shorter than the rest. Be sure to put that screw back in the same place when you put it back together, or you can crack or put a dimple on the top of the case) 
-  - The version Number is printed diectly on the board
+  - The version number is printed directly on the board
 
     ![1-2board](https://user-images.githubusercontent.com/10281380/147952867-216f31e7-3df8-4679-9e6e-3f61c7d24c45.jpg)
     ![1-3board](https://user-images.githubusercontent.com/10281380/147952884-c4643537-1928-45d9-ae86-38522722a18b.jpg)
@@ -156,7 +156,6 @@ You can learn more about the Tyler Wentz Memorial Fund fund at: https://twentz.c
 
 1. Provide a configuration with linear advance on
 2. Automate configuration building
-3. Version for Deptune 2D
 
 ---
 

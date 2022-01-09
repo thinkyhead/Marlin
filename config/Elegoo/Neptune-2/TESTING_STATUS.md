@@ -25,7 +25,7 @@ If after homing, your display is red and displays
 
 > Homing failed, Printer halted, Please reset 
 
-Reboot the printer, then click on *SETTINGS ICON -> Configuration -> NEXT ARROW (>) -> Load Settings*. You will hear a beep. Go back to the home screen and try to level again. Sometimes this needs to be done a couple of times (twice is the most I have had to try). Once you get the machine homed successfully, this issue does not return unless you reflash the firmware.
+Reboot the printer, then click on *SETTINGS ICON -> Configuration -> NEXT ARROW (>) -> Factory Reset*. You will hear a beep. Go back to the home screen and try to level again. Sometimes this needs to be done a couple of times (twice is the most I have had to try). Once you get the machine homed successfully, this issue does not return unless you reflash the firmware.
 
 This issue is being tracked at [#23436](https://github.com/MarlinFirmware/Marlin/issues/23436) in the official Marlin repository. 
 
