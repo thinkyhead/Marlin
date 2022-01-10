@@ -207,8 +207,11 @@
   #define IS_ULTIPANEL 1
   #define U8GLIB_SSD1309
   #define LCD_RESET_PIN LCD_PINS_D6 //  This controller need a reset pin
-  #define ENCODER_PULSES_PER_STEP 2
-  #define ENCODER_STEPS_PER_MENU_ITEM 2
+  #define ENCODER_PULSES_PER_STEP 4
+  #define ENCODER_STEPS_PER_MENU_ITEM 1
+  #ifndef PCA9632
+    #define PCA9632
+  #endif
 
 #elif ENABLED(MAKEBOARD_MINI_2_LINE_DISPLAY_1602)
 
@@ -687,12 +690,34 @@
  * All the logical axes except for the tool (E) axis
  */
 #ifndef NUM_AXES
-  #define NUM_AXES XYZ
+  #ifdef LINEAR_AXES
+    #define NUM_AXES LINEAR_AXES // TEMPORARY FOR COMPATIBILITY
+  #else
+    #define NUM_AXES XYZ
+  #endif
 #endif
 #if NUM_AXES >= XY
   #define HAS_Y_AXIS 1
   #if NUM_AXES >= XYZ
     #define HAS_Z_AXIS 1
+    #if NUM_AXES >= 4
+      #define HAS_I_AXIS 1
+      #if NUM_AXES >= 5
+        #define HAS_J_AXIS 1
+        #if NUM_AXES >= 6
+          #define HAS_K_AXIS 1
+          #if NUM_AXES >= 7
+            #define HAS_U_AXIS 1
+            #if NUM_AXES >= 8
+              #define HAS_V_AXIS 1
+              #if NUM_AXES >= 9
+                #define HAS_W_AXIS 1
+              #endif
+            #endif
+          #endif
+        #endif
+      #endif
+    #endif
   #endif
 #endif
 
@@ -700,7 +725,7 @@
  * Number of Primary Linear Axes (e.g. XYZ)
  * X, XY, or XYZ axes
  */
-#if NUM_AXES >= 4
+#if HAS_I_AXIS
   #define PRIMARY_LINEAR_AXES 3
 #else
   #define PRIMARY_LINEAR_AXES NUM_AXES
@@ -710,7 +735,7 @@
  * Number of Secondary Axes (e.g. IJKUVW)
  * All axes exept for XYZE axes
  */
-#if NUM_AXES >= 4
+#if HAS_I_AXIS
   #define SECONDARY_AXES SUB3(NUM_AXES)
 #else
   #define SECONDARY_AXES 0
@@ -868,7 +893,7 @@
 /**
  * Set a flag for any type of bed probe, including the paper-test
  */
-#if ANY(HAS_Z_SERVO_PROBE, FIX_MOUNTED_PROBE, NOZZLE_AS_PROBE, TOUCH_MI_PROBE, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, SOLENOID_PROBE, SENSORLESS_PROBING, RACK_AND_PINION_PROBE)
+#if ANY(HAS_Z_SERVO_PROBE, FIX_MOUNTED_PROBE, NOZZLE_AS_PROBE, TOUCH_MI_PROBE, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, SOLENOID_PROBE, SENSORLESS_PROBING, RACK_AND_PINION_PROBE, MAGLEV4)
   #define HAS_BED_PROBE 1
 #endif
 
@@ -1276,22 +1301,22 @@
 #if HAS_Z_AXIS && !defined(INVERT_Z_DIR)
   #define INVERT_Z_DIR false
 #endif
-#if NUM_AXES >= 4 && !defined(INVERT_I_DIR)
+#if HAS_I_AXIS && !defined(INVERT_I_DIR)
   #define INVERT_I_DIR false
 #endif
-#if NUM_AXES >= 5 && !defined(INVERT_J_DIR)
+#if HAS_J_AXIS && !defined(INVERT_J_DIR)
   #define INVERT_J_DIR false
 #endif
-#if NUM_AXES >= 6 && !defined(INVERT_K_DIR)
+#if HAS_K_AXIS && !defined(INVERT_K_DIR)
   #define INVERT_K_DIR false
 #endif
-#if NUM_AXES >= 7 && !defined(INVERT_U_DIR)
+#if HAS_U_AXIS && !defined(INVERT_U_DIR)
   #define INVERT_U_DIR false
 #endif
-#if NUM_AXES >= 8 && !defined(INVERT_V_DIR)
+#if HAS_V_AXIS && !defined(INVERT_V_DIR)
   #define INVERT_V_DIR false
 #endif
-#if NUM_AXES >= 9 && !defined(INVERT_W_DIR)
+#if HAS_W_AXIS && !defined(INVERT_W_DIR)
   #define INVERT_W_DIR false
 #endif
 #if HAS_EXTRUDERS && !defined(INVERT_E_DIR)
@@ -1481,7 +1506,7 @@
   #endif
 #endif
 
-#if ANY(USE_XMIN_PLUG, USE_YMIN_PLUG, USE_ZMIN_PLUG, USE_XMAX_PLUG, USE_YMAX_PLUG, USE_ZMAX_PLUG)
+#if X_HOME_DIR || (HAS_Y_AXIS && Y_HOME_DIR) || (HAS_Z_AXIS && Z_HOME_DIR) || (HAS_I_AXIS && I_HOME_DIR) || (HAS_J_AXIS && J_HOME_DIR) || (HAS_K_AXIS && K_HOME_DIR)
   #define HAS_ENDSTOPS 1
   #define COORDINATE_OKAY(N,L,H) WITHIN(N,L,H)
 #else

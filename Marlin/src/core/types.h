@@ -74,6 +74,8 @@ struct IF<true, L, R> { typedef L type; };
   #define GANG_ITEM_E(N)
 #endif
 
+#define AXIS_COLLISION(L) (AXIS4_NAME == L || AXIS5_NAME == L || AXIS6_NAME == L || AXIS7_NAME == L || AXIS8_NAME == L || AXIS9_NAME == L)
+
 //
 // Enumerated axis indices
 //
@@ -106,10 +108,10 @@ enum AxisEnum : uint8_t {
 
   // A, B, and C are for DELTA, SCARA, etc.
   , A_AXIS = X_AXIS
-  #if NUM_AXES >= 2
+  #if HAS_Y_AXIS
     , B_AXIS = Y_AXIS
   #endif
-  #if NUM_AXES >= 3
+  #if HAS_Z_AXIS
     , C_AXIS = Z_AXIS
   #endif
 
@@ -417,22 +419,22 @@ struct XYZval {
       FI void set(const T (&arr)[DISTINCT_AXES])       { NUM_AXIS_CODE(x = arr[0], y = arr[1], z = arr[2], i = arr[3], j = arr[4], k = arr[5], u = arr[6], v = arr[7], w = arr[8]); }
     #endif
   #endif
-  #if NUM_AXES >= 4
+  #if HAS_I_AXIS
     FI void set(const T px, const T py, const T pz)                         { x = px; y = py; z = pz; }
   #endif
-  #if NUM_AXES >= 5
+  #if HAS_J_AXIS
     FI void set(const T px, const T py, const T pz, const T pi)             { x = px; y = py; z = pz; i = pi; }
   #endif
-  #if NUM_AXES >= 6
+  #if HAS_K_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj) { x = px; y = py; z = pz; i = pi; j = pj; }
   #endif
-  #if NUM_AXES >= 7
+  #if HAS_U_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj, const T pk) { x = px; y = py; z = pz; i = pi; j = pj; k = pk; }
   #endif
-  #if NUM_AXES >= 8
+  #if HAS_V_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj, const T pk, const T pm) { x = px; y = py; z = pz; i = pi; j = pj; k = pk; u = pu; }
   #endif
-  #if NUM_AXES >= 9
+  #if HAS_W_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj, const T pk, const T pm, const T po) { x = px; y = py; z = pz; i = pi; j = pj; k = pk; u = pu; v = pv; }
   #endif
 
@@ -567,22 +569,22 @@ struct XYZEval {
     FI void set(const XYZval<T> pxyz, const T pe)  { set(pxyz); e = pe; }
     FI void set(LOGICAL_AXIS_ARGS(const T))        { LOGICAL_AXIS_CODE(_e = e, a = x, b = y, c = z, ax4 = i, ax5 = j, ax6 = k, ax7 = u, ax8 = v, ax9 = w); }
   #endif
-  #if NUM_AXES >= 4
+  #if HAS_I_AXIS
     FI void set(const T px, const T py, const T pz)                         { x = px; y = py; z = pz; }
   #endif
-  #if NUM_AXES >= 5
+  #if HAS_J_AXIS
     FI void set(const T px, const T py, const T pz, const T pi)             { x = px; y = py; z = pz; i = pi; }
   #endif
-  #if NUM_AXES >= 6
+  #if HAS_K_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj) { x = px; y = py; z = pz; i = pi; j = pj; }
   #endif
-  #if NUM_AXES >= 7
+  #if HAS_U_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj, const T pk) { x = px; y = py; z = pz; i = pi; j = pj; k = pk; }
   #endif
-  #if NUM_AXES >= 8
+  #if HAS_V_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj, const T pk, const T pm) { x = px; y = py; z = pz; i = pi; j = pj; k = pk; u = pu; }
   #endif
-  #if NUM_AXES >= 9
+  #if HAS_W_AXIS
     FI void set(const T px, const T py, const T pz, const T pi, const T pj, const T pk, const T pm, const T po) { x = px; y = py; z = pz; i = pi; j = pj; k = pk; u = pm; v = pv; }
   #endif
 

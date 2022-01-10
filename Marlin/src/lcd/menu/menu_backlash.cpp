@@ -51,14 +51,23 @@ void menu_backlash() {
   #if HAS_Z_AXIS && _CAN_CALI(C)
     EDIT_BACKLASH_DISTANCE(C);
   #endif
-  #if NUM_AXES >= 4 && _CAN_CALI(I)
+  #if HAS_I_AXIS && _CAN_CALI(I)
     EDIT_BACKLASH_DISTANCE(I);
   #endif
-  #if NUM_AXES >= 5 && _CAN_CALI(J)
+  #if HAS_J_AXIS && _CAN_CALI(J)
     EDIT_BACKLASH_DISTANCE(J);
   #endif
-  #if NUM_AXES >= 6 && _CAN_CALI(K)
+  #if HAS_K_AXIS && _CAN_CALI(K)
     EDIT_BACKLASH_DISTANCE(K);
+  #endif
+  #if HAS_U_AXIS && _CAN_CALI(U)
+    EDIT_BACKLASH_DISTANCE(U);
+  #endif
+  #if HAS_V_AXIS && _CAN_CALI(V)
+    EDIT_BACKLASH_DISTANCE(V);
+  #endif
+  #if HAS_W_AXIS && _CAN_CALI(W)
+    EDIT_BACKLASH_DISTANCE(W);
   #endif
 
   #ifdef BACKLASH_SMOOTHING_MM

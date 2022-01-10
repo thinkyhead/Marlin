@@ -196,7 +196,8 @@ inline void report_more_positions() {
 inline void report_logical_position(const xyze_pos_t &rpos) {
   const xyze_pos_t lpos = rpos.asLogical();
   SERIAL_ECHOPGM_P(
-    LIST_N(DOUBLE(NUM_AXES),
+    LIST_N(DOUBLE(LOGICAL_AXES),
+      SP_E_LBL, lpos.e,
          X_LBL, lpos.x,
       SP_Y_LBL, lpos.y,
       SP_Z_LBL, lpos.z,
@@ -207,9 +208,6 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
       SP_V_LBL, lpos.v,
       SP_W_LBL, lpos.w
     )
-    #if HAS_EXTRUDERS
-      , SP_E_LBL, lpos.e
-    #endif
   );
 }
 
@@ -220,12 +218,8 @@ void report_real_position() {
   xyze_pos_t npos = LOGICAL_AXIS_ARRAY(
     planner.get_axis_position_mm(E_AXIS),
     cartes.x, cartes.y, cartes.z,
-    planner.get_axis_position_mm(I_AXIS),
-    planner.get_axis_position_mm(J_AXIS),
-    planner.get_axis_position_mm(K_AXIS),
-    planner.get_axis_position_mm(U_AXIS),
-    planner.get_axis_position_mm(V_AXIS),
-    planner.get_axis_position_mm(W_AXIS)
+    cartes.i, cartes.j, cartes.k,
+    cartes.u, cartes.v, cartes.w
   );
 
   TERN_(HAS_POSITION_MODIFIERS, planner.unapply_modifiers(npos, true));
@@ -269,27 +263,23 @@ void report_current_position_projected() {
    * Output the current position (processed) to serial while moving
    */
   void report_current_position_moving() {
-
     get_cartesian_from_steppers();
     const xyz_pos_t lpos = cartes.asLogical();
-    SERIAL_ECHOPGM(
-      "X:", lpos.x
-      #if HAS_Y_AXIS
-        , " Y:", lpos.y
-      #endif
-      #if HAS_Z_AXIS
-        , " Z:", lpos.z
-      #endif
-      #if HAS_EXTRUDERS
-        , " E:", current_position.e
-      #endif
+
+    SERIAL_ECHOPGM_P(
+      LIST_N(DOUBLE(LOGICAL_AXES),
+        SP_E_LBL, current_position.e,
+           X_LBL, lpos.x,
+        SP_Y_LBL, lpos.y,
+        SP_Z_LBL, lpos.z,
+        SP_I_LBL, lpos.i,
+        SP_J_LBL, lpos.j,
+        SP_K_LBL, lpos.k
+      )
     );
 
     stepper.report_positions();
-    #if IS_SCARA
-      scara_report_positions();
-    #endif
-
+    TERN_(IS_SCARA, scara_report_positions());
     report_current_grblstate_moving();
   }
 
@@ -575,28 +565,28 @@ void do_blocking_move_to(NUM_AXIS_ARGS(const float), const_feedRate_t fr_mm_s/*=
 
     current_position.set(x, y);
     line_to_current_position(xy_feedrate);
-    
-    #if NUM_AXES >= 4
+
+    #if HAS_I_AXIS
       current_position.i = i;
       line_to_current_position(i_feedrate);
     #endif
-    #if NUM_AXES >= 5
+    #if HAS_J_AXIS
       current_position.j = j;
       line_to_current_position(j_feedrate);
     #endif
-    #if NUM_AXES >= 6
+    #if HAS_K_AXIS
       current_position.k = k;
       line_to_current_position(k_feedrate);
     #endif
-    #if NUM_AXES >= 7
+    #if HAS_U_AXIS
       current_position.u = u;
       line_to_current_position(u_feedrate);
     #endif
-    #if NUM_AXES >= 8
+    #if HAS_V_AXIS
       current_position.v = v;
       line_to_current_position(v_feedrate);
     #endif
-    #if NUM_AXES >= 9
+    #if HAS_W_AXIS
       current_position.w = w;
       line_to_current_position(w_feedrate);
     #endif
@@ -648,7 +638,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if NUM_AXES >= 4
+#if HAS_I_AXIS
   void do_blocking_move_to_i(const_float_t ri, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyz_i(current_position, ri, fr_mm_s);
   }
@@ -660,7 +650,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if NUM_AXES >= 5
+#if HAS_J_AXIS
   void do_blocking_move_to_j(const_float_t rj, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzi_j(current_position, rj, fr_mm_s);
   }
@@ -672,7 +662,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if NUM_AXES >= 6
+#if HAS_K_AXIS
   void do_blocking_move_to_k(const_float_t rk, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzij_k(current_position, rk, fr_mm_s);
   }
@@ -684,7 +674,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if NUM_AXES >= 7
+#if HAS_U_AXIS
   void do_blocking_move_to_u(const_float_t ru, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijk_u(current_position, ru, fr_mm_s);
   }
@@ -696,7 +686,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if NUM_AXES >= 8
+#if HAS_V_AXIS
   void do_blocking_move_to_v(const_float_t rv, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijku_v(current_position, rv, fr_mm_s);
   }
@@ -708,7 +698,7 @@ void do_blocking_move_to_x(const_float_t rx, const_feedRate_t fr_mm_s/*=0.0*/) {
   }
 #endif
 
-#if NUM_AXES >= 9
+#if HAS_W_AXIS
   void do_blocking_move_to_w(const_float_t rw, const_feedRate_t fr_mm_s/*=0.0*/) {
     do_blocking_move_to_xyzijkuv_w(current_position, rw, fr_mm_s);
   }
@@ -922,7 +912,7 @@ void restore_feedrate_and_scaling() {
         #endif
       }
     #endif
-    #if NUM_AXES >= 4
+    #if HAS_I_AXIS
       if (axis_was_homed(I_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_I)
           NOLESS(target.i, soft_endstop.min.i);
@@ -932,7 +922,7 @@ void restore_feedrate_and_scaling() {
         #endif
       }
     #endif
-    #if NUM_AXES >= 5
+    #if HAS_J_AXIS
       if (axis_was_homed(J_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_J)
           NOLESS(target.j, soft_endstop.min.j);
@@ -942,7 +932,7 @@ void restore_feedrate_and_scaling() {
         #endif
       }
     #endif
-    #if NUM_AXES >= 6
+    #if HAS_K_AXIS
       if (axis_was_homed(K_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_K)
           NOLESS(target.k, soft_endstop.min.k);
@@ -952,7 +942,7 @@ void restore_feedrate_and_scaling() {
         #endif
       }
     #endif
-    #if NUM_AXES >= 7
+    #if HAS_U_AXIS
       if (axis_was_homed(U_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_U)
           NOLESS(target.u, soft_endstop.min.u);
@@ -962,7 +952,7 @@ void restore_feedrate_and_scaling() {
         #endif
       }
     #endif
-    #if NUM_AXES >= 8
+    #if HAS_V_AXIS
       if (axis_was_homed(V_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_V)
           NOLESS(target.v, soft_endstop.min.v);
@@ -972,7 +962,7 @@ void restore_feedrate_and_scaling() {
         #endif
       }
     #endif
-    #if NUM_AXES >= 9
+    #if HAS_W_AXIS
       if (axis_was_homed(W_AXIS)) {
         #if !HAS_SOFTWARE_ENDSTOPS || ENABLED(MIN_SOFTWARE_ENDSTOP_W)
           NOLESS(target.w, soft_endstop.min.w);
@@ -1434,9 +1424,9 @@ void prepare_line_to_destination() {
       char msg[strlen_P(home_first)+1];
       sprintf_P(msg, home_first,
         NUM_AXIS_LIST(
-          TEST(axis_bits, X_AXIS) ? "X" : "",
-          TEST(axis_bits, Y_AXIS) ? "Y" : "",
-          TEST(axis_bits, Z_AXIS) ? "Z" : "",
+          TEST(axis_bits, X_AXIS) ? STR_A : "",
+          TEST(axis_bits, Y_AXIS) ? STR_B : "",
+          TEST(axis_bits, Z_AXIS) ? STR_C : "",
           TEST(axis_bits, I_AXIS) ? STR_I : "",
           TEST(axis_bits, J_AXIS) ? STR_J : "",
           TEST(axis_bits, K_AXIS) ? STR_K : "",
@@ -1564,22 +1554,22 @@ void prepare_line_to_destination() {
           #if HAS_Z_AXIS
             case Z_AXIS: if (ENABLED(Z_SPI_SENSORLESS)) endstops.tmc_spi_homing.z = true; break;
           #endif
-          #if NUM_AXES >= 4
+          #if HAS_I_AXIS
             case I_AXIS: if (ENABLED(I_SPI_SENSORLESS)) endstops.tmc_spi_homing.i = true; break;
           #endif
-          #if NUM_AXES >= 5
+          #if HAS_J_AXIS
             case J_AXIS: if (ENABLED(J_SPI_SENSORLESS)) endstops.tmc_spi_homing.j = true; break;
           #endif
-          #if NUM_AXES >= 6
+          #if HAS_K_AXIS
             case K_AXIS: if (ENABLED(K_SPI_SENSORLESS)) endstops.tmc_spi_homing.k = true; break;
           #endif
-          #if NUM_AXES >= 7
+          #if HAS_U_AXIS
             case U_AXIS: if (ENABLED(U_SPI_SENSORLESS)) endstops.tmc_spi_homing.u = true; break;
           #endif
-          #if NUM_AXES >= 8
+          #if HAS_V_AXIS
             case V_AXIS: if (ENABLED(V_SPI_SENSORLESS)) endstops.tmc_spi_homing.v = true; break;
           #endif
-          #if NUM_AXES >= 9
+          #if HAS_W_AXIS
             case W_AXIS: if (ENABLED(W_SPI_SENSORLESS)) endstops.tmc_spi_homing.w = true; break;
           #endif
           default: break;
@@ -1680,22 +1670,22 @@ void prepare_line_to_destination() {
           #if HAS_Z_AXIS
             case Z_AXIS: if (ENABLED(Z_SPI_SENSORLESS)) endstops.tmc_spi_homing.z = false; break;
           #endif
-          #if NUM_AXES >= 4
+          #if HAS_I_AXIS
             case I_AXIS: if (ENABLED(I_SPI_SENSORLESS)) endstops.tmc_spi_homing.i = false; break;
           #endif
-          #if NUM_AXES >= 5
+          #if HAS_J_AXIS
             case J_AXIS: if (ENABLED(J_SPI_SENSORLESS)) endstops.tmc_spi_homing.j = false; break;
           #endif
-          #if NUM_AXES >= 6
+          #if HAS_K_AXIS
             case K_AXIS: if (ENABLED(K_SPI_SENSORLESS)) endstops.tmc_spi_homing.k = false; break;
           #endif
-          #if NUM_AXES >= 7
+          #if HAS_U_AXIS
             case U_AXIS: if (ENABLED(U_SPI_SENSORLESS)) endstops.tmc_spi_homing.u = false; break;
           #endif
-          #if NUM_AXES >= 8
+          #if HAS_V_AXIS
             case V_AXIS: if (ENABLED(V_SPI_SENSORLESS)) endstops.tmc_spi_homing.v = false; break;
           #endif
-          #if NUM_AXES >= 9
+          #if HAS_W_AXIS
             case W_AXIS: if (ENABLED(W_SPI_SENSORLESS)) endstops.tmc_spi_homing.w = false; break;
           #endif
           default: break;
@@ -2025,8 +2015,8 @@ void prepare_line_to_destination() {
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Home Fast: ", move_length, "mm");
     do_homing_move(axis, move_length, 0.0, !use_probe_bump);
 
-    #if BOTH(HOMING_Z_WITH_PROBE, BLTOUCH_SLOW_MODE)
-      if (axis == Z_AXIS) bltouch.stow(); // Intermediate STOW (in LOW SPEED MODE)
+    #if BOTH(HOMING_Z_WITH_PROBE, BLTOUCH)
+      if (axis == Z_AXIS && !bltouch.high_speed_mode) bltouch.stow(); // Intermediate STOW (in LOW SPEED MODE)
     #endif
 
     // If a second homing move is configured...
@@ -2041,24 +2031,28 @@ void prepare_line_to_destination() {
         switch (axis) {
           default:
           case X_AXIS: es = X_ENDSTOP; break;
-          case Y_AXIS: es = Y_ENDSTOP; break;
-          case Z_AXIS: es = Z_ENDSTOP; break;
-          #if NUM_AXES >= 4
+          #if HAS_Y_AXIS
+            case Y_AXIS: es = Y_ENDSTOP; break;
+          #endif
+          #if HAS_Z_AXIS
+            case Z_AXIS: es = Z_ENDSTOP; break;
+          #endif
+          #if HAS_I_AXIS
             case I_AXIS: es = I_ENDSTOP; break;
           #endif
-          #if NUM_AXES >= 5
+          #if HAS_J_AXIS
             case J_AXIS: es = J_ENDSTOP; break;
           #endif
-          #if NUM_AXES >= 6
+          #if HAS_K_AXIS
             case K_AXIS: es = K_ENDSTOP; break;
           #endif
-          #if NUM_AXES >= 7
+          #if HAS_U_AXIS
             case U_AXIS: es = U_ENDSTOP; break;
           #endif
-          #if NUM_AXES >= 8
+          #if HAS_V_AXIS
             case V_AXIS: es = V_ENDSTOP; break;
           #endif
-          #if NUM_AXES >= 9
+          #if HAS_W_AXIS
             case W_AXIS: es = W_ENDSTOP; break;
           #endif
         }
@@ -2068,8 +2062,9 @@ void prepare_line_to_destination() {
         }
       #endif
 
-      #if BOTH(HOMING_Z_WITH_PROBE, BLTOUCH_SLOW_MODE)
-        if (axis == Z_AXIS && bltouch.deploy()) return; // Intermediate DEPLOY (in LOW SPEED MODE)
+      #if BOTH(HOMING_Z_WITH_PROBE, BLTOUCH)
+        if (axis == Z_AXIS && !bltouch.high_speed_mode && bltouch.deploy())
+          return; // Intermediate DEPLOY (in LOW SPEED MODE)
       #endif
 
       // Slow move towards endstop until triggered

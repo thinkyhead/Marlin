@@ -73,25 +73,25 @@
 #if BOTH(CALIBRATION_MEASURE_LEFT, CALIBRATION_MEASURE_RIGHT)
   #define HAS_X_CENTER 1
 #endif
-#if HAS_Y_AXIS && BOTH(CALIBRATION_MEASURE_FRONT, CALIBRATION_MEASURE_BACK)
+#if ALL(HAS_Y_AXIS, CALIBRATION_MEASURE_FRONT, CALIBRATION_MEASURE_BACK)
   #define HAS_Y_CENTER 1
 #endif
-#if NUM_AXES >= 4 && BOTH(CALIBRATION_MEASURE_IMIN, CALIBRATION_MEASURE_IMAX)
+#if ALL(HAS_I_AXIS, CALIBRATION_MEASURE_IMIN, CALIBRATION_MEASURE_IMAX)
   #define HAS_I_CENTER 1
 #endif
-#if NUM_AXES >= 5 && BOTH(CALIBRATION_MEASURE_JMIN, CALIBRATION_MEASURE_JMAX)
+#if ALL(HAS_J_AXIS, CALIBRATION_MEASURE_JMIN, CALIBRATION_MEASURE_JMAX)
   #define HAS_J_CENTER 1
 #endif
-#if NUM_AXES >= 6 && BOTH(CALIBRATION_MEASURE_KMIN, CALIBRATION_MEASURE_KMAX)
+#if ALL(HAS_K_AXIS, CALIBRATION_MEASURE_KMIN, CALIBRATION_MEASURE_KMAX)
   #define HAS_K_CENTER 1
 #endif
-#if NUM_AXES >= 7 && BOTH(CALIBRATION_MEASURE_UMIN, CALIBRATION_MEASURE_UMAX)
+#if ALL(HAS_U_AXIS, CALIBRATION_MEASURE_UMIN, CALIBRATION_MEASURE_UMAX)
   #define HAS_U_CENTER 1
 #endif
-#if NUM_AXES >= 8 && BOTH(CALIBRATION_MEASURE_VMIN, CALIBRATION_MEASURE_VMAX)
+#if ALL(HAS_V_AXIS, CALIBRATION_MEASURE_VMIN, CALIBRATION_MEASURE_VMAX)
   #define HAS_V_CENTER 1
 #endif
-#if NUM_AXES >= 9 && BOTH(CALIBRATION_MEASURE_WMIN, CALIBRATION_MEASURE_WMAX)
+#if ALL(HAS_W_AXIS, CALIBRATION_MEASURE_WMIN, CALIBRATION_MEASURE_WMAX)
   #define HAS_W_CENTER 1
 #endif
 
@@ -257,7 +257,7 @@ inline void probe_side(measurements_t &m, const float uncertainty, const side_t 
     #if AXIS_CAN_CALIBRATE(X)
       _ACASE(X, RIGHT, LEFT);
     #endif
-    #if NUM_AXES >= 2 && AXIS_CAN_CALIBRATE(Y)
+    #if HAS_Y_AXIS && AXIS_CAN_CALIBRATE(Y)
       _ACASE(Y, BACK, FRONT);
     #endif
     #if HAS_Z_AXIS && AXIS_CAN_CALIBRATE(Z)
@@ -268,22 +268,22 @@ inline void probe_side(measurements_t &m, const float uncertainty, const side_t 
         return;
       }
     #endif
-    #if NUM_AXES >= 4 && AXIS_CAN_CALIBRATE(I)
+    #if HAS_I_AXIS && AXIS_CAN_CALIBRATE(I)
       _PCASE(I);
     #endif
-    #if NUM_AXES >= 5 && AXIS_CAN_CALIBRATE(J)
+    #if HAS_J_AXIS && AXIS_CAN_CALIBRATE(J)
       _PCASE(J);
     #endif
-    #if NUM_AXES >= 6 && AXIS_CAN_CALIBRATE(K)
+    #if HAS_K_AXIS && AXIS_CAN_CALIBRATE(K)
       _PCASE(K);
     #endif
-    #if NUM_AXES >= 7 && AXIS_CAN_CALIBRATE(U)
+    #if HAS_U_AXIS && AXIS_CAN_CALIBRATE(U)
       _PCASE(U);
     #endif
-    #if NUM_AXES >= 8 && AXIS_CAN_CALIBRATE(V)
+    #if HAS_V_AXIS && AXIS_CAN_CALIBRATE(V)
       _PCASE(V);
     #endif
-    #if NUM_AXES >= 9 && AXIS_CAN_CALIBRATE(W)
+    #if HAS_W_AXIS && AXIS_CAN_CALIBRATE(W)
       _PCASE(W);
     #endif
     default: return;
@@ -398,7 +398,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPGM("  Back: ", m.obj_side[BACK]);
       #endif
     #endif
-    #if NUM_AXES >= 4
+    #if HAS_I_AXIS
       #if ENABLED(CALIBRATION_MEASURE_IMIN)
         SERIAL_ECHOLNPGM("  " STR_I_MIN ": ", m.obj_side[IMINIMUM]);
       #endif
@@ -406,7 +406,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPGM("  " STR_I_MAX ": ", m.obj_side[IMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 5
+    #if HAS_J_AXIS
       #if ENABLED(CALIBRATION_MEASURE_JMIN)
         SERIAL_ECHOLNPGM("  " STR_J_MIN ": ", m.obj_side[JMINIMUM]);
       #endif
@@ -414,7 +414,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPGM("  " STR_J_MAX ": ", m.obj_side[JMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 6
+    #if HAS_K_AXIS
       #if ENABLED(CALIBRATION_MEASURE_KMIN)
         SERIAL_ECHOLNPGM("  " STR_K_MIN ": ", m.obj_side[KMINIMUM]);
       #endif
@@ -422,7 +422,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPGM("  " STR_K_MAX ": ", m.obj_side[KMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 7
+    #if HAS_U_AXIS
       #if ENABLED(CALIBRATION_MEASURE_UMIN)
         SERIAL_ECHOLNPAIR("  " STR_U_MIN ": ", m.obj_side[UMINIMUM]);
       #endif
@@ -430,7 +430,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPAIR("  " STR_U_MAX ": ", m.obj_side[UMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 8
+    #if HAS_V_AXIS
       #if ENABLED(CALIBRATION_MEASURE_VMIN)
         SERIAL_ECHOLNPAIR("  " STR_V_MIN ": ", m.obj_side[VMINIMUM]);
       #endif
@@ -438,7 +438,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPAIR("  " STR_V_MAX ": ", m.obj_side[VMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 9
+    #if HAS_W_AXIS
       #if ENABLED(CALIBRATION_MEASURE_WMIN)
         SERIAL_ECHOLNPAIR("  " STR_W_MIN ": ", m.obj_side[WMINIMUM]);
       #endif
@@ -500,7 +500,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
     #if HAS_Z_AXIS && AXIS_CAN_CALIBRATE(Z)
       SERIAL_ECHOLNPGM("  Top: ", m.backlash[TOP]);
     #endif
-    #if NUM_AXES >= 4 && AXIS_CAN_CALIBRATE(I)
+    #if HAS_I_AXIS && AXIS_CAN_CALIBRATE(I)
       #if ENABLED(CALIBRATION_MEASURE_IMIN)
         SERIAL_ECHOLNPGM("  " STR_I_MIN ": ", m.backlash[IMINIMUM]);
       #endif
@@ -508,7 +508,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPGM("  " STR_I_MAX ": ", m.backlash[IMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 5 && AXIS_CAN_CALIBRATE(J)
+    #if HAS_J_AXIS && AXIS_CAN_CALIBRATE(J)
       #if ENABLED(CALIBRATION_MEASURE_JMIN)
         SERIAL_ECHOLNPGM("  " STR_J_MIN ": ", m.backlash[JMINIMUM]);
       #endif
@@ -516,7 +516,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPGM("  " STR_J_MAX ": ", m.backlash[JMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 6 && AXIS_CAN_CALIBRATE(K)
+    #if HAS_K_AXIS && AXIS_CAN_CALIBRATE(K)
       #if ENABLED(CALIBRATION_MEASURE_KMIN)
         SERIAL_ECHOLNPGM("  " STR_K_MIN ": ", m.backlash[KMINIMUM]);
       #endif
@@ -524,7 +524,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPGM("  " STR_K_MAX ": ", m.backlash[KMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 7
+    #if HAS_U_AXIS && AXIS_CAN_CALIBRATE(U)
       #if ENABLED(CALIBRATION_MEASURE_UMIN)
         SERIAL_ECHOLNPAIR("  " STR_U_MIN ": ", m.backlash[UMINIMUM]);
       #endif
@@ -532,7 +532,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPAIR("  " STR_U_MAX ": ", m.backlash[UMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 8
+    #if HAS_V_AXIS && AXIS_CAN_CALIBRATE(V)
       #if ENABLED(CALIBRATION_MEASURE_VMIN)
         SERIAL_ECHOLNPAIR("  " STR_V_MIN ": ", m.backlash[VMINIMUM]);
       #endif
@@ -540,7 +540,7 @@ inline void probe_sides(measurements_t &m, const float uncertainty) {
         SERIAL_ECHOLNPAIR("  " STR_V_MAX ": ", m.backlash[VMAXIMUM]);
       #endif
     #endif
-    #if NUM_AXES >= 9
+    #if HAS_W_AXIS && AXIS_CAN_CALIBRATE(W)
       #if ENABLED(CALIBRATION_MEASURE_WMIN)
         SERIAL_ECHOLNPAIR("  " STR_W_MIN ": ", m.backlash[WMINIMUM]);
       #endif
@@ -788,7 +788,7 @@ inline void calibrate_all_toolheads(measurements_t &m, const float uncertainty) 
  *   1) For each nozzle, touch top and sides of object to determine object position and
  *      nozzle offsets. Do a fast but rough search over a wider area.
  *   2) With the first nozzle, touch top and sides of object to determine backlash values
- *      for all axis (if BACKLASH_GCODE is enabled)
+ *      for all axes (if BACKLASH_GCODE is enabled)
  *   3) For each nozzle, touch top and sides of object slowly to determine precise
  *      position of object. Adjust coordinate system and nozzle offsets so probed object
  *      location corresponds to known object location with a high degree of precision.

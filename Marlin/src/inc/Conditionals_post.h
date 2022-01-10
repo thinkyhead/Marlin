@@ -88,13 +88,13 @@
   #define AXIS6_NAME 'C'
 #endif
 #ifndef AXIS7_NAME
-  #define AXIS7_NAME 'U'  
+  #define AXIS7_NAME 'U'
 #endif
 #ifndef AXIS8_NAME
-  #define AXIS8_NAME 'V'  
+  #define AXIS8_NAME 'V'
 #endif
 #ifndef AXIS9_NAME
-  #define AXIS9_NAME 'W'  
+  #define AXIS9_NAME 'W'
 #endif
 
 #define HAS_ROTATIONAL_AXES (HAS_ROTATIONAL_AXIS4 || HAS_ROTATIONAL_AXIS5 || HAS_ROTATIONAL_AXIS6 || HAS_ROTATIONAL_AXIS7 || HAS_ROTATIONAL_AXIS8 || HAS_ROTATIONAL_AXIS9)
@@ -108,22 +108,22 @@
 #else
   #undef CONTROLLER_FAN_USE_Z_ONLY
 #endif
-#if NUM_AXES >= 4
+#if HAS_I_AXIS
   #define I_MAX_LENGTH (I_MAX_POS - (I_MIN_POS))
 #endif
-#if NUM_AXES >= 5
+#if HAS_J_AXIS
   #define J_MAX_LENGTH (J_MAX_POS - (J_MIN_POS))
 #endif
-#if NUM_AXES >= 6
+#if HAS_K_AXIS
   #define K_MAX_LENGTH (K_MAX_POS - (K_MIN_POS))
 #endif
-#if NUM_AXES >= 7
+#if HAS_U_AXIS
   #define U_MAX_LENGTH (U_MAX_POS - (U_MIN_POS))
 #endif
-#if NUM_AXES >= 8
+#if HAS_V_AXIS
   #define V_MAX_LENGTH (V_MAX_POS - (V_MIN_POS))
 #endif
-#if NUM_AXES >= 9
+#if HAS_W_AXIS
   #define W_MAX_LENGTH (W_MAX_POS - (W_MIN_POS))
 #endif
 
@@ -134,22 +134,22 @@
 #if HAS_Y_AXIS && !defined(Y_BED_SIZE)
   #define Y_BED_SIZE Y_MAX_LENGTH
 #endif
-#if NUM_AXES >= 4 && !defined(I_BED_SIZE)
+#if HAS_I_AXIS && !defined(I_BED_SIZE)
   #define I_BED_SIZE I_MAX_LENGTH
 #endif
-#if NUM_AXES >= 5 && !defined(J_BED_SIZE)
+#if HAS_J_AXIS && !defined(J_BED_SIZE)
   #define J_BED_SIZE J_MAX_LENGTH
 #endif
-#if NUM_AXES >= 6 && !defined(K_BED_SIZE)
+#if HAS_K_AXIS && !defined(K_BED_SIZE)
   #define K_BED_SIZE K_MAX_LENGTH
 #endif
-#if NUM_AXES >= 7 && !defined(U_BED_SIZE)
+#if HAS_U_AXIS && !defined(U_BED_SIZE)
   #define U_BED_SIZE U_MAX_LENGTH
 #endif
-#if NUM_AXES >= 8 && !defined(V_BED_SIZE)
+#if HAS_V_AXIS && !defined(V_BED_SIZE)
   #define V_BED_SIZE V_MAX_LENGTH
 #endif
-#if NUM_AXES >= 9 && !defined(W_BED_SIZE)
+#if HAS_W_AXIS && !defined(W_BED_SIZE)
   #define W_BED_SIZE W_MAX_LENGTH
 #endif
 
@@ -163,11 +163,47 @@
 #if HAS_Y_AXIS
   #define _Y_HALF_BED ((Y_BED_SIZE) / 2)
 #endif
+#if HAS_I_AXIS
+  #define _I_HALF_IMAX ((I_BED_SIZE) / 2)
+#endif
+#if HAS_J_AXIS
+  #define _J_HALF_JMAX ((J_BED_SIZE) / 2)
+#endif
+#if HAS_K_AXIS
+  #define _K_HALF_KMAX ((K_BED_SIZE) / 2)
+#endif
+#if HAS_U_AXIS
+  #define _U_HALF_UMAX ((U_BED_SIZE) / 2)
+#endif
+#if HAS_V_AXIS
+  #define _V_HALF_VMAX ((V_BED_SIZE) / 2)
+#endif
+#if HAS_W_AXIS
+  #define _W_HALF_WMAX ((W_BED_SIZE) / 2)
+#endif
 
 #define X_CENTER TERN(BED_CENTER_AT_0_0, 0, _X_HALF_BED)
 #if HAS_Y_AXIS
   #define Y_CENTER TERN(BED_CENTER_AT_0_0, 0, _Y_HALF_BED)
   #define XY_CENTER { X_CENTER, Y_CENTER }
+#endif
+#if HAS_I_AXIS
+  #define I_CENTER TERN(BED_CENTER_AT_0_0, 0, _I_HALF_BED)
+#endif
+#if HAS_J_AXIS
+  #define J_CENTER TERN(BED_CENTER_AT_0_0, 0, _J_HALF_BED)
+#endif
+#if HAS_K_AXIS
+  #define K_CENTER TERN(BED_CENTER_AT_0_0, 0, _K_HALF_BED)
+#endif
+#if HAS_U_AXIS
+  #define U_CENTER TERN(BED_CENTER_AT_0_0, 0, _U_HALF_BED)
+#endif
+#if HAS_V_AXIS
+  #define V_CENTER TERN(BED_CENTER_AT_0_0, 0, _V_HALF_BED)
+#endif
+#if HAS_W_AXIS
+  #define W_CENTER TERN(BED_CENTER_AT_0_0, 0, _W_HALF_BED)
 #endif
 
 // Get the linear boundaries of the bed
@@ -176,6 +212,30 @@
 #if HAS_Y_AXIS
   #define Y_MIN_BED (Y_CENTER - _Y_HALF_BED)
   #define Y_MAX_BED (Y_MIN_BED + Y_BED_SIZE)
+#endif
+#if HAS_I_AXIS
+  #define I_MINIM (I_CENTER - _I_HALF_BED_SIZE)
+  #define I_MAXIM (I_MINIM + I_BED_SIZE)
+#endif
+#if HAS_J_AXIS
+  #define J_MINIM (J_CENTER - _J_HALF_BED_SIZE)
+  #define J_MAXIM (J_MINIM + J_BED_SIZE)
+#endif
+#if HAS_K_AXIS
+  #define K_MINIM (K_CENTER - _K_HALF_BED_SIZE)
+  #define K_MAXIM (K_MINIM + K_BED_SIZE)
+#endif
+#if HAS_U_AXIS
+  #define U_MINIM (U_CENTER - _U_HALF_BED_SIZE)
+  #define U_MAXIM (U_MINIM + U_BED_SIZE)
+#endif
+#if HAS_V_AXIS
+  #define V_MINIM (V_CENTER - _V_HALF_BED_SIZE)
+  #define V_MAXIM (V_MINIM + V_BED_SIZE)
+#endif
+#if HAS_W_AXIS
+  #define W_MINIM (W_CENTER - _W_HALF_BED_SIZE)
+  #define W_MAXIM (W_MINIM + W_BED_SIZE)
 #endif
 
 /**
@@ -252,42 +312,42 @@
   #define Z_HOME_POS TERN(Z_HOME_TO_MIN, Z_MIN_POS, Z_MAX_POS)
 #endif
 
-#if NUM_AXES >= 4
+#if HAS_I_AXIS
   #ifdef MANUAL_I_HOME_POS
     #define I_HOME_POS MANUAL_I_HOME_POS
   #else
     #define I_HOME_POS TERN(I_HOME_TO_MIN, I_MIN_POS, I_MAX_POS)
   #endif
 #endif
-#if NUM_AXES >= 5
+#if HAS_J_AXIS
   #ifdef MANUAL_J_HOME_POS
     #define J_HOME_POS MANUAL_J_HOME_POS
   #else
     #define J_HOME_POS TERN(J_HOME_TO_MIN, J_MIN_POS, J_MAX_POS)
   #endif
 #endif
-#if NUM_AXES >= 6
+#if HAS_K_AXIS
   #ifdef MANUAL_K_HOME_POS
     #define K_HOME_POS MANUAL_K_HOME_POS
   #else
     #define K_HOME_POS TERN(K_HOME_TO_MIN, K_MIN_POS, K_MAX_POS)
   #endif
 #endif
-#if NUM_AXES >= 7
+#if HAS_U_AXIS
   #ifdef MANUAL_U_HOME_POS
     #define U_HOME_POS MANUAL_U_HOME_POS
   #else
     #define U_HOME_POS (U_HOME_DIR < 0 ? U_MIN_POS : U_MAX_POS)
   #endif
 #endif
-#if NUM_AXES >= 8
+#if HAS_V_AXIS
   #ifdef MANUAL_V_HOME_POS
     #define V_HOME_POS MANUAL_V_HOME_POS
   #else
     #define V_HOME_POS (V_HOME_DIR < 0 ? V_MIN_POS : V_MAX_POS)
   #endif
 #endif
-#if NUM_AXES >= 9
+#if HAS_W_AXIS
   #ifdef MANUAL_W_HOME_POS
     #define W_HOME_POS MANUAL_W_HOME_POS
   #else
@@ -765,7 +825,7 @@
     #define LIB_INTERNAL_MAX31865 1
   #endif
 
-#endif //HAS_MAX_TC
+#endif // HAS_MAX_TC
 
 /**
  * X_DUAL_ENDSTOPS endstop reassignment
@@ -1658,7 +1718,7 @@
   #endif
 #endif
 
-#if NUM_AXES >= 4
+#if HAS_I_AXIS
   #if PIN_EXISTS(I_ENABLE) || AXIS_IS_L64XX(I) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(I))
     #define HAS_I_ENABLE 1
   #endif
@@ -1678,7 +1738,7 @@
   #undef DISABLE_INACTIVE_I
 #endif
 
-#if NUM_AXES >= 5
+#if HAS_J_AXIS
   #if PIN_EXISTS(J_ENABLE) || AXIS_IS_L64XX(J) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(J))
     #define HAS_J_ENABLE 1
   #endif
@@ -1698,7 +1758,7 @@
   #undef DISABLE_INACTIVE_J
 #endif
 
-#if NUM_AXES >= 6
+#if HAS_K_AXIS
   #if PIN_EXISTS(K_ENABLE) || AXIS_IS_L64XX(K) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(K))
     #define HAS_K_ENABLE 1
   #endif
@@ -1718,7 +1778,7 @@
   #undef DISABLE_INACTIVE_K
 #endif
 
-#if NUM_AXES >= 7
+#if HAS_U_AXIS
   #if PIN_EXISTS(U_ENABLE) || AXIS_IS_L64XX(U) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(U))
     #define HAS_U_ENABLE 1
   #endif
@@ -1738,7 +1798,7 @@
   #undef DISABLE_INACTIVE_U
 #endif
 
-#if NUM_AXES >= 8
+#if HAS_V_AXIS
   #if PIN_EXISTS(V_ENABLE) || AXIS_IS_L64XX(V) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(V))
     #define HAS_V_ENABLE 1
   #endif
@@ -1758,7 +1818,7 @@
   #undef DISABLE_INACTIVE_V
 #endif
 
-#if NUM_AXES >= 9
+#if HAS_W_AXIS
   #if PIN_EXISTS(W_ENABLE) || AXIS_IS_L64XX(W) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(W))
     #define HAS_W_ENABLE 1
   #endif
@@ -1959,276 +2019,404 @@
     #undef Z3_STALL_SENSITIVITY
     #undef Z4_STALL_SENSITIVITY
   #endif
-  #if defined(X_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(X)
-    #define X_SENSORLESS 1
-  #endif
-  #if defined(X2_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(X2)
-    #define X2_SENSORLESS 1
-  #endif
-  #if defined(Y_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(Y)
-    #define Y_SENSORLESS 1
-  #endif
-  #if defined(Y2_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Y2)
-    #define Y2_SENSORLESS 1
-  #endif
-  #if defined(Z_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(Z)
-    #define Z_SENSORLESS 1
-  #endif
-  #if defined(Z2_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Z2)
-    #define Z2_SENSORLESS 1
-  #endif
-  #if defined(Z3_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Z3)
-    #define Z3_SENSORLESS 1
-  #endif
-  #if defined(Z4_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Z4)
-    #define Z4_SENSORLESS 1
-  #endif
-  #if defined(I_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(I)
-    #define I_SENSORLESS 1
-  #endif
-  #if defined(J_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(J)
-    #define J_SENSORLESS 1
-  #endif
-  #if defined(K_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(K)
-    #define K_SENSORLESS 1
-  #endif
-  #if defined(U_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(U)
-    #define U_SENSORLESS 1
-  #endif
-  #if defined(V_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(V)
-    #define V_SENSORLESS 1
-  #endif
-  #if defined(W_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(W)
-    #define W_SENSORLESS 1
+
+  #if AXIS_IS_TMC(X)
+    #if defined(X_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(X)
+      #define X_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(X)
+      #define X_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define X_SPI_SENSORLESS X_SENSORLESS
+    #endif
+    #ifndef X_INTERPOLATE
+      #define X_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef X_HOLD_MULTIPLIER
+      #define X_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef X_SLAVE_ADDRESS
+      #define X_SLAVE_ADDRESS 0
+    #endif
   #endif
 
-  #if AXIS_HAS_STEALTHCHOP(X)
-    #define X_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(X2)
-    #define X2_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Y)
-    #define Y_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Y2)
-    #define Y2_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z)
-    #define Z_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z2)
-    #define Z2_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z3)
-    #define Z3_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z4)
-    #define Z4_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(I)
-    #define I_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(J)
-    #define J_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(K)
-    #define K_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(U)
-    #define U_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(V)
-    #define V_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(W)
-    #define W_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 0 && AXIS_HAS_STEALTHCHOP(E0)
-    #define E0_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 1 && AXIS_HAS_STEALTHCHOP(E1)
-    #define E1_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 2 && AXIS_HAS_STEALTHCHOP(E2)
-    #define E2_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 3 && AXIS_HAS_STEALTHCHOP(E3)
-    #define E3_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 4 && AXIS_HAS_STEALTHCHOP(E4)
-    #define E4_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 5 && AXIS_HAS_STEALTHCHOP(E5)
-    #define E5_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 6 && AXIS_HAS_STEALTHCHOP(E6)
-    #define E6_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 7 && AXIS_HAS_STEALTHCHOP(E7)
-    #define E7_HAS_STEALTHCHOP 1
+  #if AXIS_IS_TMC(X2)
+    #if defined(X2_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(X2)
+      #define X2_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(X2)
+      #define X2_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef X2_INTERPOLATE
+      #define X2_INTERPOLATE X_INTERPOLATE
+    #endif
+    #ifndef X2_HOLD_MULTIPLIER
+      #define X2_HOLD_MULTIPLIER X_HOLD_MULTIPLIER
+    #endif
+    #ifndef X2_SLAVE_ADDRESS
+      #define X2_SLAVE_ADDRESS 0
+    #endif
   #endif
 
-  #if ENABLED(SPI_ENDSTOPS)
-    #define X_SPI_SENSORLESS X_SENSORLESS
-    #if HAS_Y_AXIS
+  #if AXIS_IS_TMC(Y)
+    #if defined(Y_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Y)
+      #define Y_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(Y)
+      #define Y_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
       #define Y_SPI_SENSORLESS Y_SENSORLESS
     #endif
-    #if HAS_Z_AXIS
-      #define Z_SPI_SENSORLESS Z_SENSORLESS
+    #ifndef Y_INTERPOLATE
+      #define Y_INTERPOLATE INTERPOLATE
     #endif
-    #if NUM_AXES >= 4
-      #define I_SPI_SENSORLESS I_SENSORLESS
+    #ifndef Y_HOLD_MULTIPLIER
+      #define Y_HOLD_MULTIPLIER HOLD_MULTIPLIER
     #endif
-    #if NUM_AXES >= 5
-      #define J_SPI_SENSORLESS J_SENSORLESS
+    #ifndef Y_SLAVE_ADDRESS
+      #define Y_SLAVE_ADDRESS 0
     #endif
-    #if NUM_AXES >= 6
-      #define K_SPI_SENSORLESS K_SENSORLESS
+    #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
+      #if defined(Y2_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Y2)
+        #define Y2_SENSORLESS 1
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Y2)
+        #define Y2_HAS_STEALTHCHOP 1
+      #endif
+      #ifndef Y2_INTERPOLATE
+        #define Y2_INTERPOLATE Y_INTERPOLATE
+      #endif
+      #ifndef Y2_HOLD_MULTIPLIER
+        #define Y2_HOLD_MULTIPLIER Y_HOLD_MULTIPLIER
+      #endif
+      #ifndef Y2_SLAVE_ADDRESS
+        #define Y2_SLAVE_ADDRESS 0
+      #endif
     #endif
-    #if NUM_AXES >= 7
+    #if HAS_U_AXIS
       #define U_SPI_SENSORLESS U_SENSORLESS
     #endif
-    #if NUM_AXES >= 8
+    #if HAS_V_AXIS
       #define V_SPI_SENSORLESS V_SENSORLESS
     #endif
-    #if NUM_AXES >= 9
+    #if HAS_W_AXIS
       #define W_SPI_SENSORLESS W_SENSORLESS
     #endif
   #endif
-  #ifndef X_INTERPOLATE
-    #define X_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(Z)
+    #if defined(Z_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Z)
+      #define Z_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(Z)
+      #define Z_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define Z_SPI_SENSORLESS Z_SENSORLESS
+    #endif
+    #ifndef Z_INTERPOLATE
+      #define Z_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef Z_HOLD_MULTIPLIER
+      #define Z_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef Z_SLAVE_ADDRESS
+      #define Z_SLAVE_ADDRESS 0
+    #endif
+    #if NUM_Z_STEPPER_DRIVERS >= 2
+      #if defined(Z2_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Z2)
+        #define Z2_SENSORLESS 1
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z2)
+        #define Z2_HAS_STEALTHCHOP 1
+      #endif
+      #ifndef Z2_INTERPOLATE
+        #define Z2_INTERPOLATE Z_INTERPOLATE
+      #endif
+      #ifndef Z2_HOLD_MULTIPLIER
+        #define Z2_HOLD_MULTIPLIER Z_HOLD_MULTIPLIER
+      #endif
+      #ifndef Z2_SLAVE_ADDRESS
+        #define Z2_SLAVE_ADDRESS 0
+      #endif
+    #endif
+    #if NUM_Z_STEPPER_DRIVERS >= 3
+      #if defined(Z3_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Z3)
+        #define Z3_SENSORLESS 1
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z3)
+        #define Z3_HAS_STEALTHCHOP 1
+      #endif
+      #ifndef Z3_INTERPOLATE
+        #define Z3_INTERPOLATE Z_INTERPOLATE
+      #endif
+      #ifndef Z3_HOLD_MULTIPLIER
+        #define Z3_HOLD_MULTIPLIER Z_HOLD_MULTIPLIER
+      #endif
+      #ifndef Z3_SLAVE_ADDRESS
+        #define Z3_SLAVE_ADDRESS 0
+      #endif
+    #endif
+    #if NUM_Z_STEPPER_DRIVERS >= 4
+      #if defined(Z4_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(Z4)
+        #define Z4_SENSORLESS 1
+      #endif
+      #if AXIS_HAS_STEALTHCHOP(Z4)
+        #define Z4_HAS_STEALTHCHOP 1
+      #endif
+      #ifndef Z4_INTERPOLATE
+        #define Z4_INTERPOLATE Z_INTERPOLATE
+      #endif
+      #ifndef Z4_HOLD_MULTIPLIER
+        #define Z4_HOLD_MULTIPLIER Z_HOLD_MULTIPLIER
+      #endif
+      #ifndef Z4_SLAVE_ADDRESS
+        #define Z4_SLAVE_ADDRESS 0
+      #endif
+    #endif
   #endif
-  #ifndef X2_INTERPOLATE
-    #define X2_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(I)
+    #if defined(I_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(I)
+      #define I_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(I)
+      #define I_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define I_SPI_SENSORLESS I_SENSORLESS
+    #endif
+    #ifndef I_INTERPOLATE
+      #define I_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef I_HOLD_MULTIPLIER
+      #define I_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef I_SLAVE_ADDRESS
+      #define I_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef Y_INTERPOLATE
-    #define Y_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(J)
+    #if defined(J_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(J)
+      #define J_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(J)
+      #define J_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define J_SPI_SENSORLESS J_SENSORLESS
+    #endif
+    #ifndef J_INTERPOLATE
+      #define J_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef J_HOLD_MULTIPLIER
+      #define J_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef J_SLAVE_ADDRESS
+      #define J_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef Y2_INTERPOLATE
-    #define Y2_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(K)
+    #if defined(K_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(K)
+      #define K_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(K)
+      #define K_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define K_SPI_SENSORLESS K_SENSORLESS
+    #endif
+    #ifndef K_INTERPOLATE
+      #define K_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef K_HOLD_MULTIPLIER
+      #define K_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef K_SLAVE_ADDRESS
+      #define K_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef Z_INTERPOLATE
-    #define Z_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(U)
+    #if defined(U_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(U)
+      #define U_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(U)
+      #define U_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define U_SPI_SENSORLESS U_SENSORLESS
+    #endif
+    #ifndef U_INTERPOLATE
+      #define U_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef U_HOLD_MULTIPLIER
+      #define U_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef U_SLAVE_ADDRESS
+      #define U_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef Z2_INTERPOLATE
-    #define Z2_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(V)
+    #if defined(V_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(V)
+      #define V_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(V)
+      #define V_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define V_SPI_SENSORLESS V_SENSORLESS
+    #endif
+    #ifndef V_INTERPOLATE
+      #define V_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef V_HOLD_MULTIPLIER
+      #define V_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef V_SLAVE_ADDRESS
+      #define V_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef Z3_INTERPOLATE
-    #define Z3_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(W)
+    #if defined(W_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(W)
+      #define W_SENSORLESS 1
+    #endif
+    #if AXIS_HAS_STEALTHCHOP(W)
+      #define W_HAS_STEALTHCHOP 1
+    #endif
+    #if ENABLED(SPI_ENDSTOPS)
+      #define W_SPI_SENSORLESS W_SENSORLESS
+    #endif
+    #ifndef W_INTERPOLATE
+      #define W_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef W_HOLD_MULTIPLIER
+      #define W_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef W_SLAVE_ADDRESS
+      #define W_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef Z4_INTERPOLATE
-    #define Z4_INTERPOLATE INTERPOLATE
+
+  #if AXIS_IS_TMC(E0)
+    #if AXIS_HAS_STEALTHCHOP(E0)
+      #define E0_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E0_INTERPOLATE
+      #define E0_INTERPOLATE INTERPOLATE
+    #endif
+    #ifndef E0_HOLD_MULTIPLIER
+      #define E0_HOLD_MULTIPLIER HOLD_MULTIPLIER
+    #endif
+    #ifndef E0_SLAVE_ADDRESS
+      #define E0_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #if NUM_AXES >= 4 && !defined(I_INTERPOLATE)
-    #define I_INTERPOLATE INTERPOLATE
+  #if AXIS_IS_TMC(E1)
+    #if AXIS_HAS_STEALTHCHOP(E1)
+      #define E1_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E1_INTERPOLATE
+      #define E1_INTERPOLATE E0_INTERPOLATE
+    #endif
+    #ifndef E1_HOLD_MULTIPLIER
+      #define E1_HOLD_MULTIPLIER E0_HOLD_MULTIPLIER
+    #endif
+    #ifndef E1_SLAVE_ADDRESS
+      #define E1_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #if NUM_AXES >= 5 && !defined(J_INTERPOLATE)
-    #define J_INTERPOLATE INTERPOLATE
+  #if AXIS_IS_TMC(E2)
+    #if AXIS_HAS_STEALTHCHOP(E2)
+      #define E2_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E2_INTERPOLATE
+      #define E2_INTERPOLATE E0_INTERPOLATE
+    #endif
+    #ifndef E2_HOLD_MULTIPLIER
+      #define E2_HOLD_MULTIPLIER E0_HOLD_MULTIPLIER
+    #endif
+    #ifndef E2_SLAVE_ADDRESS
+      #define E2_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #if NUM_AXES >= 6 && !defined(K_INTERPOLATE)
-    #define K_INTERPOLATE INTERPOLATE
+  #if AXIS_IS_TMC(E3)
+    #if AXIS_HAS_STEALTHCHOP(E3)
+      #define E3_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E3_INTERPOLATE
+      #define E3_INTERPOLATE E0_INTERPOLATE
+    #endif
+    #ifndef E3_HOLD_MULTIPLIER
+      #define E3_HOLD_MULTIPLIER E0_HOLD_MULTIPLIER
+    #endif
+    #ifndef E3_SLAVE_ADDRESS
+      #define E3_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #if NUM_AXES >= 7 && !defined(U_INTERPOLATE)
-    #define U_INTERPOLATE INTERPOLATE
+  #if AXIS_IS_TMC(E4)
+    #if AXIS_HAS_STEALTHCHOP(E4)
+      #define E4_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E4_INTERPOLATE
+      #define E4_INTERPOLATE E0_INTERPOLATE
+    #endif
+    #ifndef E4_HOLD_MULTIPLIER
+      #define E4_HOLD_MULTIPLIER E0_HOLD_MULTIPLIER
+    #endif
+    #ifndef E4_SLAVE_ADDRESS
+      #define E4_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #if NUM_AXES >= 8 && !defined(V_INTERPOLATE)
-    #define V_INTERPOLATE INTERPOLATE
+  #if AXIS_IS_TMC(E5)
+    #if AXIS_HAS_STEALTHCHOP(E5)
+      #define E5_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E5_INTERPOLATE
+      #define E5_INTERPOLATE E0_INTERPOLATE
+    #endif
+    #ifndef E5_HOLD_MULTIPLIER
+      #define E5_HOLD_MULTIPLIER E0_HOLD_MULTIPLIER
+    #endif
+    #ifndef E5_SLAVE_ADDRESS
+      #define E5_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #if NUM_AXES >= 9 && !defined(W_INTERPOLATE)
-    #define W_INTERPOLATE INTERPOLATE
+  #if AXIS_IS_TMC(E6)
+    #if AXIS_HAS_STEALTHCHOP(E6)
+      #define E6_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E6_INTERPOLATE
+      #define E6_INTERPOLATE E0_INTERPOLATE
+    #endif
+    #ifndef E6_HOLD_MULTIPLIER
+      #define E6_HOLD_MULTIPLIER E0_HOLD_MULTIPLIER
+    #endif
+    #ifndef E6_SLAVE_ADDRESS
+      #define E6_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef E0_INTERPOLATE
-    #define E0_INTERPOLATE INTERPOLATE
+  #if AXIS_IS_TMC(E7)
+    #if AXIS_HAS_STEALTHCHOP(E7)
+      #define E7_HAS_STEALTHCHOP 1
+    #endif
+    #ifndef E7_INTERPOLATE
+      #define E7_INTERPOLATE E0_INTERPOLATE
+    #endif
+    #ifndef E7_HOLD_MULTIPLIER
+      #define E7_HOLD_MULTIPLIER E0_HOLD_MULTIPLIER
+    #endif
+    #ifndef E7_SLAVE_ADDRESS
+      #define E7_SLAVE_ADDRESS 0
+    #endif
   #endif
-  #ifndef E1_INTERPOLATE
-    #define E1_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef E2_INTERPOLATE
-    #define E2_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef E3_INTERPOLATE
-    #define E3_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef E4_INTERPOLATE
-    #define E4_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef E5_INTERPOLATE
-    #define E5_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef E6_INTERPOLATE
-    #define E6_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef E7_INTERPOLATE
-    #define E7_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef X_SLAVE_ADDRESS
-    #define X_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Y_SLAVE_ADDRESS
-    #define Y_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Z_SLAVE_ADDRESS
-    #define Z_SLAVE_ADDRESS 0
-  #endif
-  #ifndef I_SLAVE_ADDRESS
-    #define I_SLAVE_ADDRESS 0
-  #endif
-  #ifndef J_SLAVE_ADDRESS
-    #define J_SLAVE_ADDRESS 0
-  #endif
-  #ifndef K_SLAVE_ADDRESS
-    #define K_SLAVE_ADDRESS 0
-  #endif
-  #ifndef U_SLAVE_ADDRESS
-    #define U_SLAVE_ADDRESS 0
-  #endif
-  #ifndef V_SLAVE_ADDRESS
-    #define V_SLAVE_ADDRESS 0
-  #endif
-  #ifndef W_SLAVE_ADDRESS
-    #define W_SLAVE_ADDRESS 0
-  #endif
-  #ifndef X2_SLAVE_ADDRESS
-    #define X2_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Y2_SLAVE_ADDRESS
-    #define Y2_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Z2_SLAVE_ADDRESS
-    #define Z2_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Z3_SLAVE_ADDRESS
-    #define Z3_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Z4_SLAVE_ADDRESS
-    #define Z4_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E0_SLAVE_ADDRESS
-    #define E0_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E1_SLAVE_ADDRESS
-    #define E1_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E2_SLAVE_ADDRESS
-    #define E2_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E3_SLAVE_ADDRESS
-    #define E3_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E4_SLAVE_ADDRESS
-    #define E4_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E5_SLAVE_ADDRESS
-    #define E5_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E6_SLAVE_ADDRESS
-    #define E6_SLAVE_ADDRESS 0
-  #endif
-  #ifndef E7_SLAVE_ADDRESS
-    #define E7_SLAVE_ADDRESS 0
-  #endif
-#endif
+#endif // HAS_TRINAMIC_CONFIG
 
 #if ANY_AXIS_HAS(HW_SERIAL)
   #define HAS_TMC_HW_SERIAL 1
@@ -2457,28 +2645,28 @@
 // ADC Temp Sensors (Thermistor or Thermocouple with amplifier ADC interface)
 //
 #define HAS_ADC_TEST(P) (PIN_EXISTS(TEMP_##P) && TEMP_SENSOR_##P != 0 && NONE(TEMP_SENSOR_##P##_IS_MAX_TC, TEMP_SENSOR_##P##_IS_DUMMY))
-#if HAS_ADC_TEST(0)
+#if HOTENDS > 0 && HAS_ADC_TEST(0)
   #define HAS_TEMP_ADC_0 1
 #endif
-#if HAS_ADC_TEST(1)
+#if HOTENDS > 1 && HAS_ADC_TEST(1)
   #define HAS_TEMP_ADC_1 1
 #endif
-#if HAS_ADC_TEST(2)
+#if HOTENDS > 2 && HAS_ADC_TEST(2)
   #define HAS_TEMP_ADC_2 1
 #endif
-#if HAS_ADC_TEST(3)
+#if HOTENDS > 3 && HAS_ADC_TEST(3)
   #define HAS_TEMP_ADC_3 1
 #endif
-#if HAS_ADC_TEST(4)
+#if HOTENDS > 4 && HAS_ADC_TEST(4)
   #define HAS_TEMP_ADC_4 1
 #endif
-#if HAS_ADC_TEST(5)
+#if HOTENDS > 5 && HAS_ADC_TEST(5)
   #define HAS_TEMP_ADC_5 1
 #endif
-#if HAS_ADC_TEST(6)
+#if HOTENDS > 6 && HAS_ADC_TEST(6)
   #define HAS_TEMP_ADC_6 1
 #endif
-#if HAS_ADC_TEST(7)
+#if HOTENDS > 7 && HAS_ADC_TEST(7)
   #define HAS_TEMP_ADC_7 1
 #endif
 #if HAS_ADC_TEST(BED)
@@ -2611,13 +2799,13 @@
 #endif
 
 // Thermal protection
-#if BOTH(HAS_HEATED_BED, THERMAL_PROTECTION_BED)
-  #define HAS_THERMALLY_PROTECTED_BED 1
+#if !HAS_HEATED_BED
+  #undef THERMAL_PROTECTION_BED
 #endif
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) && WATCH_TEMP_PERIOD > 0
   #define WATCH_HOTENDS 1
 #endif
-#if HAS_THERMALLY_PROTECTED_BED && WATCH_BED_TEMP_PERIOD > 0
+#if ENABLED(THERMAL_PROTECTION_BED) && WATCH_BED_TEMP_PERIOD > 0
   #define WATCH_BED 1
 #endif
 #if BOTH(HAS_HEATED_CHAMBER, THERMAL_PROTECTION_CHAMBER) && WATCH_CHAMBER_TEMP_PERIOD > 0
@@ -2626,10 +2814,13 @@
 #if BOTH(HAS_COOLER, THERMAL_PROTECTION_COOLER) && WATCH_COOLER_TEMP_PERIOD > 0
   #define WATCH_COOLER 1
 #endif
+#if NONE(THERMAL_PROTECTION_HOTENDS, THERMAL_PROTECTION_CHAMBER, THERMAL_PROTECTION_BED, THERMAL_PROTECTION_COOLER)
+  #undef THERMAL_PROTECTION_VARIANCE_MONITOR
+#endif
 #if  (ENABLED(THERMAL_PROTECTION_HOTENDS) || !EXTRUDERS) \
   && (ENABLED(THERMAL_PROTECTION_BED)     || !HAS_HEATED_BED) \
   && (ENABLED(THERMAL_PROTECTION_CHAMBER) || !HAS_HEATED_CHAMBER) \
-  && (ENABLED(THERMAL_PROTECTION_COOLER) || !HAS_COOLER)
+  && (ENABLED(THERMAL_PROTECTION_COOLER)  || !HAS_COOLER)
   #define THERMALLY_SAFE 1
 #endif
 
@@ -2828,13 +3019,6 @@
   #error "FAN_MIN_PWM must be less than or equal to FAN_MAX_PWM."
 #elif FAN_OFF_PWM > FAN_MIN_PWM
   #error "FAN_OFF_PWM must be less than or equal to FAN_MIN_PWM."
-#endif
-
-/**
- * FAST PWM FAN Settings
- */
-#if ENABLED(FAST_PWM_FAN) && !defined(FAST_PWM_FAN_FREQUENCY)
-  #define FAST_PWM_FAN_FREQUENCY ((F_CPU) / (2 * 255 * 1)) // Fan frequency default
 #endif
 
 /**

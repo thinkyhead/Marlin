@@ -38,13 +38,13 @@ void menu_tmc_current() {
   START_MENU();
   BACK_ITEM(MSG_TMC_DRIVERS);
   #if AXIS_IS_TMC(X)
-    TMC_EDIT_STORED_I_RMS(X, STR_X);
+    TMC_EDIT_STORED_I_RMS(X, STR_A);
   #endif
   #if AXIS_IS_TMC(Y)
-    TMC_EDIT_STORED_I_RMS(Y, STR_Y);
+    TMC_EDIT_STORED_I_RMS(Y, STR_B);
   #endif
   #if AXIS_IS_TMC(Z)
-    TMC_EDIT_STORED_I_RMS(Z, STR_Z);
+    TMC_EDIT_STORED_I_RMS(Z, STR_C);
   #endif
   #if AXIS_IS_TMC(X2)
     TMC_EDIT_STORED_I_RMS(X2, STR_X2);

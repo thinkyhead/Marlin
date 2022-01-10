@@ -262,8 +262,6 @@ void GcodeSuite::M204_report(const bool forReplay/*=true*/) {
   );
 }
 
-#define IS_AXIS_LETTER(L) (AXIS4_NAME == L || AXIS5_NAME == L || AXIS6_NAME == L || AXIS7_NAME == L || AXIS8_NAME == L || AXIS9_NAME == L)
-
 /**
  * M205: Set Advanced Settings
  *
@@ -285,7 +283,7 @@ void GcodeSuite::M205() {
   if (parser.seenval('S')) planner.settings.min_feedrate_mm_s = parser.value_linear_units();
   if (parser.seenval('T')) planner.settings.min_travel_feedrate_mm_s = parser.value_linear_units();
   #if HAS_JUNCTION_DEVIATION
-    #if HAS_CLASSIC_JERK && IS_AXIS_LETTER('J')
+    #if HAS_CLASSIC_JERK && AXIS_COLLISION('J')
       #error "Can't set_max_jerk for 'J' axis because 'J' is used for Junction Deviation."
     #endif
     if (parser.seenval('J')) {
@@ -305,36 +303,12 @@ void GcodeSuite::M205() {
       if (parser.seenval('X')) planner.set_max_jerk(X_AXIS, parser.value_linear_units()),
       if (parser.seenval('Y')) planner.set_max_jerk(Y_AXIS, parser.value_linear_units()),
       if ((seenZ = parser.seenval('Z'))) planner.set_max_jerk(Z_AXIS, parser.value_linear_units()),
-      #if HAS_ROTATIONAL_AXIS4
-        if (parser.seenval(AXIS4_NAME)) planner.set_max_jerk(I_AXIS, parser.value_float()),
-      #else
-        if (parser.seenval(AXIS4_NAME)) planner.set_max_jerk(I_AXIS, parser.value_linear_units()),
-      #endif
-      #if HAS_ROTATIONAL_AXIS5
-        if (parser.seenval(AXIS5_NAME)) planner.set_max_jerk(J_AXIS, parser.value_float()),
-      #else
-		if (parser.seenval(AXIS5_NAME)) planner.set_max_jerk(J_AXIS, parser.value_linear_units()),
-      #endif
-      #if HAS_ROTATIONAL_AXIS6
-        if (parser.seenval(AXIS6_NAME)) planner.set_max_jerk(K_AXIS, parser.value_float()),
-      #else
-        if (parser.seenval(AXIS6_NAME)) planner.set_max_jerk(K_AXIS, parser.value_linear_units()),
-      #endif
-      #if HAS_ROTATIONAL_AXIS7
-        if (parser.seenval(AXIS7_NAME)) planner.set_max_jerk(U_AXIS, parser.value_float()),
-      #else
-        if (parser.seenval(AXIS7_NAME)) planner.set_max_jerk(U_AXIS, parser.value_linear_units()),
-      #endif
-      #if HAS_ROTATIONAL_AXIS8
-        if (parser.seenval(AXIS8_NAME)) planner.set_max_jerk(V_AXIS, parser.value_float()),
-      #else
-        if (parser.seenval(AXIS8_NAME)) planner.set_max_jerk(V_AXIS, parser.value_linear_units()),
-      #endif
-      #if HAS_ROTATIONAL_AXIS9
-        if (parser.seenval(AXIS9_NAME)) planner.set_max_jerk(W_AXIS, parser.value_float()),
-      #else
-        if (parser.seenval(AXIS9_NAME)) planner.set_max_jerk(W_AXIS, parser.value_linear_units())
-      #endif
+      if (parser.seenval(AXIS4_NAME)) planner.set_max_jerk(I_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS4, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS5_NAME)) planner.set_max_jerk(J_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS5, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS6_NAME)) planner.set_max_jerk(K_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS6, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS7_NAME)) planner.set_max_jerk(U_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS7, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS8_NAME)) planner.set_max_jerk(V_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS8, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS9_NAME)) planner.set_max_jerk(W_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS9, value_float, value_linear_units)()),
     );
     #if HAS_MESH && DISABLED(LIMITED_JERK_EDITING)
       if (seenZ && planner.max_jerk.z <= 0.1f)

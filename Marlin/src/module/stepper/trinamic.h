@@ -77,12 +77,6 @@
   #define TMC_CLASS_E(N) TMC_CLASS(E##N, E)
 #endif
 
-typedef struct {
-  uint8_t toff;
-  int8_t hend;
-  uint8_t hstrt;
-} chopper_timing_t;
-
 #ifndef CHOPPER_TIMING_X
   #define CHOPPER_TIMING_X CHOPPER_TIMING
 #endif
@@ -92,22 +86,22 @@ typedef struct {
 #if HAS_Z_AXIS && !defined(CHOPPER_TIMING_Z)
   #define CHOPPER_TIMING_Z CHOPPER_TIMING
 #endif
-#if NUM_AXES >= 4 && !defined(CHOPPER_TIMING_I)
+#if HAS_I_AXIS && !defined(CHOPPER_TIMING_I)
   #define CHOPPER_TIMING_I CHOPPER_TIMING
 #endif
-#if NUM_AXES >= 5 && !defined(CHOPPER_TIMING_J)
+#if HAS_J_AXIS && !defined(CHOPPER_TIMING_J)
   #define CHOPPER_TIMING_J CHOPPER_TIMING
 #endif
-#if NUM_AXES >= 6 && !defined(CHOPPER_TIMING_K)
+#if HAS_K_AXIS && !defined(CHOPPER_TIMING_K)
   #define CHOPPER_TIMING_K CHOPPER_TIMING
 #endif
-#if NUM_AXES >= 7 && !defined(CHOPPER_TIMING_U)
+#if HAS_U_AXIS && !defined(CHOPPER_TIMING_U)
   #define CHOPPER_TIMING_U CHOPPER_TIMING
 #endif
-#if NUM_AXES >= 8 && !defined(CHOPPER_TIMING_V)
+#if HAS_V_AXIS && !defined(CHOPPER_TIMING_V)
   #define CHOPPER_TIMING_V CHOPPER_TIMING
 #endif
-#if NUM_AXES >= 9 && !defined(CHOPPER_TIMING_W)
+#if HAS_W_AXIS && !defined(CHOPPER_TIMING_W)
   #define CHOPPER_TIMING_W CHOPPER_TIMING
 #endif
 #if HAS_EXTRUDERS && !defined(CHOPPER_TIMING_E)

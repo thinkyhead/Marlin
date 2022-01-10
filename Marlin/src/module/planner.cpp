@@ -1309,7 +1309,7 @@ void Planner::check_axes_activity() {
   #endif
 
   #if HAS_TAIL_FAN_SPEED
-    static uint8_t tail_fan_speed[FAN_COUNT];
+    static uint8_t tail_fan_speed[FAN_COUNT] = ARRAY_N_1(FAN_COUNT, 255);
     bool fans_need_update = false;
   #endif
 
@@ -1873,26 +1873,29 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     SERIAL_ECHOLNPGM(
       "  _populate_block FR:", fr_mm_s,
       " A:", target.a, " (", da, " steps)"
-      " B:", target.b, " (", db, " steps)"
-      " C:", target.c, " (", dc, " steps)"
-      #if NUM_AXES >= 4
+      #if HAS_Y_AXIS
+        " B:", target.b, " (", db, " steps)"
+      #endif
+      #if HAS_Z_AXIS
+        " C:", target.c, " (", dc, " steps)"
+      #endif
+      #if HAS_I_AXIS
         " " STR_I ":", target.i, " (", di, " steps)"
       #endif
-      #if NUM_AXES >= 5
+      #if HAS_J_AXIS
         " " STR_J ":", target.j, " (", dj, " steps)"
       #endif
-      #if NUM_AXES >= 6
+      #if HAS_K_AXIS
         " " STR_K ":", target.k, " (", dk, " steps)"
       #endif
-      #if NUM_AXES >= 7
+      #if HAS_U_AXIS
         " " STR_U ":", target.u, " (", du, " steps)"
       #endif
-      #if NUM_AXES >= 8
+      #if HAS_V_AXIS
         " " STR_V ":", target.v, " (", dv, " steps)"
       #endif
-      #if NUM_AXES >= 9
+      #if HAS_W_AXIS
         " " STR_W ":", target.w, " (", dw, " steps)"
-      #endif
       #if HAS_EXTRUDERS
         " E:", target.e, " (", de, " steps)"
       #endif
@@ -2115,7 +2118,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
        *     D^2 = dA^2 + dB^2 + dC^2
        */
       float distance_sqr = (
-        #if ENABLED(FOAMCUTTER_XYUV) 
+        #if ENABLED(FOAMCUTTER_XYUV)
           #if NUM_AXES == 5
             // Special 5 axis kinematics. Return the largest distance move from either X/Y or I/J plane
             _MAX(sq(steps_dist_mm.x) + sq(steps_dist_mm.y), sq(steps_dist_mm.i) + sq(steps_dist_mm.j))
@@ -2137,22 +2140,22 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
         if (NEAR_ZERO(distance_sqr)) {
           // Move does not involve any primary linear axes (xyz) but might involve secondary linear axes
           distance_sqr = (0.0
-            #if NUM_AXES >= 4 && !HAS_ROTATIONAL_AXIS4
+            #if HAS_I_AXIS && !HAS_ROTATIONAL_AXIS4
               + sq(steps_dist_mm.i)
             #endif
-            #if NUM_AXES >= 5 && !HAS_ROTATIONAL_AXIS5
+            #if HAS_J_AXIS && !HAS_ROTATIONAL_AXIS5
               + sq(steps_dist_mm.j)
             #endif
-            #if NUM_AXES >= 6 && !HAS_ROTATIONAL_AXIS6
+            #if HAS_K_AXIS && !HAS_ROTATIONAL_AXIS6
               + sq(steps_dist_mm.k)
             #endif
-            #if NUM_AXES >= 7 && !HAS_ROTATIONAL_AXIS7
+            #if HAS_U_AXIS && !HAS_ROTATIONAL_AXIS7
               + sq(steps_dist_mm.u)
             #endif
-            #if NUM_AXES >= 8 && !HAS_ROTATIONAL_AXIS8
+            #if HAS_V_AXIS && !HAS_ROTATIONAL_AXIS8
               + sq(steps_dist_mm.v)
             #endif
-            #if NUM_AXES >= 9 && !HAS_ROTATIONAL_AXIS9
+            #if HAS_W_AXIS && !HAS_ROTATIONAL_AXIS9
               + sq(steps_dist_mm.w)
             #endif
           );
@@ -2264,7 +2267,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
         if (block->steps.u) stepper.enable_axis(U_AXIS),
         if (block->steps.v) stepper.enable_axis(V_AXIS),
         if (block->steps.w) stepper.enable_axis(W_AXIS)
-	);
+      );
     #endif
   #endif
 
@@ -2480,7 +2483,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     accel = CEIL((esteps ? settings.acceleration : settings.travel_acceleration) * steps_per_mm);
 
     #if ENABLED(LIN_ADVANCE)
-      // Linear advance is currently not ready for NUM_AXES >= 4
+      // Linear advance is currently not ready for HAS_I_AXIS
       #define MAX_E_JERK(N) TERN(HAS_LINEAR_E_JERK, max_e_jerk[E_INDEX_N(N)], max_jerk.e)
 
       /**
@@ -3022,32 +3025,32 @@ bool Planner::buffer_segment(const abce_pos_t &abce
       SERIAL_ECHOPGM(" (", position.z, "->", target.z);
       SERIAL_CHAR(')');
     #endif
-    #if NUM_AXES >= 4
+    #if HAS_I_AXIS
       SERIAL_ECHOPGM_P(SP_I_LBL, abce.i);
       SERIAL_ECHOPGM(" (", position.i, "->", target.i);
       SERIAL_CHAR(')');
     #endif
-    #if NUM_AXES >= 5
+    #if HAS_J_AXIS
       SERIAL_ECHOPGM_P(SP_J_LBL, abce.j);
       SERIAL_ECHOPGM(" (", position.j, "->", target.j);
       SERIAL_CHAR(')');
     #endif
-    #if NUM_AXES >= 6
+    #if HAS_K_AXIS
       SERIAL_ECHOPGM_P(SP_K_LBL, abce.k);
       SERIAL_ECHOPGM(" (", position.k, "->", target.k);
       SERIAL_CHAR(')');
     #endif
-    #if NUM_AXES >= 7
+    #if HAS_U_AXIS
       SERIAL_ECHOPAIR_P(SP_U_LBL, abce.u);
       SERIAL_ECHOPAIR(" (", position.u, "->", target.u);
       SERIAL_CHAR(')');
     #endif
-    #if NUM_AXES >= 8
+    #if HAS_V_AXIS
       SERIAL_ECHOPAIR_P(SP_V_LBL, abce.v);
       SERIAL_ECHOPAIR(" (", position.v, "->", target.v);
       SERIAL_CHAR(')');
     #endif
-    #if NUM_AXES >= 9
+    #if HAS_W_AXIS
       SERIAL_ECHOPAIR_P(SP_W_LBL, abce.w);
       SERIAL_ECHOPAIR(" (", position.w, "->", target.w);
       SERIAL_CHAR(')');

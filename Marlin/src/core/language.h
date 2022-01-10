@@ -240,6 +240,7 @@
 #define STR_REDUNDANCY                      "Heater switched off. Temperature difference between temp sensors is too high !"
 #define STR_T_HEATING_FAILED                "Heating failed"
 #define STR_T_THERMAL_RUNAWAY               "Thermal Runaway"
+#define STR_T_MALFUNCTION                   "Thermal Malfunction"
 #define STR_T_MAXTEMP                       "MAXTEMP triggered"
 #define STR_T_MINTEMP                       "MINTEMP triggered"
 #define STR_ERR_PROBING_FAILED              "Probing Failed"
@@ -357,7 +358,7 @@
 #define STR_Z4 "Z4"
 
 // Extra Axis and Endstop Names
-#if NUM_AXES >= 4
+#if HAS_I_AXIS
   #if AXIS4_NAME == 'A'
     #define STR_I "A"
     #define STR_I_MIN "a_min"
@@ -389,7 +390,7 @@
   #define STR_I   ""
 #endif
 
-#if NUM_AXES >= 5
+#if HAS_J_AXIS
   #if AXIS5_NAME == 'B'
     #define STR_J "B"
     #define STR_J_MIN "b_min"
@@ -417,7 +418,7 @@
   #define STR_J   ""
 #endif
 
-#if NUM_AXES >= 6
+#if HAS_K_AXIS
   #if AXIS6_NAME == 'C'
     #define STR_K "C"
     #define STR_K_MIN "c_min"
@@ -441,7 +442,7 @@
   #define STR_K   ""
 #endif
 
-#if NUM_AXES >= 7
+#if HAS_U_AXIS
   #if AXIS7_NAME == 'U'
     #define STR_U "U"
     #define STR_U_MIN "u_min"
@@ -461,7 +462,7 @@
   #define STR_U   ""
 #endif
 
-#if NUM_AXES >= 8
+#if HAS_V_AXIS
   #if AXIS8_NAME == 'V'
     #define STR_V "V"
     #define STR_V_MIN "v_min"
@@ -477,7 +478,7 @@
   #define STR_V   ""
 #endif
 
-#if NUM_AXES >= 9
+#if HAS_W_AXIS
   #if AXIS9_NAME == 'W'
     #define STR_W "W"
     #define STR_W_MIN "w_min"
@@ -557,14 +558,14 @@
   #define STR_N7 "8"
 #endif
 
-#define STR_E0 "E" STR_N0
-#define STR_E1 "E" STR_N1
-#define STR_E2 "E" STR_N2
-#define STR_E3 "E" STR_N3
-#define STR_E4 "E" STR_N4
-#define STR_E5 "E" STR_N5
-#define STR_E6 "E" STR_N6
-#define STR_E7 "E" STR_N7
+#define STR_E0 STR_E STR_N0
+#define STR_E1 STR_E STR_N1
+#define STR_E2 STR_E STR_N2
+#define STR_E3 STR_E STR_N3
+#define STR_E4 STR_E STR_N4
+#define STR_E5 STR_E STR_N5
+#define STR_E6 STR_E STR_N6
+#define STR_E7 STR_E STR_N7
 
 // Include localized LCD Menu Messages
 
