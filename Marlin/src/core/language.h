@@ -340,12 +340,6 @@
 #define STR_X "X"
 #define STR_Y "Y"
 #define STR_Z "Z"
-#define STR_I AXIS4_STR
-#define STR_J AXIS5_STR
-#define STR_K AXIS6_STR
-#define STR_U AXIS7_STR
-#define STR_V AXIS8_STR
-#define STR_W AXIS9_STR
 #define STR_E "E"
 #if IS_KINEMATIC
   #define STR_A "A"
@@ -362,148 +356,137 @@
 #define STR_Z3 "Z3"
 #define STR_Z4 "Z4"
 
-#define LCD_STR_A STR_A
-#define LCD_STR_B STR_B
-#define LCD_STR_C STR_C
-#define LCD_STR_I STR_I
-#define LCD_STR_J STR_J
-#define LCD_STR_K STR_K
-#define LCD_STR_U STR_U
-#define LCD_STR_V STR_V
-#define LCD_STR_W STR_W
-#define LCD_STR_E STR_E
-
 // Extra Axis and Endstop Names
 #if NUM_AXES >= 4
   #if AXIS4_NAME == 'A'
-    #define AXIS4_STR "A"
+    #define STR_I "A"
     #define STR_I_MIN "a_min"
     #define STR_I_MAX "a_max"
   #elif AXIS4_NAME == 'B'
-    #define AXIS4_STR "B"
+    #define STR_I "B"
     #define STR_I_MIN "b_min"
     #define STR_I_MAX "b_max"
   #elif AXIS4_NAME == 'C'
-    #define AXIS4_STR "C"
+    #define STR_I "C"
     #define STR_I_MIN "c_min"
     #define STR_I_MAX "c_max"
   #elif AXIS4_NAME == 'U'
-    #define AXIS4_STR "U"
+    #define STR_I "U"
     #define STR_I_MIN "u_min"
     #define STR_I_MAX "u_max"
   #elif AXIS4_NAME == 'V'
-    #define AXIS4_STR "V"
+    #define STR_I "V"
     #define STR_I_MIN "v_min"
     #define STR_I_MAX "v_max"
   #elif AXIS4_NAME == 'W'
-    #define AXIS4_STR "W"
+    #define STR_I "W"
     #define STR_I_MIN "w_min"
     #define STR_I_MAX "w_max"
   #else
     #error "AXIS4_NAME can only be one of 'A', 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
-  #define AXIS4_STR   ""
+  #define STR_I   ""
 #endif
 
 #if NUM_AXES >= 5
   #if AXIS5_NAME == 'B'
-    #define AXIS5_STR "B"
+    #define STR_J "B"
     #define STR_J_MIN "b_min"
     #define STR_J_MAX "b_max"
   #elif AXIS5_NAME == 'C'
-    #define AXIS5_STR "C"
+    #define STR_J "C"
     #define STR_J_MIN "c_min"
     #define STR_J_MAX "c_max"
   #elif AXIS5_NAME == 'U'
-    #define AXIS5_STR "U"
+    #define STR_J "U"
     #define STR_J_MIN "u_min"
     #define STR_J_MAX "u_max"
   #elif AXIS5_NAME == 'V'
-    #define AXIS5_STR "V"
+    #define STR_J "V"
     #define STR_J_MIN "v_min"
     #define STR_J_MAX "v_max"
   #elif AXIS5_NAME == 'W'
-    #define AXIS5_STR "W"
+    #define STR_J "W"
     #define STR_J_MIN "w_min"
     #define STR_J_MAX "w_max"
   #else
     #error "AXIS5_NAME can only be one of 'B', 'C', 'U', 'V', or 'W'."
   #endif
 #else
-  #define AXIS5_STR   ""
+  #define STR_J   ""
 #endif
 
 #if NUM_AXES >= 6
   #if AXIS6_NAME == 'C'
-    #define AXIS6_STR "C"
+    #define STR_K "C"
     #define STR_K_MIN "c_min"
     #define STR_K_MAX "c_max"
   #elif AXIS6_NAME == 'U'
-    #define AXIS6_STR "U"
+    #define STR_K "U"
     #define STR_K_MIN "u_min"
     #define STR_K_MAX "u_max"
   #elif AXIS6_NAME == 'V'
-    #define AXIS6_STR "V"
+    #define STR_K "V"
     #define STR_K_MIN "v_min"
     #define STR_K_MAX "v_max"
   #elif AXIS6_NAME == 'W'
-    #define AXIS6_STR "W"
+    #define STR_K "W"
     #define STR_K_MIN "w_min"
     #define STR_K_MAX "w_max"
   #else
     #error "AXIS6_NAME can only be one of 'C', 'U', 'V', or 'W'."
   #endif
 #else
-  #define AXIS6_STR   ""
+  #define STR_K   ""
 #endif
 
 #if NUM_AXES >= 7
   #if AXIS7_NAME == 'U'
-    #define AXIS7_STR "U"
+    #define STR_U "U"
     #define STR_U_MIN "u_min"
     #define STR_U_MAX "u_max"
   #elif AXIS7_NAME == 'V'
-    #define AXIS7_STR "V"
+    #define STR_U "V"
     #define STR_U_MIN "v_min"
     #define STR_U_MAX "v_max"
   #elif AXIS7_NAME == 'W'
-    #define AXIS7_STR "W"
+    #define STR_U "W"
     #define STR_U_MIN "w_min"
     #define STR_U_MAX "w_max"
   #else
     #error "AXIS7_NAME can only be one of 'U', 'V', or 'W'."
   #endif
 #else
-  #define AXIS7_STR   ""
+  #define STR_U   ""
 #endif
 
 #if NUM_AXES >= 8
   #if AXIS8_NAME == 'V'
-    #define AXIS8_STR "V"
+    #define STR_V "V"
     #define STR_V_MIN "v_min"
     #define STR_V_MAX "v_max"
   #elif AXIS8_NAME == 'W'
-    #define AXIS8_STR "W"
+    #define STR_V "W"
     #define STR_V_MIN "w_min"
     #define STR_V_MAX "w_max"
   #else
     #error "AXIS8_NAME can only be one of 'V', or 'W'."
   #endif
 #else
-  #define AXIS8_STR   ""
+  #define STR_V   ""
 #endif
 
 #if NUM_AXES >= 9
   #if AXIS9_NAME == 'W'
-    #define AXIS9_STR "W"
+    #define STR_W "W"
     #define STR_W_MIN "w_min"
     #define STR_W_MAX "w_max"
   #else
     #error "AXIS9_NAME can only be 'W'."
   #endif
 #else
-  #define AXIS9_STR   ""
+  #define STR_W   ""
 #endif
 
 #if EITHER(HAS_MARLINUI_HD44780, IS_TFTGLCD_PANEL)
@@ -554,34 +537,34 @@
  */
 #if ENABLED(NUMBER_TOOLS_FROM_0)
   #define LCD_FIRST_TOOL 0
-  #define LCD_STR_N0 "0"
-  #define LCD_STR_N1 "1"
-  #define LCD_STR_N2 "2"
-  #define LCD_STR_N3 "3"
-  #define LCD_STR_N4 "4"
-  #define LCD_STR_N5 "5"
-  #define LCD_STR_N6 "6"
-  #define LCD_STR_N7 "7"
+  #define STR_N0 "0"
+  #define STR_N1 "1"
+  #define STR_N2 "2"
+  #define STR_N3 "3"
+  #define STR_N4 "4"
+  #define STR_N5 "5"
+  #define STR_N6 "6"
+  #define STR_N7 "7"
 #else
   #define LCD_FIRST_TOOL 1
-  #define LCD_STR_N0 "1"
-  #define LCD_STR_N1 "2"
-  #define LCD_STR_N2 "3"
-  #define LCD_STR_N3 "4"
-  #define LCD_STR_N4 "5"
-  #define LCD_STR_N5 "6"
-  #define LCD_STR_N6 "7"
-  #define LCD_STR_N7 "8"
+  #define STR_N0 "1"
+  #define STR_N1 "2"
+  #define STR_N2 "3"
+  #define STR_N3 "4"
+  #define STR_N4 "5"
+  #define STR_N5 "6"
+  #define STR_N6 "7"
+  #define STR_N7 "8"
 #endif
 
-#define LCD_STR_E0 "E" LCD_STR_N0
-#define LCD_STR_E1 "E" LCD_STR_N1
-#define LCD_STR_E2 "E" LCD_STR_N2
-#define LCD_STR_E3 "E" LCD_STR_N3
-#define LCD_STR_E4 "E" LCD_STR_N4
-#define LCD_STR_E5 "E" LCD_STR_N5
-#define LCD_STR_E6 "E" LCD_STR_N6
-#define LCD_STR_E7 "E" LCD_STR_N7
+#define STR_E0 "E" STR_N0
+#define STR_E1 "E" STR_N1
+#define STR_E2 "E" STR_N2
+#define STR_E3 "E" STR_N3
+#define STR_E4 "E" STR_N4
+#define STR_E5 "E" STR_N5
+#define STR_E6 "E" STR_N6
+#define STR_E7 "E" STR_N7
 
 // Include localized LCD Menu Messages
 

@@ -1876,22 +1876,22 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       " B:", target.b, " (", db, " steps)"
       " C:", target.c, " (", dc, " steps)"
       #if NUM_AXES >= 4
-        " " AXIS4_STR ":", target.i, " (", di, " steps)"
+        " " STR_I ":", target.i, " (", di, " steps)"
       #endif
       #if NUM_AXES >= 5
-        " " AXIS5_STR ":", target.j, " (", dj, " steps)"
+        " " STR_J ":", target.j, " (", dj, " steps)"
       #endif
       #if NUM_AXES >= 6
-        " " AXIS6_STR ":", target.k, " (", dk, " steps)"
+        " " STR_K ":", target.k, " (", dk, " steps)"
       #endif
       #if NUM_AXES >= 7
-        " " AXIS7_STR ":", target.u, " (", du, " steps)"
+        " " STR_U ":", target.u, " (", du, " steps)"
       #endif
       #if NUM_AXES >= 8
-        " " AXIS8_STR ":", target.v, " (", dv, " steps)"
+        " " STR_V ":", target.v, " (", dv, " steps)"
       #endif
       #if NUM_AXES >= 9
-        " " AXIS9_STR ":", target.w, " (", dw, " steps)"
+        " " STR_W ":", target.w, " (", dw, " steps)"
       #endif
       #if HAS_EXTRUDERS
         " E:", target.e, " (", de, " steps)"

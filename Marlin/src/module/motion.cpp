@@ -1437,12 +1437,12 @@ void prepare_line_to_destination() {
           TEST(axis_bits, X_AXIS) ? "X" : "",
           TEST(axis_bits, Y_AXIS) ? "Y" : "",
           TEST(axis_bits, Z_AXIS) ? "Z" : "",
-          TEST(axis_bits, I_AXIS) ? AXIS4_STR : "",
-          TEST(axis_bits, J_AXIS) ? AXIS5_STR : "",
-          TEST(axis_bits, K_AXIS) ? AXIS6_STR : "",
-          TEST(axis_bits, U_AXIS) ? AXIS7_STR : "",
-          TEST(axis_bits, V_AXIS) ? AXIS8_STR : "",
-          TEST(axis_bits, W_AXIS) ? AXIS9_STR : ""
+          TEST(axis_bits, I_AXIS) ? STR_I : "",
+          TEST(axis_bits, J_AXIS) ? STR_J : "",
+          TEST(axis_bits, K_AXIS) ? STR_K : "",
+          TEST(axis_bits, U_AXIS) ? STR_U : "",
+          TEST(axis_bits, V_AXIS) ? STR_V : "",
+          TEST(axis_bits, W_AXIS) ? STR_W : ""
         )
       );
       SERIAL_ECHO_START();

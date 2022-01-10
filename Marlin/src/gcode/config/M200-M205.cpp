@@ -350,8 +350,8 @@ void GcodeSuite::M205_report(const bool forReplay/*=true*/) {
     #if HAS_CLASSIC_JERK
       NUM_AXIS_GANG(
         " X<max_jerk>", " Y<max_jerk>", " Z<max_jerk>",
-        " " AXIS4_STR "<max_jerk>", " " AXIS5_STR "<max_jerk>", " " AXIS6_STR "<max_jerk>",
-        " " AXIS7_STR "<max_jerk>", " " AXIS8_STR "<max_jerk>", " " AXIS9_STR "<max_jerk>"
+        " " STR_I "<max_jerk>", " " STR_J "<max_jerk>", " " STR_K "<max_jerk>",
+        " " STR_U "<max_jerk>", " " STR_V "<max_jerk>", " " STR_W "<max_jerk>"
       )
     #endif
     TERN_(HAS_CLASSIC_E_JERK, " E<max_jerk>")

@@ -364,22 +364,22 @@ void menu_move() {
       GCODES_ITEM_N(Z_AXIS, MSG_AUTO_HOME_A, PSTR("G28Z"));
     #endif
     #if NUM_AXES >= 4
-      GCODES_ITEM_N(I_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS4_STR));
+      GCODES_ITEM_N(I_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_I));
     #endif
     #if NUM_AXES >= 5
-      GCODES_ITEM_N(J_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS5_STR));
+      GCODES_ITEM_N(J_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_J));
     #endif
     #if NUM_AXES >= 6
-      GCODES_ITEM_N(K_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS6_STR));
+      GCODES_ITEM_N(K_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_K));
     #endif
     #if NUM_AXES >= 7
-      GCODES_ITEM_N(U_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS7_STR));
+      GCODES_ITEM_N(U_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_U));
     #endif
     #if NUM_AXES >= 8
-      GCODES_ITEM_N(V_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS8_STR));
+      GCODES_ITEM_N(V_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_V));
     #endif
     #if NUM_AXES >= 9
-      GCODES_ITEM_N(W_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS9_STR));
+      GCODES_ITEM_N(W_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_W));
     #endif
 
     END_MENU();
@@ -426,22 +426,22 @@ void menu_motion() {
         GCODES_ITEM_N(Z_AXIS, MSG_AUTO_HOME_A, PSTR("G28Z"));
       #endif
       #if NUM_AXES >= 4
-        GCODES_ITEM_N(I_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS4_STR));
+        GCODES_ITEM_N(I_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_I));
       #endif
       #if NUM_AXES >= 5
-        GCODES_ITEM_N(J_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS5_STR));
+        GCODES_ITEM_N(J_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_J));
       #endif
       #if NUM_AXES >= 6
-        GCODES_ITEM_N(K_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS6_STR));
+        GCODES_ITEM_N(K_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_K));
       #endif
       #if NUM_AXES >= 7
-        GCODES_ITEM_N(U_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS7_STR));
+        GCODES_ITEM_N(U_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_U));
       #endif
       #if NUM_AXES >= 8
-        GCODES_ITEM_N(V_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS8_STR));
+        GCODES_ITEM_N(V_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_V));
       #endif
       #if NUM_AXES >= 9
-        GCODES_ITEM_N(W_AXIS, MSG_AUTO_HOME_A, PSTR("G28" AXIS9_STR));
+        GCODES_ITEM_N(W_AXIS, MSG_AUTO_HOME_A, PSTR("G28" STR_W));
       #endif
     #endif
   #endif

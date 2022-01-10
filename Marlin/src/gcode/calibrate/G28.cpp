@@ -293,17 +293,17 @@ void GcodeSuite::G28() {
     #if HAS_CURRENT_HOME(I)
       const int16_t tmc_save_current_I = stepperI.getMilliamps();
       stepperI.rms_current(I_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(F(AXIS4_STR), tmc_save_current_I, I_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(F(STR_I), tmc_save_current_I, I_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(J)
       const int16_t tmc_save_current_J = stepperJ.getMilliamps();
       stepperJ.rms_current(J_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(F(AXIS5_STR), tmc_save_current_J, J_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(F(STR_J), tmc_save_current_J, J_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(K)
       const int16_t tmc_save_current_K = stepperK.getMilliamps();
       stepperK.rms_current(K_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(F(AXIS6_STR), tmc_save_current_K, K_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(F(STR_K), tmc_save_current_K, K_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(Z) && ENABLED(DELTA)
       const int16_t tmc_save_current_Z = stepperZ.getMilliamps();
@@ -313,32 +313,32 @@ void GcodeSuite::G28() {
     #if HAS_CURRENT_HOME(I)
       const int16_t tmc_save_current_I = stepperI.getMilliamps();
       stepperI.rms_current(I_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(PSTR(AXIS4_STR), tmc_save_current_I, I_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(PSTR(STR_I), tmc_save_current_I, I_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(J)
       const int16_t tmc_save_current_J = stepperJ.getMilliamps();
       stepperJ.rms_current(I_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(PSTR(AXIS5_STR), tmc_save_current_J, J_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(PSTR(STR_J), tmc_save_current_J, J_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(K)
       const int16_t tmc_save_current_K = stepperK.getMilliamps();
       stepperK.rms_current(K_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(PSTR(AXIS6_STR), tmc_save_current_K, K_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(PSTR(STR_K), tmc_save_current_K, K_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(U)
       const int16_t tmc_save_current_U = stepperU.getMilliamps();
       stepperU.rms_current(U_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(PSTR(AXIS7_STR), tmc_save_current_U, U_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(PSTR(STR_U), tmc_save_current_U, U_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(V)
       const int16_t tmc_save_current_V = stepperV.getMilliamps();
       stepperV.rms_current(V_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(PSTR(AXIS8_STR), tmc_save_current_V, V_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(PSTR(STR_V), tmc_save_current_V, V_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(W)
       const int16_t tmc_save_current_W = stepperW.getMilliamps();
       stepperW.rms_current(W_CURRENT_HOME);
-      if (DEBUGGING(LEVELING)) debug_current(PSTR(AXIS9_STR), tmc_save_current_W, W_CURRENT_HOME);
+      if (DEBUGGING(LEVELING)) debug_current(PSTR(STR_W), tmc_save_current_W, W_CURRENT_HOME);
     #endif
   #endif
 
