@@ -3015,7 +3015,7 @@ bool Planner::buffer_segment(const abce_pos_t &abce
       SERIAL_ECHOPGM_P(SP_Y_LBL, abce.b);
     #endif
     SERIAL_ECHOPGM(" (", position.y, "->", target.y);
-    #if NUM_AXES >= ABC
+    #if HAS_Z_AXIS
       #if ENABLED(DELTA)
         SERIAL_ECHOPGM(") C:", abce.c);
       #else

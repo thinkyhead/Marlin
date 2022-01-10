@@ -39,7 +39,9 @@
 #endif
 
 /**
- * M907: Set digital trimpot motor current using axis codes X, Y, Z, (I, J, K, U, V, W,) E, B, S
+ * M907: Set digital trimpot motor current using axis codes X [Y] [Z] [I] [J] [K] [U] [V] [W] [E]
+ *   B<current> - Special case for 4th (E) axis
+ *   S<current> - Special case to set first 3 axes
  */
 void GcodeSuite::M907() {
   #if HAS_MOTOR_CURRENT_SPI
@@ -55,7 +57,7 @@ void GcodeSuite::M907() {
 
     if (!parser.seen(
       #if ANY_PIN(MOTOR_CURRENT_PWM_X, MOTOR_CURRENT_PWM_Y, MOTOR_CURRENT_PWM_XY, MOTOR_CURRENT_PWM_I, MOTOR_CURRENT_PWM_J, MOTOR_CURRENT_PWM_K, MOTOR_CURRENT_PWM_U, MOTOR_CURRENT_PWM_V, MOTOR_CURRENT_PWM_W)
-        "XYIJKUVW"
+        "XY" SECONDARY_AXIS_GANG(STR_I, STR_J, STR_K, STR_U, STR_V, STR_W)
       #endif
       #if PIN_EXISTS(MOTOR_CURRENT_PWM_Z)
         "Z"
@@ -66,9 +68,11 @@ void GcodeSuite::M907() {
     )) return M907_report();
 
     #if ANY_PIN(MOTOR_CURRENT_PWM_X, MOTOR_CURRENT_PWM_Y, MOTOR_CURRENT_PWM_XY, MOTOR_CURRENT_PWM_I, MOTOR_CURRENT_PWM_J, MOTOR_CURRENT_PWM_K, MOTOR_CURRENT_PWM_U, MOTOR_CURRENT_PWM_V, MOTOR_CURRENT_PWM_W)
-      if (parser.seenval('X') || parser.seenval('Y') || parser.seenval('I') || parser.seenval('J') || parser.seenval('K')
-        || parser.seenval('U') || parser.seenval('V') || parser.seenval('W')
-	  ) stepper.set_digipot_current(0, parser.value_int());
+      if (NUM_AXIS_GANG(
+             parser.seenval('X'), || parser.seenval('Y'), || false,
+          || parser.seenval('I'), || parser.seenval('J'), || parser.seenval('K'),
+          || parser.seenval('U'), || parser.seenval('V'), || parser.seenval('W')
+      )) stepper.set_digipot_current(0, parser.value_int());
     #endif
     #if PIN_EXISTS(MOTOR_CURRENT_PWM_Z)
       if (parser.seenval('Z')) stepper.set_digipot_current(1, parser.value_int());
@@ -77,7 +81,7 @@ void GcodeSuite::M907() {
       if (parser.seenval('E')) stepper.set_digipot_current(2, parser.value_int());
     #endif
 
-  #endif
+  #endif // HAS_MOTOR_CURRENT_PWM
 
   #if HAS_MOTOR_CURRENT_I2C
     // this one uses actual amps in floating point
@@ -104,7 +108,7 @@ void GcodeSuite::M907() {
   void GcodeSuite::M907_report(const bool forReplay/*=true*/) {
     report_heading_etc(forReplay, F(STR_STEPPER_MOTOR_CURRENTS));
     #if HAS_MOTOR_CURRENT_PWM
-      SERIAL_ECHOLNPGM_P(                                    // PWM-based has 3 values:
+      SERIAL_ECHOLNPGM_P(                                     // PWM-based has 3 values:
           PSTR("  M907 X"), stepper.motor_current_setting[0]  // X, Y, (I, J, K, U, V, W)
         , SP_Z_STR,         stepper.motor_current_setting[1]  // Z
         , SP_E_STR,         stepper.motor_current_setting[2]  // E

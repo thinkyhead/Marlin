@@ -196,8 +196,7 @@ inline void report_more_positions() {
 inline void report_logical_position(const xyze_pos_t &rpos) {
   const xyze_pos_t lpos = rpos.asLogical();
   SERIAL_ECHOPGM_P(
-    LIST_N(DOUBLE(LOGICAL_AXES),
-      SP_E_LBL, lpos.e,
+    LIST_N(DOUBLE(NUM_AXES),
          X_LBL, lpos.x,
       SP_Y_LBL, lpos.y,
       SP_Z_LBL, lpos.z,
@@ -208,6 +207,9 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
       SP_V_LBL, lpos.v,
       SP_W_LBL, lpos.w
     )
+    #if HAS_EXTRUDERS
+      , SP_E_LBL, lpos.e
+    #endif
   );
 }
 
@@ -267,15 +269,20 @@ void report_current_position_projected() {
     const xyz_pos_t lpos = cartes.asLogical();
 
     SERIAL_ECHOPGM_P(
-      LIST_N(DOUBLE(LOGICAL_AXES),
-        SP_E_LBL, current_position.e,
+      LIST_N(DOUBLE(NUM_AXES),
            X_LBL, lpos.x,
         SP_Y_LBL, lpos.y,
         SP_Z_LBL, lpos.z,
         SP_I_LBL, lpos.i,
         SP_J_LBL, lpos.j,
-        SP_K_LBL, lpos.k
+        SP_K_LBL, lpos.k,
+        SP_U_LBL, lpos.u,
+        SP_V_LBL, lpos.v,
+        SP_W_LBL, lpos.w
       )
+      #if HAS_EXTRUDERS
+        , SP_E_LBL, current_position.e
+      #endif
     );
 
     stepper.report_positions();
