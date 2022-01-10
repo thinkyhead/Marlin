@@ -96,12 +96,12 @@ void GcodeSuite::M92_report(const bool forReplay/*=true*/, const int8_t e/*=-1*/
     PSTR("  M92 X"), LINEAR_UNIT(planner.settings.axis_steps_per_mm[X_AXIS]),
     SP_Y_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Y_AXIS]),
     SP_Z_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Z_AXIS]),
-    SP_I_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS4, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[I_AXIS]),
-    SP_J_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS5, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[J_AXIS]),
-    SP_K_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS6, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[K_AXIS]),
-    SP_U_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS7, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[U_AXIS]),
-    SP_V_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS8, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[V_AXIS]),
-    SP_W_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS9, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[W_AXIS])
+    SP_I_STR, IF_DISABLED(AXIS4_ROTATES, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[I_AXIS]),
+    SP_J_STR, IF_DISABLED(AXIS5_ROTATES, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[J_AXIS]),
+    SP_K_STR, IF_DISABLED(AXIS6_ROTATES, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[K_AXIS]),
+    SP_U_STR, IF_DISABLED(AXIS7_ROTATES, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[U_AXIS]),
+    SP_V_STR, IF_DISABLED(AXIS8_ROTATES, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[V_AXIS]),
+    SP_W_STR, IF_DISABLED(AXIS9_ROTATES, LINEAR_UNIT)(planner.settings.axis_steps_per_mm[W_AXIS])
   ));
   #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
     SERIAL_ECHOPGM_P(SP_E_STR, VOLUMETRIC_UNIT(planner.settings.axis_steps_per_mm[E_AXIS]));

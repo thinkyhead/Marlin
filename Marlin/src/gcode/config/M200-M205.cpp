@@ -139,12 +139,12 @@ void GcodeSuite::M201_report(const bool forReplay/*=true*/) {
       PSTR("  M201 X"), LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[X_AXIS]),
       SP_Y_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[Y_AXIS]),
       SP_Z_STR, LINEAR_UNIT(planner.settings.max_acceleration_mm_per_s2[Z_AXIS]),
-      SP_I_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS4, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[I_AXIS]),
-      SP_J_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS5, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[J_AXIS]),
-      SP_K_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS6, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[K_AXIS]),
-      SP_U_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS7, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[U_AXIS]),
-      SP_V_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS8, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[V_AXIS]),
-      SP_W_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS9, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[W_AXIS]),
+      SP_I_STR, IF_DISABLED(AXIS4_ROTATES, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[I_AXIS]),
+      SP_J_STR, IF_DISABLED(AXIS5_ROTATES, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[J_AXIS]),
+      SP_K_STR, IF_DISABLED(AXIS6_ROTATES, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[K_AXIS]),
+      SP_U_STR, IF_DISABLED(AXIS7_ROTATES, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[U_AXIS]),
+      SP_V_STR, IF_DISABLED(AXIS8_ROTATES, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[V_AXIS]),
+      SP_W_STR, IF_DISABLED(AXIS9_ROTATES, LINEAR_UNIT)(planner.settings.max_acceleration_mm_per_s2[W_AXIS]),
     )
     #if HAS_EXTRUDERS && DISABLED(DISTINCT_E_FACTORS)
       , SP_E_STR, VOLUMETRIC_UNIT(planner.settings.max_acceleration_mm_per_s2[E_AXIS])
@@ -279,12 +279,12 @@ void GcodeSuite::M205() {
       if (parser.seenval('X')) planner.set_max_jerk(X_AXIS, parser.value_linear_units()),
       if (parser.seenval('Y')) planner.set_max_jerk(Y_AXIS, parser.value_linear_units()),
       if ((seenZ = parser.seenval('Z'))) planner.set_max_jerk(Z_AXIS, parser.value_linear_units()),
-      if (parser.seenval(AXIS4_NAME)) planner.set_max_jerk(I_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS4, value_float, value_linear_units)()),
-      if (parser.seenval(AXIS5_NAME)) planner.set_max_jerk(J_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS5, value_float, value_linear_units)()),
-      if (parser.seenval(AXIS6_NAME)) planner.set_max_jerk(K_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS6, value_float, value_linear_units)()),
-      if (parser.seenval(AXIS7_NAME)) planner.set_max_jerk(U_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS7, value_float, value_linear_units)()),
-      if (parser.seenval(AXIS8_NAME)) planner.set_max_jerk(V_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS8, value_float, value_linear_units)()),
-      if (parser.seenval(AXIS9_NAME)) planner.set_max_jerk(W_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS9, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS4_NAME)) planner.set_max_jerk(I_AXIS, parser.TERN(AXIS4_ROTATES, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS5_NAME)) planner.set_max_jerk(J_AXIS, parser.TERN(AXIS5_ROTATES, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS6_NAME)) planner.set_max_jerk(K_AXIS, parser.TERN(AXIS6_ROTATES, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS7_NAME)) planner.set_max_jerk(U_AXIS, parser.TERN(AXIS7_ROTATES, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS8_NAME)) planner.set_max_jerk(V_AXIS, parser.TERN(AXIS8_ROTATES, value_float, value_linear_units)()),
+      if (parser.seenval(AXIS9_NAME)) planner.set_max_jerk(W_AXIS, parser.TERN(AXIS9_ROTATES, value_float, value_linear_units)()),
     );
     #if HAS_MESH && DISABLED(LIMITED_JERK_EDITING)
       if (seenZ && planner.max_jerk.z <= 0.1f)
@@ -319,12 +319,12 @@ void GcodeSuite::M205_report(const bool forReplay/*=true*/) {
         SP_X_STR, LINEAR_UNIT(planner.max_jerk.x),
         SP_Y_STR, LINEAR_UNIT(planner.max_jerk.y),
         SP_Z_STR, LINEAR_UNIT(planner.max_jerk.z),
-        SP_I_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS4, LINEAR_UNIT)(planner.max_jerk.i),
-        SP_J_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS5, LINEAR_UNIT)(planner.max_jerk.j),
-        SP_K_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS6, LINEAR_UNIT)(planner.max_jerk.k),
-        SP_U_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS7, LINEAR_UNIT)(planner.max_jerk.u),
-        SP_V_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS8, LINEAR_UNIT)(planner.max_jerk.v),
-        SP_W_STR, IF_DISABLED(HAS_ROTATIONAL_AXIS9, LINEAR_UNIT)(planner.max_jerk.w),
+        SP_I_STR, IF_DISABLED(AXIS4_ROTATES, LINEAR_UNIT)(planner.max_jerk.i),
+        SP_J_STR, IF_DISABLED(AXIS5_ROTATES, LINEAR_UNIT)(planner.max_jerk.j),
+        SP_K_STR, IF_DISABLED(AXIS6_ROTATES, LINEAR_UNIT)(planner.max_jerk.k),
+        SP_U_STR, IF_DISABLED(AXIS7_ROTATES, LINEAR_UNIT)(planner.max_jerk.u),
+        SP_V_STR, IF_DISABLED(AXIS8_ROTATES, LINEAR_UNIT)(planner.max_jerk.v),
+        SP_W_STR, IF_DISABLED(AXIS9_ROTATES, LINEAR_UNIT)(planner.max_jerk.w),
       )
       #if HAS_CLASSIC_E_JERK
         , SP_E_STR, LINEAR_UNIT(planner.max_jerk.e)

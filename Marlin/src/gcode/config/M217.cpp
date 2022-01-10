@@ -98,22 +98,22 @@ void GcodeSuite::M217() {
       if (parser.seenval('Y')) { const int16_t v = parser.value_linear_units(); toolchange_settings.change_point.y = constrain(v, Y_MIN_POS, Y_MAX_POS); }
     #endif
     #if HAS_I_AXIS
-      if (parser.seenval('I')) { const int16_t v = parser.TERN(HAS_ROTATIONAL_AXIS4, value_int, value_linear_units)(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }
+      if (parser.seenval('I')) { const int16_t v = parser.TERN(AXIS4_ROTATES, value_int, value_linear_units)(); toolchange_settings.change_point.i = constrain(v, I_MIN_POS, I_MAX_POS); }
     #endif
     #if HAS_J_AXIS
-      if (parser.seenval('J')) { const int16_t v = parser.TERN(HAS_ROTATIONAL_AXIS5, value_int, value_linear_units)(); toolchange_settings.change_point.j = constrain(v, J_MIN_POS, J_MAX_POS); }
+      if (parser.seenval('J')) { const int16_t v = parser.TERN(AXIS5_ROTATES, value_int, value_linear_units)(); toolchange_settings.change_point.j = constrain(v, J_MIN_POS, J_MAX_POS); }
     #endif
     #if HAS_K_AXIS
-      if (parser.seenval('K')) { const int16_t v = parser.TERN(HAS_ROTATIONAL_AXIS6, value_int, value_linear_units)(); toolchange_settings.change_point.k = constrain(v, K_MIN_POS, K_MAX_POS); }
+      if (parser.seenval('K')) { const int16_t v = parser.TERN(AXIS6_ROTATES, value_int, value_linear_units)(); toolchange_settings.change_point.k = constrain(v, K_MIN_POS, K_MAX_POS); }
     #endif
     #if HAS_U_AXIS
-      if (parser.seenval('C')) { const int16_t v = parser.TERN(HAS_ROTATIONAL_AXIS7, value_int, value_linear_units)(); toolchange_settings.change_point.u = constrain(v, U_MIN_POS, U_MAX_POS); }
+      if (parser.seenval('C')) { const int16_t v = parser.TERN(AXIS7_ROTATES, value_int, value_linear_units)(); toolchange_settings.change_point.u = constrain(v, U_MIN_POS, U_MAX_POS); }
     #endif
     #if HAS_V_AXIS
-      if (parser.seenval('H')) { const int16_t v = parser.TERN(HAS_ROTATIONAL_AXIS8, value_int, value_linear_units)(); toolchange_settings.change_point.v = constrain(v, V_MIN_POS, V_MAX_POS); }
+      if (parser.seenval('H')) { const int16_t v = parser.TERN(AXIS8_ROTATES, value_int, value_linear_units)(); toolchange_settings.change_point.v = constrain(v, V_MIN_POS, V_MAX_POS); }
     #endif
     #if HAS_W_AXIS
-      if (parser.seenval('O')) { const int16_t v = parser.TERN(HAS_ROTATIONAL_AXIS9, value_int, value_linear_units)(); toolchange_settings.change_point.w = constrain(v, W_MIN_POS, W_MAX_POS); }
+      if (parser.seenval('O')) { const int16_t v = parser.TERN(AXIS9_ROTATES, value_int, value_linear_units)(); toolchange_settings.change_point.w = constrain(v, W_MIN_POS, W_MAX_POS); }
     #endif
   #endif
 
@@ -183,22 +183,22 @@ void GcodeSuite::M217_report(const bool forReplay/*=true*/) {
       SERIAL_ECHOPGM_P(SP_X_STR, LINEAR_UNIT(toolchange_settings.change_point.x));
       SERIAL_ECHOPGM_P(SP_Y_STR, LINEAR_UNIT(toolchange_settings.change_point.y));
       #if HAS_I_AXIS
-        SERIAL_ECHOPGM_P(" I", IF_DISABLED(HAS_ROTATIONAL_AXIS4, LINEAR_UNIT)(toolchange_settings.change_point.i));
+        SERIAL_ECHOPGM_P(" I", IF_DISABLED(AXIS4_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.i));
       #endif
       #if HAS_J_AXIS
-        SERIAL_ECHOPGM_P(" J", IF_DISABLED(HAS_ROTATIONAL_AXIS5, LINEAR_UNIT)(toolchange_settings.change_point.j));
+        SERIAL_ECHOPGM_P(" J", IF_DISABLED(AXIS5_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.j));
       #endif
       #if HAS_K_AXIS
-        SERIAL_ECHOPGM_P(" K", IF_DISABLED(HAS_ROTATIONAL_AXIS6, LINEAR_UNIT)(toolchange_settings.change_point.k));
+        SERIAL_ECHOPGM_P(" K", IF_DISABLED(AXIS6_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.k));
       #endif
       #if HAS_U_AXIS
-        SERIAL_ECHOPGM_P(" C", IF_DISABLED(HAS_ROTATIONAL_AXIS7, LINEAR_UNIT)(toolchange_settings.change_point.u));
+        SERIAL_ECHOPGM_P(" C", IF_DISABLED(AXIS7_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.u));
       #endif
       #if HAS_V_AXIS
-        SERIAL_ECHOPGM_P(" H", IF_DISABLED(HAS_ROTATIONAL_AXIS8, LINEAR_UNIT)(toolchange_settings.change_point.v));
+        SERIAL_ECHOPGM_P(" H", IF_DISABLED(AXIS8_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.v));
       #endif
       #if HAS_W_AXIS
-        SERIAL_ECHOPGM_P(" O", IF_DISABLED(HAS_ROTATIONAL_AXIS9, LINEAR_UNIT)(toolchange_settings.change_point.w));
+        SERIAL_ECHOPGM_P(" O", IF_DISABLED(AXIS9_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.w));
       #endif
     #endif
 

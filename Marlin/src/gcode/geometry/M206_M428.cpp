@@ -48,22 +48,22 @@ void GcodeSuite::M206() {
     if (parser.seen('Z')) set_home_offset(Y_AXIS, parser.value_linear_units());
   #endif
   #if HAS_I_AXIS
-    if (parser.seen(AXIS4_NAME)) set_home_offset(I_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS4, value_float, value_linear_units)());
+    if (parser.seen(AXIS4_NAME)) set_home_offset(I_AXIS, parser.TERN(AXIS4_ROTATES, value_float, value_linear_units)());
   #endif
   #if HAS_J_AXIS
-    if (parser.seen(AXIS5_NAME)) set_home_offset(J_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS5, value_float, value_linear_units)());
+    if (parser.seen(AXIS5_NAME)) set_home_offset(J_AXIS, parser.TERN(AXIS5_ROTATES, value_float, value_linear_units)());
   #endif
   #if HAS_K_AXIS
-    if (parser.seen(AXIS6_NAME)) set_home_offset(K_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS6, value_float, value_linear_units)());
+    if (parser.seen(AXIS6_NAME)) set_home_offset(K_AXIS, parser.TERN(AXIS6_ROTATES, value_float, value_linear_units)());
   #endif
   #if HAS_U_AXIS
-    if (parser.seen(AXIS7_NAME)) set_home_offset(U_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS7, value_float, value_linear_units)());
+    if (parser.seen(AXIS7_NAME)) set_home_offset(U_AXIS, parser.TERN(AXIS7_ROTATES, value_float, value_linear_units)());
   #endif
   #if HAS_V_AXIS
-    if (parser.seen(AXIS8_NAME)) set_home_offset(V_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS8, value_float, value_linear_units)());
+    if (parser.seen(AXIS8_NAME)) set_home_offset(V_AXIS, parser.TERN(AXIS8_ROTATES, value_float, value_linear_units)());
   #endif
   #if HAS_W_AXIS
-    if (parser.seen(AXIS9_NAME)) set_home_offset(W_AXIS, parser.TERN(HAS_ROTATIONAL_AXIS9, value_float, value_linear_units)());
+    if (parser.seen(AXIS9_NAME)) set_home_offset(W_AXIS, parser.TERN(AXIS9_ROTATES, value_float, value_linear_units)());
   #endif
 
   #if ENABLED(MORGAN_SCARA)

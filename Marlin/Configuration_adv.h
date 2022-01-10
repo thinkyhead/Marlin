@@ -2022,9 +2022,9 @@
 // @section leveling
 
 /**
- * Safe bed leveling start coordinates. If enabled, the respective axis is moved to the specified position at the beginning of the bed leveling procedure.
- * Required e.g. with HAS_I_AXIS, if Z probe is not perpendicular to the bed after homing.
- * Values must be chosen so that the bed is oriented horizontally and so that the Z-probe is oriented vertically.
+ * Use Safe Bed Leveling coordinates to move axes to a useful position before bed probing.
+ * For example, after homing a rotational axis the Z probe might not be perpendicular to the bed.
+ * Choose values the orient the bed horizontally and the Z-probe vertically.
  */
 //#define SAFE_BED_LEVELING_START_X 0.0
 //#define SAFE_BED_LEVELING_START_Y 0.0

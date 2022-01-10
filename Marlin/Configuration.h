@@ -166,44 +166,45 @@
 //#define NUM_AXES 3
 
 /**
- * Settings for additional axes:
- * Set HAS_ROTATIONAL_AXIS[4/5/6...] to "true" for rotational axes and to "false" for secondary linear axes.
- * Angular distances along rotational axes are in units of degrees.
+ * Additional Axis Settings
  *
- * AXIS[4/5/6...]_NAME defines the axis code that is used in G-code commands to
- * reference a specific axis. Conventional settings are:
- * 'A' for rotational axis parallel to X
- * 'B' for rotational axis parallel to Y
- * 'C' for rotational axis parallel to Z
- * 'U' for secondary linear axis parallel to X
- * 'V' for secondary linear axis parallel to Y
- * 'W' for secondary linear axis parallel to Z
- * Regardless of the settings, firmware-internal axis IDs are
- * I (AXIS4), J (AXIS5), K (AXIS6), U (AXIS7), V (AXIS8), W (AXIS9).
+ * Define AXISn_ROTATES for all axes that rotate or pivot.
+ * Rotational axis coordinates are expressed in degrees.
+ *
+ * AXISn_NAME defines the letter used to refer to the axis in (most) G-code commands.
+ * By convention the names and roles are typically:
+ *   'A' : Rotational axis parallel to X
+ *   'B' : Rotational axis parallel to Y
+ *   'C' : Rotational axis parallel to Z
+ *   'U' : Secondary linear axis parallel to X
+ *   'V' : Secondary linear axis parallel to Y
+ *   'W' : Secondary linear axis parallel to Z
+ *
+ * Regardless of these settings the axes are internally named I, J, K, U, V, W.
  */
 #if NUM_AXES >= 4
-  #define HAS_ROTATIONAL_AXIS4 true
   #define AXIS4_NAME 'A' // :['A', 'B', 'C', 'U', 'V', 'W']
+  #define AXIS4_ROTATES
 #endif
 #if NUM_AXES >= 5
-  #define HAS_ROTATIONAL_AXIS5 true // "true" requires HAS_ROTATIONAL_AXIS4 true
   #define AXIS5_NAME 'B' // :['B', 'C', 'U', 'V', 'W']
+  #define AXIS5_ROTATES
 #endif
 #if NUM_AXES >= 6
-  #define HAS_ROTATIONAL_AXIS6 true // "true" requires that all axes above are also rotational
   #define AXIS6_NAME 'C' // :['C', 'U', 'V', 'W']
+  #define AXIS6_ROTATES
 #endif
 #if NUM_AXES >= 7
-  #define HAS_ROTATIONAL_AXIS7 false // "true" requires that all axes above are also rotational
   #define AXIS7_NAME 'U' // :['U', 'V', 'W']
+  //#define AXIS7_ROTATES
 #endif
 #if NUM_AXES >= 8
-  #define HAS_ROTATIONAL_AXIS8 false // "true" requires that all axes above are also rotational
   #define AXIS8_NAME 'V' // :['V', 'W']
+  //#define AXIS8_ROTATES
 #endif
 #if NUM_AXES >= 9
-  #define HAS_ROTATIONAL_AXIS9 false // "true" requires that all axes above are also rotational
   #define AXIS9_NAME 'W' // :['W']
+  //#define AXIS9_ROTATES
 #endif
 
 // @section extruder
