@@ -1448,7 +1448,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if HAS_J_AXIS
   #if AXIS5_NAME == AXIS4_NAME
     #error "AXIS5_NAME must be unique."
-  #elif AXIS5_ROTATES && !AXIS4_ROTATES
+  #elif defined(AXIS5_ROTATES) && !defined(AXIS4_ROTATES)
     #error "AXIS4_ROTATES must be enabled with AXIS5_ROTATES."
   #elif !defined(J_MIN_POS) || !defined(J_MAX_POS)
     #error "J_MIN_POS and J_MAX_POS are required with NUM_AXES >= 5."
@@ -1461,7 +1461,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if HAS_K_AXIS
   #if AXIS6_NAME == AXIS5_NAME || AXIS6_NAME == AXIS4_NAME
     #error "AXIS6_NAME must be unique."
-  #elif AXIS6_ROTATES && (!AXIS5_ROTATES || !AXIS4_ROTATES)
+  #elif defined(AXIS6_ROTATES) && (!defined(AXIS5_ROTATES) || !defined(AXIS4_ROTATES))
     #error "AXIS4_ROTATES and AXIS5_ROTATES must be enabled with AXIS6_ROTATES."
   #elif !defined(K_MIN_POS) || !defined(K_MAX_POS)
     #error "K_MIN_POS and K_MAX_POS are required with NUM_AXES >= 6."
@@ -1474,7 +1474,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if HAS_U_AXIS
   #if AXIS7_NAME == AXIS6_NAME || AXIS7_NAME == AXIS5_NAME || AXIS7_NAME == AXIS4_NAME
     #error "AXIS7_NAME must be unique."
-  #elif AXIS7_ROTATES && (!AXIS6_ROTATES || !AXIS5_ROTATES || !AXIS4_ROTATES)
+  #elif defined(AXIS7_ROTATES) && (!defined(AXIS6_ROTATES) || !defined(AXIS5_ROTATES) || !defined(AXIS4_ROTATES))
     #error "AXIS4_ROTATES through AXIS6_ROTATES must all be enabled with AXIS7_ROTATES."
   #elif !defined(U_MIN_POS) || !defined(U_MAX_POS)
     #error "U_MIN_POS and U_MAX_POS are required with NUM_AXES >= 7."
@@ -1487,7 +1487,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if HAS_V_AXIS
   #if AXIS8_NAME == AXIS7_NAME || AXIS8_NAME == AXIS6_NAME || AXIS8_NAME == AXIS5_NAME || AXIS8_NAME == AXIS4_NAME
     #error "AXIS8_NAME must be unique."
-  #elif AXIS8_ROTATES && (!AXIS7_ROTATES || !AXIS6_ROTATES || !AXIS5_ROTATES || !AXIS4_ROTATES)
+  #elif defined(AXIS8_ROTATES) && (!defined(AXIS7_ROTATES) || !defined(AXIS6_ROTATES) || !defined(AXIS5_ROTATES) || !defined(AXIS4_ROTATES))
     #error "AXIS4_ROTATES through AXIS7_ROTATES must all be enabled with AXIS8_ROTATES."
   #elif !defined(V_MIN_POS) || !defined(V_MAX_POS)
     #error "V_MIN_POS and V_MAX_POS are required with NUM_AXES >= 8."
@@ -1500,7 +1500,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #if HAS_W_AXIS
   #if AXIS9_NAME == AXIS8_NAME || AXIS9_NAME == AXIS7_NAME || AXIS9_NAME == AXIS6_NAME || AXIS9_NAME == AXIS5_NAME || AXIS9_NAME == AXIS4_NAME
     #error "AXIS9_NAME must be unique."
-  #elif AXIS9_ROTATES && (!AXIS8_ROTATES || !AXIS7_ROTATES || !AXIS6_ROTATES || !AXIS5_ROTATES || !AXIS4_ROTATES)
+  #elif defined(AXIS9_ROTATES) && (!defined(AXIS8_ROTATES) || !defined(AXIS7_ROTATES) || !defined(AXIS6_ROTATES) || !defined(AXIS5_ROTATES) || !defined(AXIS4_ROTATES))
     #error "AXIS4_ROTATES through AXIS8_ROTATES must all be enabled with AXIS9_ROTATES."
   #elif !defined(W_MIN_POS) || !defined(W_MAX_POS)
     #error "W_MIN_POS and W_MAX_POS are required with NUM_AXES >= 9."

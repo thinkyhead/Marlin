@@ -310,7 +310,23 @@ public:
 
     static float axis_unit_factor(const AxisEnum axis) {
       #if HAS_ROTATIONAL_AXES
-        if (ROTATIONAL_AXIS_GANG(axis == I_AXIS, || axis == J_AXIS, || axis == K_AXIS, || axis == U_AXIS, || axis == V_AXIS, || axis == W_AXIS))
+        if (axis == I_AXIS
+          #if ENABLED(AXIS5_ROTATES)
+            || axis == J_AXIS
+          #endif
+          #if ENABLED(AXIS6_ROTATES)
+            || axis == K_AXIS
+          #endif
+          #if ENABLED(AXIS7_ROTATES)
+            || axis == U_AXIS
+          #endif
+          #if ENABLED(AXIS8_ROTATES)
+            || axis == V_AXIS
+          #endif
+          #if ENABLED(AXIS9_ROTATES)
+            || axis == W_AXIS
+          #endif
+        )
           return 1.0f;
       #endif
       #if HAS_EXTRUDERS
