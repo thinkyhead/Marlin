@@ -66,20 +66,23 @@ void GcodeSuite::M125() {
 
   xyz_pos_t park_point = NOZZLE_PARK_POINT;
 
-  // Move XY axes to filament change position or given position
-  if (parser.seenval('X')) park_point.x = RAW_X_POSITION(parser.linearval('X'));
-  if (parser.seenval('Y')) park_point.y = RAW_X_POSITION(parser.linearval('Y'));
-  SECONDARY_AXIS_CODE(
+  // Move to filament change position or given position
+  NUM_AXIS_CODE(
+    if (parser.seenval('X')) park_point.x = RAW_X_POSITION(parser.linearval('X')),
+    if (parser.seenval('Y')) park_point.y = RAW_Y_POSITION(parser.linearval('Y')),
+    NOOP,
     if (parser.seenval(AXIS4_NAME)) park_point.i = RAW_X_POSITION(parser.linearval(AXIS4_NAME)),
     if (parser.seenval(AXIS5_NAME)) park_point.j = RAW_X_POSITION(parser.linearval(AXIS5_NAME)),
     if (parser.seenval(AXIS6_NAME)) park_point.k = RAW_X_POSITION(parser.linearval(AXIS6_NAME)),
     if (parser.seenval(AXIS7_NAME)) park_point.u = RAW_X_POSITION(parser.linearval(AXIS7_NAME)),
     if (parser.seenval(AXIS8_NAME)) park_point.v = RAW_X_POSITION(parser.linearval(AXIS8_NAME)),
-    if (parser.seenval(AXIS9_NAME)) park_point.w = RAW_X_POSITION(parser.linearval(AXIS9_NAME)),
+    if (parser.seenval(AXIS9_NAME)) park_point.w = RAW_X_POSITION(parser.linearval(AXIS9_NAME))
   );
 
   // Lift Z axis
-  if (parser.seenval('Z')) park_point.z = parser.linearval('Z');
+  #if HAS_Z_AXIS
+    if (parser.seenval('Z')) park_point.z = parser.linearval('Z');
+  #endif
 
   #if HAS_HOTEND_OFFSET && NONE(DUAL_X_CARRIAGE, DELTA)
     park_point += hotend_offset[active_extruder];

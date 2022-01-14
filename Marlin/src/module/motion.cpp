@@ -516,8 +516,8 @@ void do_blocking_move_to(NUM_AXIS_ARGS(const float), const_feedRate_t fr_mm_s/*=
 
     // when in the danger zone
     if (current_position.z > delta_clip_start_height) {
-      if (z > delta_clip_start_height) {                     // staying in the danger zone
-        destination.set(x, y, z);                          // move directly (uninterpolated)
+      if (z > delta_clip_start_height) {                      // staying in the danger zone
+        destination.set(x, y, z);                             // move directly (uninterpolated)
         prepare_internal_fast_move_to_destination();          // set current_position from destination
         if (DEBUGGING(LEVELING)) DEBUG_POS("danger zone move", current_position);
         return;
@@ -527,7 +527,7 @@ void do_blocking_move_to(NUM_AXIS_ARGS(const float), const_feedRate_t fr_mm_s/*=
       if (DEBUGGING(LEVELING)) DEBUG_POS("zone border move", current_position);
     }
 
-    if (z > current_position.z) {                            // raising?
+    if (z > current_position.z) {                             // raising?
       destination.z = z;
       prepare_internal_fast_move_to_destination(z_feedrate);  // set current_position from destination
       if (DEBUGGING(LEVELING)) DEBUG_POS("z raise move", current_position);
@@ -537,7 +537,7 @@ void do_blocking_move_to(NUM_AXIS_ARGS(const float), const_feedRate_t fr_mm_s/*=
     prepare_internal_move_to_destination();                   // set current_position from destination
     if (DEBUGGING(LEVELING)) DEBUG_POS("xy move", current_position);
 
-    if (z < current_position.z) {                            // lowering?
+    if (z < current_position.z) {                             // lowering?
       destination.z = z;
       prepare_internal_fast_move_to_destination(z_feedrate);  // set current_position from destination
       if (DEBUGGING(LEVELING)) DEBUG_POS("z lower move", current_position);
@@ -546,64 +546,43 @@ void do_blocking_move_to(NUM_AXIS_ARGS(const float), const_feedRate_t fr_mm_s/*=
   #elif IS_SCARA
 
     // If Z needs to raise, do it before moving XY
-    if (destination.z < z) {
-      destination.z = z;
-      prepare_internal_fast_move_to_destination(z_feedrate);
-    }
+    if (destination.z < z) { destination.z = z; prepare_internal_fast_move_to_destination(z_feedrate); }
 
-    destination.set(x, y);
-    prepare_internal_fast_move_to_destination(xy_feedrate);
+    destination.set(x, y); prepare_internal_fast_move_to_destination(xy_feedrate);
 
     // If Z needs to lower, do it after moving XY
-    if (destination.z > z) {
-      destination.z = z;
-      prepare_internal_fast_move_to_destination(z_feedrate);
-    }
+    if (destination.z > z) { destination.z = z; prepare_internal_fast_move_to_destination(z_feedrate); }
 
   #else
 
-    #if HAS_Z_AXIS
-      // If Z needs to raise, do it before moving XY
-      if (current_position.z < z) {
-        current_position.z = z;
-        line_to_current_position(z_feedrate);
-      }
+    #if HAS_Z_AXIS  // If Z needs to raise, do it before moving XY
+      if (current_position.z < z) { current_position.z = z; line_to_current_position(z_feedrate); }
     #endif
 
-    current_position.set(x, y);
-    line_to_current_position(xy_feedrate);
+    current_position.set(x, y); line_to_current_position(xy_feedrate);
 
     #if HAS_I_AXIS
-      current_position.i = i;
-      line_to_current_position(i_feedrate);
+      current_position.i = i; line_to_current_position(i_feedrate);
     #endif
     #if HAS_J_AXIS
-      current_position.j = j;
-      line_to_current_position(j_feedrate);
+      current_position.j = j; line_to_current_position(j_feedrate);
     #endif
     #if HAS_K_AXIS
-      current_position.k = k;
-      line_to_current_position(k_feedrate);
+      current_position.k = k; line_to_current_position(k_feedrate);
     #endif
     #if HAS_U_AXIS
-      current_position.u = u;
-      line_to_current_position(u_feedrate);
+      current_position.u = u; line_to_current_position(u_feedrate);
     #endif
     #if HAS_V_AXIS
-      current_position.v = v;
-      line_to_current_position(v_feedrate);
+      current_position.v = v; line_to_current_position(v_feedrate);
     #endif
     #if HAS_W_AXIS
-      current_position.w = w;
-      line_to_current_position(w_feedrate);
+      current_position.w = w; line_to_current_position(w_feedrate);
     #endif
 
     #if HAS_Z_AXIS
       // If Z needs to lower, do it after moving XY
-      if (current_position.z > z) {
-        current_position.z = z;
-        line_to_current_position(z_feedrate);
-      }
+      if (current_position.z > z) { current_position.z = z; line_to_current_position(z_feedrate); }
     #endif
 
   #endif

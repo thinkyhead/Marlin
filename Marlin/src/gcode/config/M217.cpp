@@ -179,6 +179,7 @@ void GcodeSuite::M217_report(const bool forReplay/*=true*/) {
     #endif
 
     #if ENABLED(TOOLCHANGE_PARK)
+    {
       SERIAL_ECHOPGM(" W", LINEAR_UNIT(toolchange_settings.enable_park));
       SERIAL_ECHOPGM_P(
             SP_X_STR, LINEAR_UNIT(toolchange_settings.change_point.x)
@@ -204,6 +205,7 @@ void GcodeSuite::M217_report(const bool forReplay/*=true*/) {
           , PSTR(" O"), IF_DISABLED(AXIS9_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.w)
         #endif
       );
+    }
     #endif
 
     #if ENABLED(TOOLCHANGE_FS_PRIME_FIRST_USED)
