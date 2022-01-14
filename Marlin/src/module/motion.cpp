@@ -1521,34 +1521,22 @@ void prepare_line_to_destination() {
             break;
         #endif
         #if I_SENSORLESS
-          case I_AXIS:
-            stealth_states.i = tmc_enable_stallguard(stepperI);
-            break;
+          case I_AXIS: stealth_states.i = tmc_enable_stallguard(stepperI); break;
         #endif
         #if J_SENSORLESS
-          case J_AXIS:
-            stealth_states.j = tmc_enable_stallguard(stepperJ);
-            break;
+          case J_AXIS: stealth_states.j = tmc_enable_stallguard(stepperJ); break;
         #endif
         #if K_SENSORLESS
-          case K_AXIS:
-            stealth_states.k = tmc_enable_stallguard(stepperK);
-            break;
+          case K_AXIS: stealth_states.k = tmc_enable_stallguard(stepperK); break;
         #endif
         #if U_SENSORLESS
-          case U_AXIS:
-            stealth_states.u = tmc_enable_stallguard(stepperU);
-            break;
+          case U_AXIS: stealth_states.u = tmc_enable_stallguard(stepperU); break;
         #endif
         #if V_SENSORLESS
-          case V_AXIS:
-            stealth_states.v = tmc_enable_stallguard(stepperV);
-            break;
+          case V_AXIS: stealth_states.v = tmc_enable_stallguard(stepperV); break;
         #endif
         #if W_SENSORLESS
-          case W_AXIS:
-            stealth_states.w = tmc_enable_stallguard(stepperW);
-            break;
+          case W_AXIS: stealth_states.w = tmc_enable_stallguard(stepperW); break;
         #endif
       }
 
@@ -1637,34 +1625,22 @@ void prepare_line_to_destination() {
             break;
         #endif
         #if I_SENSORLESS
-          case I_AXIS:
-            tmc_disable_stallguard(stepperI, enable_stealth.i);
-            break;
+          case I_AXIS: tmc_disable_stallguard(stepperI, enable_stealth.i); break;
         #endif
         #if J_SENSORLESS
-          case J_AXIS:
-            tmc_disable_stallguard(stepperJ, enable_stealth.j);
-            break;
+          case J_AXIS: tmc_disable_stallguard(stepperJ, enable_stealth.j); break;
         #endif
         #if K_SENSORLESS
-          case K_AXIS:
-            tmc_disable_stallguard(stepperK, enable_stealth.k);
-            break;
+          case K_AXIS: tmc_disable_stallguard(stepperK, enable_stealth.k); break;
         #endif
         #if U_SENSORLESS
-          case U_AXIS:
-            tmc_disable_stallguard(stepperU, enable_stealth.u);
-            break;
+          case U_AXIS: tmc_disable_stallguard(stepperU, enable_stealth.u); break;
         #endif
         #if V_SENSORLESS
-          case V_AXIS:
-            tmc_disable_stallguard(stepperV, enable_stealth.v);
-            break;
+          case V_AXIS: tmc_disable_stallguard(stepperV, enable_stealth.v); break;
         #endif
         #if W_SENSORLESS
-          case W_AXIS:
-            tmc_disable_stallguard(stepperW, enable_stealth.w);
-            break;
+          case W_AXIS: tmc_disable_stallguard(stepperW, enable_stealth.w); break;
         #endif
       }
 

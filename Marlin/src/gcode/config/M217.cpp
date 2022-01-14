@@ -180,26 +180,30 @@ void GcodeSuite::M217_report(const bool forReplay/*=true*/) {
 
     #if ENABLED(TOOLCHANGE_PARK)
       SERIAL_ECHOPGM(" W", LINEAR_UNIT(toolchange_settings.enable_park));
-      SERIAL_ECHOPGM_P(SP_X_STR, LINEAR_UNIT(toolchange_settings.change_point.x));
-      SERIAL_ECHOPGM_P(SP_Y_STR, LINEAR_UNIT(toolchange_settings.change_point.y));
-      #if HAS_I_AXIS
-        SERIAL_ECHOPGM_P(" I", IF_DISABLED(AXIS4_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.i));
-      #endif
-      #if HAS_J_AXIS
-        SERIAL_ECHOPGM_P(" J", IF_DISABLED(AXIS5_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.j));
-      #endif
-      #if HAS_K_AXIS
-        SERIAL_ECHOPGM_P(" K", IF_DISABLED(AXIS6_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.k));
-      #endif
-      #if HAS_U_AXIS
-        SERIAL_ECHOPGM_P(" C", IF_DISABLED(AXIS7_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.u));
-      #endif
-      #if HAS_V_AXIS
-        SERIAL_ECHOPGM_P(" H", IF_DISABLED(AXIS8_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.v));
-      #endif
-      #if HAS_W_AXIS
-        SERIAL_ECHOPGM_P(" O", IF_DISABLED(AXIS9_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.w));
-      #endif
+      SERIAL_ECHOPGM_P(
+            SP_X_STR, LINEAR_UNIT(toolchange_settings.change_point.x)
+        #if HAS_Y_AXIS
+          , SP_Y_STR, LINEAR_UNIT(toolchange_settings.change_point.y)
+        #endif
+        #if HAS_I_AXIS
+          , SP_I_STR, IF_DISABLED(AXIS4_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.i)
+        #endif
+        #if HAS_J_AXIS
+          , SP_J_STR, IF_DISABLED(AXIS5_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.j)
+        #endif
+        #if HAS_K_AXIS
+          , SP_K_STR, IF_DISABLED(AXIS6_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.k)
+        #endif
+        #if HAS_U_AXIS
+          , SP_C_STR, IF_DISABLED(AXIS7_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.u)
+        #endif
+        #if HAS_V_AXIS
+          , PSTR(" H"), IF_DISABLED(AXIS8_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.v)
+        #endif
+        #if HAS_W_AXIS
+          , PSTR(" O"), IF_DISABLED(AXIS9_ROTATES, LINEAR_UNIT)(toolchange_settings.change_point.w)
+        #endif
+      );
     #endif
 
     #if ENABLED(TOOLCHANGE_FS_PRIME_FIRST_USED)

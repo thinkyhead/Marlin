@@ -3484,168 +3484,133 @@ void Stepper::report_positions() {
 
   void Stepper::microstep_init() {
     #if HAS_X_MS_PINS
-      SET_OUTPUT(X_MS1_PIN);
-      SET_OUTPUT(X_MS2_PIN);
+      SET_OUTPUT(X_MS1_PIN); SET_OUTPUT(X_MS2_PIN);
       #if PIN_EXISTS(X_MS3)
         SET_OUTPUT(X_MS3_PIN);
       #endif
     #endif
     #if HAS_X2_MS_PINS
-      SET_OUTPUT(X2_MS1_PIN);
-      SET_OUTPUT(X2_MS2_PIN);
+      SET_OUTPUT(X2_MS1_PIN); SET_OUTPUT(X2_MS2_PIN);
       #if PIN_EXISTS(X2_MS3)
         SET_OUTPUT(X2_MS3_PIN);
       #endif
     #endif
     #if HAS_Y_MS_PINS
-      SET_OUTPUT(Y_MS1_PIN);
-      SET_OUTPUT(Y_MS2_PIN);
+      SET_OUTPUT(Y_MS1_PIN); SET_OUTPUT(Y_MS2_PIN);
       #if PIN_EXISTS(Y_MS3)
         SET_OUTPUT(Y_MS3_PIN);
       #endif
     #endif
     #if HAS_Y2_MS_PINS
-      SET_OUTPUT(Y2_MS1_PIN);
-      SET_OUTPUT(Y2_MS2_PIN);
+      SET_OUTPUT(Y2_MS1_PIN); SET_OUTPUT(Y2_MS2_PIN);
       #if PIN_EXISTS(Y2_MS3)
         SET_OUTPUT(Y2_MS3_PIN);
       #endif
     #endif
     #if HAS_Z_MS_PINS
-      SET_OUTPUT(Z_MS1_PIN);
-      SET_OUTPUT(Z_MS2_PIN);
+      SET_OUTPUT(Z_MS1_PIN); SET_OUTPUT(Z_MS2_PIN);
       #if PIN_EXISTS(Z_MS3)
         SET_OUTPUT(Z_MS3_PIN);
       #endif
     #endif
     #if HAS_Z2_MS_PINS
-      SET_OUTPUT(Z2_MS1_PIN);
-      SET_OUTPUT(Z2_MS2_PIN);
+      SET_OUTPUT(Z2_MS1_PIN); SET_OUTPUT(Z2_MS2_PIN);
       #if PIN_EXISTS(Z2_MS3)
         SET_OUTPUT(Z2_MS3_PIN);
       #endif
     #endif
     #if HAS_Z3_MS_PINS
-      SET_OUTPUT(Z3_MS1_PIN);
-      SET_OUTPUT(Z3_MS2_PIN);
+      SET_OUTPUT(Z3_MS1_PIN); SET_OUTPUT(Z3_MS2_PIN);
       #if PIN_EXISTS(Z3_MS3)
         SET_OUTPUT(Z3_MS3_PIN);
       #endif
     #endif
     #if HAS_Z4_MS_PINS
-      SET_OUTPUT(Z4_MS1_PIN);
-      SET_OUTPUT(Z4_MS2_PIN);
+      SET_OUTPUT(Z4_MS1_PIN); SET_OUTPUT(Z4_MS2_PIN);
       #if PIN_EXISTS(Z4_MS3)
         SET_OUTPUT(Z4_MS3_PIN);
       #endif
     #endif
-    #if HAS_I_AXIS
-      #if HAS_I_MS_PINS
-        SET_OUTPUT(I_MS1_PIN);
-        SET_OUTPUT(I_MS2_PIN);
-        #if PIN_EXISTS(I_MS3)
-          SET_OUTPUT(I_MS3_PIN);
-        #endif
+    #if HAS_I_MS_PINS
+      SET_OUTPUT(I_MS1_PIN); SET_OUTPUT(I_MS2_PIN);
+      #if PIN_EXISTS(I_MS3)
+        SET_OUTPUT(I_MS3_PIN);
       #endif
     #endif
-    #if HAS_J_AXIS
-      #if HAS_J_MS_PINS
-        SET_OUTPUT(J_MS1_PIN);
-        SET_OUTPUT(J_MS2_PIN);
-        #if PIN_EXISTS(J_MS3)
-          SET_OUTPUT(J_MS3_PIN);
-        #endif
+    #if HAS_J_MS_PINS
+      SET_OUTPUT(J_MS1_PIN); SET_OUTPUT(J_MS2_PIN);
+      #if PIN_EXISTS(J_MS3)
+        SET_OUTPUT(J_MS3_PIN);
       #endif
     #endif
-    #if HAS_K_AXIS
-      #if HAS_K_MS_PINS
-        SET_OUTPUT(K_MS1_PIN);
-        SET_OUTPUT(K_MS2_PIN);
-        #if PIN_EXISTS(K_MS3)
-          SET_OUTPUT(K_MS3_PIN);
-        #endif
+    #if HAS_K_MS_PINS
+      SET_OUTPUT(K_MS1_PIN); SET_OUTPUT(K_MS2_PIN);
+      #if PIN_EXISTS(K_MS3)
+        SET_OUTPUT(K_MS3_PIN);
       #endif
     #endif
-    #if HAS_U_AXIS
-      #if HAS_U_MS_PINS
-        SET_OUTPUT(U_MS1_PIN);
-        SET_OUTPUT(U_MS2_PIN);
-        #if PIN_EXISTS(U_MS3)
-          SET_OUTPUT(U_MS3_PIN);
-        #endif
+    #if HAS_U_MS_PINS
+      SET_OUTPUT(U_MS1_PIN); SET_OUTPUT(U_MS2_PIN);
+      #if PIN_EXISTS(U_MS3)
+        SET_OUTPUT(U_MS3_PIN);
       #endif
     #endif
-    #if HAS_V_AXIS
-      #if HAS_V_MS_PINS
-        SET_OUTPUT(V_MS1_PIN);
-        SET_OUTPUT(V_MS2_PIN);
-        #if PIN_EXISTS(V_MS3)
-          SET_OUTPUT(V_MS3_PIN);
-        #endif
+    #if HAS_V_MS_PINS
+      SET_OUTPUT(V_MS1_PIN); SET_OUTPUT(V_MS2_PIN);
+      #if PIN_EXISTS(V_MS3)
+        SET_OUTPUT(V_MS3_PIN);
       #endif
     #endif
-    #if HAS_W_AXIS
-      #if HAS_W_MS_PINS
-        SET_OUTPUT(W_MS1_PIN);
-        SET_OUTPUT(W_MS2_PIN);
-        #if PIN_EXISTS(W_MS3)
-          SET_OUTPUT(W_MS3_PIN);
-        #endif
+    #if HAS_W_MS_PINS
+      SET_OUTPUT(W_MS1_PIN); SET_OUTPUT(W_MS2_PIN);
+      #if PIN_EXISTS(W_MS3)
+        SET_OUTPUT(W_MS3_PIN);
       #endif
     #endif
-
     #if HAS_E0_MS_PINS
-      SET_OUTPUT(E0_MS1_PIN);
-      SET_OUTPUT(E0_MS2_PIN);
+      SET_OUTPUT(E0_MS1_PIN); SET_OUTPUT(E0_MS2_PIN);
       #if PIN_EXISTS(E0_MS3)
         SET_OUTPUT(E0_MS3_PIN);
       #endif
     #endif
     #if HAS_E1_MS_PINS
-      SET_OUTPUT(E1_MS1_PIN);
-      SET_OUTPUT(E1_MS2_PIN);
+      SET_OUTPUT(E1_MS1_PIN); SET_OUTPUT(E1_MS2_PIN);
       #if PIN_EXISTS(E1_MS3)
         SET_OUTPUT(E1_MS3_PIN);
       #endif
     #endif
     #if HAS_E2_MS_PINS
-      SET_OUTPUT(E2_MS1_PIN);
-      SET_OUTPUT(E2_MS2_PIN);
+      SET_OUTPUT(E2_MS1_PIN); SET_OUTPUT(E2_MS2_PIN);
       #if PIN_EXISTS(E2_MS3)
         SET_OUTPUT(E2_MS3_PIN);
       #endif
     #endif
     #if HAS_E3_MS_PINS
-      SET_OUTPUT(E3_MS1_PIN);
-      SET_OUTPUT(E3_MS2_PIN);
+      SET_OUTPUT(E3_MS1_PIN); SET_OUTPUT(E3_MS2_PIN);
       #if PIN_EXISTS(E3_MS3)
         SET_OUTPUT(E3_MS3_PIN);
       #endif
     #endif
     #if HAS_E4_MS_PINS
-      SET_OUTPUT(E4_MS1_PIN);
-      SET_OUTPUT(E4_MS2_PIN);
+      SET_OUTPUT(E4_MS1_PIN); SET_OUTPUT(E4_MS2_PIN);
       #if PIN_EXISTS(E4_MS3)
         SET_OUTPUT(E4_MS3_PIN);
       #endif
     #endif
     #if HAS_E5_MS_PINS
-      SET_OUTPUT(E5_MS1_PIN);
-      SET_OUTPUT(E5_MS2_PIN);
+      SET_OUTPUT(E5_MS1_PIN); SET_OUTPUT(E5_MS2_PIN);
       #if PIN_EXISTS(E5_MS3)
         SET_OUTPUT(E5_MS3_PIN);
       #endif
     #endif
     #if HAS_E6_MS_PINS
-      SET_OUTPUT(E6_MS1_PIN);
-      SET_OUTPUT(E6_MS2_PIN);
+      SET_OUTPUT(E6_MS1_PIN); SET_OUTPUT(E6_MS2_PIN);
       #if PIN_EXISTS(E6_MS3)
         SET_OUTPUT(E6_MS3_PIN);
       #endif
     #endif
     #if HAS_E7_MS_PINS
-      SET_OUTPUT(E7_MS1_PIN);
-      SET_OUTPUT(E7_MS2_PIN);
+      SET_OUTPUT(E7_MS1_PIN); SET_OUTPUT(E7_MS2_PIN);
       #if PIN_EXISTS(E7_MS3)
         SET_OUTPUT(E7_MS3_PIN);
       #endif
@@ -3718,22 +3683,22 @@ void Stepper::report_positions() {
       #if HAS_E7_MS_PINS
         case 10: WRITE(E7_MS1_PIN, ms1); break;
       #endif
-      #if HAS_I_MICROSTEPS
+      #if HAS_I_MS_PINS
         case 11: WRITE(I_MS1_PIN, ms1); break
       #endif
-      #if HAS_J_MICROSTEPS
+      #if HAS_J_MS_PINS
         case 12: WRITE(J_MS1_PIN, ms1); break
       #endif
-      #if HAS_K_MICROSTEPS
+      #if HAS_K_MS_PINS
         case 13: WRITE(K_MS1_PIN, ms1); break
       #endif
-      #if HAS_U_MICROSTEPS
+      #if HAS_U_MS_PINS
         case 14: WRITE(U_MS1_PIN, ms1); break
       #endif
-      #if HAS_V_MICROSTEPS
+      #if HAS_V_MS_PINS
         case 15: WRITE(V_MS1_PIN, ms1); break
       #endif
-      #if HAS_W_MICROSTEPS
+      #if HAS_W_MS_PINS
         case 16: WRITE(W_MS1_PIN, ms1); break
       #endif
     }

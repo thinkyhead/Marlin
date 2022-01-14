@@ -87,7 +87,7 @@ namespace DirectStepping {
   struct config_t {
     static constexpr char CONTROL_CHAR  = '!';
 
-    static constexpr int PAGE_COUNT    = num_pages;
+    static constexpr int PAGE_COUNT     = num_pages;
     static constexpr int AXIS_COUNT     = num_axes;
     static constexpr int BITS_SEGMENT   = bits_segment;
     static constexpr int DIRECTIONAL    = dir ? 1 : 0;
@@ -96,7 +96,7 @@ namespace DirectStepping {
     static constexpr int NUM_SEGMENTS   = _BV(BITS_SEGMENT);
     static constexpr int SEGMENT_STEPS  = _BV(BITS_SEGMENT - DIRECTIONAL) - 1;
     static constexpr int TOTAL_STEPS    = SEGMENT_STEPS * SEGMENTS;
-    static constexpr int PAGE_SIZE      = (PAGE_COUNT * BITS_SEGMENT * SEGMENTS) / 8;
+    static constexpr int PAGE_SIZE      = (AXIS_COUNT * BITS_SEGMENT * SEGMENTS) / 8;
 
     typedef typename TypeSelector<(PAGE_SIZE>256), uint16_t, uint8_t>::type write_byte_idx_t;
     typedef typename TypeSelector<(PAGE_COUNT>256), uint16_t, uint8_t>::type page_idx_t;

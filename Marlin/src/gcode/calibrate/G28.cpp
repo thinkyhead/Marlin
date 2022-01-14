@@ -317,7 +317,7 @@ void GcodeSuite::G28() {
     #endif
     #if HAS_CURRENT_HOME(J)
       const int16_t tmc_save_current_J = stepperJ.getMilliamps();
-      stepperJ.rms_current(I_CURRENT_HOME);
+      stepperJ.rms_current(J_CURRENT_HOME);
       if (DEBUGGING(LEVELING)) debug_current(PSTR(STR_J), tmc_save_current_J, J_CURRENT_HOME);
     #endif
     #if HAS_CURRENT_HOME(K)

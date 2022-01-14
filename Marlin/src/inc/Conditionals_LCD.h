@@ -733,7 +733,7 @@
 
 /**
  * Number of Secondary Axes (e.g. IJKUVW)
- * All axes exept for XYZE axes
+ * All axes except for XYZE axes
  */
 #if HAS_I_AXIS
   #define SECONDARY_AXES SUB3(NUM_AXES)

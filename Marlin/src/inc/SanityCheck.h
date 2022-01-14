@@ -1428,7 +1428,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #elif ENABLED(DIRECT_STEPPING) && NUM_AXES > XYZ
   #error "DIRECT_STEPPING currently requires NUM_AXES 3"
 #elif ENABLED(FOAMCUTTER_XYUV) && NUM_AXES < 5
-  #error "FOAMCUTTER_XYUV requires HAS_J_AXIS."
+  #error "FOAMCUTTER_XYUV requires NUM_AXES >= 5."
 #elif ENABLED(LINEAR_ADVANCE) && HAS_I_AXIS
   #error "LINEAR_ADVANCE currently requires NUM_AXES <= 3."
 #endif
@@ -1440,7 +1440,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
   #if !defined(I_MIN_POS) || !defined(I_MAX_POS)
     #error "I_MIN_POS and I_MAX_POS are required with NUM_AXES >= 4."
   #elif !defined(I_HOME_DIR)
-    #error "I_HOME_DIR is required with HAS_I_AXIS."
+    #error "I_HOME_DIR is required with NUM_AXES >= 4."
   #elif HAS_I_ENABLE && !defined(I_ENABLE_ON)
     #error "I_ENABLE_ON is required for your I driver with NUM_AXES >= 4."
   #endif
