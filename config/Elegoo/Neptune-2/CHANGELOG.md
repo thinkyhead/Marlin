@@ -9,8 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.9.3-N2-rc2] - 2021-01-16
 
 ### Added
+- Keep Z Stepper active to prevent nozzle dropping
+- Turn on fan animation (I know, just minor eye candy)
+- Turn on Classic Jerk vs. using EJerk (recommended for use on cartesian printers)
+- Enabled bed leveling to be probed twice for higher accuracy
+- Make homing required after stepper motors are enabled (prevents inaccurate readings and moving axis points beyond limits)
+- Changed logic for bed mesh to extrapolate calculations beyond bed probe grid.
+- Center bed after probing (allows touch screen access after probing)
 
 ### Changed
+- set `BAUDRATE` to `115200` due to some reliability issues reported by users 
+- Set `ESTEPS` to 2S and 2D Elegoo defaults
+- set extruder min temperature to `180` 
+
+### Removed
+- `POWER_LOSS_PIN` removed from custom section since power loss does not work
+- 
 ## [2.0.9.3-N2-rc1] - 2021-01-09
 
 ### Added
