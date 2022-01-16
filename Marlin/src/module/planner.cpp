@@ -2140,24 +2140,12 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
         if (NEAR_ZERO(distance_sqr)) {
           // Move does not involve any primary linear axes (xyz) but might involve secondary linear axes
           distance_sqr = (0.0
-            #if HAS_I_AXIS && !defined(AXIS4_ROTATES)
-              + sq(steps_dist_mm.i)
-            #endif
-            #if HAS_J_AXIS && !defined(AXIS5_ROTATES)
-              + sq(steps_dist_mm.j)
-            #endif
-            #if HAS_K_AXIS && !defined(AXIS6_ROTATES)
-              + sq(steps_dist_mm.k)
-            #endif
-            #if HAS_U_AXIS && !defined(AXIS7_ROTATES)
-              + sq(steps_dist_mm.u)
-            #endif
-            #if HAS_V_AXIS && !defined(AXIS8_ROTATES)
-              + sq(steps_dist_mm.v)
-            #endif
-            #if HAS_W_AXIS && !defined(AXIS9_ROTATES)
-              + sq(steps_dist_mm.w)
-            #endif
+            TERN_(HAS_I_AXIS, IF_DISABLED(AXIS4_ROTATES, + sq(steps_dist_mm.i)))
+            TERN_(HAS_J_AXIS, IF_DISABLED(AXIS5_ROTATES, + sq(steps_dist_mm.j)))
+            TERN_(HAS_K_AXIS, IF_DISABLED(AXIS6_ROTATES, + sq(steps_dist_mm.k)))
+            TERN_(HAS_U_AXIS, IF_DISABLED(AXIS7_ROTATES, + sq(steps_dist_mm.u)))
+            TERN_(HAS_V_AXIS, IF_DISABLED(AXIS8_ROTATES, + sq(steps_dist_mm.v)))
+            TERN_(HAS_W_AXIS, IF_DISABLED(AXIS9_ROTATES, + sq(steps_dist_mm.w)))
           );
         }
       #endif

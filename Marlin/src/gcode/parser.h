@@ -309,26 +309,14 @@ public:
     }
 
     static float axis_unit_factor(const AxisEnum axis) {
-      #if HAS_ROTATIONAL_AXES
-        if (axis == I_AXIS
-          #if ENABLED(AXIS5_ROTATES)
-            || axis == J_AXIS
-          #endif
-          #if ENABLED(AXIS6_ROTATES)
-            || axis == K_AXIS
-          #endif
-          #if ENABLED(AXIS7_ROTATES)
-            || axis == U_AXIS
-          #endif
-          #if ENABLED(AXIS8_ROTATES)
-            || axis == V_AXIS
-          #endif
-          #if ENABLED(AXIS9_ROTATES)
-            || axis == W_AXIS
-          #endif
-        )
-          return 1.0f;
-      #endif
+      if (false
+        || TERN0(AXIS4_ROTATES, axis == I_AXIS)
+        || TERN0(AXIS5_ROTATES, axis == J_AXIS)
+        || TERN0(AXIS6_ROTATES, axis == K_AXIS)
+        || TERN0(AXIS7_ROTATES, axis == U_AXIS)
+        || TERN0(AXIS8_ROTATES, axis == V_AXIS)
+        || TERN0(AXIS9_ROTATES, axis == W_AXIS)
+      ) return 1.0f;
       #if HAS_EXTRUDERS
         if (axis >= E_AXIS && volumetric_enabled) return volumetric_unit_factor;
       #endif
