@@ -2083,6 +2083,10 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
   TERN_(LCD_SHOW_E_TOTAL, e_move_accumulator += steps_dist_mm.e);
 
+  #if BOTH(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
+    bool cartesian_move = true;
+  #endif
+
   if (true NUM_AXIS_GANG(
       && block->steps.a < MIN_STEPS_PER_SEGMENT,
       && block->steps.b < MIN_STEPS_PER_SEGMENT,
@@ -2101,8 +2105,8 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     if (millimeters)
       block->millimeters = millimeters;
     else {
-      /*
-       *  Distance for interpretation of feedrate in accordance with LinuxCNC (the successor of NIST
+      /**
+       * Distance for interpretation of feedrate in accordance with LinuxCNC (the successor of NIST
        * RS274NGC interpreter - version 3)
        * Assume that X, Y, Z are the primary linear axes and U, V, W are secondary linear axes and A, B, C are
        * rotational axes. Then dX, dY, dZ are the displacements of the primary linear axes and dU, dV, dW are the displacements of linear axes and
@@ -2150,6 +2154,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
       #if HAS_ROTATIONAL_AXES
         if (NEAR_ZERO(distance_sqr)) {
           // Move involves only rotational axes. Calculate angular distance in accordance with LinuxCNC
+          TERN_(INCH_MODE_SUPPORT, cartesian_move = false);
           distance_sqr = ROTATIONAL_AXIS_GANG(sq(steps_dist_mm.i), + sq(steps_dist_mm.j), + sq(steps_dist_mm.k), + sq(steps_dist_mm.u), + sq(steps_dist_mm.v), + sq(steps_dist_mm.w));
         }
       #endif
@@ -2298,8 +2303,17 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   const float inverse_millimeters = 1.0f / block->millimeters;  // Inverse millimeters to remove multiple divides
 
   // Calculate inverse time for this move. No divide by zero due to previous checks.
-  // Example: At 120mm/s a 60mm move takes 0.5s. So this will give 2.0.
-  float inverse_secs = fr_mm_s * inverse_millimeters;
+  // Example: At 120mm/s a 60mm move involving XYZ axes takes 0.5s. So this will give 2.0.
+  // Example 2: At 120°/s a 60° move involving only rotational axes takes 0.5s. So this will give 2.0.
+  float inverse_secs;
+  #if BOTH(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
+    if (cartesian_move)
+      inverse_secs = fr_mm_s * inverse_millimeters;
+    else
+      inverse_secs = LINEAR_UNIT(fr_mm_s) * inverse_millimeters;
+  #else 
+    inverse_secs = fr_mm_s * inverse_millimeters;
+  #endif
 
   // Get the number of non busy movements in queue (non busy means that they can be altered)
   const uint8_t moves_queued = nonbusy_movesplanned();
