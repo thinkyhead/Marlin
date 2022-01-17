@@ -2307,11 +2307,8 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   // Example 2: At 120°/s a 60° move involving only rotational axes takes 0.5s. So this will give 2.0.
   float inverse_secs;
   #if BOTH(HAS_ROTATIONAL_AXES, INCH_MODE_SUPPORT)
-    if (cartesian_move)
-      inverse_secs = fr_mm_s * inverse_millimeters;
-    else
-      inverse_secs = LINEAR_UNIT(fr_mm_s) * inverse_millimeters;
-  #else 
+    inverse_secs = inverse_millimeters * (cartesian_move ? fr_mm_s : LINEAR_UNIT(fr_mm_s));
+  #else
     inverse_secs = fr_mm_s * inverse_millimeters;
   #endif
 
