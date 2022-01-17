@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - `POWER_LOSS_PIN` removed from custom section since power loss does not work
-- 
+
 ## [2.0.9.3-N2-rc1] - 2021-01-09
 
 ### Added
