@@ -55,7 +55,7 @@ The following items are not supported:
 NOTE: I recommend you use an sd card 8GB or less Formatted as FAT32 for installing. Using anything larger has been an issue with some users. If you do not have one (you can use the card that came with the printer), this is the one I use [(non-affiliate link)](https://amzn.to/3JIOzYL)
 
 1. If you have tuned your printer (especially e-steps), I highly recommend you connect and run an M503 and record your values. This process will erase any values changed from a stock install. 
-1. [Download the latest version here](https://github.com/just-trey/Marlin/releases/latest/download/Elegoo.zip).
+1. [Download the latest version here](https://github.com/just-trey/Marlin/releases/latest/download/Neptune-2.zip).
 2. Extract the zip file on your computer
 3. Copy the desired `elegoo.bin` configuration to your SD Card. No other files are needed to install. 
    
