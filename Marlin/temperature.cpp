@@ -247,7 +247,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
    * Alternately heat and cool the nozzle, observing its behavior to
    * determine the best PID values to achieve a stable temperature.
    */
-  void Temperature::PID_autotune(const float &target, const int8_t hotend, const int8_t ncycles, const bool set_result/*=false*/) {
+  void Temperature::pid_autotune(const float &target, const int8_t hotend, const int8_t ncycles, const bool set_result/*=false*/) {
     float current = 0.0;
 
     #if ENABLED(MAKERARM_SCARA)
@@ -317,6 +317,11 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
       return;
     }
 
+    if (target > GHV(BED_MAXTEMP, maxttemp[hotend]) - 15) {
+      SERIAL_ECHOLNPGM(MSG_PID_TEMP_TOO_HIGH);
+      return;
+    }
+
     SERIAL_ECHOLNPGM(MSG_PID_AUTOTUNE_START);
 
     disable_all_heaters(); // switch off all heaters.
@@ -331,7 +336,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
       const millis_t ms = millis();
 
       if (temp_meas_ready) { // temp sample ready
-        updateTemperaturesFromRawValues();
+        calculate_celsius_temperatures();
 
         // Get the current temperature and constrain it
         current = GHV(current_temperature_bed, current_temperature[hotend]);
@@ -340,7 +345,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
 
         #if HAS_AUTO_FAN
           if (ELAPSED(ms, next_auto_fan_check_ms)) {
-            checkExtruderAutoFans();
+            check_extruder_auto_fans();
             next_auto_fan_check_ms = ms + 2500UL;
           }
         #endif
@@ -487,7 +492,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
           PID_PARAM(Kp, hotend) = workKp; \
           PID_PARAM(Ki, hotend) = scalePID_i(workKi); \
           PID_PARAM(Kd, hotend) = scalePID_d(workKd); \
-          updatePID(); }while(0)
+          update_pid(); }while(0)
 
         // Use the result? (As with "M303 U1")
         if (set_result) {
@@ -528,7 +533,7 @@ int Temperature::getHeaterPower(const int heater) {
 
 #if HAS_AUTO_FAN
 
-  void Temperature::checkExtruderAutoFans() {
+  void Temperature::check_extruder_auto_fans() {
     static const pin_t fanPin[] PROGMEM = { E0_AUTO_FAN_PIN, E1_AUTO_FAN_PIN, E2_AUTO_FAN_PIN, E3_AUTO_FAN_PIN, E4_AUTO_FAN_PIN, CHAMBER_AUTO_FAN_PIN };
     static const uint8_t fanBit[] PROGMEM = {
                     0,
@@ -617,23 +622,18 @@ float Temperature::get_pid_output(const int8_t e) {
       pid_error[HOTEND_INDEX] = target_temperature[HOTEND_INDEX] - current_temperature[HOTEND_INDEX];
       dTerm[HOTEND_INDEX] = PID_K2 * PID_PARAM(Kd, HOTEND_INDEX) * (current_temperature[HOTEND_INDEX] - temp_dState[HOTEND_INDEX]) + float(PID_K1) * dTerm[HOTEND_INDEX];
       temp_dState[HOTEND_INDEX] = current_temperature[HOTEND_INDEX];
-      #if HEATER_IDLE_HANDLER
-        if (heater_idle_timeout_exceeded[HOTEND_INDEX]) {
-          pid_output = 0;
-          pid_reset[HOTEND_INDEX] = true;
-        }
-        else
-      #endif
-      if (pid_error[HOTEND_INDEX] > PID_FUNCTIONAL_RANGE) {
-        pid_output = BANG_MAX;
-        pid_reset[HOTEND_INDEX] = true;
-      }
-      else if (pid_error[HOTEND_INDEX] < -(PID_FUNCTIONAL_RANGE) || target_temperature[HOTEND_INDEX] == 0
+
+      if (target_temperature[HOTEND_INDEX] == 0
+        || pid_error[HOTEND_INDEX] < -(PID_FUNCTIONAL_RANGE)
         #if HEATER_IDLE_HANDLER
           || heater_idle_timeout_exceeded[HOTEND_INDEX]
         #endif
-        ) {
+      ) {
         pid_output = 0;
+        pid_reset[HOTEND_INDEX] = true;
+      }
+      else if (pid_error[HOTEND_INDEX] > PID_FUNCTIONAL_RANGE) {
+        pid_output = BANG_MAX;
         pid_reset[HOTEND_INDEX] = true;
       }
       else {
@@ -779,7 +779,7 @@ void Temperature::manage_heater() {
 
   if (!temp_meas_ready) return;
 
-  updateTemperaturesFromRawValues(); // also resets the watchdog
+  calculate_celsius_temperatures(); // also resets the watchdog
 
   #if ENABLED(HEATER_0_USES_MAX6675)
     if (current_temperature[0] > MIN(HEATER_0_MAXTEMP, MAX6675_TMAX - 1.0)) max_temp_error(0);
@@ -824,7 +824,7 @@ void Temperature::manage_heater() {
 
   #if HAS_AUTO_FAN
     if (ELAPSED(ms, next_auto_fan_check_ms)) { // only need to check fan state very infrequently
-      checkExtruderAutoFans();
+      check_extruder_auto_fans();
       next_auto_fan_check_ms = ms + 2500UL;
     }
   #endif
@@ -934,7 +934,7 @@ void Temperature::manage_heater() {
 
 // Derived from RepRap FiveD extruder::getTemperature()
 // For hot end temperature measurement.
-float Temperature::analog2temp(const int raw, const uint8_t e) {
+float Temperature::analog_to_celsius_hotend(const int raw, const uint8_t e) {
   #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
     if (e > HOTENDS)
   #else
@@ -1006,7 +1006,7 @@ float Temperature::analog2temp(const int raw, const uint8_t e) {
 #if HAS_HEATED_BED
   // Derived from RepRap FiveD extruder::getTemperature()
   // For bed temperature measurement.
-  float Temperature::analog2tempBed(const int raw) {
+  float Temperature::analog_to_celsius_bed(const int raw) {
     #if ENABLED(HEATER_BED_USES_THERMISTOR)
       SCAN_THERMISTOR_TABLE(BEDTEMPTABLE, BEDTEMPTABLE_LEN);
     #elif ENABLED(HEATER_BED_USES_AD595)
@@ -1022,7 +1022,7 @@ float Temperature::analog2temp(const int raw, const uint8_t e) {
 #if HAS_TEMP_CHAMBER
   // Derived from RepRap FiveD extruder::getTemperature()
   // For chamber temperature measurement.
-  float Temperature::analog2tempChamber(const int raw) {
+  float Temperature::analog_to_celsius_chamber(const int raw) {
     #if ENABLED(HEATER_CHAMBER_USES_THERMISTOR)
       SCAN_THERMISTOR_TABLE(CHAMBERTEMPTABLE, CHAMBERTEMPTABLE_LEN);
     #elif ENABLED(HEATER_CHAMBER_USES_AD595)
@@ -1041,8 +1041,7 @@ float Temperature::analog2temp(const int raw, const uint8_t e) {
  * and this function is called from normal context
  * as it would block the stepper routine.
  */
-void Temperature::updateTemperaturesFromRawValues() {
-
+void Temperature::calculate_celsius_temperatures() {
   #if ENABLED(USE_WATCHDOG)
     watchdog_reset();
   #endif
@@ -1054,18 +1053,18 @@ void Temperature::updateTemperaturesFromRawValues() {
   #if ENABLED(HEATER_0_USES_MAX6675)
     current_temperature_raw[0] = read_max6675();
   #endif
-  HOTEND_LOOP() current_temperature[e] = Temperature::analog2temp(current_temperature_raw[e], e);
+  HOTEND_LOOP() current_temperature[e] = analog_to_celsius_hotend(current_temperature_raw[e], e);
   #if HAS_HEATED_BED
-    current_temperature_bed = Temperature::analog2tempBed(current_temperature_bed_raw);
+    current_temperature_bed = analog_to_celsius_bed(current_temperature_bed_raw);
   #endif
   #if HAS_TEMP_CHAMBER
-    current_temperature_chamber = Temperature::analog2tempChamber(current_temperature_chamber_raw);
+    current_temperature_chamber = analog_to_celsius_chamber(current_temperature_chamber_raw);
   #endif
   #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
-    redundant_temperature = Temperature::analog2temp(redundant_temperature_raw, 1);
+    redundant_temperature = analog_to_celsius_hotend(redundant_temperature_raw, 1);
   #endif
   #if ENABLED(FILAMENT_WIDTH_SENSOR)
-    filament_width_meas = analog2widthFil();
+    filament_width_meas = analog_to_mm_fil_width();
   #endif
 
   temp_meas_ready = false;
@@ -1074,7 +1073,7 @@ void Temperature::updateTemperaturesFromRawValues() {
 #if ENABLED(FILAMENT_WIDTH_SENSOR)
 
   // Convert raw Filament Width to millimeters
-  float Temperature::analog2widthFil() {
+  float Temperature::analog_to_mm_fil_width() {
     return current_raw_filwidth * 5.0f * (1.0f / 16383.0);
   }
 
@@ -1278,7 +1277,7 @@ void Temperature::init() {
 
   #define TEMP_MIN_ROUTINE(NR) \
     minttemp[NR] = HEATER_ ##NR## _MINTEMP; \
-    while (analog2temp(minttemp_raw[NR], NR) < HEATER_ ##NR## _MINTEMP) { \
+    while (analog_to_celsius_hotend(minttemp_raw[NR], NR) < HEATER_ ##NR## _MINTEMP) { \
       if (HEATER_ ##NR## _RAW_LO_TEMP < HEATER_ ##NR## _RAW_HI_TEMP) \
         minttemp_raw[NR] += OVERSAMPLENR; \
       else \
@@ -1286,7 +1285,7 @@ void Temperature::init() {
     }
   #define TEMP_MAX_ROUTINE(NR) \
     maxttemp[NR] = HEATER_ ##NR## _MAXTEMP; \
-    while (analog2temp(maxttemp_raw[NR], NR) > HEATER_ ##NR## _MAXTEMP) { \
+    while (analog_to_celsius_hotend(maxttemp_raw[NR], NR) > HEATER_ ##NR## _MAXTEMP) { \
       if (HEATER_ ##NR## _RAW_LO_TEMP < HEATER_ ##NR## _RAW_HI_TEMP) \
         maxttemp_raw[NR] -= OVERSAMPLENR; \
       else \
@@ -1334,7 +1333,7 @@ void Temperature::init() {
 
   #if HAS_HEATED_BED
     #ifdef BED_MINTEMP
-      while (analog2tempBed(bed_minttemp_raw) < BED_MINTEMP) {
+      while (analog_to_celsius_bed(bed_minttemp_raw) < BED_MINTEMP) {
         #if HEATER_BED_RAW_LO_TEMP < HEATER_BED_RAW_HI_TEMP
           bed_minttemp_raw += OVERSAMPLENR;
         #else
@@ -1343,7 +1342,7 @@ void Temperature::init() {
       }
     #endif // BED_MINTEMP
     #ifdef BED_MAXTEMP
-      while (analog2tempBed(bed_maxttemp_raw) > BED_MAXTEMP) {
+      while (analog_to_celsius_bed(bed_maxttemp_raw) > BED_MAXTEMP) {
         #if HEATER_BED_RAW_LO_TEMP < HEATER_BED_RAW_HI_TEMP
           bed_maxttemp_raw -= OVERSAMPLENR;
         #else
@@ -1777,6 +1776,10 @@ void Temperature::set_current_temp_raw() {
   }
 #endif // PINS_DEBUGGING
 
+#if ENABLED(FILAMENT_WIDTH_SENSOR)
+  uint32_t raw_filwidth_value; // = 0
+#endif
+
 void Temperature::readings_ready() {
   // Update the raw values if they've been read. Else we could be updating them during reading.
   if (!temp_meas_ready) set_current_temp_raw();
@@ -1820,14 +1823,12 @@ void Temperature::readings_ready() {
 
   for (uint8_t e = 0; e < COUNT(temp_dir); e++) {
     const int16_t tdir = temp_dir[e], rawtemp = current_temperature_raw[e] * tdir;
-    const bool heater_on = 0 <
+    const bool heater_on = (target_temperature[e] > 0)
       #if ENABLED(PIDTEMP)
-        soft_pwm_amount[e]
-      #else
-        target_temperature[e]
+        || (soft_pwm_amount[e] > 0)
       #endif
     ;
-    if (rawtemp > maxttemp_raw[e] * tdir && heater_on) max_temp_error(e);
+    if (rawtemp > maxttemp_raw[e] * tdir) max_temp_error(e);
     if (rawtemp < minttemp_raw[e] * tdir && !is_preheating(e) && heater_on) {
       #ifdef MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED
         if (++consecutive_low_temperature_error[e] >= MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED)
@@ -1846,20 +1847,18 @@ void Temperature::readings_ready() {
     #else
       #define GEBED >=
     #endif
-    const bool bed_on = 0 <
+    const bool bed_on = (target_temperature_bed > 0)
       #if ENABLED(PIDTEMPBED)
-        soft_pwm_amount_bed
-      #else
-        target_temperature_bed
+        || (soft_pwm_amount_bed > 0)
       #endif
     ;
-    if (current_temperature_bed_raw GEBED bed_maxttemp_raw && bed_on) max_temp_error(-1);
+    if (current_temperature_bed_raw GEBED bed_maxttemp_raw) max_temp_error(-1);
     if (bed_minttemp_raw GEBED current_temperature_bed_raw && bed_on) min_temp_error(-1);
   #endif
 }
 
 /**
- * Timer 0 is shared with millies so don't change the prescaler.
+ * Timer 0 is shared with millis so don't change the prescaler.
  *
  * This ISR uses the compare method so it runs at the base
  * frequency (16 MHz / 64 / 256 = 976.5625 Hz), but at the TCNT0 set
@@ -1919,10 +1918,6 @@ void Temperature::isr() {
   #endif // HOTENDS > 1
   #if HAS_HEATED_BED
     ISR_STATICS(BED);
-  #endif
-
-  #if ENABLED(FILAMENT_WIDTH_SENSOR)
-    static unsigned long raw_filwidth_value = 0;
   #endif
 
   #if DISABLED(SLOW_PWM_HEATERS)
@@ -2291,8 +2286,8 @@ void Temperature::isr() {
         if (!HAL_ADC_READY())
           next_sensor_state = adc_sensor_state; // redo this state
         else if (HAL_READ_ADC() > 102) { // Make sure ADC is reading > 0.5 volts, otherwise don't read.
-          raw_filwidth_value -= (raw_filwidth_value >> 7); // Subtract 1/128th of the raw_filwidth_value
-          raw_filwidth_value += ((unsigned long)HAL_READ_ADC() << 7); // Add new ADC reading, scaled by 128
+          raw_filwidth_value -= raw_filwidth_value >> 7; // Subtract 1/128th of the raw_filwidth_value
+          raw_filwidth_value += uint32_t(HAL_READ_ADC()) << 7; // Add new ADC reading, scaled by 128
         }
       break;
     #endif

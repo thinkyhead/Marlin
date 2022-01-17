@@ -162,6 +162,42 @@ extern const char axis_codes[XYZE];
 
 #endif // !MIXING_EXTRUDER
 
+#if ENABLED(HANGPRINTER)
+
+  #define enable_A() enable_X()
+  #define enable_B() enable_Y()
+  #define enable_C() enable_Z()
+  #define __D_ENABLE(p) E##p##_ENABLE_WRITE(E_ENABLE_ON)
+  #define _D_ENABLE(p) __D_ENABLE(p)
+  #define enable_D() _D_ENABLE(EXTRUDERS)
+
+  // Don't allow any axes to be disabled
+  #undef disable_X
+  #undef disable_Y
+  #undef disable_Z
+  #define disable_X() NOOP
+  #define disable_Y() NOOP
+  #define disable_Z() NOOP
+
+  #if EXTRUDERS >= 1
+    #undef disable_E1
+    #define disable_E1() NOOP
+    #if EXTRUDERS >= 2
+      #undef disable_E2
+      #define disable_E2() NOOP
+      #if EXTRUDERS >= 3
+        #undef disable_E3
+        #define disable_E3() NOOP
+        #if EXTRUDERS >= 4
+          #undef disable_E4
+          #define disable_E4() NOOP
+        #endif // EXTRUDERS >= 4
+      #endif // EXTRUDERS >= 3
+    #endif // EXTRUDERS >= 2
+  #endif // EXTRUDERS >= 1
+
+#endif // HANGPRINTER
+
 #if ENABLED(G38_PROBE_TARGET)
   extern int8_t G38_move;      // For the endstop handler, a G38 command is being run if 1 or -1
   extern bool G38_endstop_hit; // Flag from the endstop handler to indicate if the endstop changed
@@ -309,14 +345,19 @@ extern float soft_endstop_min[XYZ], soft_endstop_max[XYZ];
 
 void tool_change(const uint8_t tmp_extruder, const float fr_mm_s=0.0, bool no_move=false);
 
-void  home_all_axes();
+void home_all_axes();
 
 void report_current_position();
 
 void set_current_from_steppers_for_axis(const AxisEnum axis);
 
 #if IS_KINEMATIC
-  extern float delta[ABC];
+  #if ENABLED(HANGPRINTER)
+    extern float line_lengths[ABCD];
+  #else
+    extern float delta[ABC];
+  #endif
+  void inverse_kinematics(const float raw[XYZ]);
 #endif
 
 #if ENABLED(DELTA)
@@ -346,6 +387,51 @@ void set_current_from_steppers_for_axis(const AxisEnum axis);
     delta[A_AXIS] = DELTA_Z(V, A_AXIS); \
     delta[B_AXIS] = DELTA_Z(V, B_AXIS); \
     delta[C_AXIS] = DELTA_Z(V, C_AXIS); \
+  }while(0)
+
+#elif ENABLED(HANGPRINTER)
+
+  // Don't collect anchor positions in array because there are no A_x, D_x or D_y
+  extern float anchor_A_y,
+               anchor_A_z,
+               anchor_B_x,
+               anchor_B_y,
+               anchor_B_z,
+               anchor_C_x,
+               anchor_C_y,
+               anchor_C_z,
+               anchor_D_z,
+               delta_segments_per_second,
+               line_lengths_origin[ABCD];
+
+  void recalc_hangprinter_settings();
+
+  #define HANGPRINTER_IK(V) do {                             \
+    line_lengths[A_AXIS] = SQRT(sq(anchor_A_z - V[Z_AXIS])   \
+                              + sq(anchor_A_y - V[Y_AXIS])   \
+                              + sq(             V[X_AXIS])); \
+    line_lengths[B_AXIS] = SQRT(sq(anchor_B_z - V[Z_AXIS])   \
+                              + sq(anchor_B_y - V[Y_AXIS])   \
+                              + sq(anchor_B_x - V[X_AXIS])); \
+    line_lengths[C_AXIS] = SQRT(sq(anchor_C_z - V[Z_AXIS])   \
+                              + sq(anchor_C_y - V[Y_AXIS])   \
+                              + sq(anchor_C_x - V[X_AXIS])); \
+    line_lengths[D_AXIS] = SQRT(sq(             V[X_AXIS])   \
+                              + sq(             V[Y_AXIS])   \
+                              + sq(anchor_D_z - V[Z_AXIS])); \
+  }while(0)
+
+  // Inverse kinematics at origin
+  #define HANGPRINTER_IK_ORIGIN(LL) do { \
+    LL[A_AXIS] = SQRT(sq(anchor_A_z)     \
+                    + sq(anchor_A_y));   \
+    LL[B_AXIS] = SQRT(sq(anchor_B_z)     \
+                    + sq(anchor_B_y)     \
+                    + sq(anchor_B_x));   \
+    LL[C_AXIS] = SQRT(sq(anchor_C_z)     \
+                    + sq(anchor_C_y)     \
+                    + sq(anchor_C_x));   \
+    LL[D_AXIS] = anchor_D_z;             \
   }while(0)
 
 #elif IS_SCARA
@@ -529,12 +615,29 @@ void do_blocking_move_to_xy(const float &rx, const float &ry, const float &fr_mm
     );
 
     #if HAS_BED_PROBE
-
       FORCE_INLINE bool position_is_reachable_by_probe(const float &rx, const float &ry, const bool do_center=true) {
         const float target[XYZ] = { rx, ry, 0 };
         return position_is_reachable(target, true, do_center);
       }
+    #endif
 
+  #endif
+
+  // Return true if the given point is within the printable area
+  inline bool position_is_reachable(const float &rx, const float &ry, const float inset=0) {
+    #if ENABLED(DELTA)
+      return HYPOT2(rx, ry) <= sq(DELTA_PRINTABLE_RADIUS - inset);
+    #elif ENABLED(HANGPRINTER)
+      // TODO: This is over simplified. Hangprinter's build volume is _not_ cylindrical.
+      return HYPOT2(rx, ry) <= sq(HANGPRINTER_PRINTABLE_RADIUS - inset);
+    #elif IS_SCARA
+      const float R2 = HYPOT2(rx - SCARA_OFFSET_X, ry - SCARA_OFFSET_Y);
+      return (
+        R2 <= sq(L1 + L2) - inset
+        #if MIDDLE_DEAD_ZONE_R > 0
+          && R2 >= sq(float(MIDDLE_DEAD_ZONE_R))
+        #endif
+      );
     #endif
 
     FORCE_INLINE bool position_is_reachable(const float &rx, const float &ry

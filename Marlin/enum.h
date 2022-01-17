@@ -33,20 +33,23 @@
  *  - X_HEAD, Y_HEAD, and Z_HEAD should be used for Steppers on Core kinematics
  */
 enum AxisEnum : unsigned char {
-  A_AXIS    ,                 // DELTA tower 1, SCARA Theta
-  X_AXIS    = A_AXIS,         // X Cartesian
-  B_AXIS    ,                 // DELTA tower 2, SCARA Theta+Psi
-  Y_AXIS    = B_AXIS,         // Y Cartesian
-  C_AXIS    ,                 // DELTA tower 3
-  Z_AXIS    = C_AXIS,         // Z Cartesian/SCARA
+  X_AXIS    = 0,
+  A_AXIS    = 0,
+  Y_AXIS    = 1,
+  B_AXIS    = 1,
+  Z_AXIS    = 2,
+  C_AXIS    = 2,
   #if ENABLED(CLAWCAM_TOOL)
     T_AXIS  ,                 // Misc. extra axis
   #endif
-  E_AXIS    ,                 // Active extruder
-  S_AXIS    = E_AXIS,         // Spindle, also called "C"
-  X_HEAD    ,
-  Y_HEAD    ,
-  Z_HEAD    ,
+  E_CART    = 3,
+  #if ENABLED(HANGPRINTER) // Hangprinter order: A_AXIS, B_AXIS, C_AXIS, D_AXIS, E_AXIS
+    D_AXIS  = 3,
+    E_AXIS  = 4,
+  #else
+    E_AXIS  = 3,
+  #endif
+  X_HEAD, Y_HEAD, Z_HEAD,
   ALL_AXES  = 0xFE,
   NO_AXIS   = 0xFF
 };
@@ -58,11 +61,11 @@ enum AxisEnum : unsigned char {
 
 #define LOOP_NA(VAR) LOOP_L_N(VAR, NUM_AXIS)
 #define LOOP_XYZ(VAR) LOOP_S_LE_N(VAR, X_AXIS, Z_AXIS)
-#define LOOP_XYZE(VAR) LOOP_S_LE_N(VAR, X_AXIS, E_AXIS)
+#define LOOP_XYZE(VAR) LOOP_S_LE_N(VAR, X_AXIS, E_CART)
 #define LOOP_XYZE_N(VAR) LOOP_S_L_N(VAR, X_AXIS, XYZE_N)
-#define LOOP_ABC(VAR) LOOP_S_LE_N(VAR, A_AXIS, C_AXIS)
-#define LOOP_ABCE(VAR) LOOP_S_LE_N(VAR, A_AXIS, E_AXIS)
-#define LOOP_ABCE_N(VAR) LOOP_S_L_N(VAR, A_AXIS, XYZE_N)
+#define LOOP_MOV_AXIS(VAR) LOOP_S_L_N(VAR, A_AXIS, MOV_AXIS)
+#define LOOP_NUM_AXIS(VAR) LOOP_S_L_N(VAR, A_AXIS, NUM_AXIS)
+#define LOOP_NUM_AXIS_N(VAR) LOOP_S_L_N(VAR, A_AXIS, NUM_AXIS_N)
 
 typedef enum {
   LINEARUNIT_MM,
