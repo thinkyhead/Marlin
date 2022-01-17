@@ -723,7 +723,7 @@
 
 /**
  * Number of Primary Linear Axes (e.g. XYZ)
- * X, XY, or XYZ axes
+ * X, XY, or XYZ axes. Excluding duplicate axes (X2, Y2. Z2. Z3, Z4)
  */
 #if HAS_I_AXIS
   #define PRIMARY_LINEAR_AXES 3
@@ -743,7 +743,8 @@
 
 /**
  * Number of Rotational Axes (e.g. IJK)
- * All the rotational axes for which HAS_ROTATIONAL_AXIS* is true
+ * All the axes for which AXIS*_ROTATES is defined.
+ * For these axes, angles are specified in units of degrees
  */
 #if ENABLED(AXIS9_ROTATES)
   #define ROTATIONAL_AXES 6
@@ -762,8 +763,9 @@
 #endif
 
 /**
- * Number of Rotational Axes (e.g. IJK)
- * All the axes for which HAS_ROTATIONAL_AXIS* is true
+ * Number of Secondary Linear Axes (e.g. UVW)
+ * All the secondary axes for which AXIS*_ROTATES is not defined.
+ * Excluding primary axes and excluding duplicate axes (X2, Y2, Z2, Z3, Z4)
  */
 #define SECONDARY_LINEAR_AXES (NUM_AXES - PRIMARY_LINEAR_AXES - ROTATIONAL_AXES)
 
