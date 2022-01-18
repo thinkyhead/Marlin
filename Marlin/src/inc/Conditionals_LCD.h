@@ -722,7 +722,7 @@
 #endif
 
 /**
- * Number of Primary Linear Axes (e.g. XYZ)
+ * Number of Primary Linear Axes (e.g., XYZ)
  * X, XY, or XYZ axes. Excluding duplicate axes (X2, Y2. Z2. Z3, Z4)
  */
 #if HAS_I_AXIS
@@ -732,19 +732,15 @@
 #endif
 
 /**
- * Number of Secondary Axes (e.g. IJKUVW)
- * All axes except for XYZE axes
+ * Number of Secondary Axes (e.g., IJKUVW)
+ * All linear/rotational axes between XYZ and E.
  */
-#if HAS_I_AXIS
-  #define SECONDARY_AXES SUB3(NUM_AXES)
-#else
-  #define SECONDARY_AXES 0
-#endif
+#define SECONDARY_AXES SUB3(NUM_AXES)
 
 /**
- * Number of Rotational Axes (e.g. IJK)
- * All the axes for which AXIS*_ROTATES is defined.
- * For these axes, angles are specified in units of degrees
+ * Number of Rotational Axes (e.g., IJK)
+ * All axes for which AXIS*_ROTATES is defined.
+ * For these axes, positions are specified in angular degrees.
  */
 #if ENABLED(AXIS9_ROTATES)
   #define ROTATIONAL_AXES 6
@@ -763,15 +759,15 @@
 #endif
 
 /**
- * Number of Secondary Linear Axes (e.g. UVW)
- * All the secondary axes for which AXIS*_ROTATES is not defined.
+ * Number of Secondary Linear Axes (e.g., UVW)
+ * All secondary axes for which AXIS*_ROTATES is not defined.
  * Excluding primary axes and excluding duplicate axes (X2, Y2, Z2, Z3, Z4)
  */
 #define SECONDARY_LINEAR_AXES (NUM_AXES - PRIMARY_LINEAR_AXES - ROTATIONAL_AXES)
 
 /**
  * Number of Logical Axes (e.g., XYZIJKUVWE)
- * All the logical axes that can be commanded directly by G-code.
+ * All logical axes that can be commanded directly by G-code.
  * Delta maps stepper-specific values to ABC steppers.
  */
 #if HAS_EXTRUDERS
