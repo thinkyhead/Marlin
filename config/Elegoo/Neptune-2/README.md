@@ -99,11 +99,11 @@ NOTE: I recommend you use an sd card 8GB or less Formatted as FAT32 for installi
 
 NOTE: If you have a Neptune 2s or Neptune 2d and have not calibrated your ESTEPS, you can skip this section.
 
-1. From the main screen click on *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> PID AUTOTUNE E1*
-2. The nozzle will heat up and down for a few minutes. When completed, the screen will display a confirmation message on the bottom of the status screen.
-3. From the main screen click on *settings icon -> Configuration -> Advanced Settings -> NEXT ARROW (>) -> Tempeture -> NEXT ARROW (>) -> PID AUTOTUNE BED*
-4. The bed will heat up and down for a few minutes. When completed, the screen will display a confirmation message on the bottom of the status screen.
-5. From the main screen click on the *settings icon -> Configuration -> NEXT ARROW (>) -> Store settings*
+1. From the main screen click on *settings icon -> Configuration -> Advanced Settings -> Steps/mm -> E steps/mm
+2. Set the default value of 90 (Elegoo Neptune 2 defaults) OR the value you have tuned for your printer.
+3. Click the checkmark.
+4. Click the back icon 2 times.
+5. Click Configuration -> NEXT ARROW (>) -> Store settings
 
 ## TIPS
 
