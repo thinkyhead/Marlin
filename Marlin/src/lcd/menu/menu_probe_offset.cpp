@@ -44,6 +44,10 @@ void _goto_manual_move_z(const_float_t);
 // Global storage
 float z_offset_backup, calculated_z_offset, z_offset_ref;
 
+#if HAS_LEVELING
+  bool leveling_was_active;
+#endif
+
 inline void z_clearance_move() {
   do_z_clearance(
     #ifdef Z_AFTER_HOMING

@@ -36,7 +36,7 @@
  */
 
 // Change EEPROM version if the structure changes
-#define EEPROM_VERSION "V86"
+#define EEPROM_VERSION "V85"
 #define EEPROM_OFFSET 100
 
 // Check the integrity of data offsets.
@@ -206,7 +206,7 @@ typedef struct SettingsDataStruct {
   //
   // DISTINCT_E_FACTORS
   //
-  uint8_t e_factors;                                    // DISTINCT_AXES - LINEAR_AXES
+  uint8_t   esteppers;                                  // DISTINCT_AXES - LINEAR_AXES
 
   //
   // Planner settings
@@ -304,6 +304,21 @@ typedef struct SettingsDataStruct {
   bool bltouch_od_5v_mode;
   #ifdef BLTOUCH_HS_MODE
     bool bltouch_high_speed_mode;                       // M401 S
+  #endif
+
+  //
+  // Kinematic Settings
+  //
+  #if IS_KINEMATIC
+    float segments_per_second;                          // M665 S
+    #if ENABLED(DELTA)
+      float delta_height;                               // M666 H
+      abc_float_t delta_endstop_adj;                    // M666 X Y Z
+      float delta_radius,                               // M665 R
+            delta_diagonal_rod;                         // M665 L
+      abc_float_t delta_tower_angle_trim,               // M665 X Y Z
+                  delta_diagonal_rod_trim;              // M665 A B C
+    #endif
   #endif
 
   //
@@ -707,11 +722,9 @@ void MarlinSettings::postprocess() {
 
     EEPROM_SKIP(working_crc);   // Skip the checksum slot
 
-    working_crc = 0; // clear before first "real data"
-
-    const uint8_t e_factors = DISTINCT_AXES - (LINEAR_AXES);
-    _FIELD_TEST(e_factors);
-    EEPROM_WRITE(e_factors);
+    const uint8_t esteppers = COUNT(planner.settings.axis_steps_per_mm) - LINEAR_AXES;
+    _FIELD_TEST(esteppers);
+    EEPROM_WRITE(esteppers);
 
     //
     // Planner Motion
@@ -1605,16 +1618,16 @@ void MarlinSettings::postprocess() {
       {
         // Get only the number of E stepper parameters previously stored
         // Any steppers added later are set to their defaults
-        uint32_t tmp1[LINEAR_AXES + e_factors];
-        float tmp2[LINEAR_AXES + e_factors];
-        feedRate_t tmp3[LINEAR_AXES + e_factors];
+        uint32_t tmp1[LINEAR_AXES + esteppers];
+        float tmp2[LINEAR_AXES + esteppers];
+        feedRate_t tmp3[LINEAR_AXES + esteppers];
         EEPROM_READ((uint8_t *)tmp1, sizeof(tmp1)); // max_acceleration_mm_per_s2
         EEPROM_READ(planner.settings.min_segment_time_us);
         EEPROM_READ((uint8_t *)tmp2, sizeof(tmp2)); // axis_steps_per_mm
         EEPROM_READ((uint8_t *)tmp3, sizeof(tmp3)); // max_feedrate_mm_s
 
         if (!validating) LOOP_DISTINCT_AXES(i) {
-          const bool in = (i < e_factors + LINEAR_AXES);
+          const bool in = (i < esteppers + LINEAR_AXES);
           planner.settings.max_acceleration_mm_per_s2[i] = in ? tmp1[i] : pgm_read_dword(&_DMA[ALIM(i, _DMA)]);
           planner.settings.axis_steps_per_mm[i]          = in ? tmp2[i] : pgm_read_float(&_DASU[ALIM(i, _DASU)]);
           planner.settings.max_feedrate_mm_s[i]          = in ? tmp3[i] : pgm_read_float(&_DMF[ALIM(i, _DMF)]);
@@ -2846,11 +2859,9 @@ void MarlinSettings::reset() {
   TERN_(HAS_PTC, ptc.reset());
 
   //
-  // BLTouch
+  // BLTOUCH
   //
-  #ifdef BLTOUCH_HS_MODE
-    bltouch.high_speed_mode = ENABLED(BLTOUCH_HS_MODE);
-  #endif
+  TERN_(HAS_PTC, ptc.reset());
 
   //
   // Kinematic settings
@@ -3171,13 +3182,12 @@ void MarlinSettings::reset() {
     // Announce current units, in case inches are being displayed
     //
     CONFIG_ECHO_HEADING("Linear Units");
-    CONFIG_ECHO_START();
     #if ENABLED(INCH_MODE_SUPPORT)
-      SERIAL_ECHOPGM("  G2", AS_DIGIT(parser.linear_unit_factor == 1.0), " ;");
+      SERIAL_ECHO_MSG("  G2", AS_DIGIT(parser.linear_unit_factor == 1.0), " ;");
     #else
-      SERIAL_ECHOPGM("  G21 ;");
+      SERIAL_ECHO_MSG("  G21 ;");
     #endif
-    gcode.say_units(); // " (in/mm)"
+    gcode.say_units();
 
     //
     // M149 Temperature units
@@ -3278,8 +3288,6 @@ void MarlinSettings::reset() {
         //  CONFIG_ECHO_START();
         //  xatc.print_points();
         //#endif
-
-      #endif
 
     #endif // HAS_LEVELING
 

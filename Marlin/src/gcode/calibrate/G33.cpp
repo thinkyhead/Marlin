@@ -69,6 +69,8 @@ enum CalEnum : char {                        // the 7 main calibration points - 
 
 float lcd_probe_pt(const xy_pos_t &xy);
 
+float dcr;
+
 void ac_home() {
   endstops.enable(true);
   TERN_(HAS_DELTA_SENSORLESS_PROBING, probe.set_homing_current(true));
@@ -175,7 +177,7 @@ static float std_dev_points(float z_pt[NPP + 1], const bool _0p_cal, const bool 
  */
 static float calibration_probe(const xy_pos_t &xy, const bool stow, const bool probe_at_offset) {
   #if HAS_BED_PROBE
-    return probe.probe_at_point(xy, stow ? PROBE_PT_STOW : PROBE_PT_RAISE, 0, probe_at_offset, false);
+    return probe.probe_at_point(xy, stow ? PROBE_PT_STOW : PROBE_PT_RAISE, 0, true, probe_at_offset);
   #else
     UNUSED(stow);
     return lcd_probe_pt(xy);
@@ -185,7 +187,7 @@ static float calibration_probe(const xy_pos_t &xy, const bool stow, const bool p
 /**
  *  - Probe a grid
  */
-static bool probe_calibration_points(float z_pt[NPP + 1], const int8_t probe_points, const float dcr, const bool towers_set, const bool stow_after_each, const bool probe_at_offset) {
+static bool probe_calibration_points(float z_pt[NPP + 1], const int8_t probe_points, const bool towers_set, const bool stow_after_each, const bool probe_at_offset) {
   const bool _0p_calibration      = probe_points == 0,
              _1p_calibration      = probe_points == 1 || probe_points == -1,
              _4p_calibration      = probe_points == 2,
@@ -281,7 +283,7 @@ static void reverse_kinematics_probe_points(float z_pt[NPP + 1], abc_float_t mm_
   }
 }
 
-static void forward_kinematics_probe_points(abc_float_t mm_at_pt_axis[NPP + 1], float z_pt[NPP + 1], const float dcr) {
+static void forward_kinematics_probe_points(abc_float_t mm_at_pt_axis[NPP + 1], float z_pt[NPP + 1]) {
   const float r_quot = dcr / delta_radius;
 
   #define ZPP(N,I,A) (((1.0f + r_quot * (N)) / 3.0f) * mm_at_pt_axis[I].A)
@@ -322,7 +324,7 @@ static void calc_kinematics_diff_probe_points(float z_pt[NPP + 1], const float d
   recalc_delta_settings();
 }
 
-static float auto_tune_h(const float dcr) {
+static float auto_tune_h() {
   const float r_quot = dcr / delta_radius;
   return RECIPROCAL(r_quot / (2.0f / 3.0f));  // (2/3)/CR
 }
@@ -368,7 +370,7 @@ static float auto_tune_a(const float dcr) {
  *      P3       Probe all positions: center, towers and opposite towers. Calibrate all.
  *      P4-P10   Probe all positions at different intermediate locations and average them.
  *
- *   Rn.nn  Temporary reduce the probe grid by the specified amount (mm)
+ *   Rn.nn  override default calibration Radius
  *
  *   T   Don't calibrate tower angle corrections
  *
@@ -384,7 +386,7 @@ static float auto_tune_a(const float dcr) {
  *
  *   E   Engage the probe for each point
  *
- *   O   Probe at offsetted probe positions (this is wrong but it seems to work)
+ *   O   Probe at offset points (this is wrong but it seems to work)
  *
  * With SENSORLESS_PROBING:
  *   Use these flags to calibrate stall sensitivity: (e.g., `G33 P1 Y Z` to calibrate X only.)
@@ -402,17 +404,27 @@ void GcodeSuite::G33() {
     return;
   }
 
-  const bool probe_at_offset = TERN0(HAS_PROBE_XY_OFFSET, parser.seen_test('O')),
+  const bool probe_at_offset = TERN0(HAS_PROBE_XY_OFFSET, parser.boolval('O')),
                   towers_set = !parser.seen_test('T');
 
-  // The calibration radius is set to a calculated value
-  float dcr = probe_at_offset ? DELTA_PRINTABLE_RADIUS : DELTA_PRINTABLE_RADIUS - PROBING_MARGIN;
+  float max_dcr = dcr = DELTA_PRINTABLE_RADIUS;
   #if HAS_PROBE_XY_OFFSET
-    const float total_offset = HYPOT(probe.offset_xy.x, probe.offset_xy.y);
-    dcr -= probe_at_offset ? _MAX(total_offset, PROBING_MARGIN) : total_offset;
+    // For offset probes the calibration radius is set to a safe but non-optimal value
+    dcr -= HYPOT(probe.offset_xy.x, probe.offset_xy.y);
+    if (probe_at_offset) {
+      // With probe positions both probe and nozzle need to be within the printable area
+      max_dcr = dcr;
+    }
+    // else with nozzle positions there is a risk of the probe being outside the bed
+    // but as long the nozzle stays within the printable area there is no risk of
+    // the effector crashing into the towers.
   #endif
-  NOMORE(dcr, DELTA_PRINTABLE_RADIUS);
-  if (parser.seenval('R')) dcr -= _MAX(parser.value_float(),0);
+
+  if (parser.seenval('R')) dcr = parser.value_float();
+  if (!WITHIN(dcr, 0, max_dcr)) {
+    SERIAL_ECHOLNPGM("?calibration (R)adius implausible.");
+    return;
+  }
 
   const float calibration_precision = parser.floatval('C', 0.0f);
   if (calibration_precision < 0) {
@@ -463,9 +475,8 @@ void GcodeSuite::G33() {
   SERIAL_ECHOLNPGM("G33 Auto Calibrate");
 
   // Report settings
-  PGM_P const checkingac = PSTR("Checking... AC");
-  SERIAL_ECHOPGM_P(checkingac);
-  SERIAL_ECHOPGM(" at radius:", dcr);
+  FSTR_P const checkingac = F("Checking... AC");
+  SERIAL_ECHOF(checkingac);
   if (verbose_level == 0) SERIAL_ECHOPGM(" (DRY-RUN)");
   SERIAL_EOL();
   ui.set_status(checkingac);
@@ -485,7 +496,7 @@ void GcodeSuite::G33() {
 
     // Probe the points
     zero_std_dev_old = zero_std_dev;
-    if (!probe_calibration_points(z_at_pt, probe_points, dcr, towers_set, stow_after_each, probe_at_offset)) {
+    if (!probe_calibration_points(z_at_pt, probe_points, towers_set, stow_after_each, probe_at_offset)) {
       SERIAL_ECHOLNPGM("Correct delta settings with M665 and M666");
       return ac_cleanup(TERN_(HAS_MULTI_HOTEND, old_tool_index));
     }
@@ -525,10 +536,10 @@ void GcodeSuite::G33() {
 
       // calculate factors
       if (_7p_9_center) dcr *= 0.9f;
-      h_factor = auto_tune_h(dcr);
-      r_factor = auto_tune_r(dcr);
-      a_factor = auto_tune_a(dcr);
-      if (_7p_9_center) dcr /= 0.9f;
+      h_factor = auto_tune_h();
+      r_factor = auto_tune_r();
+      a_factor = auto_tune_a();
+      dcr /= 0.9f;
 
       switch (probe_points) {
         case 0:

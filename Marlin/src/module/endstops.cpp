@@ -564,7 +564,7 @@ void _O2 Endstops::report_states() {
   #if HAS_K_MAX
     ES_REPORT(K_MAX);
   #endif
-  #if ENABLED(PROBE_ACTIVATION_SWITCH)
+  #if BOTH(MARLIN_DEV_MODE, PROBE_ACTIVATION_SWITCH)
     print_es_state(probe_switch_activated(), F(STR_PROBE_EN));
   #endif
   #if USES_Z_MIN_PROBE_PIN
@@ -617,7 +617,7 @@ void Endstops::update() {
   #define UPDATE_ENDSTOP_BIT(AXIS, MINMAX) SET_BIT_TO(live_state, _ENDSTOP(AXIS, MINMAX), (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)))
   #define COPY_LIVE_STATE(SRC_BIT, DST_BIT) SET_BIT_TO(live_state, DST_BIT, TEST(live_state, SRC_BIT))
 
-  #if ENABLED(G38_PROBE_TARGET) && NONE(CORE_IS_XY, CORE_IS_XZ, MARKFORGED_XY, MARKFORGED_XY)
+  #if ENABLED(G38_PROBE_TARGET) && NONE(CORE_IS_XY, CORE_IS_XZ, MARKFORGED_XY)
     #define HAS_G38_PROBE 1
     // For G38 moves check the probe's pin for ALL movement
     if (G38_move) UPDATE_ENDSTOP_BIT(Z, TERN(USES_Z_MIN_PROBE_PIN, MIN_PROBE, MIN));

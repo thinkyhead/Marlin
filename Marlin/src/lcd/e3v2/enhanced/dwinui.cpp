@@ -93,7 +93,7 @@ uint8_t DWINUI::fontWidth(uint8_t cfont) {
   }
 }
 
-// Get font character height
+// Get font character heigh
 uint8_t DWINUI::fontHeight(uint8_t cfont) {
   switch (cfont) {
     case font6x12 : return 12;
@@ -110,12 +110,12 @@ uint8_t DWINUI::fontHeight(uint8_t cfont) {
   }
 }
 
-// Get screen x coordinates from text column
+// Get screen x coodinates from text column
 uint16_t DWINUI::ColToX(uint8_t col) {
   return col * fontWidth(font);
 }
 
-// Get screen y coordinates from text row
+// Get screen y coodinates from text row
 uint16_t DWINUI::RowToY(uint8_t row) {
   return row * fontHeight(font);
 }

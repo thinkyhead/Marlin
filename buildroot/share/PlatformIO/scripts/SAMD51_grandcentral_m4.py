@@ -6,6 +6,7 @@ import pioutil
 if pioutil.is_pio_build():
 	from os.path import join, isfile
 	import shutil
+	from pprint import pprint
 
 	Import("env")
 

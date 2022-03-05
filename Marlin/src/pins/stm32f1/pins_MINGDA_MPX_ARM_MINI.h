@@ -22,7 +22,7 @@
 #pragma once
 
 /**
- * MPX ARM MINI (STM32F103ZET6) board pin assignments
+ * MKS Robin mini (STM32F103VET6) board pin assignments
  */
 
 #if NOT_TARGET(STM32F1, STM32F1xx)
@@ -137,6 +137,18 @@
 // TFT with FSMC interface
 //
 #if HAS_FSMC_TFT
+  /**
+   * Note: MKS Robin TFT screens use various TFT controllers
+   * Supported screens are based on the ILI9341, ST7789V and ILI9328 (320x240)
+   * ILI9488 is not supported
+   * Define init sequences for other screens in u8g_dev_tft_320x240_upscale_from_128x64.cpp
+   *
+   * If the screen stays white, disable 'TFT_RESET_PIN'
+   * to let the bootloader init the screen.
+   *
+   * Setting an 'TFT_RESET_PIN' may cause a flicker when entering the LCD menu
+   * because Marlin uses the reset as a failsafe to revive a glitchy LCD.
+   */
   #define TFT_RESET_PIN                     PF15
   #define TFT_BACKLIGHT_PIN                 PF11
 
