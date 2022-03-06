@@ -373,7 +373,7 @@
 #elif EITHER(MKS_MINI_12864, ENDER2_STOCKDISPLAY)
   #define _LCD_CONTRAST_MIN  120
   #define _LCD_CONTRAST_INIT 195
-#elif ENABLED(MKS_MINI_12864_V3)
+#elif EITHER(MKS_MINI_12864_V3, BTT_MINI_12864_V1)
   #define _LCD_CONTRAST_MIN  255
   #define _LCD_CONTRAST_INIT 255
   #define _LCD_CONTRAST_MAX  255
@@ -1854,293 +1854,51 @@
   #if EITHER(SENSORLESS_HOMING, SENSORLESS_PROBING)
     #define USE_SENSORLESS 1
   #endif
-  #if PIN_EXISTS(K_DIR)
-    #define HAS_K_DIR 1
-  #endif
-  #if PIN_EXISTS(K_STEP)
-    #define HAS_K_STEP 1
-  #endif
-  #if PIN_EXISTS(K_MS1)
-    #define HAS_K_MS_PINS 1
-  #endif
-  #if !defined(DISABLE_INACTIVE_K) && ENABLED(DISABLE_K)
-    #define DISABLE_INACTIVE_K 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_K
-#endif
-
-// Extruder steppers and solenoids
-#if HAS_EXTRUDERS
-
-  #if PIN_EXISTS(E0_ENABLE) || AXIS_IS_L64XX(E0) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E0))
-    #define HAS_E0_ENABLE 1
-  #endif
-  #if PIN_EXISTS(E0_DIR)
-    #define HAS_E0_DIR 1
-  #endif
-  #if PIN_EXISTS(E0_STEP)
-    #define HAS_E0_STEP 1
-  #endif
-  #if PIN_EXISTS(E0_MS1)
-    #define HAS_E0_MS_PINS 1
+  // Disable Z axis sensorless homing if a probe is used to home the Z axis
+  #if HOMING_Z_WITH_PROBE
+    #undef Z_STALL_SENSITIVITY
+    #undef Z2_STALL_SENSITIVITY
+    #undef Z3_STALL_SENSITIVITY
+    #undef Z4_STALL_SENSITIVITY
   #endif
 
-  #if E_STEPPERS > 1 || ENABLED(E_DUAL_STEPPER_DRIVERS)
-    #if PIN_EXISTS(E1_ENABLE) || AXIS_IS_L64XX(E1) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E1))
-      #define HAS_E1_ENABLE 1
+  #if AXIS_IS_TMC(X)
+    #if defined(X_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(X)
+      #define X_SENSORLESS 1
     #endif
-    #if PIN_EXISTS(E1_DIR)
-      #define HAS_E1_DIR 1
+    #if AXIS_HAS_STEALTHCHOP(X)
+      #define X_HAS_STEALTHCHOP 1
     #endif
-    #if PIN_EXISTS(E1_STEP)
-      #define HAS_E1_STEP 1
+    #if ENABLED(SPI_ENDSTOPS)
+      #define X_SPI_SENSORLESS X_SENSORLESS
     #endif
-    #if PIN_EXISTS(E1_MS1)
-      #define HAS_E1_MS_PINS 1
+    #ifndef X_INTERPOLATE
+      #define X_INTERPOLATE INTERPOLATE
     #endif
-  #endif
-  #if defined(I_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(I)
-    #define I_SENSORLESS 1
-  #endif
-  #if defined(J_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(J)
-    #define J_SENSORLESS 1
-  #endif
-  #if defined(K_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(K)
-    #define K_SENSORLESS 1
-  #endif
-
-  #if AXIS_HAS_STEALTHCHOP(X)
-    #define X_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(X2)
-    #define X2_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Y)
-    #define Y_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Y2)
-    #define Y2_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z)
-    #define Z_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z2)
-    #define Z2_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z3)
-    #define Z3_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(Z4)
-    #define Z4_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(I)
-    #define I_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(J)
-    #define J_HAS_STEALTHCHOP 1
-  #endif
-  #if AXIS_HAS_STEALTHCHOP(K)
-    #define K_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 0 && AXIS_HAS_STEALTHCHOP(E0)
-    #define E0_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 1 && AXIS_HAS_STEALTHCHOP(E1)
-    #define E1_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 2 && AXIS_HAS_STEALTHCHOP(E2)
-    #define E2_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 3 && AXIS_HAS_STEALTHCHOP(E3)
-    #define E3_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 4 && AXIS_HAS_STEALTHCHOP(E4)
-    #define E4_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 5 && AXIS_HAS_STEALTHCHOP(E5)
-    #define E5_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 6 && AXIS_HAS_STEALTHCHOP(E6)
-    #define E6_HAS_STEALTHCHOP 1
-  #endif
-  #if E_STEPPERS > 7 && AXIS_HAS_STEALTHCHOP(E7)
-    #define E7_HAS_STEALTHCHOP 1
-  #endif
-
-  #if ENABLED(SPI_ENDSTOPS)
-    #define X_SPI_SENSORLESS X_SENSORLESS
-    #if HAS_Y_AXIS
-      #define Y_SPI_SENSORLESS Y_SENSORLESS
+    #ifndef X_HOLD_MULTIPLIER
+      #define X_HOLD_MULTIPLIER HOLD_MULTIPLIER
     #endif
-    #if HAS_Z_AXIS
-      #define Z_SPI_SENSORLESS Z_SENSORLESS
-    #endif
-    #if LINEAR_AXES >= 4
-      #define I_SPI_SENSORLESS I_SENSORLESS
-    #endif
-    #if LINEAR_AXES >= 5
-      #define J_SPI_SENSORLESS J_SENSORLESS
-    #endif
-    #if LINEAR_AXES >= 6
-      #define K_SPI_SENSORLESS K_SENSORLESS
+    #ifndef X_SLAVE_ADDRESS
+      #define X_SLAVE_ADDRESS 0
     #endif
   #endif
 
-  #if E_STEPPERS > 3
-    #if PIN_EXISTS(E3_ENABLE) || AXIS_IS_L64XX(E3) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E3))
-      #define HAS_E3_ENABLE 1
+  #if AXIS_IS_TMC(X2)
+    #if defined(X2_STALL_SENSITIVITY) && AXIS_HAS_STALLGUARD(X2)
+      #define X2_SENSORLESS 1
     #endif
-    #if PIN_EXISTS(E3_DIR)
-      #define HAS_E3_DIR 1
+    #if AXIS_HAS_STEALTHCHOP(X2)
+      #define X2_HAS_STEALTHCHOP 1
     #endif
-    #if PIN_EXISTS(E3_STEP)
-      #define HAS_E3_STEP 1
+    #ifndef X2_INTERPOLATE
+      #define X2_INTERPOLATE X_INTERPOLATE
     #endif
-    #if PIN_EXISTS(E3_MS1)
-      #define HAS_E3_MS_PINS 1
+    #ifndef X2_HOLD_MULTIPLIER
+      #define X2_HOLD_MULTIPLIER X_HOLD_MULTIPLIER
     #endif
-  #endif
-
-  #if E_STEPPERS > 4
-    #if PIN_EXISTS(E4_ENABLE) || AXIS_IS_L64XX(E4) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E4))
-      #define HAS_E4_ENABLE 1
+    #ifndef X2_SLAVE_ADDRESS
+      #define X2_SLAVE_ADDRESS 0
     #endif
-    #if PIN_EXISTS(E4_DIR)
-      #define HAS_E4_DIR 1
-    #endif
-    #if PIN_EXISTS(E4_STEP)
-      #define HAS_E4_STEP 1
-    #endif
-    #if PIN_EXISTS(E4_MS1)
-      #define HAS_E4_MS_PINS 1
-    #endif
-  #endif
-
-  #if E_STEPPERS > 5
-    #if PIN_EXISTS(E5_ENABLE) || AXIS_IS_L64XX(E5) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E5))
-      #define HAS_E5_ENABLE 1
-    #endif
-    #if PIN_EXISTS(E5_DIR)
-      #define HAS_E5_DIR 1
-    #endif
-    #if PIN_EXISTS(E5_STEP)
-      #define HAS_E5_STEP 1
-    #endif
-    #if PIN_EXISTS(E5_MS1)
-      #define HAS_E5_MS_PINS 1
-    #endif
-  #endif
-
-  #if E_STEPPERS > 6
-    #if PIN_EXISTS(E6_ENABLE) || AXIS_IS_L64XX(E6) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E6))
-      #define HAS_E6_ENABLE 1
-    #endif
-    #if PIN_EXISTS(E6_DIR)
-      #define HAS_E6_DIR 1
-    #endif
-    #if PIN_EXISTS(E6_STEP)
-      #define HAS_E6_STEP 1
-    #endif
-    #if PIN_EXISTS(E6_MS1)
-      #define HAS_E6_MS_PINS 1
-    #endif
-  #endif
-
-  #if E_STEPPERS > 7
-    #if PIN_EXISTS(E7_ENABLE) || AXIS_IS_L64XX(E7) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E7))
-      #define HAS_E7_ENABLE 1
-    #endif
-    #if PIN_EXISTS(E7_DIR)
-      #define HAS_E7_DIR 1
-    #endif
-    #if PIN_EXISTS(E7_STEP)
-      #define HAS_E7_STEP 1
-    #endif
-    #if PIN_EXISTS(E7_MS1)
-      #define HAS_E7_MS_PINS 1
-    #endif
-  #endif
-
-  #if !defined(DISABLE_INACTIVE_E) && ENABLED(DISABLE_E)
-    #define DISABLE_INACTIVE_E 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_E
-#endif // HAS_EXTRUDERS
-
-/**
- * Set solenoid flags if any features use solenoids
- *   - EXT_SOLENOID (M380, M381) to enable/disable the extruder solenoid
- *   - MANUAL_SOLENOID_CONTROL (M380, M381) to enable/disable solenoids by index
- *   - PARKING_EXTRUDER uses SOL0_PIN and SOL1_PIN
- *   - SOLENOID_PROBE uses SOL1_PIN
- *   - Z_PROBE_SLED uses SOL1_PIN, when defined (unless EXT_SOLENOID is enabled)
- */
-#if ANY(EXT_SOLENOID, MANUAL_SOLENOID_CONTROL, PARKING_EXTRUDER, SOLENOID_PROBE, Z_PROBE_SLED)
-  #if PIN_EXISTS(SOL0) && (EITHER(MANUAL_SOLENOID_CONTROL, PARKING_EXTRUDER) || BOTH(EXT_SOLENOID, HAS_EXTRUDERS))
-    #define HAS_SOLENOID_0 1
-  #endif
-  #if PIN_EXISTS(SOL1) && (ANY(MANUAL_SOLENOID_CONTROL, PARKING_EXTRUDER, SOLENOID_PROBE, Z_PROBE_SLED) || TERN0(EXT_SOLENOID, E_STEPPERS > 1))
-    #define HAS_SOLENOID_1 1
-  #endif
-  #if LINEAR_AXES >= 4 && !defined(I_INTERPOLATE)
-    #define I_INTERPOLATE INTERPOLATE
-  #endif
-  #if LINEAR_AXES >= 5 && !defined(J_INTERPOLATE)
-    #define J_INTERPOLATE INTERPOLATE
-  #endif
-  #if LINEAR_AXES >= 6 && !defined(K_INTERPOLATE)
-    #define K_INTERPOLATE INTERPOLATE
-  #endif
-  #ifndef E0_INTERPOLATE
-    #define E0_INTERPOLATE INTERPOLATE
-  #endif
-  #if PIN_EXISTS(SOL3) && (ENABLED(MANUAL_SOLENOID_CONTROL) || TERN0(EXT_SOLENOID, E_STEPPERS > 3))
-    #define HAS_SOLENOID_3 3
-  #endif
-  #if PIN_EXISTS(SOL4) && (ENABLED(MANUAL_SOLENOID_CONTROL) || TERN0(EXT_SOLENOID, E_STEPPERS > 4))
-    #define HAS_SOLENOID_4 4
-  #endif
-  #if PIN_EXISTS(SOL5) && (ENABLED(MANUAL_SOLENOID_CONTROL) || TERN0(EXT_SOLENOID, E_STEPPERS > 5))
-    #define HAS_SOLENOID_5 5
-  #endif
-  #if PIN_EXISTS(SOL6) && (ENABLED(MANUAL_SOLENOID_CONTROL) || TERN0(EXT_SOLENOID, E_STEPPERS > 6))
-    #define HAS_SOLENOID_6 6
-  #endif
-  #if PIN_EXISTS(SOL7) && (ENABLED(MANUAL_SOLENOID_CONTROL) || TERN0(EXT_SOLENOID, E_STEPPERS > 7))
-    #define HAS_SOLENOID_7 7
-  #endif
-#endif
-
-//
-// Trinamic Stepper Drivers
-//
-
-#if HAS_TRINAMIC_CONFIG
-  #if ANY(STEALTHCHOP_E, STEALTHCHOP_XY, STEALTHCHOP_Z, STEALTHCHOP_I, STEALTHCHOP_J, STEALTHCHOP_K)
-    #define STEALTHCHOP_ENABLED 1
-  #endif
-  #if EITHER(SENSORLESS_HOMING, SENSORLESS_PROBING)
-    #define USE_SENSORLESS 1
-  #endif
-  #ifndef X_SLAVE_ADDRESS
-    #define X_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Y_SLAVE_ADDRESS
-    #define Y_SLAVE_ADDRESS 0
-  #endif
-  #ifndef Z_SLAVE_ADDRESS
-    #define Z_SLAVE_ADDRESS 0
-  #endif
-  #ifndef I_SLAVE_ADDRESS
-    #define I_SLAVE_ADDRESS 0
-  #endif
-  #ifndef J_SLAVE_ADDRESS
-    #define J_SLAVE_ADDRESS 0
-  #endif
-  #ifndef K_SLAVE_ADDRESS
-    #define K_SLAVE_ADDRESS 0
   #endif
 
   #if AXIS_IS_TMC(Y)
@@ -2428,7 +2186,7 @@
       #define E7_SLAVE_ADDRESS 0
     #endif
   #endif
-#endif
+#endif // HAS_TRINAMIC_CONFIG
 
 #if ANY_AXIS_HAS(HW_SERIAL)
   #define HAS_TMC_HW_SERIAL 1
@@ -2888,7 +2646,7 @@
 #if !HAS_TEMP_SENSOR
   #undef AUTO_REPORT_TEMPERATURES
 #endif
-#if ANY(AUTO_REPORT_TEMPERATURES, AUTO_REPORT_SD_STATUS, AUTO_REPORT_POSITION)
+#if ANY(AUTO_REPORT_TEMPERATURES, AUTO_REPORT_SD_STATUS, AUTO_REPORT_POSITION, AUTO_REPORT_FANS)
   #define HAS_AUTO_REPORTING 1
 #endif
 
@@ -3008,13 +2766,6 @@
   #error "FAN_MIN_PWM must be less than or equal to FAN_MAX_PWM."
 #elif FAN_OFF_PWM > FAN_MIN_PWM
   #error "FAN_OFF_PWM must be less than or equal to FAN_MIN_PWM."
-#endif
-
-/**
- * FAST PWM FAN Settings
- */
-#if ENABLED(FAST_PWM_FAN) && !defined(FAST_PWM_FAN_FREQUENCY)
-  #define FAST_PWM_FAN_FREQUENCY ((F_CPU) / (2 * 255 * 1)) // Fan frequency default
 #endif
 
 /**

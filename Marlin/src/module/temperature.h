@@ -467,6 +467,10 @@ class Temperature {
       static int16_t lpq_len;
     #endif
 
+    #if HAS_FAN_LOGIC
+      static constexpr millis_t fan_update_interval_ms = TERN(HAS_PWMFANCHECK, 5000, TERN(HAS_FANCHECK, 1000, 2500));
+    #endif
+
   private:
 
     #if ENABLED(WATCH_HOTENDS)
@@ -518,8 +522,28 @@ class Temperature {
       static millis_t preheat_end_time[HOTENDS];
     #endif
 
-    #if HAS_AUTO_FAN
-      static millis_t next_auto_fan_check_ms;
+    #if HAS_FAN_LOGIC
+      static millis_t fan_update_ms;
+
+      static inline void manage_extruder_fans(millis_t ms) {
+        if (ELAPSED(ms, fan_update_ms)) { // only need to check fan state very infrequently
+          const millis_t next_ms = ms + fan_update_interval_ms;
+          #if HAS_PWMFANCHECK
+            #define FAN_CHECK_DURATION 100
+            if (fan_check.is_measuring()) {
+              fan_check.compute_speed(ms + FAN_CHECK_DURATION - fan_update_ms);
+              fan_update_ms = next_ms;
+            }
+            else
+              fan_update_ms = ms + FAN_CHECK_DURATION;
+            fan_check.toggle_measuring();
+          #else
+            TERN_(HAS_FANCHECK, fan_check.compute_speed(next_ms - fan_update_ms));
+            fan_update_ms = next_ms;
+          #endif
+          TERN_(HAS_AUTO_FAN, update_autofans()); // Needed as last when HAS_PWMFANCHECK to properly force fan speed
+        }
+      }
     #endif
 
     #if ENABLED(PROBING_HEATERS_OFF)

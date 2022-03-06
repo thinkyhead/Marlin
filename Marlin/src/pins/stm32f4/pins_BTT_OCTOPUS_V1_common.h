@@ -32,7 +32,8 @@
 #define I2C_SCL_PIN                         PB8
 #define I2C_SDA_PIN                         PB9
 
-#define STEP_TIMER                            10
+// Avoid conflict with TIMER_TONE
+#define STEP_TIMER 10
 
 //
 // Servos

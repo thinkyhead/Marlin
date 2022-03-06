@@ -135,10 +135,6 @@ void GcodeSuite::M600() {
   #else
     // Unload filament
     const float unload_length = -ABS(parser.axisunitsval('U', E_AXIS, fc_settings[active_extruder].unload_length));
-    // Slow load filament
-    constexpr float slow_load_length = FILAMENT_CHANGE_SLOW_LOAD_LENGTH;
-    // Fast load filament
-    const float fast_load_length = ABS(parser.axisunitsval('L', E_AXIS, fc_settings[active_extruder].load_length));
   #endif
 
   const int beep_count = parser.intval('B', -1
@@ -148,10 +144,7 @@ void GcodeSuite::M600() {
   );
 
   if (pause_print(retract, park_point, true, unload_length DXC_PASS)) {
-    #if ENABLED(MMU2_MENUS)
-      mmu2_M600();
-      resume_print(slow_load_length, fast_load_length, 0, beep_count DXC_PASS);
-    #else
+    if (standardM600) {
       wait_for_confirmation(true, beep_count DXC_PASS);
       resume_print(
         FILAMENT_CHANGE_SLOW_LOAD_LENGTH,

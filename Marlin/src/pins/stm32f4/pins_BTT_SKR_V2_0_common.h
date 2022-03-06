@@ -136,7 +136,9 @@
 // Probe enable
 //
 #if ENABLED(PROBE_ENABLE_DISABLE)
-  #define PROBE_ENABLE_PIN            SERVO0_PIN
+  #ifndef PROBE_ENABLE_PIN
+    #define PROBE_ENABLE_PIN          SERVO0_PIN
+  #endif
 #endif
 
 //
@@ -301,6 +303,9 @@
   //#define E3_HARDWARE_SERIAL Serial1
   //#define E4_HARDWARE_SERIAL Serial1
 
+  //
+  // Software serial
+  //
   #define X_SERIAL_TX_PIN                   PE0
   #define X_SERIAL_RX_PIN        X_SERIAL_TX_PIN
 
@@ -324,7 +329,7 @@
 // SD Connection
 //
 #ifndef SDCARD_CONNECTION
-  #define SDCARD_CONNECTION                  LCD
+  #define SDCARD_CONNECTION              ONBOARD
 #endif
 
 /**
@@ -377,15 +382,6 @@
   #define SDIO_D3_PIN                       PC11
   #define SDIO_CK_PIN                       PC12
   #define SDIO_CMD_PIN                      PD2
-
-#elif SD_CONNECTION_IS(LCD)
-
-  #define SDSS                              PA4
-  #define SD_SS_PIN                         SDSS
-  #define SD_SCK_PIN                        PA5
-  #define SD_MISO_PIN                       PA6
-  #define SD_MOSI_PIN                       PA7
-  #define SD_DETECT_PIN                     PC4
 
 #elif SD_CONNECTION_IS(CUSTOM_CABLE)
   #error "No custom SD drive cable defined for this board."

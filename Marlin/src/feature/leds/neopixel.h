@@ -25,6 +25,8 @@
  * NeoPixel support
  */
 
+#define MAX_NEOPIXELS 127
+
 #ifndef _NEOPIXEL_INCLUDE_
   #error "Always include 'leds.h' and not 'neopixel.h' directly."
 #endif
@@ -61,6 +63,12 @@
 #if EITHER(MULTIPLE_NEOPIXEL_TYPES, NEOPIXEL2_INSERIES)
   #define CONJOINED_NEOPIXEL 1
 #endif
+
+// ------------------------
+// Types
+// ------------------------
+
+typedef IF<(MAX_NEOPIXELS > 127), int16_t, int8_t>::type pixel_index_t;
 
 // ------------------------
 // Classes

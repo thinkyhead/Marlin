@@ -181,6 +181,7 @@ public:
       }
       return upwr;
     }
+
   #endif // SPINDLE_LASER_USE_PWM
 
   /**

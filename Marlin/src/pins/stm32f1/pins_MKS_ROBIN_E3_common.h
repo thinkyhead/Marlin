@@ -64,11 +64,6 @@
   #define Z_MIN_PROBE_PIN                   PB1
 #endif
 
-// LED driving pin
-#ifndef NEOPIXEL_PIN
-  #define NEOPIXEL_PIN                      PA2
-#endif
-
 //
 // Steppers
 //
@@ -201,7 +196,7 @@
     #define DOGLCD_SCK               EXP2_09_PIN
     #define DOGLCD_MOSI              EXP2_05_PIN
 
-  #elif ENABLED(MKS_MINI_12864_V3)
+  #elif ENABLED(FYSETC_MINI_12864_2_1)
     #define DOGLCD_CS                EXP1_08_PIN
     #define DOGLCD_A0                EXP1_07_PIN
     #define LCD_PINS_DC                DOGLCD_A0
@@ -243,6 +238,11 @@
   #ifndef BOARD_ST7920_DELAY_3
     #define BOARD_ST7920_DELAY_3             125
   #endif
+#endif
+
+// LED driving pin
+#ifndef NEOPIXEL_PIN
+  #define NEOPIXEL_PIN                      PA2
 #endif
 
 //
