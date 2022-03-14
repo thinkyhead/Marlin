@@ -556,16 +556,19 @@ struct XYZEval {
   // Reset all to 0
   FI void reset()                     { LOGICAL_AXIS_GANG(e =, x =, y =, z =, i =, j =, k =, u =, v =, w =) 0; }
 
+  // Setters for some number of linear axes, not all
+  FI void set(const T px)             { x = px; }
+  FI void set(const T px, const T py) { x = px; y = py; }
+
   // Setters taking struct types and arrays
-  FI void set(const T px)             { x = px;               }
-  FI void set(const T px, const T py) { x = px;    y = py;    }
-  FI void set(const XYval<T> pxy)     { x = pxy.x; y = pxy.y; }
-  FI void set(const XYZval<T> pxyz)   { set(NUM_AXIS_ELEM(pxyz)); }
+  FI void set(const XYval<T> pxy)                  { x = pxy.x; y = pxy.y; }
+  FI void set(const XYZval<T> pxyz)                { set(NUM_AXIS_ELEM(pxyz)); }
   #if HAS_Z_AXIS
-    FI void set(NUM_AXIS_ARGS(const T))         { NUM_AXIS_CODE(a = x, b = y, c = z, ax4 = i, ax5 = j, ax6 = k, ax7 = u, ax8 = v, ax9 = w); }
+    FI void set(NUM_AXIS_ARGS(const T))            { NUM_AXIS_CODE(a = x, b = y, c = z, ax4 = i, ax5 = j, ax6 = k, ax7 = u, ax8 = v, ax9 = w); }
   #endif
+  FI void set(const XYval<T> pxy, const T pz)      { set(pxy); TERN_(HAS_Z_AXIS, z = pz); }
   #if LOGICAL_AXES > NUM_AXES
-    FI void set(const XYval<T> pxy, const T pe)    { set(pxy); e = pe; }
+    FI void set(const XYval<T> pxy, const T pz, const T pe) { set(pxy, pz); e = pe; }
     FI void set(const XYZval<T> pxyz, const T pe)  { set(pxyz); e = pe; }
     FI void set(LOGICAL_AXIS_ARGS(const T))        { LOGICAL_AXIS_CODE(_e = e, a = x, b = y, c = z, ax4 = i, ax5 = j, ax6 = k, ax7 = u, ax8 = v, ax9 = w); }
   #endif
