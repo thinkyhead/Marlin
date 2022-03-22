@@ -4,7 +4,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.9.3-N2-rc3] - 2021-03-21
+
+### Added
+- EXPERIMENTAL: LVLGL UI Enabled with WIFI support
+
+### Changed
+
+- Removed custom colors no longer needed (mentioned in #13)
+- Updated HEATER_0_MINTEMP from 0 to 5 so it can detect broken thermister
+- Updated BED_MINTEMP from 0 to 5 so it can detect broken thermister
+- Updated BED_MAXTEMP from 110 to 120
+- Updated HEATER_0_MAXTEMP from 270 to 275 per request
+- Updated BED_MAXTEMP from 110 to 120
+- Updated DEFAULT_ZJERK from 0.4 to 0.3 to match other ender clones
+- Updated Z_PROBE_FEEDRATE_SLOW from 300 to match Marlin defaults (it ends up being the same value)
+- Updated Z_PROBE_OFFSET_RANGE_MAX from 60 to 65 per request
+- If LVGL UI disable FILAMENT_RUNOUT_SCRIPT (It does not work)
+- If LVGL UI disable LCD_BED_LEVELING (Feature not present in LVGL UI)
+- Updated Z_PROBE_END_SCRIPT to add acceleration setting per user comment
+- Updated HOMING_FEEDRATE_MM_M from { (2400), (2400), (10*60) } to { (2400), (2400), (10*60) } to match other ender clones
+- Enabled EEPROM_AUTO_INIT, which will initialize EEPROM automatically on any errors.
+- Disabled define NO_WORKSPACE_OFFSETS since we don't need a leaner Marlin build and allow this feature (per request)
+- Enabled FAN_KICKSTART_TIME as some users reported fan not kicking on for slower speeds
+- If LVGL UI disable ADVANCED_PAUSE_FEATURE (It does not work)
+
+### Fixed
+
+- Found proper definition for LCD to allow for better screen contrast by disabling MKS_ROBIN_TFT35 and enabling TFT_GENERIC, and set its child values to fix screen color issues (Closes #13)
+- Removed extra purge on filament change mid-print (M600).
 
 ## [2.0.9.3-N2-rc2] - 2021-01-16
 

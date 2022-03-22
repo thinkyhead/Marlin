@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -69,7 +69,7 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(just-trey, Neptune 2 - Marlin 2 Color UI)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(just-trey, Elegoo Neptune 2)" // Who made the changes.
 //#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 // @section custom
@@ -80,48 +80,22 @@
 
 // MAIN CONFIGURATION SWITCHES FOR FEATURES - see readme.md for more details.
 
-#define IS_BOARD_1_3            true  // True if you have the 1.3 board, false for 1.2 board
-#define IS_2D                   false // True if you have a Neptuen 2d (Dual extruder)
+#define IS_COLOR_UI             false // true to use marlin COLOR UI else will use LVGL UI
+#define IS_BOARD_1_3            true  // true if you have the 1.3 board, false for 1.2 board
 #define HAS_BLTOUCH             true  // Enable if you have a BlTouch, false fo no BlTouch
+#define IS_2D                   false // True if you have a Neptuen 2d (Dual extruder)
 
 // Define missing pins
+#define FIL_RUNOUT_PIN          PA4
 #define MT_DET_PIN_STATE        LOW
 
-/* Neptune 2 Custom Theme (adjustments for better clarity) */
-#define COLOR_GRAYER            0x8C51 // #8D8D8D
 
-#define COLOR_BACKGROUND        COLOR_BLACK
-#define COLOR_SELECTION_BG      COLOR_RED
-#define COLOR_WEBSITE_URL       COLOR_CYAN
-#define COLOR_INACTIVE          COLOR_GRAYER
-#define COLOR_COLD              COLOR_CYAN
-#define COLOR_HOTEND            COLOR_ORANGE
-#define COLOR_HEATED_BED        COLOR_ORANGE
-#define COLOR_CHAMBER           COLOR_ORANGE
-#define COLOR_COOLER            COLOR_ORANGE
-#define COLOR_FAN               COLOR_CYAN
-#define COLOR_AXIS_HOMED        COLOR_CYAN
-#define COLOR_AXIS_NOT_HOMED    COLOR_YELLOW
-#define COLOR_RATE_100          COLOR_VIVID_GREEN
-#define COLOR_RATE_ALTERED      COLOR_YELLOW
-#define COLOR_PRINT_TIME        COLOR_AQUA
-#define COLOR_PROGRESS_FRAME    COLOR_WHITE
-#define COLOR_PROGRESS_BAR      COLOR_CYAN
-#define COLOR_PROGRESS_BG       COLOR_BLACK
-#define COLOR_STATUS_MESSAGE    COLOR_WHITE
-#define COLOR_CONTROL_ENABLED   COLOR_WHITE
-#define COLOR_CONTROL_DISABLED  COLOR_GRAYER
-#define COLOR_CONTROL_CANCEL    COLOR_RED
-#define COLOR_CONTROL_CONFIRM   COLOR_VIVID_GREEN
-#define COLOR_BUSY              COLOR_SILVER
-#define COLOR_MENU_TEXT         COLOR_WHITE
-#define COLOR_MENU_VALUE        COLOR_WHITE
-#define COLOR_SLIDER            COLOR_WHITE
-#define COLOR_SLIDER_INACTIVE   COLOR_GRAYER
-#define COLOR_UBL               COLOR_WHITE
-#define COLOR_TOUCH_CALIBRATION COLOR_WHITE
-#define COLOR_KILL_SCREEN_BG    COLOR_RED
-#define COLOR_KILL_SCREEN_TEXT  COLOR_YELLOW
+// Define firmware output name
+// - NOTE: only works on 1.2 board - manual remene to elegoo.bin is needed for 1.3 board
+#define FIRMWARE_BIN elegoo.bin
+
+// Set dark background color for higher contrast.
+#define COLOR_BACKGROUND        COLOR_DARK
 
 /**
  * *** VENDORS PLEASE READ ***
@@ -178,8 +152,8 @@
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
-#define BAUDRATE 115200     // See https://github.com/MarlinFirmware/Marlin/issues/12174
-#define BAUD_RATE_GCODE     // Enable G-code M575 to set the baud rate
+#define BAUDRATE 115200       // See https://github.com/MarlinFirmware/Marlin/issues/12174
+#define BAUD_RATE_GCODE       // Enable G-code M575 to set the baud rate
 
 /**
  * Select a secondary serial port on the board to use for communication with the host.
@@ -627,7 +601,7 @@
 // Above this temperature the heater will be switched off.
 // This can protect components from overheating, but NOT from shorts and failures.
 // (Use MINTEMP for thermistor short/failure protection.)
-#define HEATER_0_MAXTEMP 270
+#define HEATER_0_MAXTEMP 275
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
 #define HEATER_3_MAXTEMP 275
@@ -635,7 +609,7 @@
 #define HEATER_5_MAXTEMP 275
 #define HEATER_6_MAXTEMP 275
 #define HEATER_7_MAXTEMP 275
-#define BED_MAXTEMP      110
+#define BED_MAXTEMP      120
 #define CHAMBER_MAXTEMP  60
 
 /**
@@ -672,7 +646,7 @@
     #define DEFAULT_Ki_LIST {   1.08,   1.08 }
     #define DEFAULT_Kd_LIST { 114.00, 114.00 }
   #else
-    // tuned for my Elegoo Neptune 2, but you should tune on you own machine once you have it setup
+    // Tuned by the author. Tune your machine with M303.
     #define DEFAULT_Kp  25.47
     #define DEFAULT_Ki   2.11
     #define DEFAULT_Kd  76.90
@@ -715,7 +689,7 @@
   // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
 
-  // tuned for Elegoo Neptune 2, but you should tune on you own machine once you haev it setup
+  // Tuned by the author. Tune your machine with M303.
   #define DEFAULT_bedKp 31.30
   #define DEFAULT_bedKi 6.02
   #define DEFAULT_bedKd 108.50
@@ -952,7 +926,7 @@
 //#define J_DRIVER_TYPE  A4988
 //#define K_DRIVER_TYPE  A4988
 #define E0_DRIVER_TYPE A4988
-#define E1_DRIVER_TYPE A4988    //for 2D supprt
+#define E1_DRIVER_TYPE A4988    // for 2D support
 //#define E2_DRIVER_TYPE A4988
 //#define E3_DRIVER_TYPE A4988
 //#define E4_DRIVER_TYPE A4988
@@ -1067,7 +1041,7 @@
 #if ENABLED(CLASSIC_JERK)
   #define DEFAULT_XJERK 10.0
   #define DEFAULT_YJERK 10.0
-  #define DEFAULT_ZJERK  0.4
+  #define DEFAULT_ZJERK  0.3
   //#define DEFAULT_IJERK  0.3
   //#define DEFAULT_JJERK  0.3
   //#define DEFAULT_KJERK  0.3
@@ -1297,7 +1271,7 @@
 #define Z_PROBE_FEEDRATE_FAST (600)
 
 // Feedrate (mm/min) for the "accurate" probe of each point
-#define Z_PROBE_FEEDRATE_SLOW (300)
+#define Z_PROBE_FEEDRATE_SLOW (Z_PROBE_FEEDRATE_FAST / 2)
 
 /**
  * Probe Activation Switch
@@ -1370,7 +1344,7 @@
 
 // For M851 give a range for adjusting the Z probe offset
 #define Z_PROBE_OFFSET_RANGE_MIN -20
-#define Z_PROBE_OFFSET_RANGE_MAX 60
+#define Z_PROBE_OFFSET_RANGE_MAX 65
 
 // Enable the M48 repeatability test to test probe accuracy
 //#define Z_MIN_PROBE_REPEATABILITY_TEST
@@ -1599,7 +1573,9 @@
   // Commands to execute on filament runout.
   // With multiple runout sensors use the %c placeholder for the current tool in commands (e.g., "M600 T%c")
   // NOTE: After 'M412 H1' the host handles filament runout and this script does not apply.
-  #define FILAMENT_RUNOUT_SCRIPT "M600 T%c"
+  #if IS_COLOR_UI
+    #define FILAMENT_RUNOUT_SCRIPT "M600 T%c"
+  #endif
 
   // After a runout is detected, continue printing this length of filament
   // before executing the runout script. Useful for a sensor at the end of
@@ -1787,7 +1763,9 @@
  * Add a bed leveling sub-menu for ABL or MBL.
  * Include a guided procedure if manual probing is enabled.
  */
-#define LCD_BED_LEVELING
+#if IS_COLOR_UI
+  #define LCD_BED_LEVELING
+#endif
 
 #if ENABLED(LCD_BED_LEVELING)
   #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
@@ -1835,7 +1813,7 @@
  * Useful to retract or move the Z probe out of the way.
  */
 // Move to allow screen access
-#define Z_PROBE_END_SCRIPT "G0 X113\nG0 Y113\nG0 Z10"
+#define Z_PROBE_END_SCRIPT "G0 X113 F2400\nG0 Y113 F2400\nG0 Z10 F600"
 
 // @section homing
 
@@ -1868,7 +1846,7 @@
 #endif
 
 // Homing speeds (mm/min)
-#define HOMING_FEEDRATE_MM_M { (2400), (2400), (10*60) }
+#define HOMING_FEEDRATE_MM_M { (50*60), (50*60), (4*60) }
 
 // Validate that endstops are triggered on homing moves
 #define VALIDATE_HOMING_ENDSTOPS
@@ -1950,7 +1928,7 @@
 #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save PROGMEM.
 #define EEPROM_BOOT_SILENT    // Keep M503 quiet and only give errors during first load
 #if ENABLED(EEPROM_SETTINGS)
-  //#define EEPROM_AUTO_INIT  // Init EEPROM automatically on any errors.
+  #define EEPROM_AUTO_INIT  // Init EEPROM automatically on any errors.
   #define EEPROM_INIT_NOW   // Init EEPROM on first boot after a new build.
 #endif
 
@@ -2070,6 +2048,7 @@
   // Dual hotend system may use { {  -20, (Y_BED_SIZE / 2), (Z_MIN_POS + 1) },  {  420, (Y_BED_SIZE / 2), (Z_MIN_POS + 1) }}
   #define NOZZLE_CLEAN_START_POINT { {  30, 30, (Z_MIN_POS + 1) } }
   #define NOZZLE_CLEAN_END_POINT   { { 100, 60, (Z_MIN_POS + 1) } }
+
   // Circular pattern radius
   #define NOZZLE_CLEAN_CIRCLE_RADIUS 6.5
   // Circular pattern circle fragments number
@@ -2814,7 +2793,7 @@
 // 480x320, 3.5", FSMC Display From MKS
 // Usually paired with MKS Robin Nano V1.2
 //
-#define MKS_ROBIN_TFT35
+//#define MKS_ROBIN_TFT35
 
 //
 // 480x272, 4.3", FSMC Display From MKS
@@ -2865,19 +2844,19 @@
 //
 // Generic TFT with detailed options
 //
-//#define TFT_GENERIC
+#define TFT_GENERIC
 #if ENABLED(TFT_GENERIC)
   // :[ 'AUTO', 'ST7735', 'ST7789', 'ST7796', 'R61505', 'ILI9328', 'ILI9341', 'ILI9488' ]
-  #define TFT_DRIVER AUTO
+  #define TFT_DRIVER ILI9341
 
   // Interface. Enable one of the following options:
-  //#define TFT_INTERFACE_FSMC
+  #define TFT_INTERFACE_FSMC
   //#define TFT_INTERFACE_SPI
 
   // TFT Resolution. Enable one of the following options:
   //#define TFT_RES_320x240
   //#define TFT_RES_480x272
-  //#define TFT_RES_480x320
+  #define TFT_RES_480x320
   //#define TFT_RES_1024x600
 #endif
 
@@ -2892,11 +2871,14 @@
  *   root of your SD card, together with the compiled firmware.
  */
 //#define TFT_CLASSIC_UI
-#define TFT_COLOR_UI
-//#define TFT_LVGL_UI
+#if IS_COLOR_UI
+  #define TFT_COLOR_UI
+#else
+  #define TFT_LVGL_UI
+#endif
 
 #if ENABLED(TFT_LVGL_UI)
-  //#define MKS_WIFI_MODULE  // MKS WiFi module
+  #define MKS_WIFI_MODULE  // MKS WiFi module
 #endif
 
 /**
