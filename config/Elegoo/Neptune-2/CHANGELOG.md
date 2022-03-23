@@ -6,9 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.9.3-N2-rc3] - 2021-03-21
 
-### Added
-- EXPERIMENTAL: LVLGL UI Enabled with WIFI support
-
 ### Changed
 
 - Removed custom colors no longer needed (mentioned in #13)
@@ -20,14 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated DEFAULT_ZJERK from 0.4 to 0.3 to match other ender clones
 - Updated Z_PROBE_FEEDRATE_SLOW from 300 to match Marlin defaults (it ends up being the same value)
 - Updated Z_PROBE_OFFSET_RANGE_MAX from 60 to 65 per request
-- If LVGL UI disable FILAMENT_RUNOUT_SCRIPT (It does not work)
-- If LVGL UI disable LCD_BED_LEVELING (Feature not present in LVGL UI)
 - Updated Z_PROBE_END_SCRIPT to add acceleration setting per user comment
-- Updated HOMING_FEEDRATE_MM_M from { (2400), (2400), (10*60) } to { (2400), (2400), (10*60) } to match other ender clones
-- Enabled EEPROM_AUTO_INIT, which will initialize EEPROM automatically on any errors.
+- Updated HOMING_FEEDRATE_MM_M to match other ender clones
 - Disabled define NO_WORKSPACE_OFFSETS since we don't need a leaner Marlin build and allow this feature (per request)
 - Enabled FAN_KICKSTART_TIME as some users reported fan not kicking on for slower speeds
-- If LVGL UI disable ADVANCED_PAUSE_FEATURE (It does not work)
 
 ### Fixed
 
