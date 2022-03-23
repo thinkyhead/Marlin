@@ -79,21 +79,21 @@
  */
 
 // MAIN CONFIGURATION SWITCHES FOR FEATURES - see readme.md for more details.
+
 #define IS_BOARD_1_3            true  // true if you have the 1.3 board, false for 1.2 board
-#define HAS_BLTOUCH             true  // Enable if you have a BlTouch, false fo no BlTouch
 #define IS_2D                   false // True if you have a Neptuen 2d (Dual extruder)
+#define HAS_BLTOUCH             true  // Enable if you have a BlTouch, false fo no BlTouch
 
 // Define missing pins
-#define FIL_RUNOUT_PIN          PA4
 #define MT_DET_PIN_STATE        LOW
 
+// Set dark background color for higher contrast.
+#define COLOR_BACKGROUND        COLOR_DARK
 
 // Define firmware output name
 // - NOTE: only works on 1.2 board - manual remene to elegoo.bin is needed for 1.3 board
 #define FIRMWARE_BIN elegoo.bin
 
-// Set dark background color for higher contrast.
-#define COLOR_BACKGROUND        COLOR_DARK
 
 /**
  * *** VENDORS PLEASE READ ***
@@ -476,7 +476,7 @@
  *     5 : 100kΩ  ATC Semitec 104GT-2/104NT-4-R025H42G - Used in ParCan, J-Head, and E3D, SliceEngineering 300°C
  *   501 : 100kΩ  Zonestar - Tronxy X3A
  *   502 : 100kΩ  Zonestar - used by hot bed in Zonestar Průša P802M
-*   503 : 100kΩ  Zonestar (Z8XM2) Heated Bed thermistor
+ *   503 : 100kΩ  Zonestar (Z8XM2) Heated Bed thermistor
  *   504 : 100kΩ  Zonestar P802QR2 (Part# QWG-104F-B3950) Hotend Thermistor
  *   505 : 100kΩ  Zonestar P802QR2 (Part# QWG-104F-3950) Bed Thermistor
  *   512 : 100kΩ  RPW-Ultra hotend
@@ -2911,7 +2911,9 @@
     #define TOUCH_CALIBRATION_AUTO_SAVE // Auto save successful calibration values to EEPROM
   #endif
 
-  #define SINGLE_TOUCH_NAVIGATION
+  #if ENABLED(TFT_COLOR_UI)
+    #define SINGLE_TOUCH_NAVIGATION
+  #endif
 #endif
 
 //

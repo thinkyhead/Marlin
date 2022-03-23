@@ -21,17 +21,14 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Elegoo/Neptune-2/V1.3/STOCK"
-
 ////////////////////////////
 // VENDOR VERSION EXAMPLE //
 ////////////////////////////
 
 /**
  * Marlin release version identifier
- *
  */
-#define SHORT_BUILD_VERSION "2.0.9.3-N2-$1-beta2"
+//#define SHORT_BUILD_VERSION "2.0.9.3"
 
 /**
  * Verbose version identifier which should contain a reference to the location
@@ -44,12 +41,12 @@
  * here we define this default string as the date where the latest release
  * version was tagged.
  */
-#define STRING_DISTRIBUTION_DATE "2022-01-01"
+//#define STRING_DISTRIBUTION_DATE "2021-12-25"
 
 /**
  * Defines a generic printer name to be output to the LCD after booting Marlin.
  */
-#define MACHINE_NAME "Elegoo Neptune 2"
+//#define MACHINE_NAME "3D Printer"
 
 /**
  * The SOURCE_CODE_URL is the location where users will find the Marlin Source
