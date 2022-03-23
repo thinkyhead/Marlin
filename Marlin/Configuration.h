@@ -79,8 +79,6 @@
  */
 
 // MAIN CONFIGURATION SWITCHES FOR FEATURES - see readme.md for more details.
-
-#define IS_COLOR_UI             false // true to use marlin COLOR UI else will use LVGL UI
 #define IS_BOARD_1_3            true  // true if you have the 1.3 board, false for 1.2 board
 #define HAS_BLTOUCH             true  // Enable if you have a BlTouch, false fo no BlTouch
 #define IS_2D                   false // True if you have a Neptuen 2d (Dual extruder)
@@ -1527,9 +1525,7 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-#if IS_COLOR_UI
-  #define FILAMENT_RUNOUT_SENSOR
-#endif
+#define FILAMENT_RUNOUT_SENSOR
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FIL_RUNOUT_ENABLED_DEFAULT true // Enable the sensor on startup. Override with M412 followed by M500.
   #if IS_2D
@@ -1768,9 +1764,7 @@
  * Add a bed leveling sub-menu for ABL or MBL.
  * Include a guided procedure if manual probing is enabled.
  */
-#if IS_COLOR_UI
-  #define LCD_BED_LEVELING
-#endif
+#define LCD_BED_LEVELING
 
 #if ENABLED(LCD_BED_LEVELING)
   #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
@@ -2709,11 +2703,6 @@
 #endif
 
 //
-// CR-6 OEM touch screen. A DWIN display with touch.
-//
-//#define DWIN_CREALITY_TOUCHLCD
-
-//
 // Touch-screen LCD for Malyan M200/M300 printers
 //
 //#define MALYAN_LCD
@@ -2744,12 +2733,6 @@
 #if ENABLED(NEXTION_TFT)
   #define LCD_SERIAL_PORT 1  // Default is 1 for Nextion
 #endif
-
-//
-// PanelDue touch controller by Escher3D
-// http://escher3d.com/pages/order/products/product2.php
-//
-//#define PANELDUE
 
 //
 // Third-party or vendor-customized controller interfaces.
@@ -2876,14 +2859,11 @@
  *   root of your SD card, together with the compiled firmware.
  */
 //#define TFT_CLASSIC_UI
-#if IS_COLOR_UI
-  #define TFT_COLOR_UI
-#else
-  #define TFT_LVGL_UI
-#endif
+#define TFT_COLOR_UI
+//#define TFT_LVGL_UI
 
 #if ENABLED(TFT_LVGL_UI)
-  #define MKS_WIFI_MODULE  // MKS WiFi module
+  //#define MKS_WIFI_MODULE  // MKS WiFi module
 #endif
 
 /**
@@ -2931,9 +2911,7 @@
     #define TOUCH_CALIBRATION_AUTO_SAVE // Auto save successful calibration values to EEPROM
   #endif
 
-  #if ENABLED(TFT_COLOR_UI)
-    #define SINGLE_TOUCH_NAVIGATION
-  #endif
+  #define SINGLE_TOUCH_NAVIGATION
 #endif
 
 //
