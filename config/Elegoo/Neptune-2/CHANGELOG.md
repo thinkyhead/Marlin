@@ -6,26 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.9.3-N2-rc3] - 2021-03-21
 
+### Added
+- Enabled FAN_KICKSTART_TIME as some users reported fan not kicking on for slower speeds
+
 ### Changed
 
-- Removed custom colors no longer needed (mentioned in #13)
-- Updated HEATER_0_MINTEMP from 0 to 5 so it can detect broken thermister
-- Updated BED_MINTEMP from 0 to 5 so it can detect broken thermister
-- Updated BED_MAXTEMP from 110 to 120
+- Removed custom colors - no longer needed
 - Updated HEATER_0_MAXTEMP from 270 to 275 per request
-- Updated BED_MAXTEMP from 110 to 120
+- Updated BED_MAXTEMP from 110 to 120 per request
 - Updated DEFAULT_ZJERK from 0.4 to 0.3 to match other ender clones
 - Updated Z_PROBE_FEEDRATE_SLOW from 300 to match Marlin defaults (it ends up being the same value)
 - Updated Z_PROBE_OFFSET_RANGE_MAX from 60 to 65 per request
 - Updated Z_PROBE_END_SCRIPT to add acceleration setting per user comment
 - Updated HOMING_FEEDRATE_MM_M to match other ender clones
-- Disabled define NO_WORKSPACE_OFFSETS since we don't need a leaner Marlin build and allow this feature (per request)
-- Enabled FAN_KICKSTART_TIME as some users reported fan not kicking on for slower speeds
+- Disabled define NO_WORKSPACE_OFFSETS since we don't need a leaner Marlin build and allows this feature (per request)
+- Updated THERMAL_PROTECTION_BED_PERIOD from 40 to 20 to match other ender clones
 
 ### Fixed
 
 - Found proper definition for LCD to allow for better screen contrast by disabling MKS_ROBIN_TFT35 and enabling TFT_GENERIC, and set its child values to fix screen color issues (Closes #13)
-- Removed extra purge on filament change mid-print (M600).
+- Changed ADVANCED_PAUSE_RESUME_PRIME to 0 to prevent extra purge on filament change mid-print (M600).
 
 ## [2.0.9.3-N2-rc2] - 2021-01-16
 

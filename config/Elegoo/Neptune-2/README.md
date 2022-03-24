@@ -17,7 +17,7 @@ This is a package of Marlin 2.x configurations for the Elegoo Neptune 2, Elegoo 
 These files are provided as opensource under the same [GPL v3](https://www.gnu.org/licenses/gpl-3.0) license as Marlin 2.
 
 ## Please Read and Consider:
-I am providing these configurations to the community for free. If you find this helpful or your ETSY printer farm benefits from this (or makes you rich :grinning:), please consider donating to a nonprofit close to my heart that supports my community. More information is at the end of this [README](#donation-request). 
+I am providing these configurations to the community for free. Please consider donating to a nonprofit close to my heart that supports my community if you find this helpful. More information is at the end of this [README](#donation-request). 
 
 # What are the features I get from using this?
 
@@ -129,7 +129,7 @@ A. Marlin 2 does not use any additional files for the provided configurations. I
 
 Q. The touch screen does not seem very responsive. Especially at the bottom of the screen. What's up with that?
 
-A. Yup. The color depth is also horrendous! So I choose very bright colors for the theme. If you know of a better quality compatible screen, I'd love to hear about it. I think a corner was cut on the machine to help keep costs down, which is very fair! A manual workaround is to use a stylus! [I found one that works well and made a side holder for it](https://thangs.com/trey.wentz/Screen%20stylus%20(remix)-43510?manualModelView=true). 
+A. Yup. Due to the screen size and touch areas I recommend using a stylus! [I found one that works well and made a side holder for it](https://thangs.com/trey.wentz/Screen%20stylus%20(remix)-43510?manualModelView=true). 
 
 Q: How do I know what version board I have?
 A: There are two ways to identify what version board you have. 
@@ -144,7 +144,6 @@ A: There are two ways to identify what version board you have.
     ![1-2board](https://user-images.githubusercontent.com/10281380/147952867-216f31e7-3df8-4679-9e6e-3f61c7d24c45.jpg)
     ![1-3board](https://user-images.githubusercontent.com/10281380/147952884-c4643537-1928-45d9-ae86-38522722a18b.jpg)
 
-  
 ## Donation Request
 
 Please consider donating to support the Tyler Wentz Memorial Fund if you find this helpful.
@@ -154,14 +153,6 @@ Please consider donating to support the Tyler Wentz Memorial Fund if you find th
 My son, Tyler Wentz, passed away after having a bodysurfing accident in 2015. We established a 501(c) (3) nonprofit organization to raise money to provide two scholarships in our community to deserving students. We are 100% volunteer-driven, and 100% of donations (less the 2.7% Square Processing Fee) will go straight towards supporting the scholarships. 
 
 You can learn more about the Tyler Wentz Memorial Fund fund at: https://twentz.com/ 
-
-
----
-
-## Possible TODO's (PR's accepted)
-
-1. Provide a configuration with linear advance on
-2. Automate configuration building
 
 ---
 
