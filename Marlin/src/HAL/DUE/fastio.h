@@ -88,52 +88,25 @@
   // Set pin as output
   #define _SET_OUTPUT(IO) do{ \
     uint32_t mask = MASK(G2_g_APinDescription[IO].ulPeripheralId); \
-    if ((PMC->PMC_PCSR0 & mask) != (mask)) PMC->PMC_PCER0 = mask; \
+    if ((PMC->PMC_PCSR0 & mask) != (mask)) PMC->PMC_PCER0 = mask; /* enable PIO clock if needed */ \
     volatile Pio* port = (DIO ## IO ## _WPORT); \
     mask = MASK(DIO ## IO ## _PIN); \
-    if (_READ(IO)) port->PIO_SODR = mask; \
+    if (_READ(IO)) port->PIO_SODR = mask; /* output must match input BEFORE setting direction or output will glitch */ \
     else port->PIO_CODR = mask; \
-    port->PIO_IDR = mask; \
+    port->PIO_IDR = mask; /* disable interrupt */ \
     const uint32_t pin_config = G2_g_APinDescription[IO].ulPinConfiguration; \
-    if (pin_config & PIO_PULLUP) port->PIO_PUER = mask; \
+    if (pin_config & PIO_PULLUP) port->PIO_PUER = mask;  /* enable pullup if needed */ \
     else port->PIO_PUDR = mask; \
-    if (pin_config & PIO_OPENDRAIN) port->PIO_MDER = mask; \
+    if (pin_config & PIO_OPENDRAIN) port->PIO_MDER = mask; /* enable multi-drive if needed */ \
     else port->PIO_MDDR = mask; \
     port->PIO_PER = mask; \
-    port->PIO_OER = mask; \
+    port->PIO_OER = mask; /* set to output */ \
     g_pinStatus[IO] = (g_pinStatus[IO] & 0xF0) | PIN_STATUS_DIGITAL_OUTPUT; \
   }while(0)
 
- /**
-  *  Set pin as output with comments
-  *  #define _SET_OUTPUT(IO) do{ \
-  *    uint32_t mask = MASK(G2_g_APinDescription[IO].ulPeripheralId); \
-  *    if ((PMC->PMC_PCSR0 & mask ) != (mask))  PMC->PMC_PCER0 = mask; \  // enable PIO clock if not already enabled
-  *
-  *    volatile Pio* port = (DIO ##  IO ## _WPORT); \
-  *    const uint32_t mask = MASK(DIO ## IO ## _PIN); \
-  *    if (_READ(IO)) port->PIO_SODR = mask; \ // set output to match input BEFORE setting direction or will glitch the output
-  *    else port->PIO_CODR = mask; \
-  *
-  *    port->PIO_IDR = mask; \ // disable interrupt
-  *
-  *    uint32_t pin_config = G2_g_APinDescription[IO].ulPinConfiguration; \
-  *    if (pin_config & PIO_PULLUP) pPio->PIO_PUER = mask; \  // enable pullup if necessary
-  *    else  pPio->PIO_PUDR = mask; \
-  *
-  *    if (pin_config & PIO_OPENDRAIN) port->PIO_MDER = mask; \ // Enable multi-drive if necessary
-  *    else  port->PIO_MDDR = mask; \
-  *
-  *    port->PIO_PER = mask; \
-  *    port->PIO_OER = mask; \  // set to output
-  *
-  *    g_pinStatus[IO] = (g_pinStatus[IO] & 0xF0) | PIN_STATUS_DIGITAL_OUTPUT; \
-  *  }while(0)
-  */
-
 #else
 
-    // Set pin as input
+  // Set pin as input
   #define _SET_INPUT(IO) do{ \
     pmc_enable_periph_clk(g_APinDescription[IO].ulPeripheralId); \
     PIO_Configure(digitalPinToPort(IO), PIO_INPUT, digitalPinToBitMask(IO), 0); \
@@ -145,6 +118,7 @@
     PIO_Configure(digitalPinToPort(IO), _READ(IO) ? PIO_OUTPUT_1 : PIO_OUTPUT_0, digitalPinToBitMask(IO), g_APinDescription[IO].ulPinConfiguration); \
     g_pinStatus[IO] = (g_pinStatus[IO] & 0xF0) | PIN_STATUS_DIGITAL_OUTPUT; \
   }while(0)
+
 #endif
 
 // Set pin as input with pullup mode

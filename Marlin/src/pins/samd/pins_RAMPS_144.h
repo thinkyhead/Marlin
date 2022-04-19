@@ -25,9 +25,7 @@
  * AGCM4 with RAMPS v1.4.4 pin assignments
  */
 
-#if NOT_TARGET(ARDUINO_GRAND_CENTRAL_M4)
-  #error "Oops! Select 'Adafruit Grand Central M4' in 'Tools > Board.'"
-#endif
+#include "env_validate.h"
 
 #ifndef BOARD_INFO_NAME
   #define BOARD_INFO_NAME "AGCM4 RAMPS 1.4.4"

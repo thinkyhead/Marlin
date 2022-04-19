@@ -85,10 +85,6 @@
 //
 // Steppers
 //
-#define Z_STEP_PIN                            73  // PA21      MOTOR 1
-#define Z_DIR_PIN                             75  // PA26
-#define Z_ENABLE_PIN                          74  // PA25
-
 #define X_STEP_PIN                            66  // PB15      MOTOR 2
 #define X_DIR_PIN                             54  // PA16
 #define X_ENABLE_PIN                          67  // PB16
@@ -96,6 +92,10 @@
 #define Y_STEP_PIN                            34  // PA29      MOTOR 3
 #define Y_DIR_PIN                             35  // PB1
 #define Y_ENABLE_PIN                          36  // PB0
+
+#define Z_STEP_PIN                            73  // PA21      MOTOR 1
+#define Z_DIR_PIN                             75  // PA26
+#define Z_ENABLE_PIN                          74  // PA25
 
 #define E0_STEP_PIN                           53  // PB14      MOTOR 4
 #define E0_DIR_PIN                            78  // PB23
@@ -129,8 +129,8 @@
 //
 // Temperature Sensors
 //
-#define TEMP_0_PIN                             2  // digital 56 PA23
-#define TEMP_BED_PIN                           5  // digital 59 PA4
+#define TEMP_0_PIN                             2  // D56 PA23
+#define TEMP_BED_PIN                           5  // D59 PA4
 
 //
 // Heaters / Fans
@@ -139,9 +139,9 @@
 #define HEATER_BED_PIN                        41  // PB24
 
 #ifndef FAN_PIN
-  #define FAN_PIN                             13  //  PB27 Fan1A
+  #define FAN_PIN                             13  // PB27 Fan1A
 #endif
-#define FAN1_PIN                              58  //  PA6  Fan1B
+#define FAN1_PIN                              58  // PA6  Fan1B
 
 #define FET_SAFETY_PIN                        31  // PA7  must be pulsed low every 50 mS or FETs are turned off
 #define FET_SAFETY_DELAY                      50  // 50 mS delay between pulses
