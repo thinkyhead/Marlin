@@ -474,6 +474,12 @@
   #include "sam/pins_KRATOS32.h"                // SAM3X8E                                env:DUE env:DUE_USB
 
 //
+// Duet SAM4S8C
+//
+#elif MB(DUET_2_MAESTRO)
+  #include "sam4/pins_DUET_2_MAESTRO.h"         // SAM4S8C                                env:DUE_maestro
+
+//
 // STM32 ARM Cortex-M0
 //
 #elif MB(MALYAN_M200_V2)

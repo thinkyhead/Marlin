@@ -297,6 +297,11 @@
 #define BOARD_ADSK                    3101  // Arduino DUE Shield Kit (ADSK)
 
 //
+// SAM4S8C ARM Cortex M4
+//
+#define BOARD_DUET_2_MAESTRO          3200  // Duet 2 Maestro
+
+//
 // STM32 ARM Cortex-M3
 //
 

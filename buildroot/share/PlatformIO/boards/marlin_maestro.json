@@ -1,0 +1,51 @@
+{
+  "build": {
+    "core": "arduino",
+    "cpu": "cortex-m4",
+    "extra_flags": "-D__SAM4S8C__ -DARDUINO_ARCH_SAM -DARDUINO_SAM_DUE",
+    "f_cpu": "120000000L",
+    "hwids": [
+      [
+        "0x1D50",
+        "0x60ED"
+      ]
+    ],
+    "ldscript": "linker_scripts/gcc/flash.ld",
+    "mcu": "atsam4s8c",
+    "usb_product": "Maestro",
+    "variant": "MARLIN_MAESTRO"
+  },
+  "connectivity": [
+    "can"
+  ],
+  "debug": {
+    "jlink_device": "ATSAM4S8C",
+    "openocd_chipname": "atsam4S8C",
+    "openocd_target": "atsam4XXX",
+    "svd_path": "ATSAM4S8C.svd"
+  },
+  "frameworks": [
+    "arduino",
+    "simba"
+  ],
+  "name": "Maestro",
+  "upload": {
+    "disable_flushing": true,
+    "maximum_ram_size": 98304,
+    "maximum_size": 524288,
+    "native_usb": true,
+    "protocol": "sam-ba",
+    "protocols": [
+      "sam-ba",
+      "jlink",
+      "blackmagic",
+      "atmel-ice",
+      "stlink"
+    ],
+    "require_upload_port": true,
+    "use_1200bps_touch": true,
+    "wait_for_upload_port": true
+  },
+  "url": "https://duet3d.com",
+  "vendor": "Duet3D"
+}
