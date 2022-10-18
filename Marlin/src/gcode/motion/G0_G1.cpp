@@ -32,7 +32,7 @@
 #include "../../sd/cardreader.h"
 
 #if ENABLED(NANODLP_Z_SYNC)
-  #include "../../module/stepper.h"
+  #include "../../module/planner.h"
 #endif
 
 extern xyze_pos_t destination;
@@ -49,7 +49,7 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
   if (IsRunning()
     #if ENABLED(NO_MOTION_BEFORE_HOMING)
       && !homing_needed_error(
-        LINEAR_AXIS_GANG(
+        NUM_AXIS_GANG(
             (parser.seen_test('X') ? _BV(X_AXIS) : 0),
           | (parser.seen_test('Y') ? _BV(Y_AXIS) : 0),
           | (parser.seen_test('Z') ? _BV(Z_AXIS) : 0),
@@ -89,7 +89,7 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
       if (MIN_AUTORETRACT <= MAX_AUTORETRACT) {
         // When M209 Autoretract is enabled, convert E-only moves to firmware retract/recover moves
         if (fwretract.autoretract_enabled && parser.seen_test('E')
-          && !parser.seen(LINEAR_AXIS_GANG("X", "Y", "Z", AXIS4_STR, AXIS5_STR, AXIS6_STR))
+          && !parser.seen(STR_AXES_MAIN)
         ) {
           const float echange = destination.e - current_position.e;
           // Is this a retract or recover move?

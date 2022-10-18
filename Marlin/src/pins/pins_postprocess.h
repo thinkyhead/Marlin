@@ -468,16 +468,16 @@
     #ifndef Z2_USE_ENDSTOP
       #define Z2_USE_ENDSTOP _ZSTOP_
     #endif
-    #if NUM_Z_STEPPER_DRIVERS >= 3 && !defined(Z3_USE_ENDSTOP)
+    #if NUM_Z_STEPPERS >= 3 && !defined(Z3_USE_ENDSTOP)
       #define Z3_USE_ENDSTOP _ZSTOP_
     #endif
-    #if NUM_Z_STEPPER_DRIVERS >= 4 && !defined(Z4_USE_ENDSTOP)
+    #if NUM_Z_STEPPERS >= 4 && !defined(Z4_USE_ENDSTOP)
       #define Z4_USE_ENDSTOP _ZSTOP_
     #endif
   #endif
 #endif
 
-#if LINEAR_AXES >= 4
+#if HAS_I_AXIS
   #ifdef I_STOP_PIN
     #if I_HOME_TO_MIN
       #define I_MIN_PIN I_STOP_PIN
@@ -500,7 +500,7 @@
   #undef I_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 5
+#if HAS_J_AXIS
   #ifdef J_STOP_PIN
     #if J_HOME_TO_MIN
       #define J_MIN_PIN J_STOP_PIN
@@ -523,7 +523,7 @@
   #undef J_MAX_PIN
 #endif
 
-#if LINEAR_AXES >= 6
+#if HAS_K_AXIS
   #ifdef K_STOP_PIN
     #if K_HOME_TO_MIN
       #define K_MIN_PIN K_STOP_PIN
@@ -546,6 +546,7 @@
   #undef K_MAX_PIN
 #endif
 
+// Filament Sensor first pin alias
 #if HAS_FILAMENT_SENSOR
   #define FIL_RUNOUT1_PIN FIL_RUNOUT_PIN  // Filament Sensor first pin alias
 #else
@@ -598,12 +599,13 @@
   #define X2_E_INDEX E_STEPPERS
 #endif
 
-// The X2 axis, if any, should be the next open extruder port
 #if HAS_X2_STEPPER && !defined(X2_DIAG_PIN) && !defined(X2_STEP_PIN) && !PIN_EXISTS(X2_CS_PIN)
   #define Y2_E_INDEX INCREMENT(X2_E_INDEX)
 #else
   #define Y2_E_INDEX X2_E_INDEX
 #endif
+
+// The X2 axis, if any, should be the next open extruder port
 #if HAS_X2_STEPPER
   #ifndef X2_STEP_PIN
     #define X2_STEP_PIN   _EPIN(X2_E_INDEX, STEP)
@@ -686,13 +688,14 @@
   #define X2_MS3_PIN -1
 #endif
 
-// The Y2 axis, if any, should be the next open extruder port
-#if ENABLED(Y_DUAL_STEPPER_DRIVERS) && !defined(Y2_DIAG_PIN) && !defined(Y2_STEP_PIN) && !PIN_EXISTS(Y2_CS_PIN)
+#if HAS_DUAL_Y_STEPPERS && !defined(Y2_DIAG_PIN) && !defined(Y2_STEP_PIN) && !PIN_EXISTS(Y2_CS_PIN)
   #define Z2_E_INDEX INCREMENT(Y2_E_INDEX)
 #else
   #define Z2_E_INDEX Y2_E_INDEX
 #endif
-#if ENABLED(Y_DUAL_STEPPER_DRIVERS)
+
+// The Y2 axis, if any, should be the next open extruder port
+#if HAS_DUAL_Y_STEPPERS
   #ifndef Y2_STEP_PIN
     #define Y2_STEP_PIN   _EPIN(Y2_E_INDEX, STEP)
     #define Y2_DIR_PIN    _EPIN(Y2_E_INDEX, DIR)
@@ -771,13 +774,14 @@
   #define Y2_MS3_PIN -1
 #endif
 
-// The Z2 axis, if any, should be the next open extruder port
-#if NUM_Z_STEPPER_DRIVERS >= 2 && !defined(Z2_DIAG_PIN) && !defined(Z2_STEP_PIN) && !PIN_EXISTS(Z2_CS_PIN)
+#if NUM_Z_STEPPERS >= 2 && !defined(Z2_DIAG_PIN) && !defined(Z2_STEP_PIN) && !PIN_EXISTS(Z2_CS_PIN)
   #define Z3_E_INDEX INCREMENT(Z2_E_INDEX)
 #else
   #define Z3_E_INDEX Z2_E_INDEX
 #endif
-#if NUM_Z_STEPPER_DRIVERS >= 2
+
+// The Z2 axis, if any, should be the next open extruder port
+#if NUM_Z_STEPPERS >= 2
   #ifndef Z2_STEP_PIN
     #define Z2_STEP_PIN   _EPIN(Z2_E_INDEX, STEP)
     #define Z2_DIR_PIN    _EPIN(Z2_E_INDEX, DIR)
@@ -856,13 +860,14 @@
   #define Z2_MS3_PIN -1
 #endif
 
-// The Z3 axis, if any, should be the next open extruder port
-#if NUM_Z_STEPPER_DRIVERS >= 3 && !defined(Z3_DIAG_PIN) && !defined(Z3_STEP_PIN) && !PIN_EXISTS(Z3_CS_PIN)
+#if NUM_Z_STEPPERS >= 3 && !defined(Z3_DIAG_PIN) && !defined(Z3_STEP_PIN) && !PIN_EXISTS(Z3_CS_PIN)
   #define Z4_E_INDEX INCREMENT(Z3_E_INDEX)
 #else
   #define Z4_E_INDEX Z3_E_INDEX
 #endif
-#if NUM_Z_STEPPER_DRIVERS >= 3
+
+// The Z3 axis, if any, should be the next open extruder port
+#if NUM_Z_STEPPERS >= 3
   #ifndef Z3_STEP_PIN
     #define Z3_STEP_PIN   _EPIN(Z3_E_INDEX, STEP)
     #define Z3_DIR_PIN    _EPIN(Z3_E_INDEX, DIR)
@@ -941,13 +946,14 @@
   #define Z3_MS3_PIN -1
 #endif
 
-// The Z4 axis, if any, should be the next open extruder port
-#if NUM_Z_STEPPER_DRIVERS >= 4 && !defined(Z4_DIAG_PIN) && !defined(Z4_STEP_PIN) && !PIN_EXISTS(Z4_CS_PIN)
+#if NUM_Z_STEPPERS >= 4 && !defined(Z4_DIAG_PIN) && !defined(Z4_STEP_PIN) && !PIN_EXISTS(Z4_CS_PIN)
   #define I_E_INDEX INCREMENT(Z4_E_INDEX)
 #else
   #define I_E_INDEX Z4_E_INDEX
 #endif
-#if NUM_Z_STEPPER_DRIVERS >= 4
+
+// The Z4 axis, if any, should be the next open extruder port
+#if NUM_Z_STEPPERS >= 4
   #ifndef Z4_STEP_PIN
     #define Z4_STEP_PIN   _EPIN(Z4_E_INDEX, STEP)
     #define Z4_DIR_PIN    _EPIN(Z4_E_INDEX, DIR)
@@ -1026,13 +1032,14 @@
   #define Z4_MS3_PIN -1
 #endif
 
-// The I axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 4 && !defined(I_DIAG_PIN) && !defined(I_STEP_PIN) && !PIN_EXISTS(I_CS_PIN)
+#if HAS_I_AXIS && !defined(I_DIAG_PIN) && !defined(I_STEP_PIN) && !PIN_EXISTS(I_CS_PIN)
   #define J_E_INDEX INCREMENT(I_E_INDEX)
 #else
   #define J_E_INDEX I_E_INDEX
 #endif
-#if LINEAR_AXES >= 4
+
+// The I axis, if any, should be the next open extruder port
+#if HAS_I_AXIS
   #ifndef I_STEP_PIN
     #define I_STEP_PIN   _EPIN(I_E_INDEX, STEP)
     #define I_DIR_PIN    _EPIN(I_E_INDEX, DIR)
@@ -1111,13 +1118,14 @@
   #define I_MS3_PIN -1
 #endif
 
-// The J axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 5 && !defined(J_DIAG_PIN) && !defined(J_STEP_PIN) && !PIN_EXISTS(J_CS_PIN)
+#if HAS_J_AXIS && !defined(J_DIAG_PIN) && !defined(J_STEP_PIN) && !PIN_EXISTS(J_CS_PIN)
   #define K_E_INDEX INCREMENT(J_E_INDEX)
 #else
   #define K_E_INDEX J_E_INDEX
 #endif
-#if LINEAR_AXES >= 5
+
+// The J axis, if any, should be the next open extruder port
+#if HAS_J_AXIS
   #ifndef J_STEP_PIN
     #define J_STEP_PIN   _EPIN(J_E_INDEX, STEP)
     #define J_DIR_PIN    _EPIN(J_E_INDEX, DIR)
@@ -1197,7 +1205,7 @@
 #endif
 
 // The K axis, if any, should be the next open extruder port
-#if LINEAR_AXES >= 6
+#if HAS_K_AXIS
   #ifndef K_STEP_PIN
     #define K_STEP_PIN   _EPIN(K_E_INDEX, STEP)
     #define K_DIR_PIN    _EPIN(K_E_INDEX, DIR)
@@ -1311,6 +1319,9 @@
   #undef X_MAX_PIN
   #define X_MAX_PIN          -1
 #endif
+#if NONE(USE_XMIN_PLUG, USE_XMAX_PLUG)
+  #undef X_STOP_PIN
+#endif
 #if DISABLED(USE_YMIN_PLUG)
   #undef Y_MIN_PIN
   #define Y_MIN_PIN          -1
@@ -1318,6 +1329,9 @@
 #if DISABLED(USE_YMAX_PLUG)
   #undef Y_MAX_PIN
   #define Y_MAX_PIN          -1
+#endif
+#if NONE(USE_YMIN_PLUG, USE_YMAX_PLUG)
+  #undef Y_STOP_PIN
 #endif
 #if DISABLED(USE_ZMIN_PLUG)
   #undef Z_MIN_PIN
@@ -1327,6 +1341,9 @@
   #undef Z_MAX_PIN
   #define Z_MAX_PIN          -1
 #endif
+#if NONE(USE_ZMIN_PLUG, USE_ZMAX_PLUG)
+  #undef Z_STOP_PIN
+#endif
 #if DISABLED(USE_IMIN_PLUG)
   #undef I_MIN_PIN
   #define I_MIN_PIN          -1
@@ -1334,6 +1351,9 @@
 #if DISABLED(USE_IMAX_PLUG)
   #undef I_MAX_PIN
   #define I_MAX_PIN          -1
+#endif
+#if NONE(USE_IMIN_PLUG, USE_IMAX_PLUG)
+  #undef I_STOP_PIN
 #endif
 #if DISABLED(USE_JMIN_PLUG)
   #undef J_MIN_PIN
@@ -1343,6 +1363,9 @@
   #undef J_MAX_PIN
   #define J_MAX_PIN          -1
 #endif
+#if NONE(USE_JMIN_PLUG, USE_JMAX_PLUG)
+  #undef J_STOP_PIN
+#endif
 #if DISABLED(USE_KMIN_PLUG)
   #undef K_MIN_PIN
   #define K_MIN_PIN          -1
@@ -1350,6 +1373,9 @@
 #if DISABLED(USE_KMAX_PLUG)
   #undef K_MAX_PIN
   #define K_MAX_PIN          -1
+#endif
+#if NONE(USE_KMIN_PLUG, USE_KMAX_PLUG)
+  #undef K_STOP_PIN
 #endif
 
 #if DISABLED(X_DUAL_ENDSTOPS) || X_HOME_TO_MAX
@@ -1370,16 +1396,16 @@
 #if DISABLED(Z_MULTI_ENDSTOPS) || Z_HOME_TO_MIN
   #undef Z2_MAX_PIN
 #endif
-#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPER_DRIVERS < 3 || Z_HOME_TO_MAX
+#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPERS < 3 || Z_HOME_TO_MAX
   #undef Z3_MIN_PIN
 #endif
-#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPER_DRIVERS < 3 || Z_HOME_TO_MIN
+#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPERS < 3 || Z_HOME_TO_MIN
   #undef Z3_MAX_PIN
 #endif
-#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPER_DRIVERS < 4 || Z_HOME_TO_MAX
+#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPERS < 4 || Z_HOME_TO_MAX
   #undef Z4_MIN_PIN
 #endif
-#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPER_DRIVERS < 4 || Z_HOME_TO_MIN
+#if DISABLED(Z_MULTI_ENDSTOPS) || NUM_Z_STEPPERS < 4 || Z_HOME_TO_MIN
   #undef Z4_MAX_PIN
 #endif
 

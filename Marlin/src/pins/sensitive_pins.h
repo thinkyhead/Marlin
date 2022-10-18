@@ -155,7 +155,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 4
+#if HAS_I_AXIS
 
   #if PIN_EXISTS(I_MIN)
     #define _I_MIN I_MIN_PIN,
@@ -201,7 +201,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 5
+#if HAS_J_AXIS
 
   #if PIN_EXISTS(J_MIN)
     #define _J_MIN J_MIN_PIN,
@@ -247,7 +247,7 @@
 
 #endif
 
-#if LINEAR_AXES >= 6
+#if HAS_K_AXIS
 
   #if PIN_EXISTS(K_MIN)
     #define _K_MIN K_MIN_PIN,
@@ -658,7 +658,7 @@
   #define _X2_PINS
 #endif
 
-#if ENABLED(Y_DUAL_STEPPER_DRIVERS)
+#if HAS_DUAL_Y_STEPPERS
   #if PIN_EXISTS(Y2_CS) && AXIS_HAS_SPI(Y2)
     #define _Y2_CS Y2_CS_PIN,
   #else
@@ -684,7 +684,7 @@
   #define _Y2_PINS
 #endif
 
-#if NUM_Z_STEPPER_DRIVERS >= 2
+#if NUM_Z_STEPPERS >= 2
   #if PIN_EXISTS(Z2_CS) && AXIS_HAS_SPI(Z2)
     #define _Z2_CS Z2_CS_PIN,
   #else
@@ -710,7 +710,7 @@
   #define _Z2_PINS
 #endif
 
-#if NUM_Z_STEPPER_DRIVERS >= 3
+#if NUM_Z_STEPPERS >= 3
   #if PIN_EXISTS(Z3_CS) && AXIS_HAS_SPI(Z3)
     #define _Z3_CS Z3_CS_PIN,
   #else
@@ -736,7 +736,7 @@
   #define _Z3_PINS
 #endif
 
-#if NUM_Z_STEPPER_DRIVERS >= 4
+#if NUM_Z_STEPPERS >= 4
   #if PIN_EXISTS(Z4_CS) && AXIS_HAS_SPI(Z4)
     #define _Z4_CS Z4_CS_PIN,
   #else

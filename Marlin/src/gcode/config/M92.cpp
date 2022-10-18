@@ -24,7 +24,7 @@
 #include "../../module/planner.h"
 
 /**
- * M92: Set axis steps-per-unit for one or more axes, X, Y, Z, and E.
+ * M92: Set axis steps-per-unit for one or more axes, X, Y, Z, [I, [J, [K]]] and E.
  *      (Follows the same syntax as G92)
  *
  *      With multiple extruders use T to specify which one.
@@ -43,11 +43,11 @@ void GcodeSuite::M92() {
   if (target_extruder < 0) return;
 
   // No arguments? Show M92 report.
-  if (!parser.seen(LOGICAL_AXES_STRING TERN_(MAGIC_NUMBERS_GCODE, "HL")))
+  if (!parser.seen(STR_AXES_LOGICAL TERN_(MAGIC_NUMBERS_GCODE, "HL")))
     return M92_report(true, target_extruder);
 
   LOOP_LOGICAL_AXES(i) {
-    if (parser.seenval(axis_codes[i])) {
+    if (parser.seenval(AXIS_CHAR(i))) {
       if (TERN1(HAS_EXTRUDERS, i != E_AXIS))
         planner.settings.axis_steps_per_mm[i] = parser.value_per_axis_units((AxisEnum)i);
       else {
@@ -92,7 +92,7 @@ void GcodeSuite::M92() {
 
 void GcodeSuite::M92_report(const bool forReplay/*=true*/, const int8_t e/*=-1*/) {
   report_heading_etc(forReplay, F(STR_STEPS_PER_UNIT));
-  SERIAL_ECHOPGM_P(LIST_N(DOUBLE(LINEAR_AXES),
+  SERIAL_ECHOPGM_P(LIST_N(DOUBLE(NUM_AXES),
     PSTR("  M92 X"), LINEAR_UNIT(planner.settings.axis_steps_per_mm[X_AXIS]),
     SP_Y_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Y_AXIS]),
     SP_Z_STR, LINEAR_UNIT(planner.settings.axis_steps_per_mm[Z_AXIS]),
