@@ -39,9 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Center bed after probing (allows touch screen access after probing)
 
 ### Changed
-- set `BAUDRATE` to `115200` due to some reliability issues reported by users 
+- set `BAUDRATE` to `115200` due to some reliability issues reported by users
 - Set `ESTEPS` to 2S and 2D Elegoo defaults
-- set extruder min temperature to `180` 
+- set extruder min temperature to `180`
 
 ### Removed
 - `POWER_LOSS_PIN` removed from custom section since power loss does not work
@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Increased Probing Grid to 5x5
 - Updated PLA preheat temp to 200
 - Reduced hot end idle timeout to 5 minutes
-- 
+-
 ### Fixed
 
 - User unable to Home printer of boot (AKA Red Screen Issue)
