@@ -23,7 +23,7 @@
 #pragma once
 
 //
-// MKS Neptune 3 pinmap
+// Elegoo Neptune 3 pinmap
 //
 
 // Avoid conflict with TIMER_TONE
@@ -33,7 +33,7 @@
 //
 // #define DISABLE_DEBUG
 
-#define BOARD_INFO_NAME "MKS Robin Nano E3"
+#define BOARD_INFO_NAME "Elegoo Neptune 3"
 
 // Use one of these or SDCard-based Emulation will be used
 //#define SRAM_EEPROM_EMULATION                   // Use BackSRAM-based EEPROM emulation
@@ -56,22 +56,22 @@
 #define SERVO0_PIN                          PA8   // Enable BLTOUCH
 
 //
-// Limit Switches 
+// Limit Switches
 //
-#define ZNP_TEST                            0
-#if ZNP_TEST  
-#define X_DIAG_PIN                          PC14    // PA13   X-;//PC14 Z+  
+#define ZNP_TEST                               0
+#if ZNP_TEST
+  #define X_DIAG_PIN                        PC14  // PA13   X-;//PC14 Z+
 #else
-#define X_DIAG_PIN                          PA13    // PA13   X-;//PC14 Z+
+  #define X_DIAG_PIN                        PA13  // PA13   X-;//PC14 Z+
 #endif
 
 #define Y_DIAG_PIN                          PB8
 #define Z_DIAG_PIN                          PC13
 
-#define X_STOP_PIN                        X_DIAG_PIN
-#define Y_STOP_PIN                        Y_DIAG_PIN
-#define Z_MIN_PIN                         Z_DIAG_PIN
-#define Z_MAX_PIN                         PC14   
+#define X_STOP_PIN                    X_DIAG_PIN
+#define Y_STOP_PIN                    Y_DIAG_PIN
+#define Z_MIN_PIN                     Z_DIAG_PIN
+#define Z_MAX_PIN                           PC14
 
 //
 // Steppers
@@ -96,9 +96,9 @@
 #define E1_STEP_PIN                         PC4
 #define E1_DIR_PIN                          PA4
 
-#define Z2_ENABLE_PIN                       E1_ENABLE_PIN
-#define Z2_STEP_PIN                         E1_STEP_PIN
-#define Z2_DIR_PIN                          E1_DIR_PIN
+#define Z2_ENABLE_PIN              E1_ENABLE_PIN
+#define Z2_STEP_PIN                  E1_STEP_PIN
+#define Z2_DIR_PIN                    E1_DIR_PIN
 
 //
 // Temperature Sensors
@@ -113,12 +113,12 @@
 #define HEATER_0_PIN                        PA6   // HEATER1
 #define HEATER_BED_PIN                      PA5   // HOT BED
 
-#define FAN_PIN                             PB0  // FAN
-#define FAN1_PIN                            PA7  // FAN1
+#define FAN_PIN                             PB0   // FAN
+#define FAN1_PIN                            PA7   // FAN1
 
-#define MT_DET_1_PIN                      PB4   // MT_DET
-#define MT_DET_2_PIN                      PB5
-#define MT_DET_PIN_STATE                  LOW
+#define MT_DET_1_PIN                        PB4   // MT_DET
+#define MT_DET_2_PIN                        PB5
+#define MT_DET_PIN_STATE                     LOW
 
 #ifndef FIL_RUNOUT_PIN
   #define FIL_RUNOUT_PIN                    PB4
@@ -127,18 +127,18 @@
   #define FIL_RUNOUT2_PIN                   PB5
 #endif
 
-#define POWER_LOSS_PIN                  PB9   // PW_DET
-#define PS_ON_PIN                       PB2   // PW_OFF
+#define POWER_LOSS_PIN                      PB9   // PW_DET
+#define PS_ON_PIN                           PB2   // PW_OFF
 //#define KILL_PIN                          PB2
-//#define KILL_PIN_STATE                    LOW
+//#define KILL_PIN_STATE                     LOW
 
 #ifndef SDCARD_CONNECTION
   #define SDCARD_CONNECTION              ONBOARD
 #endif
 
-#define WIFI_IO0_PIN                      PA0
-#define WIFI_IO1_PIN                      PC15
-#define WIFI_RESET_PIN                    PA1
+#define WIFI_IO0_PIN                        PA0
+#define WIFI_IO1_PIN                        PC15
+#define WIFI_RESET_PIN                      PA1
 
 //
 // Onboard SD card
@@ -152,5 +152,5 @@
   #define SD_MISO_PIN                       PB14
   #define SD_MOSI_PIN                       PB15
   #define SD_DETECT_PIN                     PC3
-  #define SD_SPI_SPEED                      SPI_FULL_SPEED
+  #define SD_SPI_SPEED            SPI_FULL_SPEED
 #endif

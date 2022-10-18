@@ -56,11 +56,11 @@
 #define SERVO0_PIN                          PA8   // Enable BLTOUCH
 
 //
-// Limit Switches 
+// Limit Switches
 //
 #define ZNP_TEST                            0
-#if ZNP_TEST  
-#define X_DIAG_PIN                          PC14    // PA13   X-;//PC14 Z+  
+#if ZNP_TEST
+#define X_DIAG_PIN                          PC14    // PA13   X-;//PC14 Z+
 #else
 #define X_DIAG_PIN                          PA13    // PA13   X-;//PC14 Z+
 #endif

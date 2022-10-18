@@ -2267,7 +2267,7 @@
   #define PREHEAT_AL_TEMP_HOTEND  120
 #else
   #define PREHEAT_AL_TEMP_HOTEND 0
-#endif  
+#endif
 #define PREHEAT_AL_TEMP_BED     65
 
 // @section motion
@@ -3023,7 +3023,7 @@
 #if ENABLED(DGUS_LCD_UI_MKS)
   #if ENABLED(BLUE_THEME)
     #define USE_MKS_BLUE_UI
-  #else  
+  #else
     #define USE_MKS_GREEN_UI
   #endif
 #endif
