@@ -2737,7 +2737,7 @@
 //
 //  Set this option if CLOCKWISE causes values to DECREASE
 //
-//#define REVERSE_ENCODER_DIRECTION
+#define REVERSE_ENCODER_DIRECTION
 
 //
 // This option reverses the encoder direction for navigating LCD menus.
@@ -2802,6 +2802,12 @@
 // Silence in-between tones.
 //
 //#define STARTUP_TUNE { 698, 300, 0, 50, 523, 50, 0, 25, 494, 50, 0, 25, 523, 100, 0, 50, 554, 300, 0, 100, 523, 300 }
+//*
+#define STARTUP_TUNE { 2794, 125, 0, 62, 2093, 125, 0, 62, \
+                       2349, 125, 0, 62, 2637, 125, 0, 62, \
+                       2349, 250, 0, 62, \
+                       3136, 500, 0, 62, 3520, 500 }
+//*/
 
 //=============================================================================
 //======================== LCD / Controller Selection =========================
@@ -2973,7 +2979,8 @@
 // RepRapDiscount FULL GRAPHIC Smart Controller
 // https://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-//#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+#define BEEPER_PIN 15 // Y+
 
 //
 // K.3D Full Graphic Smart Controller
@@ -3250,7 +3257,7 @@
 //
 // Touch-screen LCD for Anycubic Chiron
 //
-#define ANYCUBIC_LCD_CHIRON
+//#define ANYCUBIC_LCD_CHIRON
 
 //
 // Touch-screen LCD for Anycubic i3 Mega
