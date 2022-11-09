@@ -35,7 +35,7 @@
 // priority for STM32 HardwareTimer objects.
 #define SWSERIAL_TIMER_IRQ_PRIO_DEFAULT  1 // Requires tight bit timing to communicate reliably with TMC drivers
 #define SERVO_TIMER_IRQ_PRIO_DEFAULT     1 // Requires tight PWM timing to control a BLTouch reliably
-#define STEP_TIMER_IRQ_PRIO_DEFAULT      2
+#define STEP_TIMER_IRQ_PRIO_DEFAULT      TERN(ANKER_MAKE, 1, 2)
 #define TEMP_TIMER_IRQ_PRIO_DEFAULT     14 // Low priority avoids interference with other hardware and timers
 
 #ifndef STEP_TIMER_IRQ_PRIO

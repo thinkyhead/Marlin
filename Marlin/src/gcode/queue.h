@@ -68,7 +68,7 @@ public:
    * A handy ring buffer type
    */
   struct RingBuffer {
-    uint8_t length,                 //!< Number of commands in the queue
+    uint16_t length,                 //!< Number of commands in the queue
             index_r,                //!< Ring buffer's read position
             index_w;                //!< Ring buffer's write position
     CommandLine commands[BUFSIZE];  //!< The ring buffer of commands
@@ -77,7 +77,7 @@ public:
 
     inline void clear() { length = index_r = index_w = 0; }
 
-    void advance_pos(uint8_t &p, const int inc) { if (++p >= BUFSIZE) p = 0; length += inc; }
+    void advance_pos(uint16_t &p, const int inc) { if (++p >= BUFSIZE) p = 0; length += inc; }
 
     void commit_command(bool skip_ok
       OPTARG(HAS_MULTI_SERIAL, serial_index_t serial_ind = serial_index_t())
@@ -88,6 +88,12 @@ public:
     );
 
     void ok_to_send();
+
+    #if ENABLED(ANKER_MULTIORDER_PACK)
+      inline unsigned int buf_free_size() { return (BUFSIZE) - ring_buffer.length; }
+      // Each command will return the remaining buffer space
+      void report_buf_free_size(); //{int left = BUFSIZE - ring_buffer.length;SERIAL_ECHOLNPGM("+RINGBUF-RES:", left);}
+    #endif
 
     inline bool full(uint8_t cmdCount=1) const { return length > (BUFSIZE - cmdCount); }
 
@@ -238,6 +244,11 @@ public:
   #endif // BUFFER_MONITORING
 
 private:
+
+  #if ENABLED(ANKER_MULTIORDER_PACK)
+    static void multi_pack_process(char *buf, unsigned int chkpos, int p);
+    static bool multi_pack_recv(int c, int p);
+  #endif
 
   static void get_serial_commands();
 

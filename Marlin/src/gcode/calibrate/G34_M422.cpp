@@ -433,7 +433,9 @@ void GcodeSuite::G34() {
         // After this operation the z position needs correction
         set_axis_never_homed(Z_AXIS);
         // Home Z after the alignment procedure
-        process_subcommands_now_P(PSTR("G28Z"));
+
+        process_subcommands_now_P(PSTR("G28 Z"));
+
       #else
         // Use the probed height from the last iteration to determine the Z height.
         // z_measured_min is used, because all steppers are aligned to z_measured_min.
@@ -454,6 +456,30 @@ void GcodeSuite::G34() {
 }
 
 #endif // Z_MULTI_ENDSTOPS || Z_STEPPER_AUTO_ALIGN
+
+#if ENABLED(ANKER_ALIGN)
+
+#include "../../feature/anker/anker_align.h"
+
+void GcodeSuite::G36() {
+  if (parser.seen('L'))
+    anker_align.add_z1_value(parser.value_float());
+  else if (parser.seen('F'))
+    anker_align.add_z2_value(parser.value_float());
+
+  if (parser.seen('A'))
+    anker_align.add_z1_value_no_save(parser.value_float());
+  else if (parser.seen('B'))
+    anker_align.add_z2_value_no_save(parser.value_float());
+  else if (parser.seen('S'))
+    anker_align.reset();
+  else if (parser.seen('T'))
+    SERIAL_ECHOLNPGM(" Z1_value:", anker_align.z1_value, " Z2_value:", anker_align.z2_value);
+  else
+    anker_align.auto_align();
+}
+
+#endif
 
 #if ENABLED(Z_STEPPER_AUTO_ALIGN)
 

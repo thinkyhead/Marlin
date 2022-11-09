@@ -35,6 +35,10 @@
 #include <HardwareSerial.h>
 #include <SPI.h>
 
+#if ENABLED(USE_Z_SENSORLESS)
+  #include "../../feature/anker/anker_z_sensorless.h"
+#endif
+
 enum StealthIndex : uint8_t {
   LOGICAL_AXIS_LIST(STEALTH_AXIS_E, STEALTH_AXIS_X, STEALTH_AXIS_Y, STEALTH_AXIS_Z, STEALTH_AXIS_I, STEALTH_AXIS_J, STEALTH_AXIS_K)
 };
@@ -949,6 +953,13 @@ void reset_trinamic_drivers() {
       #endif
     #endif
   #endif // USE SENSORLESS
+
+  #if ENABLED(USE_Z_SENSORLESS)
+    stepperZ.anker_homing_threshold(ANKER_Z_STALL_SENSITIVITY);
+    #ifdef ANKER_Z2_STALL_SENSITIVITY
+      stepperZ2.anker_homing_threshold(ANKER_Z2_STALL_SENSITIVITY);
+    #endif
+  #endif
 
   #ifdef TMC_ADV
     TMC_ADV()

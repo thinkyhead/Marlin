@@ -187,6 +187,10 @@ void GcodeSuite::M420() {
     }
     else if (to_enable || seenV) {
       SERIAL_ECHO_MSG("Invalid mesh.");
+      #if ENABLED(ANKER_LEVELING)
+        TERN_(HAS_LEVELING, reset_bed_level());
+        (void)settings.save();
+      #endif
       goto EXIT_M420;
     }
 

@@ -231,6 +231,10 @@ class Endstops {
       static void clear_endstop_state();
       static bool tmc_spi_homing_check();
     #endif
+
+    #if ENABLED(ANKER_FIX_ENDSTOPS)
+      void set_anker_endstop(const uint16_t value);
+    #endif
 };
 
 extern Endstops endstops;

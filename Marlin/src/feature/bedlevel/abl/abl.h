@@ -31,6 +31,11 @@ float bilinear_z_offset(const xy_pos_t &raw);
 void extrapolate_unprobed_bed_level();
 void print_bilinear_leveling_grid();
 void refresh_bed_level();
+
+#if ENABLED(ANKER_LEVELING)
+  bool abl_is_valid();
+#endif
+
 #if ENABLED(ABL_BILINEAR_SUBDIVISION)
   void print_bilinear_leveling_grid_virt();
   void bed_level_virt_interpolate();

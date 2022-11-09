@@ -243,6 +243,21 @@ class TMCMarlin<TMC2209Stepper, AXIS_LETTER, DRIVER_ID, AXIS_ID> : public TMC220
         TMC2209Stepper::SGTHRS(sgt_val);
         TERN_(HAS_LCD_MENU, this->stored.homing_thrs = sgt_val);
       }
+      #if ENABLED(USE_Z_SENSORLESS)
+        inline int16_t anker_homing_threshold() { return TMC2209Stepper::SGTHRS(); }
+        void anker_homing_threshold(int16_t sgt_val) {
+          sgt_val = (int16_t)constrain(sgt_val, sgt_min, sgt_max);
+          TMC2209Stepper::SGTHRS(sgt_val);
+          TERN_(HAS_LCD_MENU, this->stored.homing_thrs = sgt_val);
+        }
+      #endif
+    #else
+      inline int16_t anker_homing_threshold() { return TMC2209Stepper::SGTHRS(); }
+      void anker_homing_threshold(int16_t sgt_val) {
+        sgt_val = (int16_t)constrain(sgt_val, sgt_min, sgt_max);
+        TMC2209Stepper::SGTHRS(sgt_val);
+        TERN_(HAS_LCD_MENU, this->stored.homing_thrs = sgt_val);
+      }
     #endif
 
     #if HAS_LCD_MENU
@@ -386,8 +401,21 @@ void test_tmc_connection(LOGICAL_AXIS_DECL(const bool, true));
       return drv_status.stallGuard;
     }
   #endif // SPI_ENDSTOPS
-
 #endif // USE_SENSORLESS
+
+#if ENABLED(ANKER_TMC_SET)
+  class Anker_TMC2209 {
+  public:
+    static uint32_t thrs_x, thrs_y, thrs_z1, thrs_z2;
+    static void set_tcoolthrs(TMC2209Stepper &st, const uint32_t value);
+    static uint32_t get_tcoolthrs(TMC2209Stepper &st);
+    static bool tmc_enable_stallguard(TMC2209Stepper &st, const uint32_t anker_thrs);
+    static void tmc_disable_stallguard(TMC2209Stepper &st, const bool restore_stealth);
+    static void tmc_set_scale(TMC2209Stepper &st, const uint32_t anker_thrs);
+    static void tmc_set_grand(TMC2209Stepper &st, const uint32_t anker_thrs);
+  };
+  extern Anker_TMC2209 anker_tmc2209;
+#endif
 
 #if HAS_TMC_SPI
   void tmc_init_cs_pins();

@@ -33,6 +33,7 @@ GCodeQueue queue;
 #include "../sd/cardreader.h"
 #include "../module/motion.h"
 #include "../module/planner.h"
+#include "../module/stepper.h"
 #include "../module/temperature.h"
 #include "../MarlinCore.h"
 #include "../core/bug_on.h"
@@ -55,6 +56,10 @@ GCodeQueue queue;
 
 #if ENABLED(GCODE_REPEAT_MARKERS)
   #include "../feature/repeat.h"
+#endif
+
+#if ENABLED(ANKER_PAUSE_FUNC)
+  #include "../feature/anker/anker_pause.h"
 #endif
 
 // Frequently used G-code strings
@@ -98,6 +103,14 @@ PGM_P GCodeQueue::injected_commands_P; // = nullptr
  * Injected SRAM Commands
  */
 char GCodeQueue::injected_commands[64]; // = { 0 }
+
+#if ENABLED(ANKER_MULTIORDER_PACK)
+  // Each command will return the remaining buffer space
+  void GCodeQueue::RingBuffer::report_buf_free_size() {
+    const int is_empty = empty() && (planner.movesplanned() < 4);
+    SERIAL_ECHOLNPGM("+ringbuf:", ring_buffer.length, ",", BUFSIZE, ",", is_empty);
+  }
+#endif
 
 void GCodeQueue::RingBuffer::commit_command(bool skip_ok
   OPTARG(HAS_MULTI_SERIAL, serial_index_t serial_ind/*=-1*/)
@@ -154,7 +167,6 @@ bool GCodeQueue::process_injected_command_P() {
   memcpy_P(cmd, injected_commands_P, i);
   cmd[i] = '\0';
   injected_commands_P = c ? injected_commands_P + i + 1 : nullptr;
-
   // Execute command if non-blank
   if (i) {
     parser.parse(cmd);
@@ -252,6 +264,7 @@ void GCodeQueue::RingBuffer::ok_to_send() {
     PORT_REDIRECT(SERIAL_PORTMASK(serial_ind));   // Reply to the serial port that sent the command
   #endif
   if (command.skip_ok) return;
+  TERN_(ANKER_MULTIORDER_PACK, queue.ring_buffer.report_buf_free_size());
   SERIAL_ECHOPGM(STR_OK);
   #if ENABLED(ADVANCED_OK)
     char* p = command.buffer;
@@ -389,6 +402,281 @@ inline bool process_line_done(uint8_t &sis, char (&buff)[MAX_CMD_SIZE], int &ind
   return is_empty;                    // Inform the caller
 }
 
+#if ENABLED(ANKER_MULTIORDER_PACK)
+
+  static bool ak_gcode_parse(char *command) {
+    bool has_high_priority = 0;
+
+    // Customize high-priority commands
+    if (*command == '^') {
+      *command = 'M';
+      parser.parse(command);
+      gcode.process_parsed_command(true);
+      SERIAL_ECHOLN(STR_OK);
+      queue.ring_buffer.report_buf_free_size();
+      return true;
+    }
+
+    if (!command || *command != 'M') return false;
+
+    const int num = atoi(command + 1);
+
+    switch (num) {
+      #if ENABLED(ANKER_PAUSE_FUNC)
+        case 2021: // query free report
+          queue.ring_buffer.report_buf_free_size();
+          SERIAL_ECHOLN(STR_OK);
+          return true;
+        case 2022: //pause
+          get_anker_pause_info()->pause_start();
+          SERIAL_ECHOLN(STR_OK);
+          return true;
+        case 2023:  //resume
+          get_anker_pause_info()->pause_continue();
+          SERIAL_ECHOLN(STR_OK);
+          return true;
+        case 2024: //stop
+          get_anker_pause_info()->stop_start();
+          SERIAL_ECHOLN(STR_OK);
+          return true;
+        case 205:
+        case 204:
+        case 900:
+        case 106:
+        case 107:
+        ///
+        case 104:
+        case 140:
+        case 220: //set print speed
+        case 221: //set flow percentage
+          SERIAL_ECHOLN(STR_OK);
+          return false;
+      #endif
+      case 114: //get current position
+      case 115: //get firmware information
+      case 116: //get software version
+      case 155: //temprature auto report
+      case 290: //set babystep
+      case 420: //read auto-level data
+      case 3003: //set nozzle board threshold
+        has_high_priority = 1;
+        break;
+    }
+
+    if (has_high_priority) {
+      parser.parse(command);
+      gcode.process_parsed_command(true);
+      SERIAL_ECHOLN(STR_OK);
+      queue.ring_buffer.report_buf_free_size();
+      return true;
+    }
+
+    return false;
+  }
+
+  // blocking instruction
+  bool is_block_cmd(const char *cmd) {
+    #if 0
+      const char *cmd_tbl[] = {
+        "G28", "G29",
+        "G92", "G90", "G91",
+        "M500", "M502", "M503",
+        "M109", "M190",
+        "M114", "M115", "M105"
+      };
+
+      for (int i = 0; i < COUNT(cmd_tbl); i++) if (strstr(cmd, cmd_tbl[i])) return true;
+
+      return false;
+    #else
+
+      unsigned int num, i;
+      // The following instructions are non-blocking
+      unsigned int cmd_num[] = { 0, 1, 90, 91, 92, 104, 114, 115, 116, 155, 204, 205, 220, 221, 290, 420, 900, 3003 };
+      if (*cmd == 'G' || *cmd == 'M') {
+        num = atoi(cmd + 1);
+        for (i = 0; i < COUNT(cmd_num); i++) if (cmd_num[i] == num) return false;
+      }
+
+      return true;
+
+    #endif
+  }
+
+  /*CRC 16 lookup table-------------------------------------------------------------*/
+  static const unsigned short crc16_table[16] = {
+    0x0000,0x1021,0x2042,0x3063,0x4084,0x50a5,0x60c6,0x70e7,
+    0x8108,0x9129,0xa14a,0xb16b,0xc18c,0xd1ad,0xe1ce,0xf1ef
+  };
+
+  /*
+   * @brief       Calculate CRC16 checksum
+   * @param[in]   initval    - init
+   * @param[in]   pdata      - Data to be verified
+   * @param[in]   count      - data length
+   * @return      crc result
+   */
+  unsigned short crc16(unsigned short initval, void *pdata, unsigned int count) {
+    unsigned short crc = initval;
+    unsigned char *buf = (unsigned char *)pdata;
+    unsigned char tmp;
+    while (count--) {
+      tmp = crc >> 12;
+      crc <<= 4;
+      /**
+       * The upper 4 bits of the CRC are added to the first nybble of this byte, then look up the table to calculate the CRC,
+       * and then add the remainder of the previous CRC.
+       */
+      crc^=crc16_table[tmp^(*buf >> 4)];
+      tmp = crc >> 12;
+      crc <<= 4;
+      crc^=crc16_table[tmp^(*buf & 0x0f)];
+      buf++;
+    }
+    return crc;
+  }
+
+  /**
+   * @brief Multi-packet processing
+   * @param buf    receive buffer
+   * @param chkpos Check code location
+   */
+  void GCodeQueue:: multi_pack_process(char *buf, unsigned int chkpos, int p) {
+    static char last_pack[25];
+    static unsigned short last_crc = 0;
+    unsigned short crc,tmp_crc;
+    char *line;
+    int blockcmd = false;
+    unsigned int cmd_cnt = 1, i, statics = 0;
+    //SERIAL_ECHOLNPGM("multi pack:%s\r\n", buf);
+    char tmp[64];
+
+    /**
+     * Check data code
+     */
+    crc = strtoul(&buf[chkpos + 1], NULL, 16);
+    tmp_crc = crc16(0x0000, buf + 1, chkpos - 1);
+    if (crc != tmp_crc) {
+      SERIAL_ECHOLNPGM("error");
+      snprintf(tmp, sizeof(tmp), "Crc check failed,%04X != %04X,%s\r\n", crc, tmp_crc,buf);
+      SERIAL_ECHO(tmp);
+      return;
+    }
+
+    // Get the number of commands
+    for (i = 0; i < chkpos; i++) if (buf[i] == ',') cmd_cnt++;
+
+    if (ring_buffer.buf_free_size() <= cmd_cnt) {
+      queue.ring_buffer.report_buf_free_size();
+      if (strncmp(buf + 1, "M2021", 5) == 0) {
+        SERIAL_ECHOLN(STR_OK);
+        last_crc = 0xFFFF;
+      }
+      else
+        SERIAL_ECHOLNPGM("error\nInsufficient queue space!");
+      return;
+    }
+
+    //Avoid repeated multi-packet transmission
+    if (crc == last_crc && chkpos > 16) {
+      SERIAL_ECHOLNPGM(STR_OK);
+      SERIAL_ECHOLNPGM("crc collision...");
+      if (strncmp(last_pack, buf, sizeof(last_pack) - 1) == 0) {
+        SERIAL_ECHOLNPGM("Repeat packet");
+        return;
+      }
+    }
+
+    //Cache the last command
+    strncpy(last_pack, buf, sizeof(last_pack) - 1);
+    last_pack[sizeof(last_pack) - 1] = '\0';
+
+    //Truncate frame header, frame trailer
+    buf[chkpos] = '\0';
+    buf++;
+    //Record the current package ID to prevent repeated entry into the queue
+    last_crc = crc;
+    for (line = strtok(buf, ","); line != NULL; line = strtok(NULL,",")) {
+      if (strlen(line) == 0) continue;
+
+      if (!blockcmd && is_block_cmd(line)) blockcmd = true;
+
+      // into the queue
+      if (!ak_gcode_parse(line)) {
+        // if(ring_buffer.empty()) SERIAL_ECHOLN("QEN_EMPT");
+        if (ring_buffer.enqueue(line, false OPTARG(HAS_MULTI_SERIAL, p))) statics++;
+      }
+      else
+        blockcmd = true;
+    }
+
+    if (!blockcmd) {
+      SERIAL_ECHOLNPGM(STR_OK);
+      ring_buffer.report_buf_free_size();
+    }
+
+    if (statics != cmd_cnt) {
+      last_crc = 0xFFFF;
+      SERIAL_ECHOLNPGM("pack dissymmetry,statics:", statics, "cmd_cnt:", cmd_cnt);
+    }
+  }
+
+  /**
+   * @brief GCODE Multi-packet reception
+   *        style:$<gcode0>,<gcode1>,<gcode2>....*<crc16><\r\n>
+   */
+  bool GCodeQueue::multi_pack_recv(int c, int p) {
+    static char packbuf[1024];
+    static unsigned int recvcnt = 0;  //receive count
+    static unsigned int chkpos;       //Check code location
+    static unsigned int state = 0;    //current state
+    static unsigned int timeout = 0;  //timeout timer
+
+    #define IS_UARTX 1
+    if (p != IS_UARTX) return false;  //only response uart1 from junzheng
+
+    if (state > 0 && millis() - timeout > 1000) {
+      SERIAL_ECHOLNPGM("Multi pack recv timeout");
+      state = 0;
+    }
+
+    switch (state) {
+      case 0:
+        if (c != '@') return false;
+        state++;
+        recvcnt = 0;
+        timeout = millis();
+        break;
+      case 1:                          //wait for end of frame
+        if (c =='*') {
+          state++;
+          chkpos = recvcnt;
+        }
+        break;
+      case 2:                          //Receive a 4-byte checksum
+        if (recvcnt - chkpos > 4) {
+          packbuf[recvcnt++] = c;
+          packbuf[recvcnt] = '\0';
+          multi_pack_process(packbuf, chkpos, p);
+          state = 0;
+          return true;
+        }
+        break;
+      default:
+        state = 0;
+        return false;
+    }
+    packbuf[recvcnt++] = c;
+    if (recvcnt > sizeof(packbuf) - 2) {
+      SERIAL_ECHOLNPGM("Multi pack too long.");
+      state = 0;
+      recvcnt = 0;
+    }
+    return true;
+  }
+
+#endif
+
 /**
  * Get all commands waiting on the serial port and queue them.
  * Exit when the buffer is full or when no more characters are
@@ -426,13 +714,28 @@ void GCodeQueue::get_serial_commands() {
       // Check if the queue is full and exit if it is.
       if (ring_buffer.full()) return;
 
-      // No data for this port ? Skip it
-      if (!serial_data_available(p)) continue;
+      #if ENABLED(ANKER_MULTIORDER_PACK)
+        if (get_anker_pause_info()->pause_serial_state == ANKER_PAUSE_SERIAL_ENABLE) {
+          #if ENABLED(ANKER_PAUSE_FUNC)
+            if (get_anker_pause_info()->pause_serial_state == ANKER_PAUSE_SERIAL_ENABLE) return;
+          #endif
+          #if ENABLED(ANKER_MULTIORDER_PACK)
+            #define BUF_NOT_END 20
+            if (ring_buffer.buf_free_size() < BUF_NOT_END) return;
+          #endif
+        }
+      #endif
+
+      // No data for this port ? Skip it [p=2 is uart4]
+      if (p == 2 || !serial_data_available(p)) continue;
 
       // Ok, we have some data to process, let's make progress here
       hadData = true;
 
       const int c = read_serial(p);
+
+      if (TERN0(ANKER_MULTIORDER_PACK, multi_pack_recv(c, p))) continue;
+
       if (c < 0) {
         // This should never happen, let's log it
         PORT_REDIRECT(SERIAL_PORTMASK(p));     // Reply to the serial port that sent the command
@@ -446,8 +749,7 @@ void GCodeQueue::get_serial_commands() {
       const char serial_char = (char)c;
       SerialState &serial = serial_state[p];
 
-      if (ISEOL(serial_char)) {
-
+      if (ISEOL(serial_char) || serial_char == '\0') {
         // Reset our state, continue if the line was empty
         if (process_line_done(serial.input_state, serial.line_buffer, serial.count))
           continue;
@@ -455,6 +757,9 @@ void GCodeQueue::get_serial_commands() {
         char* command = serial.line_buffer;
 
         while (*command == ' ') command++;                   // Skip leading spaces
+
+        if (TERN0(ANKER_MAKE, *command != 'G' && *command != 'M')) break;
+
         char *npos = (*command == 'N') ? command : nullptr;  // Require the N parameter to start the line
 
         if (npos) {
@@ -492,6 +797,7 @@ void GCodeQueue::get_serial_commands() {
 
           serial.last_N = gcode_N;
         }
+
         #if ENABLED(SDSUPPORT)
           // Pronterface "M29" and "M29 " has no line number
           else if (card.flag.saving && !is_M29(command)) {
@@ -532,8 +838,18 @@ void GCodeQueue::get_serial_commands() {
           last_command_time = ms;
         #endif
 
-        // Add the command to the queue
         ring_buffer.enqueue(serial.line_buffer, false OPTARG(HAS_MULTI_SERIAL, p));
+
+        #if ENABLED(ANKER_MULTIORDER_PACK)
+          if (!is_block_cmd(serial.line_buffer))  // This code block comes later because skip_ok is TRUE by default on entry, which will cause ok_to_send to fail to send
+            ok_to_send();
+
+          static unsigned int send_interval = 0;
+          if (serial.line_buffer[0] == 'M' && millis() - send_interval > 2000) {
+            send_interval = millis();
+            SERIAL_ECHOLNPGM("M settings:", serial.line_buffer);
+          }
+        #endif
       }
       else
         process_stream_char(serial_char, serial.input_state, serial.line_buffer, serial.count);
@@ -624,11 +940,47 @@ void GCodeQueue::exhaust() {
  */
 void GCodeQueue::advance() {
 
+  #if ENABLED(ANKER_PAUSE_FUNC)
+    if (get_anker_pause_info()->pause_queue_state == ANKER_PAUSE_QUEUE_ENABLE ||
+        get_anker_pause_info()->pause_queue_state == ANKER_PAUSE_QUEUE_OK
+    ) {
+      get_anker_pause_info()->pause_queue_state = ANKER_PAUSE_QUEUE_OK;
+      return;
+    }
+  #endif
+
+  #if ENABLED(ANKER_MULTIORDER_PACK)
+
+    #define SEND_TIMES 2
+    static bool report_tag = false;
+    static int send_times = 0;
+    // detect ring buffer size, pep tell remote controller
+    int remain = BUFSIZE - ring_buffer.length;
+
+    if (remain > 84 || ring_buffer.length == 0 || planner.movesplanned() == 0) {
+      if (report_tag == false) {
+        report_tag = true;
+        send_times = 2;
+      }
+
+      if (send_times > 0) {
+        queue.ring_buffer.report_buf_free_size();
+        send_times--;
+        if (planner.movesplanned() == 0)
+          SERIAL_ECHOLNPGM("planner.movesplanned() == 0");
+      }
+    }
+    else
+      report_tag = false;
+
+  #endif // ANKER_MULTIORDER_PACK
+
   // Process immediate commands
   if (process_injected_command_P() || process_injected_command()) return;
 
   // Return if the G-code buffer is empty
   if (ring_buffer.empty()) {
+    //if (marlin_state == MF_RUNNING) SERIAL_ECHOLNPGM("ring_buffer empty");
     #if ENABLED(BUFFER_MONITORING)
       if (!command_buffer_empty) {
         command_buffer_empty = true;

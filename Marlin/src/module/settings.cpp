@@ -159,6 +159,18 @@
   #include "../lcd/extui/dgus/DGUSDisplayDef.h"
 #endif
 
+#if ENABLED(ANKER_ALIGN)
+  #include "../feature/anker/anker_align.h"
+#endif
+
+#if ENABLED(ANKER_NOZZLE_BOARD)
+  #include "../feature/anker/anker_nozzle_board.h"
+#endif
+
+#if ENABLED(USE_Z_SENSORLESS)
+  #include "../feature/anker/anker_z_sensorless.h"
+#endif
+
 #pragma pack(push, 1) // No padding between variables
 
 #if HAS_ETHERNET
@@ -457,6 +469,12 @@ typedef struct SettingsDataStruct {
     uint8_t caselight_brightness;                        // M355 P
   #endif
 
+  //2021-10-18 harley
+  #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+    int16_t babystep_z_steps;
+  #endif
+  //2021-10-18 harley
+
   //
   // PASSWORD_FEATURE
   //
@@ -500,6 +518,31 @@ typedef struct SettingsDataStruct {
 
   #if HAS_MULTI_LANGUAGE
     uint8_t ui_language;                                // M414 S
+  #endif
+
+  #if ENABLED(ANKER_ALIGN)
+    float z1_value;
+    float z2_value;
+  #endif
+
+  #if ENABLED(ANKER_LEVELING)
+    //uint8_t anker_is_leveling;
+  #endif
+
+  #if ENABLED(ANKER_TMC_SET)
+    uint32_t tcoolthrs_x;
+    uint32_t tcoolthrs_y;
+    uint32_t tcoolthrs_z1;
+    uint32_t tcoolthrs_z2;
+  #endif
+
+  #if ENABLED(ANKER_NOZZLE_BOARD)
+    uint32_t nozzle_board_threshold;
+  #endif
+
+  #if ENABLED(USE_Z_SENSORLESS)
+    uint16_t anker_z1_stall_sensitivity;
+    uint16_t anker_z2_stall_sensitivity;
   #endif
 
 } SettingsData;
@@ -1385,6 +1428,12 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(caselight.brightness);
     #endif
 
+    //2021-10-18 harley
+    #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+      EEPROM_WRITE(babystep.axis_total[BS_AXIS_IND(Z_AXIS)]);
+    #endif
+    //2021-10-18 harley
+
     //
     // Password feature
     //
@@ -1441,6 +1490,34 @@ void MarlinSettings::postprocess() {
     //
     #if HAS_MULTI_LANGUAGE
       EEPROM_WRITE(ui.language);
+    #endif
+
+    //
+    // Anker Make
+    //
+    #if ENABLED(ANKER_ALIGN)
+      EEPROM_WRITE(anker_align.z1_value);
+      EEPROM_WRITE(anker_align.z2_value);
+    #endif
+
+    #if ENABLED(ANKER_LEVELING)
+      //EEPROM_WRITE(anker_align.anker_is_leveling);
+    #endif
+
+    #if ENABLED(ANKER_TMC_SET)
+      EEPROM_WRITE(anker_tmc2209.thrs_x);
+      EEPROM_WRITE(anker_tmc2209.thrs_y);
+      EEPROM_WRITE(anker_tmc2209.thrs_z1);
+      EEPROM_WRITE(anker_tmc2209.thrs_z2);
+    #endif
+
+    #if ENABLED(ANKER_NOZZLE_BOARD)
+      EEPROM_WRITE(get_anker_nozzle_board_info()->threshold);
+    #endif
+
+    #if ENABLED(USE_Z_SENSORLESS)
+      EEPROM_WRITE(use_z_sensorless.z1_stall_value);
+      EEPROM_WRITE(use_z_sensorless.z2_stall_value);
     #endif
 
     //
@@ -2290,6 +2367,12 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(caselight.brightness);
       #endif
 
+      //2021-10-18 harley
+      #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+        EEPROM_READ(babystep.axis_total[BS_AXIS_IND(Z_AXIS)]);
+      #endif
+      //2021-10-18 harley
+
       //
       // Password feature
       //
@@ -2349,6 +2432,34 @@ void MarlinSettings::postprocess() {
         if (ui_language >= NUM_LANGUAGES) ui_language = 0;
         ui.set_language(ui_language);
       }
+      #endif
+
+      //
+      // Anker Make
+      //
+      #if ENABLED(ANKER_ALIGN)
+        EEPROM_READ(anker_align.z1_value);
+        EEPROM_READ(anker_align.z2_value);
+      #endif
+
+      #if ENABLED(ANKER_LEVELING)
+        //EEPROM_READ(anker_align.anker_is_leveling);
+      #endif
+
+      #if ENABLED(ANKER_TMC_SET)
+        EEPROM_READ(anker_tmc2209.thrs_x);
+        EEPROM_READ(anker_tmc2209.thrs_y);
+        EEPROM_READ(anker_tmc2209.thrs_z1);
+        EEPROM_READ(anker_tmc2209.thrs_z2);
+      #endif
+
+      #if ENABLED(ANKER_NOZZLE_BOARD)
+        EEPROM_READ(get_anker_nozzle_board_info()->threshold);
+      #endif
+
+      #if ENABLED(USE_Z_SENSORLESS)
+        EEPROM_READ(use_z_sensorless.z1_stall_value);
+        EEPROM_READ(use_z_sensorless.z2_stall_value);
       #endif
 
       //
@@ -2445,6 +2556,7 @@ void MarlinSettings::postprocess() {
       (void)save();
       SERIAL_ECHO_MSG("EEPROM Initialized");
     #endif
+    TERN_(RESTORE_LEVELING_AFTER_G28, set_bed_leveling_enabled(true));
     return false;
   }
 
@@ -2635,6 +2747,10 @@ void MarlinSettings::reset() {
     TERN_(HAS_FILAMENT_RUNOUT_DISTANCE, runout.set_runout_distance(FILAMENT_RUNOUT_DISTANCE_MM));
   #endif
 
+  //2021-10-18 harley
+  TERN_(BABYSTEP_DISPLAY_TOTAL, babystep.axis_total[BS_AXIS_IND(Z_AXIS)] = 0);
+  //2021-10-18 harley
+
   //
   // Tool-change Settings
   //
@@ -2651,9 +2767,7 @@ void MarlinSettings::reset() {
       toolchange_settings.fan_time        = TOOLCHANGE_FS_FAN_TIME;
     #endif
 
-    #if ENABLED(TOOLCHANGE_FS_PRIME_FIRST_USED)
-      enable_first_prime = false;
-    #endif
+    TERN_(TOOLCHANGE_FS_PRIME_FIRST_USED, enable_first_prime = false);
 
     #if ENABLED(TOOLCHANGE_PARK)
       constexpr xyz_pos_t tpxy = TOOLCHANGE_PARK_XY;
@@ -2663,9 +2777,7 @@ void MarlinSettings::reset() {
 
     toolchange_settings.z_raise = TOOLCHANGE_ZRAISE;
 
-    #if ENABLED(TOOLCHANGE_MIGRATION_FEATURE)
-      migration = migration_defaults;
-    #endif
+    TERN_(TOOLCHANGE_MIGRATION_FEATURE, migration = migration_defaults);
 
   #endif
 
@@ -3025,6 +3137,28 @@ void MarlinSettings::reset() {
   //
   TERN_(DGUS_LCD_UI_MKS, MKS_reset_settings());
 
+  //
+  // Anker Make
+  //
+  TERN_(ANKER_ALIGN, anker_align.z1_value = anker_align.z2_value = 0);
+
+  //TERN_(ANKER_LEVELING, anker_align.anker_is_leveling = 0);
+
+  #if ENABLED(ANKER_TMC_SET)
+    anker_tmc2209.thrs_x=TCOOLTHRS_X;
+    anker_tmc2209.thrs_y=TCOOLTHRS_Y;
+    anker_tmc2209.thrs_z1=TCOOLTHRS_Z1;
+    anker_tmc2209.thrs_z2=TCOOLTHRS_Z2;
+  #endif
+
+  TERN_(USE_Z_SENSORLESS, use_z_sensorless.reset());
+
+  #if ENABLED(ANKER_NOZZLE_BOARD)
+    get_anker_nozzle_board_info()->threshold = ANKER_NOZZLE_BOARD_DEFAULT_THRESHOLD;
+    get_anker_nozzle_board_info()->fireproof_adc0 = ANKER_NOZZLE_BOARD_DEFAULT_FIREPROOF0;
+    get_anker_nozzle_board_info()->fireproof_adc1 = ANKER_NOZZLE_BOARD_DEFAULT_FIREPROOF1;
+  #endif
+
   postprocess();
 
   DEBUG_ECHO_MSG("Hardcoded Default Settings Loaded");
@@ -3300,8 +3434,46 @@ void MarlinSettings::reset() {
     #endif
 
     TERN_(HAS_MULTI_LANGUAGE, gcode.M414_report(forReplay));
+
+    #if ENABLED(ANKER_ALIGN)
+      CONFIG_ECHO_HEADING("Anker align:");
+      CONFIG_ECHO_MSG("  z1:", anker_align.z1_value);
+      CONFIG_ECHO_MSG("  z2:", anker_align.z2_value);
+    #endif
+
+    //2021-10-18 harley
+    #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+      CONFIG_ECHO_HEADING("Babystep total:");
+      CONFIG_ECHO_MSG("  M290 Z", int(babystep.axis_total[BS_AXIS_IND(Z_AXIS)]));
+    #endif
+    //2021-10-18 harley
   }
 
 #endif // !DISABLE_M503
+
+#if ENABLED(ANKER_PRINT_SLOWDOWN)
+  void MarlinSettings::settings_params_monitor() {
+    if (   planner.settings.acceleration < 2000
+        || planner.settings.retract_acceleration < 2000
+        || planner.settings.travel_acceleration < 2000
+        || planner.settings.max_feedrate_mm_s[0] < 200
+        || planner.settings.max_acceleration_mm_per_s2[0] < 2000
+        || planner.settings.max_acceleration_mm_per_s2[1] < 2000
+        || planner.max_jerk[E_AXIS] < DEFAULT_EJERK
+    ) {
+      SERIAL_ECHOLNPGM("....Params updated...");
+
+      LOOP_DISTINCT_AXES(i) {
+        planner.settings.max_acceleration_mm_per_s2[i] = pgm_read_dword(&_DMA[ALIM(i, _DMA)]);
+        planner.settings.max_feedrate_mm_s[i] = pgm_read_float(&_DMF[ALIM(i, _DMF)]);
+      }
+      planner.settings.acceleration = DEFAULT_ACCELERATION;
+      planner.settings.retract_acceleration = DEFAULT_RETRACT_ACCELERATION;
+      planner.settings.travel_acceleration = DEFAULT_TRAVEL_ACCELERATION;
+      planner.max_jerk[E_AXIS] = DEFAULT_EJERK;
+      planner.reset_acceleration_rates();
+    }
+  }
+#endif
 
 #pragma pack(pop)

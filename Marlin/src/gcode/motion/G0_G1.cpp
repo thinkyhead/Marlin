@@ -52,7 +52,7 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
         LINEAR_AXIS_GANG(
             (parser.seen_test('X') ? _BV(X_AXIS) : 0),
           | (parser.seen_test('Y') ? _BV(Y_AXIS) : 0),
-          | (parser.seen_test('Z') ? _BV(Z_AXIS) : 0),
+          | TERN(NO_CHECK_Z_HOMING, 0, (parser.seen_test('Z') ? _BV(Z_AXIS) : 0)),
           | (parser.seen_test(AXIS4_NAME) ? _BV(I_AXIS) : 0),
           | (parser.seen_test(AXIS5_NAME) ? _BV(J_AXIS) : 0),
           | (parser.seen_test(AXIS6_NAME) ? _BV(K_AXIS) : 0))

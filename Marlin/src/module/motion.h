@@ -137,6 +137,12 @@ inline float home_bump_mm(const AxisEnum axis) {
   static const xyz_pos_t home_bump_mm_P DEFS_PROGMEM = HOMING_BUMP_MM;
   return pgm_read_any(&home_bump_mm_P[axis]);
 }
+#if ENABLED(EVT_HOMING_5X)
+  inline float anker_home_bump_mm(const AxisEnum axis) {
+    static const xyz_pos_t home_bump_mm_P DEFS_PROGMEM = PROBE_HOMING_BUMP_MM;
+    return pgm_read_any(&home_bump_mm_P[axis]);
+  }
+#endif
 
 #if HAS_WORKSPACE_OFFSET
   void update_workspace_offset(const AxisEnum axis);
@@ -365,6 +371,9 @@ void restore_feedrate_and_scaling();
 
 #if HAS_Z_AXIS
   void do_z_clearance(const_float_t zclear, const bool lower_allowed=false);
+  #if ENABLED(WS1_HOMING_5X)
+   void WS1_do_z_clearance(const_float_t zclear, const bool lower_allowed=false);
+  #endif
 #else
   inline void do_z_clearance(float, bool=false) {}
 #endif
@@ -389,6 +398,11 @@ void set_axis_is_at_home(const AxisEnum axis);
    */
   extern linear_axis_bits_t axis_homed, axis_trusted;
   void homeaxis(const AxisEnum axis);
+    #if ENABLED(WS1_HOMING_5X)
+      int Probe_homeaxis(const AxisEnum axis,uint8_t anker_homing);
+    #endif
+      void anker_home_dual_z(const AxisEnum axis);
+      void anker_z_homeaxis(const AxisEnum axis);
   void set_axis_never_homed(const AxisEnum axis);
   linear_axis_bits_t axes_should_home(linear_axis_bits_t axis_bits=linear_bits);
   bool homing_needed_error(linear_axis_bits_t axis_bits=linear_bits);
@@ -616,3 +630,19 @@ void home_if_needed(const bool keeplev=false);
   sensorless_t start_sensorless_homing_per_axis(const AxisEnum axis);
   void end_sensorless_homing_per_axis(const AxisEnum axis, sensorless_t enable_stealth);
 #endif
+
+  #if ENABLED(ANKER_TMC_SET)
+
+    class Anker_TMC_SET {
+    public:
+      void set_tmc_x_tcoolthrs(const uint32_t value);
+      void set_tmc_y_tcoolthrs(const uint32_t value);
+      void set_tmc_z1_tcoolthrs(const uint32_t value);
+      #ifdef Z2_DRIVER_TYPE
+       void set_tmc_z2_tcoolthrs(const uint32_t value);
+      #endif
+      void report_tmc_tcoolthrs();
+    };
+    extern Anker_TMC_SET anker_tmc_set;
+  #endif
+

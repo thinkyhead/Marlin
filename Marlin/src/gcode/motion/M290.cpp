@@ -42,7 +42,12 @@
   FORCE_INLINE void mod_probe_offset(const_float_t offs) {
     if (TERN1(BABYSTEP_HOTEND_Z_OFFSET, active_extruder == 0)) {
       probe.offset.z += offs;
-      SERIAL_ECHO_MSG(STR_PROBE_OFFSET " " STR_Z, probe.offset.z);
+      #if ENABLED(ANKER_NOZZLE_PROBE_OFFSET)
+        constexpr float anker_dpo[] = NOZZLE_TO_PROBE_OFFSET;
+        SERIAL_ECHO_MSG(STR_PROBE_OFFSET " " STR_Z, probe.offset.z - anker_dpo[Z_AXIS]);
+      #else
+        SERIAL_ECHOLNPGM(STR_PROBE_OFFSET " " STR_Z, probe.offset.z);
+      #endif
     }
     else {
       #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
@@ -74,7 +79,8 @@ void GcodeSuite::M290() {
         const float offs = constrain(parser.value_axis_units((AxisEnum)a), -2, 2);
         babystep.add_mm((AxisEnum)a, offs);
         #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
-          if (a == Z_AXIS && parser.boolval('P', true)) mod_probe_offset(offs);
+          if (a == Z_AXIS && parser.boolval('P', true))
+            mod_probe_offset(offs);
         #endif
       }
   #else

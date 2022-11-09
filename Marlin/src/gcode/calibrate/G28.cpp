@@ -66,6 +66,15 @@
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../../core/debug_out.h"
 
+#if ENABLED(ANKER_NOZZLE_BOARD)
+  #include "../../feature/anker/anker_nozzle_board.h"
+#endif
+
+#if ENABLED(EVT_HOMING_5X)
+  #include "../../module/temperature.h"
+  #include "../../feature/anker/anker_homing.h"
+#endif
+
 #if ENABLED(QUICK_HOME)
 
   static void quick_home_xy() {
@@ -152,8 +161,41 @@
 
       TERN_(SENSORLESS_HOMING, safe_delay(500)); // Short delay needed to settle
 
+      #if ENABLED(PROBE_CONTROL)
+        WRITE(PROBE_CONTROL_PIN, !PROBE_CONTROL_STATE);
+      #endif
+      #if ENABLED(EVT_HOMING_5X)
+        if (anker_homing.is_home_z) {
+          anker_homing.is_home_z = false;
+          #ifndef NO_DUAL_Z
+            #if ENABLED(USE_Z_SENSORLESS)
+              const int16_t ltmc_save_current_Z = stepperZ.getMilliamps();
+              stepperZ.rms_current(Z_STALL_CURRENT);
+              const int16_t ltmc_save_current_Z2 = stepperZ2.getMilliamps();
+              stepperZ2.rms_current(Z2_STALL_CURRENT);
+            #endif
+            homeaxis(Z_AXIS);
+            #if ENABLED(USE_Z_SENSORLESS)
+              stepperZ.rms_current(ltmc_save_current_Z);
+              stepperZ2.rms_current(ltmc_save_current_Z2);
+            #endif
+          #endif
+        }
+      #endif
       do_blocking_move_to_xy(destination);
-      homeaxis(Z_AXIS);
+      #if ENABLED(WS1_HOMING_5X)
+        if (Probe_homeaxis(Z_AXIS, 2) == 0) {
+          #if BOTH(ANKER_MAKE, USE_Z_SENSORLESS)
+            anker_homing.is_again_probe_homing = true;
+          #endif
+        }
+      #else
+        homeaxis(Z_AXIS);
+      #endif
+
+      #if ENABLED(PROBE_CONTROL)
+        WRITE(PROBE_CONTROL_PIN, !PROBE_CONTROL_STATE);
+      #endif
     }
     else {
       LCD_MESSAGEPGM(MSG_ZPROBE_OUT);
@@ -163,14 +205,93 @@
 
 #endif // Z_SAFE_HOMING
 
+#if ENABLED(EVT_HOMING_5X)
+
+  inline void anker_home_z_safely() {
+    DEBUG_SECTION(log_G28, "home_z_safely", DEBUGGING(LEVELING));
+
+    // Disallow Z homing if X or Y homing is needed
+    if (homing_needed_error(_BV(X_AXIS) | _BV(Y_AXIS))) return;
+
+    sync_plan_position();
+
+    /**
+     * Move the Z probe (or just the nozzle) to the safe homing point
+     * (Z is already at the right height)
+     */
+    constexpr xy_float_t safe_homing_xy1 = { ANKER_Z_SAFE_HOMING_X_POINT, ANKER_Z_SAFE_HOMING_Y_POINT };
+
+    #if HAS_HOME_OFFSET
+      xy_float_t okay_homing_xy = safe_homing_xy1;
+      okay_homing_xy -= home_offset;
+    #else
+      constexpr xy_float_t okay_homing_xy = safe_homing_xy;
+    #endif
+
+    destination.set(okay_homing_xy, current_position.z);
+
+    TERN_(HOMING_Z_WITH_PROBE, destination -= probe.offset_xy);
+
+    if (position_is_reachable(destination)) {
+
+      if (DEBUGGING(LEVELING)) DEBUG_POS("anker_home_z_safely_1", destination);
+
+      // Free the active extruder for movement
+      TERN_(DUAL_X_CARRIAGE, idex_set_parked(false));
+
+      TERN_(SENSORLESS_HOMING, safe_delay(500)); // Short delay needed to settle
+
+      #if ENABLED(PROBE_CONTROL)
+        WRITE(PROBE_CONTROL_PIN, !PROBE_CONTROL_STATE);
+      #endif
+
+      anker_homing.is_clean = false;
+
+      if (thermalManager.degHotend(0) >= EXTRUDE_MINTEMP) {
+        anker_homing.is_clean = true;
+        #ifndef NO_DUAL_Z
+          #if ENABLED(USE_Z_SENSORLESS)
+            const int16_t tmc_save_current_Z = stepperZ.getMilliamps();
+            stepperZ.rms_current(Z_STALL_CURRENT);
+            const int16_t tmc_save_current_Z2 = stepperZ2.getMilliamps();
+            stepperZ2.rms_current(Z2_STALL_CURRENT);
+          #endif
+          homeaxis(Z_AXIS);
+          #if ENABLED(USE_Z_SENSORLESS)
+            stepperZ.rms_current(tmc_save_current_Z);
+            stepperZ2.rms_current(tmc_save_current_Z2);
+          #endif
+        #endif
+
+        do_blocking_move_to_xy(destination);
+
+        #if ENABLED(WS1_HOMING_5X)
+          if (Probe_homeaxis(Z_AXIS, 1) == 0) { //motion not detected bed
+            TERN_(USE_Z_SENSORLESS, anker_homing.is_again_probe_homing = true);
+          }
+          else
+            WS1_do_z_clearance(0.5, true);
+        #endif
+      }
+      else
+        anker_homing.is_home_z = true;
+    }
+    else {
+      LCD_MESSAGEPGM(MSG_ZPROBE_OUT);
+      SERIAL_ECHO_MSG(STR_ZPROBE_OUT_SER);
+    }
+  }
+#endif
+
 #if ENABLED(IMPROVE_HOMING_RELIABILITY)
 
   motion_state_t begin_slow_homing() {
     motion_state_t motion_state{0};
-    motion_state.acceleration.set(planner.settings.max_acceleration_mm_per_s2[X_AXIS],
-                                 planner.settings.max_acceleration_mm_per_s2[Y_AXIS]
-                                 OPTARG(DELTA, planner.settings.max_acceleration_mm_per_s2[Z_AXIS])
-                               );
+    motion_state.acceleration.set(
+      planner.settings.max_acceleration_mm_per_s2[X_AXIS],
+      planner.settings.max_acceleration_mm_per_s2[Y_AXIS]
+      OPTARG(DELTA, planner.settings.max_acceleration_mm_per_s2[Z_AXIS])
+    );
     planner.settings.max_acceleration_mm_per_s2[X_AXIS] = 100;
     planner.settings.max_acceleration_mm_per_s2[Y_AXIS] = 100;
     TERN_(DELTA, planner.settings.max_acceleration_mm_per_s2[Z_AXIS] = 100);
@@ -214,6 +335,12 @@ void GcodeSuite::G28() {
   DEBUG_SECTION(log_G28, "G28", DEBUGGING(LEVELING));
   if (DEBUGGING(LEVELING)) log_machine_info();
 
+  // Home (O)nly if position is unknown
+  if (!axes_should_home() && parser.seen_test('O')) {
+    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> homing not needed, skip");
+    return;
+  }
+
   TERN_(LASER_MOVE_G28_OFF, cutter.set_inline_enabled(false));  // turn off laser
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_HOMING));
@@ -233,11 +360,13 @@ void GcodeSuite::G28() {
     }
   #endif
 
-  // Home (O)nly if position is unknown
-  if (!axes_should_home() && parser.seen_test('O')) {
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> homing not needed, skip");
-    return;
-  }
+  #ifdef SENSORLESS_HOMING
+     const int16_t tmc_save_current_X = stepperX.getMilliamps();
+     stepperX.rms_current(X_STALL_CURRENT);
+     const int16_t tmc_save_current_Y = stepperY.getMilliamps();
+     stepperY.rms_current(Y_STALL_CURRENT);
+     gcode.process_subcommands_now_P(PSTR("M569 S1 X Y\nM913 X251 Y251\n"));
+  #endif
 
   TERN_(HAS_DWIN_E3V2_BASIC, DWIN_StartHoming());
   TERN_(EXTENSIBLE_UI, ExtUI::onHomingStart());
@@ -359,6 +488,10 @@ void GcodeSuite::G28() {
                  doI = home_all || homeI, doJ = home_all || homeJ, doK = home_all || homeK
                );
 
+    #if ENABLED(EVT_HOMING_5X)
+      anker_homing.anker_z_homing_options=false;
+    #endif
+
     #if HAS_Z_AXIS
       UNUSED(needZ); UNUSED(homeZZ);
     #else
@@ -372,7 +505,7 @@ void GcodeSuite::G28() {
     if (z_homing_height && (LINEAR_AXIS_GANG(doX, || doY, || TERN0(Z_SAFE_HOMING, doZ), || doI, || doJ, || doK))) {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Raise Z (before homing) by ", z_homing_height);
-      do_z_clearance(z_homing_height);
+      TERN(WS1_HOMING_5X, WS1_do_z_clearance, do_z_clearance)(z_homing_height);
       TERN_(BLTOUCH, bltouch.init());
     }
 
@@ -415,6 +548,12 @@ void GcodeSuite::G28() {
 
     TERN_(IMPROVE_HOMING_RELIABILITY, end_slow_homing(saved_motion_state));
 
+    #ifdef SENSORLESS_HOMING
+      gcode.process_subcommands_now_P(PSTR("M569 S0 X Y\nM913 X0 Y0\n"));
+      stepperX.rms_current(tmc_save_current_X);
+      stepperY.rms_current(tmc_save_current_Y);
+    #endif
+
     // Home Z last if homing towards the bed
     #if HAS_Z_AXIS && DISABLED(HOME_Z_FIRST)
       if (doZ) {
@@ -422,9 +561,21 @@ void GcodeSuite::G28() {
           stepper.set_all_z_lock(false);
           stepper.set_separate_multi_axis(false);
         #endif
-
-        TERN(Z_SAFE_HOMING, home_z_safely(), homeaxis(Z_AXIS));
-        probe.move_z_after_homing();
+        #if ENABLED(WS1_HOMING_5X)
+          #if ENABLED(PROBE_TEST)
+             home_z_safely();
+             WS1_do_z_clearance(1,true);
+          #else
+            TERN_(USE_Z_SENSORLESS, anker_homing.is_again_probe_homing = false);
+            gcode.process_subcommands_now_P(PSTR(ANKER_Z_HOMING_SCRIPT));
+            probe.anker_level_pause = false;
+            anker_home_z_safely();
+            anker_homing.anker_z_homing_options = true;
+          #endif
+        #else
+          TERN(Z_SAFE_HOMING, home_z_safely(), homeaxis(Z_AXIS));
+          probe.move_z_after_homing();
+        #endif
       }
     #endif
 
@@ -533,6 +684,34 @@ void GcodeSuite::G28() {
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE));
 
+  #if ENABLED(EVT_HOMING_5X)
+
+    if (anker_homing.is_center_home()) {
+      if (anker_homing.is_clean) {
+        gcode.process_subcommands_now_P(
+          gcode.axis_is_relative(E_AXIS) ? PSTR(ANKER_HOMING_SCRIPT_RELATIVE) : PSTR(ANKER_HOMING_SCRIPT_ABSOLUTE)
+        );
+        TERN_(WS1_HOMING_5X, WS1_do_z_clearance(ANKER_Z_AFTER_HOMING, true));
+      }
+      probe.anker_level_pause = true;
+      anker_homing.anker_z_homing_options = false;
+      gcode.process_subcommands_now_P(PSTR("G2001"));
+    }
+
+    #if ENABLED(USE_Z_SENSORLESS)
+      if (anker_homing.is_again_probe_homing) { // Requires repeated zeroing of Z
+        anker_homing.is_again_probe_homing = false;
+        anker_homing.is_again_homing_z_num++;
+        if (anker_homing.is_again_homing_z_num >= ANKER_Z_AGAIN_HOMING_NUM)
+          kill(GET_TEXT(MSG_KILL_HOMING_FAILED));
+        gcode.process_subcommands_now_P(PSTR("G28Z"));
+      }
+      else
+        anker_homing.is_again_homing_z_num = 0;
+    #endif // USE_Z_SENSORLESS
+
+  #endif // EVT_HOMING_5X
+
   #if HAS_L64XX
     // Set L6470 absolute position registers to counts
     // constexpr *might* move this to PROGMEM.
@@ -543,10 +722,65 @@ void GcodeSuite::G28() {
       X_AXIS, Y_AXIS, Z_AXIS, Z_AXIS, Z_AXIS
       REPEAT(E_STEPPERS, _EN_ITEM)
     };
-    #undef _EN_ITEM
     for (uint8_t j = 1; j <= L64XX::chain[0]; j++) {
       const uint8_t cv = L64XX::chain[j];
       L64xxManager.set_param((L64XX_axis_t)cv, L6470_ABS_POS, stepper.position(L64XX_axis_xref[cv]));
     }
   #endif
+
+  #if ENABLED(ANKER_NOZZLE_BOARD)
+    get_anker_nozzle_board_info()->serial_disable_state = 0;
+  #endif
 }
+
+/*
+ * @Author       : harley
+ * @Date         : 2022-06-01 20:35:23
+ * @LastEditors  : harley
+ * @LastEditTime :
+ * @Description  :
+ */
+#if ENABLED(EVT_HOMING_5X)
+
+  void GcodeSuite::G2001() {
+
+    planner.synchronize();          // Wait for planner moves to finish!
+
+    SET_SOFT_ENDSTOP_LOOSE(false);  // Reset a leftover 'loose' motion state
+
+    // Disable the leveling matrix before homing
+    #if CAN_SET_LEVELING_AFTER_G28
+      const bool leveling_restore_state = parser.boolval('L', TERN1(RESTORE_LEVELING_AFTER_G28, planner.leveling_active));
+    #endif
+
+    // Disable leveling before homing
+    TERN_(HAS_LEVELING, set_bed_leveling_enabled(false));
+
+    // Count this command as movement / activity
+    reset_stepper_timeout();
+
+    remember_feedrate_scaling_off();
+
+    endstops.enable(true); // Enable endstops for next homing move
+
+    #if EITHER(Z_MULTI_ENDSTOPS, Z_STEPPER_AUTO_ALIGN)
+      stepper.set_all_z_lock(false);
+      stepper.set_separate_multi_axis(false);
+    #endif
+
+    home_z_safely();
+
+    TERN_(WS1_HOMING_5X, WS1_do_z_clearance(Z_AFTER_HOMING, true));
+    anker_homing.anker_z_homing_options = false;
+
+    sync_plan_position();
+
+    endstops.not_homing();
+
+    TERN_(CAN_SET_LEVELING_AFTER_G28, if (leveling_restore_state) set_bed_leveling_enabled());
+
+    restore_feedrate_and_scaling();
+    report_current_position();
+  }
+
+#endif // EVT_HOMING_5X

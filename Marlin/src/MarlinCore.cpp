@@ -153,6 +153,10 @@
   #include "feature/spindle_laser.h"
 #endif
 
+#if ENABLED(ANKER_ALIGN)
+  #include "feature/anker/anker_align.h"
+#endif
+
 #if ENABLED(SDSUPPORT)
   CardReader card;
 #endif
@@ -238,6 +242,33 @@
 
 #if ENABLED(PSU_CONTROL)
   #include "feature/power.h"
+#endif
+
+#if ENABLED(ANKER_MAKE)
+  #if ENABLED(ANKER_LOG_DEBUG)
+    #include "feature/anker/anker_log_debug.h"
+  #endif
+  #if ENABLED(BOARD_CONFIGURE)
+    #include "feature/anker/board_configure.h"
+  #endif
+  #if ENABLED(HANDSHAKE)
+    #include "feature/anker/handshake.h"
+  #endif
+  #if ENABLED(ANKER_PAUSE_FUNC)
+    #include "feature/anker/anker_pause.h"
+  #endif
+  #if ENABLED(ANKER_M_CMDBUF)
+    #include "feature/anker/anker_m_cmdbuf.h"
+  #endif
+  #if ENABLED(ANKER_NOZZLE_BOARD)
+    #include "feature/anker/anker_nozzle_board.h"
+  #endif
+  #if ENABLED(USE_Z_SENSORLESS)
+    #include "feature/anker/anker_z_sensorless.h"
+  #endif
+  #if BOTH(EVT_HOMING_5X, NO_MOTION_BEFORE_HOMING)
+    #include "feature/anker/anker_homing.h"
+  #endif
 #endif
 
 PGMSTR(M112_KILL_STR, "M112 Shutdown");
@@ -807,6 +838,9 @@ void idle(bool no_stepper_sleep/*=false*/) {
   // Handle UI input / draw events
   TERN(HAS_DWIN_E3V2_BASIC, DWIN_Update(), ui.update());
 
+  // Z layer processing
+  TERN_(PHOTO_Z_LAYER, parser.report_z_axis_process());
+
   // Run i2c Position Encoders
   #if ENABLED(I2C_POSITION_ENCODERS)
   {
@@ -843,6 +877,19 @@ void idle(bool no_stepper_sleep/*=false*/) {
   // Update the LVGL interface
   TERN_(HAS_TFT_LVGL_UI, LV_TASK_HANDLER());
 
+  // Anker Make
+  TERN_(ANKER_LOG_DEBUG, anker_check_block_buf());
+
+  TERN_(HANDSHAKE, hand_shake.check());
+
+  #if BOTH(EVT_HOMING_5X, NO_MOTION_BEFORE_HOMING)
+    anker_homing.anker_disable_motion_before_check();
+  #endif
+
+  #if BOTH(PROBE_CONTROL, ANKER_NOZZLE_BOARD)
+    get_anker_nozzle_board_info()->nozzle_board_deal();
+  #endif
+
   IDLE_DONE:
   TERN_(MARLIN_DEV_MODE, idle_depth--);
   return;
@@ -867,6 +914,12 @@ void kill(PGM_P const lcd_error/*=nullptr*/, PGM_P const lcd_component/*=nullptr
   #endif
 
   TERN_(HAS_TFT_LVGL_UI, lv_draw_error_message(lcd_error));
+
+  TERN_(ANKER_MAKE_API,SERIAL_ECHOLN(lcd_error));
+
+  #if PIN_EXISTS(NOZZLE_BOARD_PWR)
+    OUT_WRITE(NOZZLE_BOARD_PWR_PIN, !NOZZLE_BOARD_PWR_STATE);
+  #endif
 
   // "Error:Printer halted. kill() called!"
   SERIAL_ERROR_MSG(STR_ERR_KILLED);
@@ -1123,13 +1176,15 @@ void setup() {
     MYSERIAL2.begin(BAUDRATE_2);
     serial_connect_timeout = millis() + 1000UL;
     while (!MYSERIAL2.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
-    #ifdef SERIAL_PORT_3
-      #ifndef BAUDRATE_3
-        #define BAUDRATE_3 BAUDRATE
+    #if NONE(PROBE_CONTROL, ANKER_NOZZLE_BOARD)
+      #ifdef SERIAL_PORT_3
+        #ifndef BAUDRATE_3
+          #define BAUDRATE_3 BAUDRATE
+        #endif
+        MYSERIAL3.begin(BAUDRATE_3);
+        serial_connect_timeout = millis() + 1000UL;
+        while (!MYSERIAL3.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
       #endif
-      MYSERIAL3.begin(BAUDRATE_3);
-      serial_connect_timeout = millis() + 1000UL;
-      while (!MYSERIAL3.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
     #endif
   #endif
   SERIAL_ECHOLNPGM("start");
@@ -1176,6 +1231,9 @@ void setup() {
   TERN_(DYNAMIC_VECTORTABLE, hook_cpu_exceptions()); // If supported, install Marlin exception handlers at runtime
 
   SETUP_RUN(HAL_init());
+
+  // Anker board configuration
+  TERN_(BOARD_CONFIGURE, board_configure.init());
 
   // Init and disable SPI thermocouples; this is still needed
   #if TEMP_SENSOR_0_IS_MAX_TC || (TEMP_SENSOR_REDUNDANT_IS_MAX_TC && REDUNDANT_TEMP_MATCH(SOURCE, E0))
@@ -1586,7 +1644,43 @@ void setup() {
   #endif
 
   #if BOTH(HAS_LCD_MENU, TOUCH_SCREEN_CALIBRATION) && EITHER(TFT_CLASSIC_UI, TFT_COLOR_UI)
-    ui.check_touch_calibration();
+    SETUP_RUN(ui.check_touch_calibration());
+  #endif
+
+  #if BOTH(PROBE_CONTROL, ANKER_NOZZLE_BOARD)
+    SETUP_RUN(anker_nozzle_board_init());
+  #endif
+
+  TERN_(RESTORE_LEVELING_AFTER_G28, set_bed_leveling_enabled(true));
+
+  #if ENABLED(MOTOR_EN_CONTROL)
+    SET_OUTPUT(MOTOR_EN_PIN);
+    WRITE(MOTOR_EN_PIN, MOTOR_EN_STATE);
+  #endif
+
+  #if ENABLED(HEATER_EN_CONTROL) && DISABLED(HANDSHAKE)
+    SET_OUTPUT(HEATER_EN_PIN);
+    WRITE(HEATER_EN_PIN, HEATER_EN_STATE);
+  #endif
+
+  // Anker Make
+  #if ENABLED(HANDSHAKE)
+    SETUP_RUN(hand_shake.init());
+  #endif
+  #if ENABLED(ANKER_PAUSE_FUNC)
+    SETUP_RUN(anker_pause_init());
+  #endif
+  #if ENABLED(ANKER_M_CMDBUF)
+    SETUP_RUN(anker_m_cmdbuf_init());
+  #endif
+  #if ENABLED(ANKER_ALIGN)
+    SETUP_RUN(anker_align.init());
+  #endif
+  #if ENABLED(USE_Z_SENSORLESS)
+    SETUP_RUN(use_z_sensorless.init());
+  #endif
+  #if BOTH(EVT_HOMING_5X, NO_MOTION_BEFORE_HOMING)
+    anker_homing.anker_disable_motion_before_init();
   #endif
 
   marlin_state = MF_RUNNING;
@@ -1616,11 +1710,18 @@ void loop() {
       if (marlin_state == MF_SD_COMPLETE) finishSDPrinting();
     #endif
 
+    TERN_(ANKER_PRINT_SLOWDOWN, settings.settings_params_monitor());
+
     queue.advance();
 
     endstops.event_handler();
 
     TERN_(HAS_TFT_LVGL_UI, printer_state_polling());
+
+    #if ENABLED(ANKER_PAUSE_FUNC)
+      get_anker_pause_info()->pause_deal();
+      get_anker_pause_info()->stop_deal();
+    #endif
 
   } while (ENABLED(__AVR__)); // Loop forever on slower (AVR) boards
 }

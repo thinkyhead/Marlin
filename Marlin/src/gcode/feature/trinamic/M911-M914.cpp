@@ -574,4 +574,45 @@
 
 #endif // USE_SENSORLESS
 
+#if ENABLED(ANKER_TMC_SET)
+
+  void GcodeSuite::M915() {
+    bool report = true;
+    const uint8_t index = parser.byteval('I');
+    LOOP_LINEAR_AXES(i) if (parser.seen(AXIS_CHAR(i))) {
+      const int16_t value = parser.value_int();
+      report = false;
+      switch (i) {
+        #if X_SENSORLESS
+          case X_AXIS:
+            #if AXIS_HAS_STALLGUARD(X)
+              if (index < 2) anker_tmc_set.set_tmc_x_tcoolthrs(value);
+            #endif
+            break;
+        #endif
+        #if Y_SENSORLESS
+          case Y_AXIS:
+            #if AXIS_HAS_STALLGUARD(Y)
+              if (index < 2) anker_tmc_set.set_tmc_y_tcoolthrs(value);
+            #endif
+            break;
+        #endif
+        #if Z_SENSORLESS
+          case Z_AXIS:
+            #if AXIS_HAS_STALLGUARD(Z)
+              if (index == 0 || index == 1) anker_tmc_set.set_tmc_z1_tcoolthrs(value);
+            #endif
+            #if AXIS_HAS_STALLGUARD(Z2)
+              if (index == 0 || index == 2) anker_tmc_set.set_tmc_z2_tcoolthrs(value);
+            #endif
+            break;
+        #endif
+       }
+    }
+
+    if (report) anker_tmc_set.report_tmc_tcoolthrs();
+  }
+
+#endif // ANKER_TMC_SET
+
 #endif // HAS_TRINAMIC_CONFIG

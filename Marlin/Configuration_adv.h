@@ -2974,24 +2974,6 @@
     #define Y_STALL_CURRENT     800
     #define Z_STALL_CURRENT     1200
     #define Z2_STALL_CURRENT    1200
-    #if ENABLED(USE_Z_SENSORLESS)
-      #define ANKER_TIME_Z_MIN_LIMIT          400  // 0.4 * 10 = 4mm
-      #define ANKER_TIME_ANTHOR_Z_MAX_LIMIT  1000  //
-      #define ANKER_PROBE_TIMEOUT            8000  // 5000  // If the probe does not trigger for a long time, reset Z to zero ms
-      #define ANKER_Z_DROP_DISTANCE           -14  // (mm) Drop distance
-      #define ANKER_Z_STEP_DISTANCE            -2  // (mm) Step distance
-      #define ANKER_Z_RAISE_DISTANCE            2  // (mm) Raise distance
-      #define ANKER_Z_STALL_SENSITIVITY       100
-      #define ANKER_Z2_STALL_SENSITIVITY      100
-      #define ANKER_ANTHOR_STALL_SENSITIVITY  100
-      #define ANKER_Z_AGAIN_HOMING_NUM        3
-    #endif
-    #if ENABLED(ANKER_TMC_SET)
-      #define TCOOLTHRS_X   500
-      #define TCOOLTHRS_Y   520
-      #define TCOOLTHRS_Z1  1000
-      #define TCOOLTHRS_Z2  1000
-    #endif
   #endif
 
   /**

@@ -51,6 +51,14 @@
   #include "probe.h"
 #endif
 
+#if ENABLED(USE_Z_SENSORLESS)
+  #include "../feature/anker/anker_z_sensorless.h"
+#endif
+
+#if ENABLED(USE_Z_SENSORLESS)
+  #include "../feature/anker/anker_homing.h"
+#endif
+
 Endstops endstops;
 
 // private:
@@ -606,6 +614,10 @@ void _O2 Endstops::report_states() {
 #endif
 #define _ENDSTOP(AXIS, MINMAX) __ENDSTOP(AXIS, MINMAX)
 
+#if ENABLED(ANKER_FIX_ENDSTOPS)
+  void Endstops::set_anker_endstop(const uint16_t value) { setup_endstop_interrupts(value); }
+#endif
+
 // Check endstops - Could be called from Temperature ISR!
 void Endstops::update() {
 
@@ -870,6 +882,19 @@ void Endstops::update() {
     } \
   }while(0)
 
+#if ENABLED(USE_Z_SENSORLESS)
+  // Call the endstop triggered routine for single endstops
+  #define ANKER_PROBE_PROCESS_ENDSTOP(AXIS, MINMAX) do { \
+    if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX))) { \
+      _ENDSTOP_HIT(AXIS, MINMAX); \
+      planner.endstop_triggered(_AXIS(AXIS)); \
+      anker_homing.set_probe_trigger_ms();\
+    } \
+  }while(0)
+#else
+  #define ANKER_PROBE_PROCESS_ENDSTOP PROCESS_ENDSTOP
+#endif
+
   // Core Sensorless Homing needs to test an Extra Pin
   #define CORE_DIAG(QQ,A,MM) (CORE_IS_##QQ && A##_SENSORLESS && !A##_SPI_SENSORLESS && HAS_##A##_##MM)
   #define PROCESS_CORE_ENDSTOP(A1,M1,A2,M2) do { \
@@ -889,6 +914,22 @@ void Endstops::update() {
         planner.endstop_triggered(_AXIS(A)); \
     } \
   }while(0)
+
+  #if ENABLED(USE_Z_SENSORLESS)
+    // Call the endstop triggered routine for single endstops
+    #define ANKER_PROCESS_DUAL_ENDSTOP(A, MINMAX) do { \
+      if (TEST_ENDSTOP(_ENDSTOP(A, MINMAX))) { \
+        _ENDSTOP_HIT(A, MINMAX); \
+        planner.endstop_triggered(_AXIS(A)); \
+        anker_homing.set_first_end_z_axis(Z_AXIS_IS_Z1); \
+      } else if (TEST_ENDSTOP(_ENDSTOP(A##2, MINMAX))) { \
+        _ENDSTOP_HIT(A, MINMAX); \
+        planner.endstop_triggered(_AXIS(A)); \
+        anker_homing.set_first_end_z_axis(Z_AXIS_IS_Z2); \
+      } \
+      anker_homing.set_trigger_ms(); \
+    }while(0)
+  #endif
 
   #define PROCESS_TRIPLE_ENDSTOP(A, MINMAX) do { \
     const byte triple_hit = TEST_ENDSTOP(_ENDSTOP(A, MINMAX)) | (TEST_ENDSTOP(_ENDSTOP(A##2, MINMAX)) << 1) | (TEST_ENDSTOP(_ENDSTOP(A##3, MINMAX)) << 2); \
@@ -929,7 +970,11 @@ void Endstops::update() {
   #elif NUM_Z_STEPPER_DRIVERS == 3
     #define PROCESS_ENDSTOP_Z(MINMAX) PROCESS_TRIPLE_ENDSTOP(Z, MINMAX)
   #else
-    #define PROCESS_ENDSTOP_Z(MINMAX) PROCESS_DUAL_ENDSTOP(Z, MINMAX)
+    #if ENABLED(USE_Z_SENSORLESS)
+      #define PROCESS_ENDSTOP_Z(MINMAX) ANKER_PROCESS_DUAL_ENDSTOP(Z, MINMAX)
+    #else
+      #define PROCESS_ENDSTOP_Z(MINMAX) PROCESS_DUAL_ENDSTOP(Z, MINMAX)
+    #endif
   #endif
 
   #if HAS_G38_PROBE
@@ -1020,7 +1065,7 @@ void Endstops::update() {
         #if HAS_Z_MIN || (Z_SPI_SENSORLESS && Z_HOME_TO_MIN)
           if ( TERN1(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN, z_probe_enabled)
             && TERN1(USES_Z_MIN_PROBE_PIN, !z_probe_enabled)
-          ) PROCESS_ENDSTOP_Z(MIN);
+          ) { PROCESS_ENDSTOP_Z(MIN); }
           #if   CORE_DIAG(XZ, X, MIN)
             PROCESS_CORE_ENDSTOP(X,MIN,Z,MIN);
           #elif CORE_DIAG(XZ, X, MAX)
@@ -1034,7 +1079,13 @@ void Endstops::update() {
 
         // When closing the gap check the enabled probe
         #if USES_Z_MIN_PROBE_PIN
-          if (z_probe_enabled) PROCESS_ENDSTOP(Z, MIN_PROBE);
+          if (z_probe_enabled) {
+            #if ENABLED(EVT_HOMING_5X)
+              ANKER_PROBE_PROCESS_ENDSTOP(Z, MIN_PROBE);
+            #else
+              PROCESS_ENDSTOP(Z, MIN_PROBE);
+            #endif
+          }
         #endif
       }
       else { // Z +direction. Gantry up, bed down.

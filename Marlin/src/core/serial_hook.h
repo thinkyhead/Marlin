@@ -222,7 +222,7 @@ struct MultiSerial : public SerialBase< MultiSerial< REPEAT(NUM_SERIAL, _S_NAME)
   #undef _OUT_MASK
 
   NO_INLINE void write(uint8_t c) {
-    #define _S_WRITE(N) if (portMask.enabled(output[N])) serial##N.write(c);
+    #define _S_WRITE(N) if (portMask.enabled(output[N]) && TERN1(ANKER_MAKE, N != 2)) serial##N.write(c);
     REPEAT(NUM_SERIAL, _S_WRITE);
     #undef _S_WRITE
   }

@@ -65,7 +65,15 @@ GcodeSuite gcode;
   #include "../feature/password/password.h"
 #endif
 
+#if ENABLED(ANKER_LOG_DEBUG)
+  #include "../feature/anker/anker_log_debug.h"
+#endif
+
 #include "../MarlinCore.h" // for idle, kill
+
+#if ENABLED(ANKER_MULTIORDER_PACK)
+  bool is_block_cmd(const char *cmd);
+#endif
 
 // Inactivity shutdown
 millis_t GcodeSuite::previous_move_ms = 0,
@@ -219,6 +227,33 @@ void GcodeSuite::get_destination_from_command() {
     }
     else if (ENABLED(LASER_MOVE_G0_OFF) && parser.codenum == 0) // G0
       cutter.set_inline_enabled(false);
+  #endif
+
+  #if ENABLED(PHOTO_Z_LAYER)
+    //begin add by jason.wu for detect layer change to notify remote controller capture
+    if (parser.linearval('L') > 0) {
+      parser.layer_change_flag = 1;
+      parser.layer_num = parser.value_int();
+      SERIAL_ECHOLNPGM("\r\nLaySW:",parser.layer_num);
+    }
+    //end add by jason.wu for detect layer change to notify remote controller capture
+  #endif
+
+  #if 0 && ENABLED(ANKER_M_CMDBUF)
+    if (strchr(parser.command_ptr, '#')) {
+      // SERIAL_ECHOLNPGM(" << ANKER_M_CMDBUF >> parser.command_ptr --- ", parser.command_ptr);
+      char *token = strtok(parser.command_ptr, "#");
+      // SERIAL_ECHOLNPGM("===== << ANKER_M_CMDBUF >> token1 ===== ", token);
+      token = strtok(nullptr, "#");
+      // SERIAL_ECHOLNPGM("===== << ANKER_M_CMDBUF >> token2 ===== ", token);
+      while (token != nullptr) {
+        get_anker_m_cmdbuf_info()->queue_translate_xyze_axis(token);
+        // SERIAL_ECHOLNPGM("===== << ANKER_M_CMDBUF >> translate token ===== ", token);
+        parser.parse(token);
+        gcode.process_parsed_command(true);
+        token = strtok(nullptr, "#");
+      }
+    }
   #endif
 }
 
@@ -444,15 +479,28 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 800: parser.debug(); break;                          // G800: GCode Parser Test for G
       #endif
 
+      #if ENABLED(ANKER_MAKE_API)
+        #if ENABLED(ANKER_ALIGN)
+          case 36: G36(); break;
+        #endif
+        #if ENABLED(ANKER_ALIGN_ONLY_Z)
+          case 40: G40(); break;
+        #endif
+        #if ENABLED(EVT_HOMING_5X)
+         case 2001: G2001(); break;
+        #endif
+      #endif
+
       default: parser.unknown_command_warning(); break;
     }
     break;
 
     case 'M': switch (parser.codenum) {
 
-      #if HAS_RESUME_CONTINUE
+      #if 0
         case 0:                                                   // M0: Unconditional stop - Wait for user button press on LCD
-        case 1: M0_M1(); break;                                   // M1: Conditional stop - Wait for user button press on LCD
+        case 1:
+        M0_M1(); break;                                   // M1: Conditional stop - Wait for user button press on LCD
       #endif
 
       #if HAS_CUTTER
@@ -956,6 +1004,9 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         #if USE_SENSORLESS
           case 914: M914(); break;                                // M914: Set StallGuard sensitivity.
         #endif
+        #if ENABLED(ANKER_TMC_SET)
+          case 915: M915(); break;
+        #endif
       #endif
 
       #if HAS_L64XX
@@ -1040,6 +1091,53 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 7219: M7219(); break;                                // M7219: Set LEDs, columns, and rows
       #endif
 
+      #if ENABLED(ANKER_MAKE_API)
+        #if ENABLED(MULTI_VOLUME) //harley 2021-9-29
+          case 35: M35(); break;                                  // M35 Choose SD-card or U disk
+        #endif
+        case 116: M116(); break;
+        #if ENABLED(PROBE_CONTROL)
+          case 2000: M2000(); break;
+        #endif
+        #if ENABLED(ANKER_LOG_DEBUG)
+          case 1800: set_anker_debug_flag(1); break;
+          case 1801: set_anker_debug_flag(0); break;
+        #endif
+        #if ENABLED(READ_BUFFER_SIZE)
+          case 2001: M2001(); break;
+        #endif
+        #if ENABLED(BOARD_CONFIGURE)
+          case 2002: M2002(); break;
+        #endif
+        #if ENABLED(USE_Z_SENSORLESS)
+          case 2003: M2003(); break;
+          case 2005: M2005(); break;
+          case 2006: M2006(); break;
+        #endif
+        #if ENABLED(TMC_AUTO_CONFIG)
+          case 2007: M2007(); break;
+        #endif
+        #if ENABLED(ANKER_LIN_PARAMETER)
+          case 2030: M2030(); break;
+          case 2031: M2031(); break;
+        #endif
+        #if ENABLED(ANKER_NOZZLE_BOARD)
+          case 3001: M3001(); break;
+          case 3002: M3002(); break;
+          case 3003: M3003(); break;
+          case 3004: M3004(); break;
+          case 3005: M3005(); break;
+          case 3009: M3009(); break;
+        #endif
+        #if ENABLED(EVT_HOMING_5X)
+          case 89: M89(); break;
+          case 2004: M2004(); break;
+        #endif
+        #if ENABLED(ANKER_EXTRUDERS_RECEIVE)
+          case 2008: M2008(); break;
+        #endif
+      #endif
+
       default: parser.unknown_command_warning(); break;
     }
     break;
@@ -1055,13 +1153,16 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
     #endif
 
     default:
-      #if ENABLED(WIFI_CUSTOM_COMMAND)
-        if (wifi_custom_command(parser.command_ptr)) break;
-      #endif
+      if (TERN0(WIFI_CUSTOM_COMMAND, wifi_custom_command(parser.command_ptr))) break;
       parser.unknown_command_warning();
   }
 
-  if (!no_ok) queue.ok_to_send();
+  #if ENABLED(ANKER_MULTIORDER_PACK)
+    if (!no_ok && is_block_cmd(parser.command_ptr))
+    queue.ok_to_send();
+  #else
+    if (!no_ok) queue.ok_to_send();
+  #endif
 
   SERIAL_OUT(msgDone); // Call the msgDone serial hook to signal command processing done
 }
@@ -1069,6 +1170,60 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
 #if ENABLED(M100_FREE_MEMORY_DUMPER)
   void M100_dump_routine(PGM_P const title, const char * const start, const uintptr_t size);
 #endif
+
+#if ENABLED(ANKER_M_CMDBUF)
+
+  int strsplit(char *s, char separator, char *list[], int len) {
+    int count = 0;
+    if (!(s && list && len)) return 0;
+
+    list[count++] = s;
+    while (*s && count < len) {
+      if (separator == *s) {
+        *s = '\0';
+        list[count++] = s + 1; /*指向下一个子串*/
+      }
+      s++;
+    }
+    return count;
+  }
+
+  static void print_settings_conv(char *cmd) {
+    while (cmd && *cmd) {
+      switch (*cmd) {
+        case 'A': *cmd = 'X'; break;
+        case 'B': *cmd = 'Y'; break;
+        case 'C': *cmd = 'Z'; break;
+        case 'D': *cmd = 'E'; break;
+      }
+      cmd++;
+    }
+
+  }
+
+  static void print_settings_process(char *cmd) {
+    char *argv[8];
+
+    if (!cmd || *cmd != 'G') return;
+    if (!strchr(cmd, '#')) return;
+
+    const int argc = strsplit(cmd, '#', argv, COUNT(argv));
+
+    if (argc < 2) return;
+
+    for (int i = 1; i < argc; i++) {
+      // SERIAL_ECHOLNPGM("Settings cmd=>", argv[i]);
+      if (argv[i][0] != 'M') continue;
+
+      print_settings_conv(argv[i]);
+
+      parser.parse(argv[i]);
+      //SERIAL_ECHOLNPGM("Settings parse=>", argv[i]);
+      gcode.process_parsed_command(true);
+    }
+  }
+
+#endif // ANKER_M_CMDBUF
 
 /**
  * Process a single command and dispatch it to its handler
@@ -1093,6 +1248,8 @@ void GcodeSuite::process_next_command() {
   // Parse the next command in the queue
   parser.parse(command.buffer);
   process_parsed_command();
+
+  TERN_(ANKER_M_CMDBUF, print_settings_process(command.buffer));
 }
 
 /**

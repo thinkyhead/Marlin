@@ -69,6 +69,9 @@ typedef struct { int16_t value; celsius_t celsius; } temp_entry_t;
 #if ANY_THERMISTOR_IS(1) // beta25 = 4092 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "EPCOS"
   #include "thermistor_1.h"
 #endif
+#if ANY_THERMISTOR_IS(101) // [ANKER_MAKE] beta25 = 4092 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "EPCOS"
+  #include "thermistor_101.h"
+#endif
 #if ANY_THERMISTOR_IS(2) // 4338 K, R25 = 200 kOhm, Pull-up = 4.7 kOhm, "ATC Semitec 204GT-2"
   #include "thermistor_2.h"
 #endif
@@ -80,6 +83,9 @@ typedef struct { int16_t value; celsius_t celsius; } temp_entry_t;
 #endif
 #if ANY_THERMISTOR_IS(5) // beta25 = 4267 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "ParCan, ATC 104GT-2"
   #include "thermistor_5.h"
+#endif
+#if ANY_THERMISTOR_IS(105) // [ANKER_MAKE] beta25 = 4267 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "ParCan, ATC 104GT-2"
+  #include "thermistor_105.h"
 #endif
 #if ANY_THERMISTOR_IS(501) // 100K Zonestar thermistor
   #include "thermistor_501.h"

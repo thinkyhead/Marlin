@@ -49,6 +49,7 @@
 bool leveling_is_valid() {
   return TERN1(MESH_BED_LEVELING,          mbl.has_mesh())
       && TERN1(AUTO_BED_LEVELING_BILINEAR, !!bilinear_grid_spacing.x)
+      && TERN1(ANKER_LEVELING,             abl_is_valid())
       && TERN1(AUTO_BED_LEVELING_UBL,      ubl.mesh_is_valid());
 }
 
@@ -61,7 +62,13 @@ bool leveling_is_valid() {
  */
 void set_bed_leveling_enabled(const bool enable/*=true*/) {
 
+  MYSERIAL2.printf("L:enable:%d\r\n", enable);
+
   const bool can_change = TERN1(AUTO_BED_LEVELING_BILINEAR, !enable || leveling_is_valid());
+
+  MYSERIAL2.printf("L:leveling_is_valid():%d\r\n", leveling_is_valid());
+
+  MYSERIAL2.printf("L:can_change:%d\r\n", can_change);
 
   if (can_change && enable != planner.leveling_active) {
 
@@ -72,6 +79,8 @@ void set_bed_leveling_enabled(const bool enable/*=true*/) {
       const xyz_pos_t reset { -9999.999, -9999.999, 0 };
       (void)bilinear_z_offset(reset);
     #endif
+
+    MYSERIAL2.printf("L:planner.leveling_active:%d\r\n", planner.leveling_active);
 
     if (planner.leveling_active) {      // leveling from on to off
       if (DEBUGGING(LEVELING)) DEBUG_POS("Leveling ON", current_position);

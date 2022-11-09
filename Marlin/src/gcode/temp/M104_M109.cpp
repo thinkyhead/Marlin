@@ -86,7 +86,10 @@ void GcodeSuite::M104_M109(const bool isM109) {
 
   bool got_temp = false;
   celsius_t temp = 0;
-
+  if(isM109)
+    SERIAL_ECHOPGM("Deal M109\r\n");
+  else
+    SERIAL_ECHOPGM("Deal M104\r\n");
   // Accept 'I' if temperature presets are defined
   #if PREHEAT_COUNT
     got_temp = parser.seenval('I');

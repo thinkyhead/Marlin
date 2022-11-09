@@ -29,11 +29,24 @@
 /**
  * M82: Set E codes absolute (default)
  */
-void GcodeSuite::M82() { set_e_absolute(); }
+void GcodeSuite::M82() {
+  set_e_absolute();
+}
 
 /**
  * M83: Set E codes relative while in Absolute Coordinates (G90) mode
  */
-void GcodeSuite::M83() { set_e_relative(); }
+void GcodeSuite::M83() {
+  set_e_relative();
+}
+
+#if ENABLED(EVT_HOMING_5X)
+  /**
+   * M89: Report E absolute
+   */
+  void GcodeSuite::M89() {
+    SERIAL_ECHOLNPGM_P(gcode.axis_is_relative(E_AXIS) ? PSTR("e mode:relative!") : PSTR("e mode:absolute!"));
+  }
+#endif
 
 #endif // HAS_EXTRUDERS

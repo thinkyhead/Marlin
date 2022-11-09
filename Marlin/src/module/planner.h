@@ -75,6 +75,11 @@
   #define IS_PAGE(B) false
 #endif
 
+#if ENABLED(ANKER_M_CMDBUF)
+  #include "../feature/anker/anker_m_cmdbuf.h"
+#endif
+
+
 // Feedrate for manual moves
 #ifdef MANUAL_FEEDRATE
   constexpr xyze_feedrate_t _mf = MANUAL_FEEDRATE,
@@ -246,6 +251,13 @@ typedef struct block_t {
     block_laser_t laser;
   #endif
 
+  #if ENABLED(PHOTO_Z_LAYER)
+    //begin add by jason.wu for detect layer change to notify remote controller capture
+    int8_t layer_change_flag;
+    int32_t layer_num;
+    xyze_pos_t target_layer_start_pos;
+    //end add by jason.wu for detect layer change to notify remote controller capture
+  #endif
 } block_t;
 
 #if ANY(LIN_ADVANCE, SCARA_FEEDRATE_SCALING, GRADIENT_MIX, LCD_SHOW_E_TOTAL)
@@ -584,16 +596,31 @@ class Planner {
        *  Returns 1.0 if planner.z_fade_height is 0.0.
        *  Returns 0.0 if Z is past the specified 'Fade Height'.
        */
-      static inline float fade_scaling_factor_for_z(const_float_t rz) {
-        static float z_fade_factor = 1;
-        if (!z_fade_height) return 1;
-        if (rz >= z_fade_height) return 0;
-        if (last_fade_z != rz) {
-          last_fade_z = rz;
-          z_fade_factor = 1 - rz * inverse_z_fade_height;
+
+      #if ENABLED(ANKER_LEVELING_FADE)
+        //The first 0.2mm leveling decay value is 1, and the 0.2 to 1mm is gradually decreasing
+        static inline float fade_scaling_factor_for_z(const_float_t rz) {
+          static float z_fade_factor = 1;
+          if (rz <= 0.4f) return 1;
+          if (rz >= z_fade_height) return 0;
+          if (last_fade_z != rz) {
+            last_fade_z = rz;
+            z_fade_factor = 1 - rz * inverse_z_fade_height;
+          }
+          return z_fade_factor;
         }
-        return z_fade_factor;
-      }
+      #else
+        static inline float fade_scaling_factor_for_z(const_float_t rz) {
+          static float z_fade_factor = 1;
+          if (!z_fade_height) return 1;
+          if (rz >= z_fade_height) return 0;
+          if (last_fade_z != rz) {
+            last_fade_z = rz;
+            z_fade_factor = 1 - rz * inverse_z_fade_height;
+          }
+          return z_fade_factor;
+        }
+      #endif
 
       FORCE_INLINE static void force_fade_recalc() { last_fade_z = -999.999f; }
 
@@ -867,6 +894,11 @@ class Planner {
 
     // Block until all buffered steps are executed / cleaned
     static void synchronize();
+
+    #if ENABLED(EVT_HOMING_5X)
+      // Block until all buffered steps are executed / cleaned
+      static bool anker_probe_home_synchronize();
+    #endif
 
     // Wait for moves to finish and disable all steppers
     static void finish_and_disable();

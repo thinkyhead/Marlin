@@ -3923,13 +3923,13 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
                     switch (last_selection) {
                       case CHANGEFIL_LOAD:
                         Popup_Handler(FilLoad);
-                        gcode.process_subcommands_now_P("M701");
+                        gcode.process_subcommands_now_P(PSTR("M701"));
                         planner.synchronize();
                         Redraw_Menu(true, true, true);
                         break;
                       case CHANGEFIL_UNLOAD:
                         Popup_Handler(FilLoad, true);
-                        gcode.process_subcommands_now_P("M702");
+                        gcode.process_subcommands_now_P(PSTR("M702"));
                         planner.synchronize();
                         Redraw_Menu(true, true, true);
                         break;

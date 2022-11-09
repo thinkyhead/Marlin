@@ -111,6 +111,8 @@ public:
 
   static void changeMedia(DiskIODriver *_driver) { driver = _driver; }
 
+  static DiskIODriver *getMedia() { return driver; }
+
   static SdFile getroot() { return root; }
 
   static void mount();
@@ -348,7 +350,11 @@ private:
 };
 
 #if ENABLED(USB_FLASH_DRIVE_SUPPORT)
-  #define IS_SD_INSERTED() DiskIODriver_USBFlash::isInserted()
+  #if ENABLED(ANKER_MAKE)
+    #define IS_SD_INSERTED() DiskIODriver_USBFlash::isInserted()
+  #else
+    #define IS_SD_INSERTED() Sd2Card::isInserted()
+  #endif
 #elif PIN_EXISTS(SD_DETECT)
   #define IS_SD_INSERTED() (READ(SD_DETECT_PIN) == SD_DETECT_STATE)
 #else

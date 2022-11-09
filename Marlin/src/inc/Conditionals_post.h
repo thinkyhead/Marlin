@@ -30,6 +30,10 @@
   // Extras for CI testing
 #endif
 
+#if ENABLED(ANKER_MAKE)
+  #include "../feature/anker/sys.h"
+#endif
+
 // ADC
 #ifdef BOARD_ADC_VREF
   #define ADC_VREF BOARD_ADC_VREF
@@ -1782,7 +1786,7 @@
     #define USE_SENSORLESS 1
   #endif
   // Disable Z axis sensorless homing if a probe is used to home the Z axis
-  #if HOMING_Z_WITH_PROBE
+  #if HOMING_Z_WITH_PROBE && DISABLED(ANKER_MAKE)
     #undef Z_STALL_SENSITIVITY
     #undef Z2_STALL_SENSITIVITY
     #undef Z3_STALL_SENSITIVITY
@@ -2813,7 +2817,11 @@
   #ifndef HEATER_BED_INVERTING
     #define HEATER_BED_INVERTING false
   #endif
-  #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN, (v) ^ HEATER_BED_INVERTING)
+  #if ENABLED(COMPATIBLE_0_2AND_0_3)
+    #define WRITE_HEATER_BED(v) do{ WRITE(HEATER_BED_PIN, (v) ^ HEATER_BED_INVERTING); WRITE(HEATER_BED_PIN2, (v) ^ HEATER_BED_INVERTING); }while(0)
+  #else
+    #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN, (v) ^ HEATER_BED_INVERTING)
+  #endif
 #endif
 
 /**

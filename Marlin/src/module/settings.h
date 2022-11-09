@@ -31,6 +31,12 @@
   #include "../HAL/shared/eeprom_api.h"
 #endif
 
+//2021-10-18 harley
+#if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+  #include "../feature/babystep.h"
+#endif
+//2021-10-18 harley
+
 class MarlinSettings {
   public:
     static uint16_t datasize();
@@ -91,6 +97,10 @@ class MarlinSettings {
     #else
       FORCE_INLINE
       static void report(const bool=false) {}
+    #endif
+
+    #if ENABLED(ANKER_PRINT_SLOWDOWN)
+      static void settings_params_monitor();
     #endif
 
   private:

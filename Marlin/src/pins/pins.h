@@ -651,6 +651,8 @@
   #include "stm32f4/pins_INDEX_REV03.h"         // STM32F4                                env:Index_Mobo_Rev03
 #elif MB(MKS_ROBIN_NANO_V1_3_F4)
   #include "stm32f4/pins_MKS_ROBIN_NANO_V1_3_F4.h" // STM32F4                             env:mks_robin_nano_v1_3_f4
+#elif MB(ANKER_V8111_V0_4)
+  #include "stm32f4/pins_ANKER_V8111_V0_4.h"    // STM32F4                                env:ANKER_MAKE_F4
 
 //
 // ARM Cortex M7

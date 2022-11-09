@@ -68,6 +68,35 @@
   #include "../../../module/tool_change.h"
 #endif
 
+//2021-10-19 harley
+#if ENABLED (BABYSTEP_DISPLAY_TOTAL)
+  #include "../../../feature/babystep.h"
+#endif
+
+#if ENABLED(RESTORE_LEVELING_AFTER_G28)
+  #include "../../../module/settings.h"
+#endif
+
+#if ENABLED(BACKLASH_COMPENSATION)
+  #include "../../../feature/backlash.h"
+#endif
+
+#if ENABLED(ANKER_LEVELING)
+  #include "../../../feature/anker/anker_align.h"
+#endif
+
+#if ENABLED(ANKER_NOZZLE_BOARD)
+  #include "../../../feature/anker/anker_nozzle_board.h"
+#endif
+
+#if ENABLED(ANKER_MAKE_API)
+  uint16_t anker_level_point = 0;
+#endif
+
+#if ENABLED(HOMING_BACKOFF)
+  bool IsBackOff = true;
+#endif
+
 #if ABL_USES_GRID
   #if ENABLED(PROBE_Y_FIRST)
     #define PR_OUTER_VAR  abl.meshCount.x
@@ -218,6 +247,13 @@ public:
  */
 G29_TYPE GcodeSuite::G29() {
   DEBUG_SECTION(log_G29, "G29", DEBUGGING(LEVELING));
+
+  TERN_(ANKER_NOZZLE_BOARD, get_anker_nozzle_board_info()->serial_disable_state = 1);
+  TERN_(REPORT_LEVEL_PORT, anker_level_point = 0);
+  //TERN_(ANKER_LEVELING, gcode.process_subcommands_now_P(PSTR("M104 S140\nM105\nM109 S140")));
+  #if ENABLED(PROBE_CONTROL)
+    WRITE(PROBE_CONTROL_PIN, !PROBE_CONTROL_STATE);
+  #endif
 
   TERN_(PROBE_MANUALLY, static) G29_State abl;
 
@@ -628,6 +664,11 @@ G29_TYPE GcodeSuite::G29() {
         // Inner loop is X with PROBE_Y_FIRST disabled
         for (PR_INNER_VAR = inStart; PR_INNER_VAR != inStop; pt_index++, PR_INNER_VAR += inInc) {
 
+          #if ENABLED(REPORT_LEVEL_PORT)
+            TERN_(ANKER_LEVELING, probe.anker_level_pause = anker_level_point && (anker_level_point % GRID_MAX_POINTS_X));
+            anker_level_point++;
+          #endif
+
           abl.probePos = abl.probe_position_lf + abl.gridSpacing * abl.meshCount.asFloat();
 
           TERN_(AUTO_BED_LEVELING_LINEAR, abl.indexIntoAB[abl.meshCount.x][abl.meshCount.y] = ++abl.abl_probe_index); // 0...
@@ -664,9 +705,13 @@ G29_TYPE GcodeSuite::G29() {
           #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
             const float z = abl.measured_z + abl.Z_offset;
-            z_values[abl.meshCount.x][abl.meshCount.y] = z;
+            //2021-10-18 harley
+            z_values[abl.meshCount.x][abl.meshCount.y] = SUM_TERN(BABYSTEP_DISPLAY_TOTAL, z, planner.settings.axis_steps_per_mm[Z_AXIS] * babystep.axis_total[BS_TOTAL_IND(Z_AXIS)]);
+            //2021-10-18 harley
             TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(abl.meshCount, z));
-
+            #if ENABLED(REPORT_LEVEL_PORT)
+              SERIAL_ECHOLNPGM("echo:auto_level_index:", anker_level_point);
+            #endif
           #endif
 
           abl.reenable = false;
@@ -882,6 +927,7 @@ G29_TYPE GcodeSuite::G29() {
   #ifdef Z_PROBE_END_SCRIPT
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Z Probe End Script: ", Z_PROBE_END_SCRIPT);
     planner.synchronize();
+    TERN_(HOMING_BACKOFF, IsBackOff = false);
     process_subcommands_now_P(PSTR(Z_PROBE_END_SCRIPT));
   #endif
 
@@ -889,7 +935,31 @@ G29_TYPE GcodeSuite::G29() {
 
   report_current_position();
 
+  //2021-10-18 harley
+  if (isnan(abl.measured_z))
+    reset_bed_level();
+  else {
+    TERN_(BABYSTEP_DISPLAY_TOTAL, babystep.reset_total(Z_AXIS));
+  }
+
+  //2021-10-18 harley
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE));
+
+  TERN_(ANKER_NOZZLE_BOARD, get_anker_nozzle_board_info()->serial_disable_state = 0);
+
+  #if ENABLED(BACKLASH_COMPENSATION)
+    //2022-06-21 winter
+    backlash.distance_mm[Z_AXIS] = backlash.get_measurement(AxisEnum(Z_AXIS));
+    (void)settings.save();
+  #endif
+
+  #if ENABLED(RESTORE_LEVELING_AFTER_G28)
+    //#if ENABLED(ANKER_LEVELING)
+    //  anker_align.anker_is_leveling=1;
+    //#endif
+    (void)settings.save();
+    set_bed_leveling_enabled(true);
+  #endif
 
   G29_RETURN(isnan(abl.measured_z));
 

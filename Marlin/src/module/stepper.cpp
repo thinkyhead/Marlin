@@ -139,6 +139,10 @@ Stepper stepper; // Singleton
   #include "../lcd/extui/ui_api.h"
 #endif
 
+#if ENABLED(ANKER_PAUSE_FUNC)
+  #include "../feature/anker/anker_pause.h"
+#endif
+
 // public:
 
 #if EITHER(HAS_EXTRA_ENDSTOPS, Z_STEPPER_AUTO_ALIGN)
@@ -565,6 +569,21 @@ void Stepper::disable_all_steppers() {
 
   TERN_(EXTENSIBLE_UI, ExtUI::onSteppersDisabled());
 }
+
+#if ENABLED(PHOTO_Z_LAYER)
+  #include  "./src/gcode/parser.h"
+  //begin add by jason.wu for detect layer change to notify remote controller capture
+  static void z_axis_layer_change_notify(block_t* block_item) {
+    if (block_item->layer_change_flag != 0) {
+      parser.report_layer     = true;
+      parser.report_layer_num = block_item->layer_num;
+      parser.report_pos       = block_item->target_layer_start_pos;
+      block_item->layer_change_flag = 0;
+      block_item->target_layer_start_pos.reset();
+    }
+  }
+  //end add by jason.wu for detect layer change to notify remote controller capture
+#endif
 
 /**
  * Set the stepper direction of each axis
@@ -1876,6 +1895,9 @@ void Stepper::pulse_phase_isr() {
       AWAIT_HIGH_PULSE();
     #endif
 
+    TERN_(USE_KELI_MOTOR, delayMicroseconds(2));
+    //for(char i = 0; i < 2; i++);
+
     // Pulse stop
     #if HAS_X_STEP
       PULSE_STOP(X);
@@ -1912,6 +1934,12 @@ void Stepper::pulse_phase_isr() {
     #endif
 
   } while (--events_to_do);
+
+  //begin add by jason.wu for detect layer change to notify remote controller capture
+  #if ENABLED(PHOTO_Z_LAYER) // after z layer update
+    if (pending_events <= steps_per_isr) z_axis_layer_change_notify(current_block);
+  #endif
+  //end add by jason.wu for detect layer change to notify remote controller capture
 }
 
 // This is the last half of the stepper interrupt: This one processes and
@@ -2124,6 +2152,16 @@ uint32_t Stepper::block_phase_isr() {
   // and prepare its movement
   if (!current_block) {
 
+    #if ENABLED(ANKER_PAUSE_FUNC)
+      if (get_anker_pause_info()->pause_block_state == ANKER_PAUSE_BLOCK_ENABLE ||
+         get_anker_pause_info()->pause_block_state == ANKER_PAUSE_BLOCK_OK
+      ) {
+        get_anker_pause_info()->pause_block_state = ANKER_PAUSE_BLOCK_OK;
+        get_anker_pause_info()->block_deal();
+        return interval;
+      }
+    #endif
+
     // Anything in the buffer?
     if ((current_block = planner.get_current_block())) {
 
@@ -2275,6 +2313,12 @@ uint32_t Stepper::block_phase_isr() {
       // Calculate Bresenham dividends and divisors
       advance_dividend = current_block->steps << 1;
       advance_divisor = step_event_count << 1;
+
+      //begin add by jason.wu for detect layer change to notify remote controller capture
+      #if 0 && ENABLED(PHOTO_Z_LAYER)  // before z layer update
+        z_axis_layer_change_notify(current_block);
+      #endif
+      //end add by jason.wu for detect layer change to notify remote controller capture
 
       // No step events completed so far
       step_events_completed = 0;

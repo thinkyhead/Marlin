@@ -213,14 +213,33 @@ void GcodeSuite::M203_report(const bool forReplay/*=true*/) {
 void GcodeSuite::M204() {
   if (!parser.seen("PRST"))
     return M204_report();
-  else {
-    //planner.synchronize();
+
+  //planner.synchronize();
+  #if ENABLED(ACCELERATION_CONTROL)
+    float acc_temp = 0;
+    if (parser.seenval('S')) {
+      acc_temp = parser.value_linear_units();
+      planner.settings.travel_acceleration = planner.settings.acceleration = _MIN(acc_temp, DEFAULT_ACCELERATION);
+    }
+    if (parser.seenval('P')) {
+      acc_temp = parser.value_linear_units();
+      planner.settings.acceleration = _MIN(acc_temp, DEFAULT_ACCELERATION);
+    }
+    if (parser.seenval('R')) {
+      acc_temp = parser.value_linear_units();
+      planner.settings.retract_acceleration = _MIN(acc_temp, DEFAULT_RETRACT_ACCELERATION);
+    }
+    if (parser.seenval('T')) {
+      acc_temp = parser.value_linear_units();
+      planner.settings.travel_acceleration = _MIN(acc_temp, DEFAULT_TRAVEL_ACCELERATION);
+    }
+  #else
     // 'S' for legacy compatibility. Should NOT BE USED for new development
     if (parser.seenval('S')) planner.settings.travel_acceleration = planner.settings.acceleration = parser.value_linear_units();
     if (parser.seenval('P')) planner.settings.acceleration = parser.value_linear_units();
     if (parser.seenval('R')) planner.settings.retract_acceleration = parser.value_linear_units();
     if (parser.seenval('T')) planner.settings.travel_acceleration = parser.value_linear_units();
-  }
+  #endif
 }
 
 void GcodeSuite::M204_report(const bool forReplay/*=true*/) {

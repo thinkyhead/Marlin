@@ -111,6 +111,10 @@
   #include "../feature/spindle_laser.h"
 #endif
 
+#if ENABLED(ANKER_PAUSE_FUNC)
+  #include "../feature/anker/anker_pause.h"
+#endif
+
 // Delay for delivery of first block to the stepper ISR, if the queue contains 2 or
 // fewer movements. The delay is measured in milliseconds, and must be less than 250ms
 #define BLOCK_DELAY_FOR_1ST_MOVE 100
@@ -129,7 +133,7 @@ volatile uint8_t Planner::block_buffer_head,    // Index of the next block to be
                  Planner::block_buffer_tail;    // Index of the busy block, if any
 uint16_t Planner::cleaning_buffer_counter;      // A counter to disable queuing of blocks
 uint8_t Planner::delay_before_delivering;       // This counter delays delivery of blocks when queue becomes empty to allow the opportunity of merging blocks
-
+uint8_t reserved[64];
 planner_settings_t Planner::settings;           // Initialized by settings.load()
 
 #if ENABLED(LASER_POWER_INLINE)
@@ -1771,6 +1775,26 @@ void Planner::synchronize() {
   ) idle();
 }
 
+#if ENABLED(EVT_HOMING_5X)
+
+  #include "../feature/anker/anker_homing.h"
+
+  bool Planner::anker_probe_home_synchronize() {
+    while (has_blocks_queued() || cleaning_buffer_counter) {
+      #if ENABLED(USE_Z_SENSORLESS)
+        if (anker_homing.is_z_probe_no_trigger()) {
+          planner.endstop_triggered(_AXIS(Z));
+          SERIAL_ECHOLNPGM(" probe timeout!!");
+          return false;
+        }
+      #endif
+      idle();
+    }
+    return true;
+  }
+
+#endif
+
 /**
  * Planner::_buffer_steps
  *
@@ -1856,6 +1880,21 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     dj = target.j - position.j,
     dk = target.k - position.k
   );
+  #if ENABLED(PHOTO_Z_LAYER)
+    //begin add by jason.wu for detect layer change to notify remote controller capture
+    #if 0
+      block->layer_change_flag = (dc == 0) ? 0 : (dc > 0) ? 1 : -1;
+      block->target_layer_start_pos = target_float;
+    #else
+    if (parser.layer_change_flag) {
+      parser.layer_change_flag = 0;
+      block->layer_change_flag = 1;
+      block->layer_num = parser.layer_num;
+      block->target_layer_start_pos = target_float;
+    }
+    #endif
+  #endif
+  //end add by jason.wu for detect layer change to notify remote controller capture
 
   /* <-- add a slash to enable
     SERIAL_ECHOLNPGM(
@@ -2989,6 +3028,13 @@ bool Planner::buffer_segment(const abce_pos_t &abce
 bool Planner::buffer_line(const xyze_pos_t &cart, const_feedRate_t fr_mm_s, const uint8_t extruder/*=active_extruder*/, const float millimeters/*=0.0*/
   OPTARG(SCARA_FEEDRATE_SCALING, const_float_t inv_duration/*=0.0*/)
 ) {
+  #if ENABLED(ANKER_PAUSE_FUNC)
+    memcpy(get_anker_pause_info()->cur_block_buf.block_info[block_buffer_head].xyze_pos, &cart, sizeof(xyze_pos_t));
+    get_anker_pause_info()->cur_block_buf.block_info[block_buffer_head].feed_rate_mm_s = fr_mm_s;
+    get_anker_pause_info()->cur_block_buf.block_info[block_buffer_head].extruder = extruder;
+    get_anker_pause_info()->cur_block_buf.block_info[block_buffer_head].millimeters = millimeters;
+  #endif
+
   xyze_pos_t machine = cart;
   TERN_(HAS_POSITION_MODIFIERS, apply_modifiers(machine));
 
@@ -3254,6 +3300,9 @@ void Planner::set_max_feedrate(const uint8_t axis, float inMaxFeedrateMMS) {
       ;
       limit_and_warn(inMaxJerkMMS, axis, PSTR("Jerk"), max_jerk_edit);
     #endif
+    if (axis == E_AXIS || axis == Z_AXIS) {
+      return;
+    }
     max_jerk[axis] = inMaxJerkMMS;
   }
 
