@@ -68,7 +68,7 @@ void lcd_move_axis(const AxisEnum axis) {
     // This assumes the center is 0,0
     #if ENABLED(DELTA)
       if (axis != Z_AXIS) {
-        max = SQRT(sq((float)(DELTA_PRINTABLE_RADIUS)) - sq(current_position[Y_AXIS - axis])); // (Y_AXIS - axis) == the other axis
+        max = SQRT(sq(float(PRINTABLE_RADIUS)) - sq(current_position[Y_AXIS - axis])); // (Y_AXIS - axis) == the other axis
         min = -max;
       }
     #endif
@@ -370,6 +370,13 @@ void menu_motion() {
   #endif
 
   //
+  // Pen up/down menu
+  //
+  #if ENABLED(PEN_UP_DOWN_MENU)
+    GCODES_ITEM(MSG_MANUAL_PENUP, F("M280 P0 S90"));
+    GCODES_ITEM(MSG_MANUAL_PENDOWN, F("M280 P0 S50"));
+  #endif
+
   // Probe Offset Wizard
   //
   #if ENABLED(PROBE_OFFSET_WIZARD)
