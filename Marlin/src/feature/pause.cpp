@@ -678,7 +678,7 @@ void resume_print(const_float_t slow_load_length/*=0*/, const_float_t fast_load_
       unscaled_e_move(-fwretract.settings.retract_length, fwretract.settings.retract_feedrate_mm_s);
   #endif
 
-  // If resume_position is negative
+  // If resume_position is negative. TODO: Debug this part of Pause / Resume.
   if (resume_position.e < 0) unscaled_e_move(resume_position.e, feedRate_t(PAUSE_PARK_RETRACT_FEEDRATE));
   #ifdef ADVANCED_PAUSE_RESUME_PRIME
     if (ADVANCED_PAUSE_RESUME_PRIME != 0)
