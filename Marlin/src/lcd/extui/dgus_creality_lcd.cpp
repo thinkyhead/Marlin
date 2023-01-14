@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -28,7 +28,7 @@
 
 #include "../../inc/MarlinConfigPre.h"
 
-#if ENABLED(DGUS_LCD_UI_CREALITY_TOUCH)
+#if DGUS_LCD_UI_CREALITY_TOUCH
 
 #include "ui_api.h"
 #include "../marlinui.h"
@@ -58,16 +58,16 @@ namespace ExtUI {
 
     if (error == GET_TEXT_F(MSG_ERR_MAXTEMP) || error == GET_TEXT_F(MSG_THERMAL_RUNAWAY))     {
       ScreenHandler.GotoScreen(DGUSLCD_SCREEN_THERMAL_RUNAWAY);
-    } else if ( error == GET_TEXT_F(MSG_HEATING_FAILED_LCD)) {
+    } else if (error == GET_TEXT_F(MSG_HEATING_FAILED_LCD)) {
       ScreenHandler.GotoScreen(DGUSLCD_SCREEN_HEATING_FAILED);
-    }else if (error == GET_TEXT_F(MSG_ERR_MINTEMP)) {
+    } else if (error == GET_TEXT_F(MSG_ERR_MINTEMP)) {
       ScreenHandler.GotoScreen(DGUSLCD_SCREEN_THERMISTOR_ERROR);
     } else {
       ScreenHandler.GotoScreen(DGUSLCD_SCREEN_KILL);
     }
 
     ScreenHandler.KillScreenCalled();
-    while (!ScreenHandler.loop());  // Wait while anything is left to be sent
+    while (!ScreenHandler.loop()) { /* Wait for send buffer to empty */ }
 }
 
   void onMediaInserted() { TERN_(SDSUPPORT, ScreenHandler.SDCardInserted()); }
@@ -75,40 +75,32 @@ namespace ExtUI {
   void onMediaRemoved()  { TERN_(SDSUPPORT, ScreenHandler.SDCardRemoved()); }
 
   void onPlayTone(const uint16_t frequency, const uint16_t duration) {
-    if (ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_FEED) {
-        // We're in the feed (load filament) workflow - no beep - there is no confirmation
-        return;
-    }
-
+    // We're in the feed (load filament) workflow - no beep - there is no confirmation
+    if (ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_FEED) return;
     ScreenHandler.Buzzer(frequency, duration);
   }
 
-bool hasPrintTimer = false;
+  bool hasPrintTimer = false;
 
   void onPrintTimerStarted() {
     hasPrintTimer = true;
 
-    if (!IS_SD_FILE_OPEN() && !(PrintJobRecovery::valid() && PrintJobRecovery::exists())) {
+    if (!IS_SD_FILE_OPEN() && !(PrintJobRecovery::valid() && PrintJobRecovery::exists()))
       ScreenHandler.SetPrintingFromHost();
-    }
 
-#if ENABLED(LCD_SET_PROGRESS_MANUALLY)
-    ui.progress_reset();
-#endif
+    TERN_(LCD_SET_PROGRESS_MANUALLY, ui.progress_reset());
 
     ScreenHandler.GotoScreen(DGUSLCD_SCREEN_PRINT_RUNNING);
   }
 
   void onPrintTimerPaused() {
     // Handle M28 Pause SD print - But only if we're not waiting on a user
-    if (ExtUI::isPrintingFromMediaPaused() && ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_PRINT_RUNNING && !ExtUI::awaitingUserConfirm()) {
+    if (ExtUI::isPrintingFromMediaPaused() && ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_PRINT_RUNNING && !ExtUI::awaitingUserConfirm())
       ScreenHandler.GotoScreen(DGUSLCD_SCREEN_PRINT_PAUSED);
-    }
   }
 
   void onPrintTimerStopped() {
     hasPrintTimer = false;
-
     ScreenHandler.GotoScreen(DGUSLCD_SCREEN_PRINT_FINISH);
   }
 
@@ -117,9 +109,8 @@ bool hasPrintTimer = false;
     #ifndef FILAMENT_RUNOUT_SCRIPT
       #define FILAMENT_RUNOUT_SCRIPT "M25"
     #endif
-    if (strcmp_P(FILAMENT_RUNOUT_SCRIPT, PSTR("M600")) != 0) {
+    if (strcmp_P(FILAMENT_RUNOUT_SCRIPT, PSTR("M600")) != 0)
       ScreenHandler.FilamentRunout();
-    }
   }
 
   void onUserConfirmed() {
@@ -129,57 +120,26 @@ bool hasPrintTimer = false;
   }
 
   void onUserConfirmRequired(const char * const msg) {
-    //if (msg) {
-      SERIAL_ECHOLNPGM("User confirmation requested: ", msg);
+    SERIAL_ECHOLNPGM("User confirmation requested: ", msg);
 
-      if (ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_FEED) {
-        // We're in the feed (load filament) workflow - immediately assume confirmed
-        onUserConfirmed();
-        return;
-      }
+    if (ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_FEED) {
+      // We're in the feed (load filament) workflow - immediately assume confirmed
+      onUserConfirmed();
+      return;
+    }
 
-      ScreenHandler.setstatusmessagePGM(msg);
-      ScreenHandler.sendinfoscreen("Confirmation required", msg, NUL_STR, "Ok", true, true, false, true);
-
-      if (ExtUI::isPrinting()) {
-        ScreenHandler.GotoScreen(DGUSLCD_SCREEN_PRINT_PAUSED);
-      } else {
-        ScreenHandler.GotoScreen(DGUSLCD_SCREEN_POPUP);
-      }
-    //}
-    //else if (ScreenHandler.getCurrentScreen() == DGUSLCD_SCREEN_POPUP) {
-    //  DEBUG_ECHOLNPAIR("User confirmation canceled");
-
-    //  ScreenHandler.setstatusmessagePGM(nullptr);
-    //  ScreenHandler.PopToOldScreen();
-    //}
+    ScreenHandler.setstatusmessagePGM(msg);
+    ScreenHandler.sendinfoscreen("Confirmation required", msg, NUL_STR, "Ok", true, true, false, true);
+    ScreenHandler.GotoScreen(ExtUI::isPrinting() ? DGUSLCD_SCREEN_PRINT_PAUSED : DGUSLCD_SCREEN_POPUP);
   }
 
   void onStatusChanged(const char * const msg) { ScreenHandler.setstatusmessage(msg); }
-
-  void onFactoryReset() {
-    ScreenHandler.OnFactoryReset();
-  }
-
-   void onHomingStart() {
-    ScreenHandler.OnHomingStart();
-  }
-
-  void onHomingDone() {
-    ScreenHandler.OnHomingComplete();
-  }
-
-  void onPrintDone() {
-    ScreenHandler.OnPrintFinished();
-  }
-
-  void onStoreSettings(char *buff) {
-    ScreenHandler.StoreSettings(buff);
-  }
-
-  void onLoadSettings(const char *buff) {
-    ScreenHandler.LoadSettings(buff);
-  }
+  void onFactoryReset() { ScreenHandler.OnFactoryReset(); }
+  void onHomingStart() { ScreenHandler.OnHomingStart(); }
+  void onHomingDone() { ScreenHandler.OnHomingComplete(); }
+  void onPrintDone() { ScreenHandler.OnPrintFinished(); }
+  void onStoreSettings(char *buff) { ScreenHandler.StoreSettings(buff); }
+  void onLoadSettings(const char *buff) { ScreenHandler.LoadSettings(buff); }
 
   void onPostprocessSettings() {
     // Called after loading or resetting stored settings
@@ -197,9 +157,7 @@ bool hasPrintTimer = false;
 
   #if HAS_MESH
     void onLevelingStart() {
-      #if HAS_BED_PROBE
-        ScreenHandler.OnMeshLevelingStart();
-      #endif
+      TERN_(HAS_BED_PROBE, ScreenHandler.OnMeshLevelingStart());
     }
 
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const float zval) {
@@ -209,9 +167,8 @@ bool hasPrintTimer = false;
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const ExtUI::probe_state_t state) {
       ScreenHandler.OnMeshLevelingUpdate(xpos, ypos, 0);
     }
-    void onLevelingDone() {
 
-    }
+    void onLevelingDone() {}
   #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
@@ -251,15 +208,6 @@ bool hasPrintTimer = false;
 
   void onSteppersEnabled() {
   }
-
-  #if HAS_MESH
-    void onMeshValidationStarting() {
-      MeshValidationHandler::OnMeshValidationStart();
-    }
-
-    void onMeshValidationFinished() {
-      MeshValidationHandler::OnMeshValidationFinish();
-    }
-  #endif
 }
-#endif // HAS_DGUS_LCD
+
+#endif // DGUS_LCD_UI_CREALITY_TOUCH

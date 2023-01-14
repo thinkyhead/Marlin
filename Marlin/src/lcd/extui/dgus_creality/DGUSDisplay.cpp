@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -20,11 +20,9 @@
  *
  */
 
-/* DGUS implementation written by coldtobi in 2019 for Marlin */
-
 #include "../../../inc/MarlinConfigPre.h"
 
-#if ENABLED(DGUS_LCD_UI_CREALITY_TOUCH)
+#if DGUS_LCD_UI_CREALITY_TOUCH
 
 #define DEBUG_ECHOLNPAIR DEBUG_ECHOLNPGM
 
@@ -66,24 +64,14 @@ constexpr uint8_t DGUS_CMD_READVAR = 0x83;
 void DGUSDisplay::InitDisplay() {
   dgusserial.begin(LCD_BAUDRATE);
 
-  /*delay(500); // Attempt to fix possible handshake error
-
-  ResetDisplay(); // Reset for firmware update
-
+  /*
   delay(500); // Attempt to fix possible handshake error
-*/
-  if (true
-    #if ENABLED(POWER_LOSS_RECOVERY)
-      && !recovery.valid()
-    #endif
-  )
-    RequestScreen(
-      #if ENABLED(SHOW_BOOTSCREEN)
-        DGUSLCD_SCREEN_BOOT
-      #else
-        DGUSLCD_SCREEN_MAIN
-      #endif
-    );
+  ResetDisplay(); // Reset for firmware update
+  delay(500); // Attempt to fix possible handshake error
+  */
+
+  if (TERN1(POWER_LOSS_RECOVERY, !recovery.valid()))
+    RequestScreen(TERN(SHOW_BOOTSCREEN, DGUSLCD_SCREEN_BOOT, DGUSLCD_SCREEN_MAIN));
 }
 
 void DGUSDisplay::ResetDisplay() {
@@ -354,4 +342,4 @@ bool populate_VPVar(const uint16_t VP, DGUS_VP_Variable * const ramcopy) {
   return true;
 }
 
-#endif // HAS_DGUS_LCD
+#endif // DGUS_LCD_UI_CREALITY_TOUCH

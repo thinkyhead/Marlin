@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -48,6 +48,6 @@ extern const struct DGUS_VP_Variable ListOfVP[];
 
 #include "../../../inc/MarlinConfig.h"
 
-#if ENABLED(DGUS_LCD_UI_CREALITY_TOUCH)
+#if DGUS_LCD_UI_CREALITY_TOUCH
   #include "creality_touch/DGUSDisplayDef.h"
 #endif

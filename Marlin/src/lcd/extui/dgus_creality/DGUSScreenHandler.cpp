@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -25,7 +25,7 @@
 #define DEBUG_ECHOLNPAIR DEBUG_ECHOLNPGM
 #define DEBUG_ECHOPAIR DEBUG_ECHOPGM
 
-#if ENABLED(DGUS_LCD_UI_CREALITY_TOUCH)
+#if DGUS_LCD_UI_CREALITY_TOUCH
 
 #include "DGUSScreenHandler.h"
 #include "DGUSDisplay.h"
@@ -874,17 +874,17 @@ uint16_t CreateRgb(double h, double s, double v) {
       double r;       // a fraction between 0 and 1
       double g;       // a fraction between 0 and 1
       double b;       // a fraction between 0 and 1
-      } out;
+    } out;
 
-    if(in.s <= 0.0) {       // < is bogus, just shuts up warnings
-        out.r = in.v;
-        out.g = in.v;
-        out.b = in.v;
-        return 0;
+    if (in.s <= 0.0) {       // < is bogus, just shuts up warnings
+      out.r = in.v;
+      out.g = in.v;
+      out.b = in.v;
+      return 0;
     }
 
     hh = in.h;
-    if(hh >= 360.0) hh = 0.0;
+    if (hh >= 360.0) hh = 0.0;
     hh /= 60.0;
     i = (long)hh;
     ff = hh - i;
@@ -931,129 +931,130 @@ uint16_t CreateRgb(double h, double s, double v) {
 }
 
 #if HAS_BED_PROBE
+
   void DGUSScreenHandler::UpdateMeshValue(const int8_t x, const int8_t y, const float z) {
     //SERIAL_ECHOPGM("X", x);
     //SERIAL_ECHOPGM(" Y", y);
     //SERIAL_ECHO(" Z");
     //SERIAL_ECHO_F(z, 4);
 
-  // Determine the screen X and Y value
-  if (x % SkipMeshPoint != 0 || y % SkipMeshPoint != 0) {
-    // Skip this point
-    //SERIAL_ECHOLN("");
-    return;
-  }
-
-  const uint8_t scrX = x / SkipMeshPoint;
-  const uint8_t scrY = y / SkipMeshPoint;
-
-  // Each Y is a full edge of X values
-  const uint16_t vpAddr = VP_MESH_LEVEL_X0_Y0 + (scrY * MESH_LEVEL_VP_SIZE) + (scrX * MESH_LEVEL_VP_EDGE_SIZE);
-
-  // ... DWIN is inconsistently truncating floats. Examples: 0.1811 becomes 0.181, 0.1810 becomes 0.180. But 0.1800 is not 0.179
-  //     so we need to calculate a good number here that will not overflow
-  float displayZ = z;
-
-  {
-    constexpr float correctionFactor = 0.0001;
-
-    if (round(z * cpow(10,3)) == round((z + correctionFactor) * cpow(10,3))) {
-      // If we don't accidently overshoot to the next number, trick the display by upping the number 0.0001 💩
-      displayZ += correctionFactor;
-
-      //SERIAL_ECHO(" displayZ: ");
-      //SERIAL_ECHO_F(z, 4);
+    // Determine the screen X and Y value
+    if (x % SkipMeshPoint != 0 || y % SkipMeshPoint != 0) {
+      // Skip this point
+      //SERIAL_ECHOLN("");
+      return;
     }
+
+    const uint8_t scrX = x / SkipMeshPoint;
+    const uint8_t scrY = y / SkipMeshPoint;
+
+    // Each Y is a full edge of X values
+    const uint16_t vpAddr = VP_MESH_LEVEL_X0_Y0 + (scrY * MESH_LEVEL_VP_SIZE) + (scrX * MESH_LEVEL_VP_EDGE_SIZE);
+
+    // ... DWIN is inconsistently truncating floats. Examples: 0.1811 becomes 0.181, 0.1810 becomes 0.180. But 0.1800 is not 0.179
+    //     so we need to calculate a good number here that will not overflow
+    float displayZ = z;
+
+    {
+      constexpr float correctionFactor = 0.0001;
+
+      if (round(z * cpow(10,3)) == round((z + correctionFactor) * cpow(10,3))) {
+        // If we don't accidently overshoot to the next number, trick the display by upping the number 0.0001 💩
+        displayZ += correctionFactor;
+
+        //SERIAL_ECHO(" displayZ: ");
+        //SERIAL_ECHO_F(z, 4);
+      }
+    }
+
+    //SERIAL_ECHOLN("");
+
+    dgusdisplay.WriteVariable(vpAddr, displayZ);
+
+    // Set color
+    const uint16_t spAddr = SP_MESH_LEVEL_X0_Y0 + (scrY * MESH_LEVEL_SP_SIZE) + (scrX * MESH_LEVEL_SP_EDGE_SIZE);
+
+    uint16_t color = MESH_COLOR_NOT_MEASURED;
+
+    // ... Only calculate if set
+    if (abs(z) > MESH_UNSET_EPSILON) {
+      // Determine color scale
+      float clampedZ = max(min(z, 0.5f),-0.5f) * -1;
+      float h = (clampedZ + 0.5f) * 240;
+
+      // Convert to RGB
+      color = CreateRgb(h, 1, 0.75);
+    }
+
+    dgusdisplay.SetVariableDisplayColor(spAddr, color);
   }
 
-  //SERIAL_ECHOLN("");
+  void DGUSScreenHandler::HandleMeshPoint(DGUS_VP_Variable &var, void *val_ptr) {
+    // Determine the X and Y for this mesh point
+    // We can do this because we assume MESH_INPUT_SUPPORTED_X_SIZE and MESH_INPUT_SUPPORTED_Y_SIZE with MESH_INPUT_DATA_SIZE.
+    // So each VP is MESH_INPUT_DATA_SIZE apart
 
-  dgusdisplay.WriteVariable(vpAddr, displayZ);
+    if (HasSynchronousOperation) {
+      setstatusmessagePGM(PSTR("Wait for leveling to complete"));
+      return;
+    }
 
-  // Set color
-  const uint16_t spAddr = SP_MESH_LEVEL_X0_Y0 + (scrY * MESH_LEVEL_SP_SIZE) + (scrX * MESH_LEVEL_SP_EDGE_SIZE);
+    const uint16_t probe_point = var.VP - VP_MESH_INPUT_X0_Y0;
+    constexpr uint16_t col_size = MESH_INPUT_SUPPORTED_Y_SIZE * MESH_INPUT_DATA_SIZE;
 
-  uint16_t color = MESH_COLOR_NOT_MEASURED;
+    const uint8_t x = probe_point / col_size; // Will be 0 to 3 inclusive
+    const uint8_t y = (probe_point - (x * col_size)) / MESH_INPUT_DATA_SIZE;
 
-  // ... Only calculate if set
-  if (abs(z) > MESH_UNSET_EPSILON) {
-    // Determine color scale
-    float clampedZ = max(min(z, 0.5f),-0.5f) * -1;
-    float h = (clampedZ + 0.5f) * 240;
+    int16_t rawZ = *(int16_t*)val_ptr;
+    float z = swap16(rawZ) * 0.001;
+      SERIAL_ECHOPGM("Overriding mesh value. X:", x);
+      SERIAL_ECHOPGM(" Y:", y);
+      SERIAL_ECHO(" Z:");
+      SERIAL_ECHO_F(z, 4);
+      SERIAL_ECHOPGM(" [raw: ", rawZ);
+      SERIAL_ECHOPGM("] [point ", probe_point, "] ");
+      SERIAL_ECHOPGM(" [VP: ", var.VP);
+      SERIAL_ECHOLN("]");
 
-    // Convert to RGB
-    color = CreateRgb(h, 1, 0.75);
+
+    UpdateMeshValue(x, y, z);
+    ExtUI::setMeshPoint({ x, y }, z);
+
+    RequestSaveSettings();
   }
 
-  dgusdisplay.SetVariableDisplayColor(spAddr, color);
-}
-
-void DGUSScreenHandler::HandleMeshPoint(DGUS_VP_Variable &var, void *val_ptr) {
-  // Determine the X and Y for this mesh point
-  // We can do this because we assume MESH_INPUT_SUPPORTED_X_SIZE and MESH_INPUT_SUPPORTED_Y_SIZE with MESH_INPUT_DATA_SIZE.
-  // So each VP is MESH_INPUT_DATA_SIZE apart
-
-  if (HasSynchronousOperation) {
-    setstatusmessagePGM(PSTR("Wait for leveling to complete"));
-    return;
-  }
-
-  const uint16_t probe_point = var.VP - VP_MESH_INPUT_X0_Y0;
-  constexpr uint16_t col_size = MESH_INPUT_SUPPORTED_Y_SIZE * MESH_INPUT_DATA_SIZE;
-
-  const uint8_t x = probe_point / col_size; // Will be 0 to 3 inclusive
-  const uint8_t y = (probe_point - (x * col_size)) / MESH_INPUT_DATA_SIZE;
-
-  int16_t rawZ = *(int16_t*)val_ptr;
-  float z = swap16(rawZ) * 0.001;
-    SERIAL_ECHOPGM("Overriding mesh value. X:", x);
-    SERIAL_ECHOPGM(" Y:", y);
-    SERIAL_ECHO(" Z:");
-    SERIAL_ECHO_F(z, 4);
-    SERIAL_ECHOPGM(" [raw: ", rawZ);
-    SERIAL_ECHOPGM("] [point ", probe_point, "] ");
-    SERIAL_ECHOPGM(" [VP: ", var.VP);
-    SERIAL_ECHOLN("]");
-
-
-  UpdateMeshValue(x, y, z);
-  ExtUI::setMeshPoint({ x, y }, z);
-
-  RequestSaveSettings();
-}
-
-#endif
+#endif // HAS_BED_PROBE
 
 #if HAS_COLOR_LEDS
-void DGUSScreenHandler::HandleLED(DGUS_VP_Variable &var, void *val_ptr) {
-  // The display returns a 16-bit integer
-  uint16_t newValue = swap16(*(uint16_t*)val_ptr);
 
-  NOLESS(newValue, 0);
-  NOMORE(newValue, 255);
+  void DGUSScreenHandler::HandleLED(DGUS_VP_Variable &var, void *val_ptr) {
+    // The display returns a 16-bit integer
+    uint16_t newValue = swap16(*(uint16_t*)val_ptr);
 
-  (*(uint8_t*)var.memadr) = static_cast<uint8_t>(newValue);
-  leds.set_color(leds.color);
+    NOLESS(newValue, 0);
+    NOMORE(newValue, 255);
 
-  SERIAL_ECHOLNPGM("HandleLED ", newValue);
-  RequestSaveSettings();
+    (*(uint8_t*)var.memadr) = static_cast<uint8_t>(newValue);
+    leds.set_color(leds.color);
 
-  skipVP = var.VP; // don't overwrite value the next update time as the display might autoincrement in parallel
-}
+    SERIAL_ECHOLNPGM("HandleLED ", newValue);
+    RequestSaveSettings();
 
-void DGUSScreenHandler::SendLEDToDisplay(DGUS_VP_Variable &var) {
-  DGUS_VP_Variable rcpy;
-  if (!populate_VPVar(var.VP, &rcpy)) {
-    return;
+    skipVP = var.VP; // don't overwrite value the next update time as the display might autoincrement in parallel
   }
 
-  // The display wants a 16-bit integer
-  uint16_t val = *(uint8_t*)var.memadr;
-  rcpy.memadr = &val;
+  void DGUSScreenHandler::SendLEDToDisplay(DGUS_VP_Variable &var) {
+    DGUS_VP_Variable rcpy;
+    if (!populate_VPVar(var.VP, &rcpy)) return;
 
-  DGUSLCD_SendWordValueToDisplay(rcpy);
-}
-#endif
+    // The display wants a 16-bit integer
+    uint16_t val = *(uint8_t*)var.memadr;
+    rcpy.memadr = &val;
+
+    DGUSLCD_SendWordValueToDisplay(rcpy);
+  }
+
+#endif // HAS_COLOR_LEDS
 
 const uint16_t* DGUSLCD_FindScreenVPMapList(uint8_t screen) {
   const uint16_t *ret;
@@ -1594,12 +1595,12 @@ void DGUSScreenHandler::UpdateNewScreen(DGUSLCD_Screens newscreen, bool save_cur
 void DGUSScreenHandler::PopToOldScreen() {
   DEBUG_ECHOLNPAIR("PopToOldScreen s=", past_screens[0]);
 
-  if(past_screens[0] != 0) {
+  if (past_screens[0] != 0) {
     GotoScreen(past_screens[0], false);
     memmove(&past_screens[0], &past_screens[1], sizeof(past_screens) - 1);
     past_screens[sizeof(past_screens) - 1] = DGUSLCD_SCREEN_MAIN;
   } else {
-    if(ExtUI::isPrinting()) {
+    if (ExtUI::isPrinting()) {
       GotoScreen(DGUSLCD_SCREEN_PRINT_RUNNING, false);
     } else {
       GotoScreen(DGUSLCD_SCREEN_MAIN, false);
@@ -1623,9 +1624,7 @@ void DGUSScreenHandler::OnBackButton(DGUS_VP_Variable &var, void *val_ptr) {
 }
 
 void DGUSScreenHandler::UpdateScreenVPData() {
-  if (!dgusdisplay.isInitialized()) {
-    return;
-  }
+  if (!dgusdisplay.isInitialized()) return;
 
   //DEBUG_ECHOPAIR(" UpdateScreenVPData Screen: ", current_screen);
 
@@ -1760,4 +1759,4 @@ bool DGUSScreenHandler::loop() {
   return IsScreenComplete();
 }
 
-#endif // HAS_DGUS_LCD
+#endif // DGUS_LCD_UI_CREALITY_TOUCH

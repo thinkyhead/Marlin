@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -24,7 +24,7 @@
 
 #include "../../../../inc/MarlinConfigPre.h"
 
-#if ENABLED(DGUS_LCD_UI_CREALITY_TOUCH)
+#if DGUS_LCD_UI_CREALITY_TOUCH
 
 #include "../DGUSDisplayDef.h"
 #include "../DGUSDisplay.h"
@@ -69,7 +69,6 @@
   uint16_t distanceToMove = 10;
 #endif
 using namespace ExtUI;
-
 
 const char MarlinVersion[] PROGMEM = SHORT_BUILD_VERSION;
 
@@ -148,7 +147,6 @@ const uint16_t VPList_Temp[] PROGMEM = {
   0x0000
 };
 
-
 const uint16_t VPList_PreheatPLASettings[] PROGMEM = {
   VPList_CommonWithStatus,
 
@@ -166,7 +164,6 @@ const uint16_t VPList_PreheatABSSettings[] PROGMEM = {
 
   0x0000
 };
-
 
 const uint16_t VPList_PrintPausingError[] PROGMEM = {
   VPList_CommonWithStatus,
@@ -237,7 +234,6 @@ const uint16_t VPList_TuneScreen[] PROGMEM = {
   0x0000
 };
 
-
 const uint16_t VPList_TuneExtraScreen[] PROGMEM = {
   VPList_CommonWithStatus,
 
@@ -246,7 +242,6 @@ const uint16_t VPList_TuneExtraScreen[] PROGMEM = {
 
   0x0000
 };
-
 
 const uint16_t VPList_Prepare[] PROGMEM = {
   VPList_CommonWithStatus,
@@ -486,7 +481,6 @@ const struct VPMapping VPMap[] PROGMEM = {
 #define VPHELPER_STR(VPADR, VPADRVAR, STRLEN, RXFPTR, TXFPTR ) { .VP=VPADR, .memadr=VPADRVAR, .size=STRLEN, \
   .set_by_display_handler = RXFPTR, .send_to_display_handler = TXFPTR }
 
-
 const struct DGUS_VP_Variable ListOfVP[] PROGMEM = {
   // Back button state
   VPHELPER(VP_BACK_BUTTON_STATE, nullptr, nullptr, ScreenHandler.SendBusyState),
@@ -588,15 +582,15 @@ const struct DGUS_VP_Variable ListOfVP[] PROGMEM = {
   // Misc settings
   VPHELPER(VP_MISCSETTINGS_NAV_BUTTON, nullptr, (ScreenHandler.DGUSLCD_NavigateToPage<DGUSLCD_SCREEN_MISC_SETTINGS>), nullptr),
 
-#if ENABLED(FILAMENT_RUNOUT_SENSOR)
-  VPHELPER(VP_FILAMENTRUNOUT_SENSOR_TOGGLE_BUTTON, &runout.enabled, ScreenHandler.DGUSLCD_ToggleBoolean, nullptr),
-  VPHELPER(VP_FILAMENTRUNOUT_SENSOR_TOGGLE_ICON, &runout.enabled,  nullptr, (ScreenHandler.DGUSLCD_SendIconValue<ICON_TOGGLE_ON, ICON_TOGGLE_OFF>)),
-#endif
+  #if ENABLED(FILAMENT_RUNOUT_SENSOR)
+    VPHELPER(VP_FILAMENTRUNOUT_SENSOR_TOGGLE_BUTTON, &runout.enabled, ScreenHandler.DGUSLCD_ToggleBoolean, nullptr),
+    VPHELPER(VP_FILAMENTRUNOUT_SENSOR_TOGGLE_ICON, &runout.enabled,  nullptr, (ScreenHandler.DGUSLCD_SendIconValue<ICON_TOGGLE_ON, ICON_TOGGLE_OFF>)),
+  #endif
 
-#if ENABLED(POWER_LOSS_RECOVERY)
-  VPHELPER(VP_PLR_TOGGLE_BUTTON, nullptr, ScreenHandler.TogglePowerLossRecovery, nullptr),
-  VPHELPER(VP_PLR_TOGGLE_ICON, &PrintJobRecovery::enabled,  nullptr, (ScreenHandler.DGUSLCD_SendIconValue<ICON_TOGGLE_ON, ICON_TOGGLE_OFF>)),
-#endif
+  #if ENABLED(POWER_LOSS_RECOVERY)
+    VPHELPER(VP_PLR_TOGGLE_BUTTON, nullptr, ScreenHandler.TogglePowerLossRecovery, nullptr),
+    VPHELPER(VP_PLR_TOGGLE_ICON, &PrintJobRecovery::enabled,  nullptr, (ScreenHandler.DGUSLCD_SendIconValue<ICON_TOGGLE_ON, ICON_TOGGLE_OFF>)),
+  #endif
 
   // Preheat settings
   #ifdef PREHEAT_1_LABEL
@@ -758,27 +752,27 @@ const struct DGUS_VP_Variable ListOfVP[] PROGMEM = {
   VPHELPER(VP_DEVELOPMENT_HELPER_BUTTON, nullptr, ScreenHandler.HandleDevelopmentTestButton, nullptr),
 
   // Mesh override input
-#if MESH_INPUT_SUPPORTED_SIZE == GRID_MAX_POINTS && HAS_MESH
-  //#define _VPHELPER_GP(N) VPHELPER((VP_MESH_INPUT_X0_Y0 + ( ##N## * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  //REPEAT(MESH_INPUT_SUPPORTED_SIZE, _VPHELPER_GP)
+  #if MESH_INPUT_SUPPORTED_SIZE == GRID_MAX_POINTS && HAS_MESH
+    //#define _VPHELPER_GP(N) VPHELPER((VP_MESH_INPUT_X0_Y0 + ( ##N## * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    //REPEAT(MESH_INPUT_SUPPORTED_SIZE, _VPHELPER_GP)
 
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 0 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 1 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 2 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 3 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 4 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 5 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 6 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 7 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 8 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 9 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 10 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 11 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 12 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 13 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 14 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-  VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 15 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
-#endif
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 0 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 1 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 2 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 3 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 4 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 5 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 6 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 7 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 8 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 9 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 10 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 11 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 12 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 13 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 14 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+    VPHELPER((VP_MESH_INPUT_X0_Y0 + ( 15 * MESH_INPUT_DATA_SIZE)), nullptr, ScreenHandler.HandleMeshPoint, nullptr),
+  #endif
 
   // M117 LCD String (We don't need the string in memory but "just" push it to the display on demand, hence the nullptr
   { .VP = VP_M117, .memadr = nullptr, .size = VP_M117_LEN, .set_by_display_handler = nullptr, .send_to_display_handler =&ScreenHandler.DGUSLCD_SendStringToDisplay },
@@ -793,4 +787,4 @@ const struct DGUS_VP_Variable ListOfVP[] PROGMEM = {
   VPHELPER(0, 0, 0, 0)  // must be last entry.
 };
 
-#endif // DGUS_LCD_UI_ORIGIN
+#endif // DGUS_LCD_UI_CREALITY_TOUCH
