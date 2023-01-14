@@ -64,8 +64,12 @@
 //
 // Probe
 //
-#ifndef PROBE_TARE_PIN
-  #define PROBE_TARE_PIN                    PA5
+#if ENABLED(NOZZLE_AS_PROBE)
+  #ifndef PROBE_TARE_PIN
+    #define PROBE_TARE_PIN                  PA5
+  #endif
+#else
+  #define SERVO0_PIN                        PA5
 #endif
 
 //
@@ -112,3 +116,5 @@
 // Misc. Functions
 //
 #define CASE_LIGHT_PIN                      PA6
+
+#define LED_PIN                             PA6
