@@ -2944,7 +2944,11 @@ void HMI_Control() {
   void HMI_Leveling() {
     Popup_Window_Leveling();
     DWIN_UpdateLCD();
-    queue.inject(F("G28O\nG29"));
+    #if defined(MAIN_MENU_ITEM_1_GCODE)
+      queue.inject(F(MAIN_MENU_ITEM_1_GCODE));
+    #else
+      queue.inject(F("G28O\nG29\nG28\nG1Z0"));
+    #endif
   }
 #endif
 
@@ -4055,8 +4059,8 @@ void HMI_Init() {
   HMI_SDCardInit();
 
   for (uint16_t t = 0; t <= 100; t += 2) {
-    DWIN_ICON_Show(ICON, ICON_Bar, 15, 260);
-    DWIN_Draw_Rectangle(1, Color_Bg_Black, 15 + t * 242 / 100, 260, 257, 280);
+    DWIN_ICON_Show(ICON, ICON_Bar, 15, 450);
+    DWIN_Draw_Rectangle(1, Color_Bg_Black, 15 + t * 242 / 100, 450, 257, 470);
     DWIN_UpdateLCD();
     delay(20);
   }

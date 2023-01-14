@@ -112,7 +112,7 @@
   #else
     #error "LCD_SERIAL_PORT must be from 1 to 6, or -1 for Native USB."
   #endif
-  #if HAS_DGUS_LCD
+  #if HAS_DGUS_LCD || ENABLED(DGUS_LCD_UI_CREALITY_TOUCH)
     #define SERIAL_GET_TX_BUFFER_FREE() LCD_SERIAL.availableForWrite()
   #endif
 #endif

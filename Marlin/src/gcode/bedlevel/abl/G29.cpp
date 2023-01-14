@@ -949,6 +949,8 @@ G29_TYPE GcodeSuite::G29() {
     process_subcommands_now(F(Z_PROBE_END_SCRIPT));
   #endif
 
+  TERN_(HAS_DWIN_E3V2_BASIC, DWIN_LevelingDone());
+  TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone());
   TERN_(HAS_MULTI_HOTEND, if (abl.tool_index != 0) tool_change(abl.tool_index));
 
   report_current_position();

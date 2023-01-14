@@ -109,8 +109,8 @@ void MarlinUI::clear_lcd() {
       #define INFO_CENTER ((LCD_PIXEL_WIDTH) - 200 / 2)
       #define VERSION_Y   84
     #endif
-
-    DWIN_Draw_String(false, font10x20, Color_Yellow, Color_Bg_Black, INFO_CENTER - (dwin_string.length * 10) / 2, VERSION_Y, S(dwin_string.string()));
+    DWIN_JPG_ShowAndCache(0); // Ensure DACAI stays on boot screen
+    DWIN_Draw_String(false, font10x20, Color_Yellow, Color_Bg_Black, INFO_CENTER - (dwin_string.length * 10) / 2, 230, S(dwin_string.string()));
     TERN_(SHOW_CUSTOM_BOOTSCREEN, safe_delay(CUSTOM_BOOTSCREEN_TIMEOUT));
     clear_lcd();
 
