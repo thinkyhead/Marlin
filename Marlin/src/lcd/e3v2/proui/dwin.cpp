@@ -2179,10 +2179,8 @@ void SetMoveZ() { HMI_value.axis = Z_AXIS; SetPFloatOnClick(Z_MIN_POS, Z_MAX_POS
     runout.reset();
     Toggle_Chkb_Line(runout.enabled);
   }
-  #if HAS_FILAMENT_RUNOUT_DISTANCE
-    void ApplyRunoutDistance() { runout.set_runout_distance(MenuData.Value / MINUNITMULT); }
-    void SetRunoutDistance() { SetFloatOnClick(0, 999, UNITFDIGITS, runout.runout_distance(), ApplyRunoutDistance); }
-  #endif
+  void ApplyRunoutDistance() { runout.set_runout_distance(MenuData.Value / MINUNITMULT); }
+  void SetRunoutDistance() { SetFloatOnClick(0, 999, UNITFDIGITS, runout.runout_distance(), ApplyRunoutDistance); }
 #endif
 
 #if ENABLED(ADVANCED_PAUSE_FEATURE)

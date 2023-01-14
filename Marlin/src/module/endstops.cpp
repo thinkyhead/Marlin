@@ -50,6 +50,10 @@
   #include "../feature/joystick.h"
 #endif
 
+#if HAS_FILAMENT_SENSOR
+  #include "../feature/runout.h"
+#endif
+
 #if HAS_BED_PROBE
   #include "probe.h"
 #endif
@@ -668,22 +672,30 @@ void __O2 Endstops::report_states() {
   #if USES_Z_MIN_PROBE_PIN
     print_es_state(PROBE_TRIGGERED(), F(STR_Z_PROBE));
   #endif
-  #if MULTI_FILAMENT_SENSOR
-    #define _CASE_RUNOUT(N) case N: pin = FIL_RUNOUT##N##_PIN; state = FIL_RUNOUT##N##_STATE; break;
+  #if HAS_FILAMENT_SENSOR
     LOOP_S_LE_N(i, 1, NUM_RUNOUT_SENSORS) {
       pin_t pin;
-      uint8_t state;
       switch (i) {
         default: continue;
+        #define _CASE_RUNOUT(N) case N: pin = FIL_RUNOUT##N##_PIN; break;
         REPEAT_1(NUM_RUNOUT_SENSORS, _CASE_RUNOUT)
+        #undef _CASE_RUNOUT
       }
+      const RunoutMode rm = runout.mode[i - 1];
+      const uint8_t outval = runout.out_state(i - 1);
+
       SERIAL_ECHOPGM(STR_FILAMENT);
       if (i > 1) SERIAL_CHAR(' ', '0' + i);
-      print_es_state(extDigitalRead(pin) != state);
+      SERIAL_ECHOPGM(": ");
+      if (rm == RM_NONE)
+        SERIAL_ECHOLNPGM(STR_OFF);
+      else if (rm == RM_MOTION_SENSOR) {
+        SERIAL_ECHOPGM("MOTION : ");
+        print_es_state(extDigitalRead(pin) == outval);
+      }
+      else
+        SERIAL_ECHOLNPGM_P(extDigitalRead(pin) == outval ? PSTR("OUT") : PSTR("PRESENT"));
     }
-    #undef _CASE_RUNOUT
-  #elif HAS_FILAMENT_SENSOR
-    print_es_state(READ(FIL_RUNOUT1_PIN) != FIL_RUNOUT1_STATE, F(STR_FILAMENT));
   #endif
 
   TERN_(BLTOUCH, bltouch._reset_SW_mode());
