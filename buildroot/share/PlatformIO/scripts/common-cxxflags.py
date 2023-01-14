@@ -7,6 +7,8 @@ import pioutil
 if pioutil.is_pio_build():
     Import("env")
 
+    env.Replace(PROGNAME="%s_DW7.4.7" % (str(env["PIOENV"])))
+
     cxxflags = [
         # "-Wno-incompatible-pointer-types",
         # "-Wno-unused-const-variable",

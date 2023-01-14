@@ -70,3 +70,15 @@ def encrypt_mks(source, target, env, new_name):
 
 def add_post_action(action):
     env.AddPostAction(str(Path("$BUILD_DIR", "${PROGNAME}.bin")), action);
+
+def add_post_action_hex(action):
+    env.AddPostAction(str(Path("$BUILD_DIR", "${PROGNAME}.hex")), action);
+
+#env.AddPostAction(str(Path("$BUILD_DIR", "${PROGNAME}.bin")), action);
+
+import shutil
+def mvHex(source, target, env) :
+  print("Moving Hex...");
+  shutil.copy2(target[0].path, target[0].dir.path + '/../../../binaries');
+
+add_post_action_hex(mvHex);
