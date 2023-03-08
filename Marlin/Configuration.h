@@ -61,7 +61,7 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(none, default config)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(thinkyhead, prusa-i3)" // Who made the changes.
 //#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 // @section machine
@@ -92,7 +92,7 @@
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
-#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 //#define BAUD_RATE_GCODE     // Enable G-code M575 to set the baud rate
 
@@ -116,7 +116,7 @@
 //#define BLUETOOTH
 
 // Name displayed in the LCD "Ready" message and Info menu
-//#define CUSTOM_MACHINE_NAME "3D Printer"
+#define CUSTOM_MACHINE_NAME "Prusa i3"
 
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like https://www.uuidgenerator.net/version4
@@ -676,13 +676,14 @@
   #if ENABLED(PID_PARAMS_PER_HOTEND)
     // Specify up to one value per hotend here, according to your setup.
     // If there are fewer values, the last one applies to the remaining hotends.
-    #define DEFAULT_Kp_LIST {  22.20,  22.20 }
-    #define DEFAULT_Ki_LIST {   1.08,   1.08 }
-    #define DEFAULT_Kd_LIST { 114.00, 114.00 }
+    #define DEFAULT_Kp_LIST {  20.83,  20.83 }
+    #define DEFAULT_Ki_LIST {   1.04,   1.04 }
+    #define DEFAULT_Kd_LIST { 104.71, 104.71 }
   #else
-    #define DEFAULT_Kp  22.20
-    #define DEFAULT_Ki   1.08
-    #define DEFAULT_Kd 114.00
+    // Torlon with insulator and fan, averaged
+    #define DEFAULT_Kp  20.83
+    #define DEFAULT_Ki   1.04
+    #define DEFAULT_Kd 104.71
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
@@ -768,13 +769,12 @@
   //#define MIN_BED_POWER 0
   //#define PID_BED_DEBUG // Print Bed PID debug data to the serial port.
 
-  // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
-  // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-  #define DEFAULT_bedKp 10.00
-  #define DEFAULT_bedKi .023
-  #define DEFAULT_bedKd 305.4
-
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
+
+  // From the above test...
+  #define DEFAULT_bedKp 212.17
+  #define DEFAULT_bedKi  22.80
+  #define DEFAULT_bedKd 493.64
 #else
   //#define BED_LIMIT_SWITCHING   // Keep the bed temperature within BED_HYSTERESIS of the target
 #endif
@@ -1215,6 +1215,90 @@
  * Note that if EEPROM is enabled, saved values will override these.
  */
 
+//
+// Example: Standard NEMA 17 with T2 belt and 20 tooth pulley
+//
+#define NEMA17_FULL_STEPS 200.0
+#define NEMA17_MICROSTEPS 16.0
+#define PULLEY_PITCH 2.0
+#define PULLEY_TEETH 20.0
+#define Z_ROD_PITCH 0.8
+
+#define WADE_PULLEY_TEETH 11.0
+#define WADE_GEAR_TEETH 45.0
+#define HOBBED_BOLT_DIAM 6.0
+
+#define NEMA17_MOTOR_STEPS (NEMA17_FULL_STEPS * NEMA17_MICROSTEPS)
+#define WADE_GEAR_RATIO (WADE_GEAR_TEETH / WADE_PULLEY_TEETH)
+#define HOBBED_BOLD_CIRC (M_PI * HOBBED_BOLT_DIAM)
+#define WADE_E_STEPS (NEMA17_MOTOR_STEPS * WADE_GEAR_RATIO / HOBBED_BOLD_CIRC)
+// (200 * 16) * (45.0 / 11.0) / (pi * 6.0) = 694.49429712
+
+//
+// Example: Calculate 2engineers.com 1:50 Geared Motor "Direct Drive"
+//
+#define ENG2_FULL_STEPS 48.0
+#define ENG2_MICROSTEPS 16.0
+#define ENG2_GEAR_RATIO 50.0
+#define ENG2_PULLEY_DIAM 10.56
+
+#define ENG2_MOTOR_STEPS (ENG2_FULL_STEPS * ENG2_MICROSTEPS)
+#define ENG2_GEAR_CIRC (M_PI * ENG2_PULLEY_DIAM)
+#define ENG2_CORRECTION (20 / 18.4)
+#define ENG2_E_STEPS (ENG2_MOTOR_STEPS * ENG2_GEAR_RATIO / ENG2_GEAR_CIRC) * ENG2_CORRECTION
+// (48 * 16 * 50) / (pi * 10.56) = 1157.4904952 * (20/18.4) = 1258.1418426
+
+//
+// Example: Ultimaker defaults based on MXL belt, then calibrated
+//
+#define UM_PULLEY_PITCH 2.032
+#define UM_PULLEY_TEETH 20.0
+
+// Get steps/mm from selected results above
+#define XY_STEPS (NEMA17_MOTOR_STEPS / (PULLEY_PITCH * PULLEY_TEETH))
+#define Z_STEPS (NEMA17_MOTOR_STEPS / Z_ROD_PITCH)
+
+/**
+#define XY_BELT_PITCH 2
+#define XY_GEAR_TEETH 20
+
+#define Z_ROD_PITCH 0.8
+
+// NEMA17 with 16 microsteps
+#define STEPS_NEMA17 200
+#define MICROS_NEMA17 16
+
+// PG with 50:1 ratio, 16 microsteps
+#define STEPS_PG50 48
+#define MICROS_PG50 16
+
+// A typical Wade's Extruder. Gregstruder: 51/11 or 43/10
+#define LG_GEAR_WADE 39
+#define SM_GEAR_WADE 11
+
+// Diameter of the drive wheel or hobbed bolt
+#define DRIVE_DIAM_WADE 7
+#define DRIVE_DIAM_MK7 10.56
+
+// calculated step unit values
+#define STEPS_PER_TURN_NEMA17 (STEPS_NEMA17 * MICROS_NEMA17)
+#define STEPS_PER_TURN_PG50 (STEPS_PG50 * MICROS_PG50)
+#define GEAR_RATIO_WADE (LG_GEAR_WADE/SM_GEAR_WADE)
+#define GEAR_RATIO_PG50 (50/1)
+#define DRIVE_CIRC_WADE (DRIVE_DIAM_WADE * M_PI)
+#define DRIVE_CIRC_MK7 (DRIVE_DIAM_MK7 * M_PI)
+
+// Some extruder steps-per-mm examples:
+
+// Classic Wade
+#define STEPS_PER_MM_WADE_39_11 (STEPS_PER_TURN_NEMA17 * GEAR_RATIO_WADE / DRIVE_CIRC_WADE) // = 515.91048
+
+// MK7 Direct Drive with 50:1 PG motor
+#define STEPS_PER_MM_MK7_50_1 (STEPS_PER_TURN_PG50 * GEAR_RATIO_PG50 / DRIVE_CIRC_MK7) // = 1157.49147
+
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,STEPS_PER_MM_MK7_50_1}  // Default for Prusa i3 with GT2 belts
+*/
+
 /**
  * With this option each E stepper can have its own factors for the
  * following movement settings. If fewer factors are given than the
@@ -1227,7 +1311,8 @@
  * Override with M92 (when enabled below)
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 500 }
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   { XY_STEPS, XY_STEPS, Z_STEPS, ENG2_E_STEPS }  // White Fishbone: 39/12? 556.857 ; Black Fishbone: 694.494
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { XY_STEPS, XY_STEPS, Z_STEPS, WADE_E_STEPS }  // White Fishbone: 39/12? 556.857 ; Black Fishbone: 694.494
 
 /**
  * Enable support for M92. Disable to save at least ~530 bytes of flash.
@@ -1239,7 +1324,7 @@
  * Override with M203
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 25 }
+#define DEFAULT_MAX_FEEDRATE { 500, 500, 2.25, 45 }
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
@@ -1369,7 +1454,7 @@
  * Use G29 repeatedly, adjusting the Z height at each point with movement commands
  * or (with LCD_BED_LEVELING) the LCD controller.
  */
-//#define PROBE_MANUALLY
+#define PROBE_MANUALLY
 
 /**
  * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
@@ -1740,9 +1825,9 @@
 // @section motion
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
-#define INVERT_X_DIR false
-#define INVERT_Y_DIR true
-#define INVERT_Z_DIR false
+#define INVERT_X_DIR true
+#define INVERT_Y_DIR false
+#define INVERT_Z_DIR true
 //#define INVERT_I_DIR false
 //#define INVERT_J_DIR false
 //#define INVERT_K_DIR false
@@ -1774,7 +1859,7 @@
  */
 //#define Z_IDLE_HEIGHT Z_HOME_POS
 
-//#define Z_CLEARANCE_FOR_HOMING  4   // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
+#define Z_CLEARANCE_FOR_HOMING  4     // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
                                       // You'll need this much clearance above Z_MAX_POS to avoid grinding.
 
 //#define Z_AFTER_HOMING         10   // (mm) Height to move to after homing (if Z was homed)
@@ -1812,8 +1897,8 @@
 // @section geometry
 
 // The size of the printable area
-#define X_BED_SIZE 200
-#define Y_BED_SIZE 200
+#define X_BED_SIZE 195 // 205 for full bed
+#define Y_BED_SIZE 193
 
 // Travel limits (linear=mm, rotational=°) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
@@ -2032,7 +2117,7 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-//#define AUTO_BED_LEVELING_BILINEAR
+#define AUTO_BED_LEVELING_BILINEAR
 //#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
 
@@ -2068,7 +2153,7 @@
 
 #if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL, PROBE_MANUALLY)
   // Set a height for the start of manual adjustment
-  #define MANUAL_PROBE_START_Z 0.2  // (mm) Comment out to use the last-measured height
+  //#define MANUAL_PROBE_START_Z 0.2  // (mm) Comment out to use the last-measured height
 #endif
 
 #if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_UBL)
@@ -2109,7 +2194,7 @@
 #if ANY(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 3
+  #define GRID_MAX_POINTS_X 5
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column
@@ -2195,7 +2280,7 @@
  * Add a bed leveling sub-menu for ABL or MBL.
  * Include a guided procedure if manual probing is enabled.
  */
-//#define LCD_BED_LEVELING
+#define LCD_BED_LEVELING
 
 #if ENABLED(LCD_BED_LEVELING)
   #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
@@ -2204,7 +2289,7 @@
 #endif
 
 // Add a menu item to move between bed corners for manual bed adjustment
-//#define LCD_BED_TRAMMING
+#define LCD_BED_TRAMMING
 
 #if ENABLED(LCD_BED_TRAMMING)
   #define BED_TRAMMING_INSET_LFRB { 30, 30, 30, 30 } // (mm) Left, Front, Right, Back insets
@@ -2349,7 +2434,7 @@
  *   M501 - Read settings from EEPROM. (i.e., Throw away unsaved changes)
  *   M502 - Revert settings to "factory" defaults. (Follow with M500 to init the EEPROM.)
  */
-//#define EEPROM_SETTINGS     // Persistent storage with M500 and M501
+#define EEPROM_SETTINGS       // Persistent storage with M500 and M501
 //#define DISABLE_M503        // Saves ~2700 bytes of flash. Disable for release!
 #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save flash.
 #define EEPROM_BOOT_SILENT    // Keep M503 quiet and only give errors during first load
@@ -2412,7 +2497,7 @@
  *    P1  Raise the nozzle always to Z-park height.
  *    P2  Raise the nozzle by Z-park amount, limited to Z_MAX_POS.
  */
-//#define NOZZLE_PARK_FEATURE
+#define NOZZLE_PARK_FEATURE
 
 #if ENABLED(NOZZLE_PARK_FEATURE)
   // Specify a park position as { X, Y, Z_raise }
@@ -2631,7 +2716,7 @@
  *
  * :[0:'Classic', 1:'Průša']
  */
-#define LCD_INFO_SCREEN_STYLE 0
+#define LCD_INFO_SCREEN_STYLE 1
 
 /**
  * SD CARD
@@ -2639,7 +2724,7 @@
  * SD Card support is disabled by default. If your controller has an SD slot,
  * you must uncomment the following option or it won't work.
  */
-//#define SDSUPPORT
+#define SDSUPPORT
 
 /**
  * SD CARD: ENABLE CRC
@@ -2728,7 +2813,7 @@
 // If you have a speaker that can produce tones, enable it here.
 // By default Marlin assumes you have a buzzer with a fixed frequency.
 //
-//#define SPEAKER
+#define SPEAKER
 
 //
 // The duration and frequency for the UI feedback sound.
@@ -2802,7 +2887,7 @@
 //
 // Note: Usually sold with a blue PCB.
 //
-//#define G3D_PANEL
+#define G3D_PANEL
 
 //
 // RigidBot Panel V1.0
@@ -3450,7 +3535,7 @@
 // Use software PWM to drive the fan, as for the heaters. This uses a very low frequency
 // which is not as annoying as with the hardware PWM. On the other hand, if this frequency
 // is too low, you should also increment SOFT_PWM_SCALE.
-//#define FAN_SOFT_PWM
+#define FAN_SOFT_PWM
 
 // Incrementing this by 1 will double the software PWM frequency,
 // affecting heaters, and the fan if FAN_SOFT_PWM is enabled.
