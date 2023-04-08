@@ -111,11 +111,20 @@
 #define BOARD_INFO_NAME "Anet 1.0"
 
 //
+// Servos
+//
+#define SERVO0_PIN                        LCD_03  // BLTouch control
+
+//
 // Limit Switches
 //
 #define X_STOP_PIN                            18
 #define Y_STOP_PIN                            19
 #define Z_STOP_PIN                            20
+
+#ifndef FIL_RUNOUT_PIN
+  #define FIL_RUNOUT_PIN              SERVO0_PIN  // Without a BLTouch
+#endif
 
 //
 // Steppers
@@ -158,6 +167,26 @@
 #define SDSS                                  31
 #define LED_PIN                               -1
 
+//
+// Board Connectors
+//
+#define J3_01                                  8
+#define J3_02                                  9
+#define J3_03                                  6  // MISO
+#define J3_05                                  7  // SCK
+#define J3_06                                  5  // MOSI
+#define J3_07                                 -1  // !RESET
+#define J3_09                                  4
+
+#define LCD_03                                27
+#define LCD_04                                10
+#define LCD_05                                28
+#define LCD_06                                11
+#define LCD_07                                29
+#define LCD_08                                16
+#define LCD_09                                30
+#define LCD_10                                17
+
 /**
  * LCD / Controller
  *
@@ -167,61 +196,68 @@
  *  REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
  */
 
+//#define ADAPTER_ODERWAT
+//#define ADAPTER_BENLYE
+
+#ifdef ADAPTER_ODERWAT
+  // OderWat's Adapter - https://www.thingiverse.com/thing:2103748
+  #define EXP1_01_PIN                     LCD_05
+  #define EXP1_02_PIN                     LCD_08
+  #define EXP1_03_PIN                     LCD_07
+  #define EXP1_04_PIN                     LCD_09
+  #define EXP1_05_PIN                     LCD_10
+
+  #define EXP2_01_PIN                      J3_03
+  #define EXP2_02_PIN                      J3_05
+  #define EXP2_03_PIN                     LCD_04
+  #define EXP2_05_PIN                     LCD_06
+  #define EXP2_06_PIN                      J3_06
+  #define EXP2_08_PIN                      J3_07
+#elif defined(ADAPTER_BENLYE)
+  // Benlye's Adapter - https://go.aisler.net/benlye/anet-lcd-adapter/pcb
+  #define J4_JUMPER_ATTACHED
+
+  #define EXP1_01_PIN                     LCD_10
+  #define EXP1_03_PIN                     LCD_08
+  #define EXP1_05_PIN                     LCD_06
+  #define EXP1_06_PIN                     LCD_05
+  #define EXP1_07_PIN                     LCD_04
+  #define EXP1_08_PIN                     LCD_03
+
+  #undef SERVO0_PIN
+  #if ENABLED(J4_JUMPER_ATTACHED)
+    #define SERVO0_PIN                    LCD_09  // BLTouch/3D-Touch
+    #define EXP1_04_PIN                   LCD_07  // J4 Jumper Attached
+  #else
+    #define SERVO0_PIN                    LCD_07  // BLTouch/3D-Touch
+    #define EXP1_04_PIN                   LCD_09  // J4 Jumper Removed
+  #endif
+#endif
+
 #if HAS_WIRED_LCD
 
-  #define LCD_SDSS                            28
+  #define LCD_SDSS                        LCD_05
 
   #if HAS_ADC_BUTTONS
 
-    #define SERVO0_PIN                        27  // free for BLTouch/3D-Touch
-    #define LCD_PINS_RS                       28
-    #define LCD_PINS_EN                       29
-    #define LCD_PINS_D4                       10
-    #define LCD_PINS_D5                       11
-    #define LCD_PINS_D6                       16
-    #define LCD_PINS_D7                       17
+    #define LCD_PINS_RS                   LCD_05
+    #define LCD_PINS_EN                   LCD_07
+    #define LCD_PINS_D4                   LCD_04
+    #define LCD_PINS_D5                   LCD_06
+    #define LCD_PINS_D6                   LCD_08
+    #define LCD_PINS_D7                   LCD_10
     #define ADC_KEYPAD_PIN                     1
 
+  #elif EITHER(ANET_FULL_GRAPHICS_LCD, ANET_FULL_GRAPHICS_LCD_ALT_WIRING)
+    #define BOARD_ST7920_DELAY_1           250
+    #define BOARD_ST7920_DELAY_2           250
+    #define BOARD_ST7920_DELAY_3           250
   #elif IS_RRD_FG_SC
-
-    // Pin definitions for the Anet A6 Full Graphics display and the RepRapDiscount Full Graphics
-    // display using an adapter board  // https://go.aisler.net/benlye/anet-lcd-adapter/pcb
-    // See below for alternative pin definitions for use with https://www.thingiverse.com/thing:2103748
-
-    #if ENABLED(ANET_FULL_GRAPHICS_LCD_ALT_WIRING)
-      #define SERVO0_PIN                      30
-      #define BEEPER_PIN                      27
-      #define LCD_PINS_RS                     29
-      #define LCD_PINS_EN                     16
-      #define LCD_PINS_D4                     11
-      #define BTN_EN1                         28
-      #define BTN_EN2                         10
-      #define BTN_ENC                         17
-      #define BOARD_ST7920_DELAY_1           250
-      #define BOARD_ST7920_DELAY_2           250
-      #define BOARD_ST7920_DELAY_3           250
-    #else
-      #define SERVO0_PIN                      29  // free for BLTouch/3D-Touch
-      #define BEEPER_PIN                      17
-      #define LCD_PINS_RS                     27
-      #define LCD_PINS_EN                     28
-      #define LCD_PINS_D4                     30
-      #define BTN_EN1                         11
-      #define BTN_EN2                         10
-      #define BTN_ENC                         16
-      #define BOARD_ST7920_DELAY_1           125
-      #define BOARD_ST7920_DELAY_2            63
-      #define BOARD_ST7920_DELAY_3           125
-    #endif
-
+    #define BOARD_ST7920_DELAY_1           125
+    #define BOARD_ST7920_DELAY_2            63
+    #define BOARD_ST7920_DELAY_3           125
   #endif
 
-#else
-  #define SERVO0_PIN                          27
-#endif
-
-#ifndef FIL_RUNOUT_PIN
-  #define FIL_RUNOUT_PIN              SERVO0_PIN
 #endif
 
 /**
@@ -248,8 +284,8 @@
  * ====================================================================
  *
  *   Anet V1.0 controller           | ZONESTAR_LCD      | ANET_FULL_   | RepRapDiscount Full     | Thingiverse RepRap wiring
- *   physical   logical   alt       |                   | GRAPHICS_LCD | Graphics Display Wiring | https://www.thingiverse
- *     pin        pin     functions |                   |              |                         | .com/thing:2103748
+ *   physical   logical   alt       |                   | GRAPHICS_LCD | Graphics Display Wiring | https://www.thingiverse.com/thing:2103748
+ *     pin        pin     functions |                   |              |                         |
  *--------------------------------------------------------------------------------------------------------------------
  *   ANET-J3.1    8 ***             | N/A               | J3_TX ***    |                         |
  *   ANET-J3.2    9 ***             | N/A               | J3_RX ***    |                         |

@@ -35,6 +35,8 @@
 
   #if ENABLED(CR10_STOCKDISPLAY)
     #include "lcd/CR10_STOCKDISPLAY.h"
+  #elif EITHER(ANET_FULL_GRAPHICS_LCD, ANET_FULL_GRAPHICS_LCD_ALT_WIRING)
+    #include "lcd/ANET_FULL_GRAPHICS_LCD.h"
   #else
 
     // More displays to come
