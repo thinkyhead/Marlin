@@ -494,6 +494,7 @@
     #endif
 
   #endif
+
 #endif  // HAS_WIRED_LCD
 
 // Alter timing for graphical display

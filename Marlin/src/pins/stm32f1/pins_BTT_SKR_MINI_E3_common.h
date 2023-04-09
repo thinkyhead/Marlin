@@ -124,16 +124,16 @@
  *                ------
  *                 EXP1
  */
-#ifndef EXP1_02_PIN
+#ifndef EXP1_08_PIN
+  #define EXP1_01_PIN                       PB5
   #define EXP1_02_PIN                       PB6
+  #define EXP1_03_PIN                       PA9
+  #define EXP1_04_PIN                       -1    // RESET
+  #define EXP1_05_PIN                       PA10
+  #define EXP1_06_PIN                       PB9
+  #define EXP1_07_PIN                       PB8
   #define EXP1_08_PIN                       PB7
 #endif
-#define EXP1_01_PIN                         PB5
-#define EXP1_03_PIN                         PA9
-#define EXP1_04_PIN                         -1    // RESET
-#define EXP1_05_PIN                         PA10
-#define EXP1_06_PIN                         PB9
-#define EXP1_07_PIN                         PB8
 
 #if HAS_DWIN_E3V2 || IS_DWIN_MARLINUI
   /**
@@ -296,7 +296,7 @@
      * (RX2) PA3 | 2 |         BTN_EN1 | 8  7 | (SS)
      * (TX2) PA2 | 3 |         BTN_EN2 | 6  5 | MOSI
      *       GND | 4 |            (CD) | 4  3 | (RST)
-     *        5V | 5 |           (GND) | 2  1 | (KILL)
+     *        5V | 5 |             GND | 2  1 | (KILL)
      *            ---                   ------
      *            TFT                    EXP2
      *

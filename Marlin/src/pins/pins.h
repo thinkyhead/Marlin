@@ -1008,6 +1008,11 @@
 #endif
 
 //
+// LCD / Controller Pins based on EXP ports
+//
+#include "pins_lcd.h"
+
+//
 // Post-process pins according to configured settings
 //
 #include "pins_postprocess.h"
