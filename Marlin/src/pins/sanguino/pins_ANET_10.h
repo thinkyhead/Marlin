@@ -248,7 +248,7 @@
     #define LCD_PINS_D7                   LCD_10
     #define ADC_KEYPAD_PIN                     1
 
-  #elif EITHER(ANET_FULL_GRAPHICS_LCD, ANET_FULL_GRAPHICS_LCD_ALT_WIRING)
+  #elif ANY(ANET_FULL_GRAPHICS_LCD, ANET_FULL_GRAPHICS_LCD_ALT_WIRING)
     #define BOARD_ST7920_DELAY_1           250
     #define BOARD_ST7920_DELAY_2           250
     #define BOARD_ST7920_DELAY_3           250
