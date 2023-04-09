@@ -334,24 +334,22 @@
 
   #else
 
-    #define BTN_ENC                  EXP1_02_PIN  // (58) open-drain
-    #define LCD_PINS_RS              EXP1_04_PIN
-
-    #define BTN_EN1                  EXP2_03_PIN  // (31) J3-2 & AUX-4
-    #define BTN_EN2                  EXP2_05_PIN  // (33) J3-4 & AUX-4
-
-    #define LCD_PINS_EN              EXP1_03_PIN
-    #define LCD_PINS_D4              EXP1_05_PIN
-
-    #define LCD_SDSS                 EXP2_04_PIN  // (16) J3-7 & AUX-4
-
     #if ENABLED(FYSETC_MINI_12864)
+
+      #define BTN_ENC                EXP1_02_PIN  // (58) open-drain
+      #define BTN_EN1                EXP2_03_PIN  // (31) J3-2 & AUX-4
+      #define BTN_EN2                EXP2_05_PIN  // (33) J3-4 & AUX-4
+
+      #define LCD_PINS_EN            EXP1_03_PIN
+      #define LCD_PINS_RS            EXP1_04_PIN
+      #define LCD_PINS_D4            EXP1_05_PIN
+
+      #define LCD_SDSS               EXP2_04_PIN  // (16) J3-7 & AUX-4
+
       #define DOGLCD_CS              EXP1_03_PIN
       #define DOGLCD_A0              EXP1_04_PIN
       #define DOGLCD_SCK             EXP2_02_PIN
       #define DOGLCD_MOSI            EXP2_06_PIN
-
-      #define LCD_BACKLIGHT_PIN            -1
 
       #define FORCE_SOFT_SPI                      // Use this if default of hardware SPI causes display problems
                                                   //   results in LCD soft SPI mode 3, SD soft SPI mode 0
@@ -372,25 +370,20 @@
         #define NEOPIXEL_PIN         EXP1_06_PIN
       #endif
 
-    #else                                         // !FYSETC_MINI_12864
+    #else // !FYSETC_MINI_12864
 
       #if ENABLED(MKS_MINI_12864)
-        #define DOGLCD_CS            EXP1_06_PIN
-        #define DOGLCD_A0            EXP1_07_PIN
-        #define DOGLCD_SCK           EXP2_02_PIN
-        #define DOGLCD_MOSI          EXP2_06_PIN
-        #define FORCE_SOFT_SPI
-      #endif
 
-      #if IS_ULTIPANEL
+        // Migrated to pins/lcd
+        #define FORCE_SOFT_SPI
+
+      #elif IS_ULTIPANEL
         #define LCD_PINS_D5          EXP1_06_PIN
         #define LCD_PINS_D6          EXP1_07_PIN
         #define LCD_PINS_D7          EXP1_08_PIN
-
         #if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
           #define BTN_ENC_EN         EXP1_08_PIN  // Detect the presence of the encoder
         #endif
-
       #endif
 
     #endif // !FYSETC_MINI_12864
