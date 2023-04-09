@@ -241,6 +241,11 @@
 
   // Migrated to pins/lcd
 
+#elif ENABLED(ENDER2_STOCKDISPLAY)
+
+  // Migrated to pins/lcd
+  #define FORCE_SOFT_SPI
+
 #elif HAS_DWIN_E3V2 || IS_DWIN_MARLINUI
   #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
     #error "CAUTION! Ender-3 V2 display requires a custom cable with TX = PA0, RX = PC2. See 'pins_BTT_MANTA_E3_EZ_V1_0.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
@@ -278,7 +283,7 @@
     #define LCD_PINS_D7              EXP1_01_PIN
     #define ADC_KEYPAD_PIN                  PA7   // Repurpose default SERVO0_PIN for ADC - CONNECTING TO 5V WILL DAMAGE THE BOARD!
 
-  #elif EITHER(MKS_MINI_12864, ENDER2_STOCKDISPLAY)
+  #elif ENABLED(MKS_MINI_12864)
 
     #define BTN_EN1                  EXP1_03_PIN
     #define BTN_EN2                  EXP1_05_PIN
