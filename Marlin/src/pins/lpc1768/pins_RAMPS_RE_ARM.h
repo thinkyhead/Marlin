@@ -293,14 +293,13 @@
 #if ENABLED(CR10_STOCKDISPLAY)
 
   // Re-Arm can support Creality stock display without SD card reader and single cable on EXP3.
-  // Re-Arm J3 pins 1 (p1.31) & 2 (P3.26) are not used. Stock cable will need to have one
+  // Re-Arm J3 pins 1 (P1.31) & 2 (P3.26) are not used. Stock cable will need to have one
   // 10-pin IDC connector trimmed or replaced with a 12-pin IDC connector to fit J3.
-  // Requires REVERSE_ENCODER_DIRECTION in Configuration.h
 
   #define BEEPER_PIN                       P2_11  // J3-3 & AUX-4
 
-  #define BTN_EN1                          P0_16  // J3-7 & AUX-4
-  #define BTN_EN2                          P1_23  // J3-5 & AUX-4
+  #define BTN_EN1                          P1_23  // J3-5 & AUX-4
+  #define BTN_EN2                          P0_16  // J3-7 & AUX-4
   #define BTN_ENC                          P3_25  // J3-4 & AUX-4
 
   #define LCD_PINS_RS                      P0_15  // J3-9 & AUX-4 (CS)
@@ -413,7 +412,7 @@
 
   #if ENABLED(MINIPANEL)
     //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
- #endif
+  #endif
 
 #endif // HAS_WIRED_LCD
 
