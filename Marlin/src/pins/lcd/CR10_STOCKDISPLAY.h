@@ -22,42 +22,42 @@
 #pragma once
 
 /**
- * pins_lcd.h - Define LCD pins based on the EXP connector / adapter
+ * pins/lcd/CR10_STOCKDISPLAY.h
  */
 
-#if defined(LCD_PINS_EN) || defined(DOGLCD_A0)
+// IS_RRD_FG_SC
+//  DOGLCD
+//   HAS_MARLINUI_U8GLIB > (128x64)
+//  IS_U8GLIB_ST7920
+//   IS_ULTIPANEL
+//     HAS_WIRED_LCD
+//       HAS_DISPLAY
+//         HAS_STATUS_MESSAGE
+//     IS_NEWPANEL
+//     HAS_MARLINUI_MENU
+//       HAS_MANUAL_MOVE_MENU
+//  IS_RRD_SC
 
-  // Allow a pins file to override all LCD pins
-
-#else
-
-  #include "lcd/adapters.h"
-
-  #if ENABLED(CR10_STOCKDISPLAY)
-    #include "lcd/CR10_STOCKDISPLAY.h"
-  #else
-
-    // More displays to come
-
-  #endif
-
+/**          ------
+ *   BEEPER | 1  2 | ENC
+ *      EN1 | 3  4 | (RESET/KILL)
+ *      EN2   5  6 | LCD_D4
+ *   LCD_RS | 7  8 | LCD_EN
+ *      GND | 9 10 | 5V
+ *           ------
+ */
+#ifndef BEEPER_PIN
+  #define BEEPER_PIN      LCD1_01_PIN
 #endif
 
-/**
- * Certain displays use LCD_PINS_RS as LCD_RESET_PIN
- */
-#if !defined(LCD_RESET_PIN) && ANY(MKS_12864OLED, MKS_12864OLED_SSD1306, FYSETC_242_OLED_12864, ZONESTAR_12864OLED, K3D_242_OLED_CONTROLLER)
-  #define LCD_RESET_PIN LCD_PINS_RS
-#endif
+#define BTN_ENC           LCD1_02_PIN
+#define BTN_EN1           LCD1_03_PIN
+#define BTN_EN2           LCD1_05_PIN
 
-/**
- * Make sure DOGLCD_SCK and DOGLCD_MOSI are defined.
- */
-#if HAS_MARLINUI_U8GLIB
-  #ifndef DOGLCD_SCK
-    #define DOGLCD_SCK  SD_SCK_PIN
-  #endif
-  #ifndef DOGLCD_MOSI
-    #define DOGLCD_MOSI SD_MOSI_PIN
-  #endif
+#define LCD_PINS_D4       LCD1_06_PIN // ST9720 CLK
+#define LCD_PINS_RS       LCD1_07_PIN // ST9720 CS
+#define LCD_PINS_EN       LCD1_08_PIN // ST9720 DAT
+
+#ifndef KILL_PIN
+  #define KILL_PIN        LCD1_04_PIN
 #endif

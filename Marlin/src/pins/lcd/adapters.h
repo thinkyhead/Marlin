@@ -88,7 +88,7 @@
 
   // Creality or BTT "Pin 27" Adapter with BLTouch pins
 
-#elif EITHER(ADAPTER_CREALITY_DUAL, ADAPTER_BTT_DUAL)
+#elif ANY(ADAPTER_CREALITY_DUAL, ADAPTER_BTT_DUAL)
 
   /** Common LCD single-to-dual adapter
    *                   ------
@@ -111,7 +111,7 @@
 
   #define FORCE_SOFT_SPI
 
-#elif EITHER(ADAPTER_TH3D_DUAL, ADAPTER_MKS_DUAL)
+#elif ANY(ADAPTER_TH3D_DUAL, ADAPTER_MKS_DUAL)
 
   /**
    * https://www.th3dstudio.com/product/ezboard-creality-dual-lcd-adapter-board/
