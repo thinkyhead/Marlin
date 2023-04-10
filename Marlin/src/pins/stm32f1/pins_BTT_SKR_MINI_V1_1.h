@@ -142,7 +142,11 @@
 //
 // LCD / Controller
 //
-#if EITHER(TFT_COLOR_UI, TFT_CLASSIC_UI)
+#if ENABLED(CR10_STOCKDISPLAY)
+
+  // Migrated to pins/lcd
+
+#elif EITHER(TFT_COLOR_UI, TFT_CLASSIC_UI)
   #define BEEPER_PIN                 EXP1_01_PIN
   #define BTN_ENC                    EXP1_02_PIN
   #define BTN_EN1                    EXP2_03_PIN
@@ -177,16 +181,7 @@
   #define BEEPER_PIN                 EXP1_01_PIN
   #define BTN_ENC                    EXP1_02_PIN
 
-  #if ENABLED(CR10_STOCKDISPLAY)
-    #define LCD_PINS_RS              EXP1_07_PIN
-
-    #define BTN_EN1                  EXP1_03_PIN
-    #define BTN_EN2                  EXP1_05_PIN
-
-    #define LCD_PINS_EN              EXP1_08_PIN
-    #define LCD_PINS_D4              EXP1_06_PIN
-
-  #elif IS_TFTGLCD_PANEL
+  #if IS_TFTGLCD_PANEL
 
     #undef BEEPER_PIN
     #undef BTN_ENC

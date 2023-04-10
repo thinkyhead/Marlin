@@ -164,8 +164,12 @@
 //
 // LCD / Controller
 //
-#if HAS_WIRED_LCD
-  // ramps-fd lcd adaptor
+#if ENABLED(CR10_STOCKDISPLAY)
+
+  // Migrated to pins/lcd
+
+#elif HAS_WIRED_LCD
+  // RAMPS-FD LCD adapter
 
   #define BEEPER_PIN                 EXP1_01_PIN
 
