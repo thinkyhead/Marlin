@@ -41,6 +41,8 @@
     #include "lcd/MKS_MINI_12864.h"
   #elif ANY(ANET_FULL_GRAPHICS_LCD, ANET_FULL_GRAPHICS_LCD_ALT_WIRING)
     #include "lcd/ANET_FULL_GRAPHICS_LCD.h"
+  #elif ENABLED(ULTI_CONTROLLER)
+    #include "lcd/ULTI_CONTROLLER.h"
   #elif IS_RRD_FG_SC
     #include "lcd/RRD_FG_SC.h"
   #elif IS_RRD_SC
