@@ -138,8 +138,6 @@
 
     #if IS_RRD_SC
       #error "RRD Smart Controller is not supported."
-    #elif ENABLED(REPRAPWORLD_GRAPHICAL_LCD)
-      #error "REPRAPWORLD_GRAPHICAL_LCD is not supported."
     #elif ENABLED(LCD_I2C_PANELOLU2)
       #error "LCD_I2C_PANELOLU2 is not supported."
     #elif ENABLED(LCD_I2C_VIKI)

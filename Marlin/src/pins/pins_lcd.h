@@ -43,6 +43,8 @@
     #include "lcd/ANET_FULL_GRAPHICS_LCD.h"
   #elif ENABLED(ULTI_CONTROLLER)
     #include "lcd/ULTI_CONTROLLER.h"
+  #elif ENABLED(REPRAPWORLD_GRAPHICAL_LCD)
+    #include "lcd/REPRAPWORLD_GRAPHICAL_LCD.h"
   #elif IS_RRD_FG_SC
     #include "lcd/RRD_FG_SC.h"
   #elif IS_RRD_SC
