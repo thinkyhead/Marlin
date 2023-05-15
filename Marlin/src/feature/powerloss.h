@@ -49,7 +49,7 @@
   #define POWER_LOSS_ZRAISE 2 // Default Z-raise on outage or resume
 #endif
 
-//#define DEBUG_POWER_LOSS_RECOVERY
+#define DEBUG_POWER_LOSS_RECOVERY
 //#define SAVE_EACH_CMD_MODE
 //#define SAVE_INFO_INTERVAL_MS 0
 
