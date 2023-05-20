@@ -505,8 +505,8 @@ class Stepper {
 
     static block_t* current_block;          // A pointer to the block currently being traced
 
-    static axis_bits_t last_direction_bits, // The next stepping-bits to be output
-                       axis_did_move;       // Last Movement in the given direction is not null, as computed when the last movement was fetched from planner
+    static AxisBits last_direction_bits,    // The next stepping-bits to be output
+                    axis_did_move;          // Last Movement in the given direction is not null, as computed when the last movement was fetched from planner
 
     static bool abort_current_block;        // Signals to the stepper that current block should be aborted
 
@@ -685,7 +685,7 @@ class Stepper {
         if (current_block->is_page()) page_manager.free_page(current_block->page_idx);
       #endif
       current_block = nullptr;
-      axis_did_move = 0;
+      axis_did_move.reset();
       planner.release_current_block();
       TERN_(LIN_ADVANCE, la_interval = nextAdvanceISR = LA_ADV_NEVER);
     }
@@ -694,10 +694,10 @@ class Stepper {
     FORCE_INLINE static void quick_stop() { abort_current_block = true; }
 
     // The direction of a single motor
-    FORCE_INLINE static bool motor_direction(const AxisEnum axis) { return TEST(last_direction_bits, axis); }
+    FORCE_INLINE static bool motor_direction(const AxisEnum axis) { return last_direction_bits[axis]; }
 
     // The last movement direction was not null on the specified axis. Note that motor direction is not necessarily the same.
-    FORCE_INLINE static bool axis_is_moving(const AxisEnum axis) { return TEST(axis_did_move, axis); }
+    FORCE_INLINE static bool axis_is_moving(const AxisEnum axis) { return axis_did_move[axis]; }
 
     // Handle a triggered endstop
     static void endstop_triggered(const AxisEnum axis);
@@ -794,12 +794,12 @@ class Stepper {
     static void disable_all_steppers();
 
     // Update direction states for all steppers
-    static void set_directions();
+    static void apply_directions();
 
     // Set direction bits and update all stepper DIR states
-    static void set_directions(const axis_bits_t bits) {
+    static void set_directions(const AxisBits bits) {
       last_direction_bits = bits;
-      set_directions();
+      apply_directions();
     }
 
     #if HAS_SHAPING

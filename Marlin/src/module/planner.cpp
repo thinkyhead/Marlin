@@ -165,7 +165,7 @@ float Planner::mm_per_step[DISTINCT_AXES];      // (mm) Millimeters per step
 
 #if ENABLED(DIRECT_STEPPING)
   uint32_t Planner::last_page_step_rate = 0;
-  xyze_bool_t Planner::last_page_dir{0};
+  AxisBits Planner::last_page_dir;
 #endif
 
 #if HAS_EXTRUDERS
@@ -1957,54 +1957,50 @@ bool Planner::_populate_block(
   #endif // PREVENT_COLD_EXTRUSION || PREVENT_LENGTHY_EXTRUDE
 
   // Compute direction bit-mask for this block
-  axis_bits_t dm = 0;
+  AxisBits dm;
   #if ANY(CORE_IS_XY, MARKFORGED_XY, MARKFORGED_YX)
-    if (da < 0) SBI(dm, X_HEAD);                  // Save the toolhead's true direction in X
-    if (db < 0) SBI(dm, Y_HEAD);                  // ...and Y
-    TERN_(HAS_Z_AXIS, if (dc < 0) SBI(dm, Z_AXIS));
+    dm.hx = (da < 0);                   // Save the toolhead's true direction in X
+    dm.hy = (db < 0);                   // ...and Y
+    TERN_(HAS_Z_AXIS, dm.z = (dc < 0));
   #endif
   #if IS_CORE
     #if CORE_IS_XY
-      if (da + db < 0) SBI(dm, A_AXIS);           // Motor A direction
-      if (CORESIGN(da - db) < 0) SBI(dm, B_AXIS); // Motor B direction
+      dm.a = (da + db < 0);             // Motor A direction
+      dm.b = (CORESIGN(da - db) < 0);   // Motor B direction
     #elif CORE_IS_XZ
-      if (da < 0) SBI(dm, X_HEAD);                // Save the toolhead's true direction in X
-      if (db < 0) SBI(dm, Y_AXIS);
-      if (dc < 0) SBI(dm, Z_HEAD);                // ...and Z
-      if (da + dc < 0) SBI(dm, A_AXIS);           // Motor A direction
-      if (CORESIGN(da - dc) < 0) SBI(dm, C_AXIS); // Motor C direction
+      dm.hx = (da < 0);                 // Save the toolhead's true direction in X
+      dm.y  = (db < 0);
+      dm.hz = (dc < 0);                 // ...and Z
+      dm.a  = (da + dc < 0);            // Motor A direction
+      dm.c  = (CORESIGN(da - dc) < 0);  // Motor C direction
     #elif CORE_IS_YZ
-      if (da < 0) SBI(dm, X_AXIS);
-      if (db < 0) SBI(dm, Y_HEAD);                // Save the toolhead's true direction in Y
-      if (dc < 0) SBI(dm, Z_HEAD);                // ...and Z
-      if (db + dc < 0) SBI(dm, B_AXIS);           // Motor B direction
-      if (CORESIGN(db - dc) < 0) SBI(dm, C_AXIS); // Motor C direction
+      dm.x  = (da < 0);
+      dm.hy = (db < 0);                 // Save the toolhead's true direction in Y
+      dm.hz = (dc < 0);                 // ...and Z
+      dm.b  = (db + dc < 0);            // Motor B direction
+      dm.c  = (CORESIGN(db - dc) < 0);  // Motor C direction
     #endif
   #elif ENABLED(MARKFORGED_XY)
-    if (da + db < 0) SBI(dm, A_AXIS);              // Motor A direction
-    if (db < 0) SBI(dm, B_AXIS);                   // Motor B direction
+    dm.a = (da + db < 0);               // Motor A direction
+    dm.b = (db < 0);                    // Motor B direction
   #elif ENABLED(MARKFORGED_YX)
-    if (da < 0) SBI(dm, A_AXIS);                   // Motor A direction
-    if (db + da < 0) SBI(dm, B_AXIS);              // Motor B direction
+    dm.a = (da < 0);                    // Motor A direction
+    dm.b = (db + da < 0);               // Motor B direction
   #else
     XYZ_CODE(
-      if (da < 0) SBI(dm, X_AXIS),
-      if (db < 0) SBI(dm, Y_AXIS),
-      if (dc < 0) SBI(dm, Z_AXIS)
+      dm.x = (da < 0),
+      dm.y = (db < 0),
+      dm.z = (dc < 0)
     );
   #endif
 
   SECONDARY_AXIS_CODE(
-    if (di < 0) SBI(dm, I_AXIS),
-    if (dj < 0) SBI(dm, J_AXIS),
-    if (dk < 0) SBI(dm, K_AXIS),
-    if (du < 0) SBI(dm, U_AXIS),
-    if (dv < 0) SBI(dm, V_AXIS),
-    if (dw < 0) SBI(dm, W_AXIS)
+    dm.i = (di < 0), dm.j = (dj < 0), dm.k = (dk < 0),
+    dm.u = (du < 0), dm.v = (dv < 0), dm.w = (dw < 0)
   );
 
   #if HAS_EXTRUDERS
-    if (de < 0) SBI(dm, E_AXIS);
+    dm.e = (de < 0);
     const float esteps_float = de * e_factor[extruder];
     const uint32_t esteps = ABS(esteps_float) + 0.5f;
   #else
@@ -2460,11 +2456,11 @@ bool Planner::_populate_block(
 
   #ifdef XY_FREQUENCY_LIMIT
 
-    static axis_bits_t old_direction_bits; // = 0
+    static AxisBits old_direction_bits; // = 0
 
     if (xy_freq_limit_hz) {
       // Check and limit the xy direction change frequency
-      const axis_bits_t direction_change = block->direction_bits ^ old_direction_bits;
+      const AxisBits direction_change = block->direction_bits ^ old_direction_bits;
       old_direction_bits = block->direction_bits;
       segment_time_us = LROUND(float(segment_time_us) / speed_factor);
 
@@ -2475,8 +2471,8 @@ bool Planner::_populate_block(
         xs2 = xs1; xs1 = xs0;
         ys2 = ys1; ys1 = ys0;
       }
-      xs0 = TEST(direction_change, X_AXIS) ? segment_time_us : xy_freq_min_interval_us;
-      ys0 = TEST(direction_change, Y_AXIS) ? segment_time_us : xy_freq_min_interval_us;
+      xs0 = direction_change.x ? segment_time_us : xy_freq_min_interval_us;
+      ys0 = direction_change.y ? segment_time_us : xy_freq_min_interval_us;
 
       if (segment_time_us < xy_freq_min_interval_us) {
         const int32_t least_xy_segment_time = _MIN(_MAX(xs0, xs1, xs2), _MAX(ys0, ys1, ys2));
@@ -3210,10 +3206,10 @@ bool Planner::buffer_line(const xyze_pos_t &cart, const_feedRate_t fr_mm_s
     block->decelerate_after = block->step_event_count;
 
     // Will be set to last direction later if directional format.
-    block->direction_bits = 0;
+    block->direction_bits.reset();
 
     #define PAGE_UPDATE_DIR(AXIS) \
-      if (!last_page_dir[_AXIS(AXIS)]) SBI(block->direction_bits, _AXIS(AXIS));
+      if (!last_page_dir.AXIS) block->direction_bits.AXIS = true;
 
     if (!DirectStepping::Config::DIRECTIONAL) {
       PAGE_UPDATE_DIR(X);
