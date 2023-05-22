@@ -21,6 +21,8 @@
  */
 #pragma once
 
+#include "../pins/pins_lcd.h"   // Needed to define LED and NEOPIXEL pins on some displays
+
 /**
  * SanityCheck.h
  *

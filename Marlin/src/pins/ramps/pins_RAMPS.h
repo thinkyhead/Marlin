@@ -650,7 +650,7 @@
         #define DOGLCD_SCK           EXP1_05_PIN
       #else
         #define LCD_PINS_RS          EXP1_04_PIN
-        #define LCD_PINS_EN          EXP1_03_PIN
+        //#define LCD_PINS_EN          EXP1_03_PIN
         #define LCD_PINS_D4          EXP1_05_PIN
         #define LCD_PINS_D5          EXP1_06_PIN
         #define LCD_PINS_D6          EXP1_07_PIN
@@ -770,7 +770,7 @@
       #endif
       #define KILL_PIN               EXP2_08_PIN
 
-    #elif EITHER(MKS_MINI_12864, FYSETC_MINI_12864)
+    #elif ENABLED(MKS_MINI_12864)
 
       #define BTN_ENC                EXP1_02_PIN
       #ifndef SD_DETECT_PIN
@@ -781,47 +781,14 @@
         #define KILL_PIN             EXP2_08_PIN
       #endif
 
-      #if ENABLED(MKS_MINI_12864)
+      #define DOGLCD_A0            EXP1_07_PIN
+      #define DOGLCD_CS            EXP1_06_PIN
 
-        #define DOGLCD_A0            EXP1_07_PIN
-        #define DOGLCD_CS            EXP1_06_PIN
+      // not connected to a pin
+      #define LCD_BACKLIGHT_PIN             -1  // 65 (MKS mini12864 can't adjust backlight by software!)
 
-        // not connected to a pin
-        #define LCD_BACKLIGHT_PIN             -1  // 65 (MKS mini12864 can't adjust backlight by software!)
-
-        #define BTN_EN1              EXP2_03_PIN
-        #define BTN_EN2              EXP2_05_PIN
-
-      #elif ENABLED(FYSETC_MINI_12864)
-
-        // From https://wiki.fysetc.com/Mini12864_Panel/
-
-        #define DOGLCD_A0            EXP1_04_PIN
-        #define DOGLCD_CS            EXP1_03_PIN
-
-        #define BTN_EN1              EXP2_05_PIN
-        #define BTN_EN2              EXP2_03_PIN
-
-        //#define FORCE_SOFT_SPI                  // Use this if default of hardware SPI causes display problems
-                                                  //   results in LCD soft SPI mode 3, SD soft SPI mode 0
-
-        #define LCD_RESET_PIN        EXP1_05_PIN  // Must be high or open for LCD to operate normally.
-
-        #if EITHER(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
-          #ifndef RGB_LED_R_PIN
-            #define RGB_LED_R_PIN    EXP1_06_PIN
-          #endif
-          #ifndef RGB_LED_G_PIN
-            #define RGB_LED_G_PIN    EXP1_07_PIN
-          #endif
-          #ifndef RGB_LED_B_PIN
-            #define RGB_LED_B_PIN    EXP1_08_PIN
-          #endif
-        #elif ENABLED(FYSETC_MINI_12864_2_1)
-          #define NEOPIXEL_PIN       EXP1_06_PIN
-        #endif
-
-      #endif
+      #define BTN_EN1              EXP2_03_PIN
+      #define BTN_EN2              EXP2_05_PIN
 
     #elif ENABLED(MINIPANEL)
 
@@ -870,7 +837,7 @@
     #else
 
       #ifndef BEEPER_PIN
-        #define BEEPER_PIN           EXP2_05_PIN
+        //#define BEEPER_PIN           EXP2_05_PIN
       #endif
 
       #if ENABLED(PANEL_ONE)                      // Buttons connect directly to AUX-2
@@ -878,16 +845,16 @@
         #define BTN_EN2                  AUX2_04
         #define BTN_ENC                  AUX3_02
       #else
-        #define BTN_EN1              EXP1_01_PIN
-        #define BTN_EN2              EXP1_02_PIN
-        #define BTN_ENC              EXP2_03_PIN
+        //#define BTN_EN1              EXP1_01_PIN
+        //#define BTN_EN2              EXP1_02_PIN
+        //#define BTN_ENC              EXP2_03_PIN
       #endif
 
     #endif
   #endif // IS_NEWPANEL
 
   #ifndef BEEPER_PIN
-    #define BEEPER_PIN               EXP1_01_PIN  // Most common mapping
+   // #define BEEPER_PIN               EXP1_01_PIN  // Most common mapping
   #endif
 
 #endif // HAS_WIRED_LCD && !LCD_PINS_DEFINED

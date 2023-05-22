@@ -200,8 +200,6 @@
     #ifndef RGB_LED_B_PIN
       #define RGB_LED_B_PIN                P1_00  // EXP1-8  =>  Ethernet pin 12 (top row, 6 from left)
     #endif
-  #elif ENABLED(FYSETC_MINI_12864_2_1)
-    #define NEOPIXEL_PIN                   P1_16  // EXP1-6  =>  Ethernet pin  6 (top row, 3 from left)
   #endif
 
 #elif HAS_WIRED_LCD

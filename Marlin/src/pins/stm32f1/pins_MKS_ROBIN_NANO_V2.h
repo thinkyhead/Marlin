@@ -343,14 +343,6 @@
     #endif
 
   #elif ENABLED(FYSETC_MINI_12864_2_1)
-    #define LCD_PINS_DC                     PC6
-    #define DOGLCD_CS                       PD13
-    #define DOGLCD_A0                  DOGLCD_A0
-    #define LCD_BACKLIGHT_PIN               -1
-    #define LCD_RESET_PIN                   PE14
-    #define NEOPIXEL_PIN                    PE15
-    #define DOGLCD_MOSI                     PA7
-    #define DOGLCD_SCK                      PA5
     #if SD_CONNECTION_IS(ONBOARD)
       #define FORCE_SOFT_SPI
     #endif
