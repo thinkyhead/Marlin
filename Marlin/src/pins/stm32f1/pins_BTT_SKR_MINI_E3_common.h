@@ -280,66 +280,12 @@
   #elif ENABLED(FYSETC_MINI_12864_2_1)
 
     #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
-      #error "CAUTION! FYSETC_MINI_12864_2_1 / MKS_MINI_12864_V3 / BTT_MINI_12864_V1 requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
+      #error "CAUTION! FYSETC_MINI_12864_2_1 / MKS_MINI_12864_V3 / BTT_MINI_12864_V1 requires wiring modifications. See 'adapters.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
     #endif
 
-    /**
-     * FYSETC_MINI_12864_2_1 / MKS_MINI_12864_V3 / BTT_MINI_12864_V1 display pinout
-     *
-     *       Board                      Display
-     *       ------                     ------
-     * PB5  | 1  2 | PA15       (BEEP) |10  9 | BTN_ENC
-     * PA9  | 3  4 | RESET      LCD_CS | 8  7 | LCD A0
-     * PA10 | 5  6 | PB9       LCD_RST | 6  5 | RED
-     * PB8  | 7  8 | PB15      (GREEN) | 4  3 | (BLUE)
-     * GND  | 9 10 | 5V            GND | 2  1 | 5V
-     *       ------                     ------
-     *        EXP1                       EXP1
-     *
-     *            ---                   ------
-     *       RST | 1 |          (MISO) |10  9 | SCK
-     * (RX2) PA3 | 2 |         BTN_EN1 | 8  7 | (SS)
-     * (TX2) PA2 | 3 |         BTN_EN2 | 6  5 | MOSI
-     *       GND | 4 |            (CD) | 4  3 | (RST)
-     *        5V | 5 |             GND | 2  1 | (KILL)
-     *            ---                   ------
-     *            TFT                    EXP2
-     *
-     * Needs custom cable:
-     *
-     *    Board             Display
-     *
-     *   EXP1-10 ---------- EXP1-1   5V
-     *   EXP1-9 ----------- EXP1-2   GND
-     *   EXP1-8 ----------- EXP2-6   EN2
-     *   EXP1-7 ----------- EXP1-5   RED
-     *   EXP1-6 ----------- EXP2-8   EN1
-     *   EXP1-5 ----------- n/c
-     *   EXP1-4 ----------- EXP1-6   RESET
-     *   EXP1-3 ----------- EXP1-8   LCD_CS
-     *   EXP1-2 ----------- EXP1-9   ENC
-     *   EXP1-1 ----------- EXP1-7   LCD_A0
-     *
-     *    TFT-2 ----------- EXP2-5   MOSI
-     *    TFT-3 ----------- EXP2-9   SCK
-     *
-     * for backlight configuration see steps 2 (V2.1) and 3 in https://wiki.fysetc.com/Mini12864_Panel/
-     */
+    // Migrated to pins/lcd
 
-    #define LCD_BACKLIGHT_PIN               -1
-    #define NEOPIXEL_PIN             EXP1_07_PIN
-    #define LCD_CONTRAST                     255
-
-    #define DOGLCD_CS                EXP1_03_PIN
-    #define DOGLCD_A0                EXP1_01_PIN
-    #define DOGLCD_SCK                      PA2
-    #define DOGLCD_MOSI                     PA3
-
-    #define BTN_ENC                         PA15
-    #define BTN_EN1                  EXP1_06_PIN
-    #define BTN_EN2                         PB15
-
-    #define FORCE_SOFT_SPI
+    #define ADAPTER_CUSTOM_MINI_E3_TFT
 
   #else
     #error "Only CR10_STOCKDISPLAY, LCD_FOR_MELZI, ZONESTAR_LCD, ENDER2_STOCKDISPLAY, MKS_MINI_12864, TFTGLCD_PANEL_(SPI|I2C), FYSETC_MINI_12864_2_1, MKS_MINI_12864_V3, and BTT_MINI_12864_V1 are currently supported on the BIGTREE_SKR_MINI_E3."

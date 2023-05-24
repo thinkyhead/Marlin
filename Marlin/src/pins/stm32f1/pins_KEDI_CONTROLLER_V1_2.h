@@ -215,32 +215,9 @@
 
     #if ENABLED(FYSETC_MINI_12864)
 
-      #define LCD_BACKLIGHT_PIN             -1
-      #define LCD_RESET_PIN          EXP1_06_PIN
-      #define DOGLCD_A0              EXP1_07_PIN
-      #define DOGLCD_CS              EXP1_08_PIN
-      #define DOGLCD_SCK             EXP2_09_PIN
-      #define DOGLCD_MOSI            EXP2_05_PIN
+      // Migrated to pins/lcd
 
       #define FORCE_SOFT_SPI                      // SPI MODE3
-
-      #define LED_PIN                EXP1_05_PIN   // red pwm
-      //#define LED_PIN              EXP1_04_PIN  // green
-      //#define LED_PIN              EXP1_03_PIN  // blue
-
-      //#if ANY(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
-      //  #ifndef RGB_LED_R_PIN
-      //    #define RGB_LED_R_PIN    EXP1_05_PIN
-      //  #endif
-      //  #ifndef RGB_LED_G_PIN
-      //    #define RGB_LED_G_PIN    EXP1_04_PIN
-      //  #endif
-      //  #ifndef RGB_LED_B_PIN
-      //    #define RGB_LED_B_PIN    EXP1_03_PIN
-      //  #endif
-      //#elif ENABLED(FYSETC_MINI_12864_2_1)
-      //  #define NEOPIXEL_PIN       EXP1_05_PIN
-      //#endif
 
     #else                                         // !FYSETC_MINI_12864
 
@@ -256,7 +233,7 @@
 
       #endif
 
-    #endif // !FYSETC_MINI_12864
+    #endif
 
     // Alter timing for graphical display
     #if IS_U8GLIB_ST7920

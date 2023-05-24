@@ -324,8 +324,9 @@
 #elif HAS_WIRED_LCD
 
   #if ENABLED(FYSETC_MINI_12864)
-    #define BEEPER_PIN                     P1_01
-    #define BTN_ENC                        P1_04
+
+    // Migrated to pins/lcd
+
   #else
     #define BEEPER_PIN                     P1_30  // (37) not 5V tolerant
     #define BTN_ENC                        P2_11  // (35) J3-3 & AUX-4
@@ -366,30 +367,9 @@
   #else
 
     #if ENABLED(FYSETC_MINI_12864)
-      #define DOGLCD_SCK                   P0_15
-      #define DOGLCD_MOSI                  P0_18
 
-      // EXP1 on LCD adapter is not usable - using Ethernet connector instead
-      #define DOGLCD_CS                    P1_09
-      #define DOGLCD_A0                    P1_14
-      //#define FORCE_SOFT_SPI                    // Use this if default of hardware SPI causes display problems
-                                                  //   results in LCD soft SPI mode 3, SD soft SPI mode 0
+    // Migrated to pins/lcd
 
-      #define LCD_RESET_PIN                P0_16  // Must be high or open for LCD to operate normally.
-
-      #if ANY(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
-        #ifndef RGB_LED_R_PIN
-          #define RGB_LED_R_PIN            P1_00
-        #endif
-        #ifndef RGB_LED_G_PIN
-          #define RGB_LED_G_PIN            P1_01
-        #endif
-        #ifndef RGB_LED_B_PIN
-          #define RGB_LED_B_PIN            P1_08
-        #endif
-      #elif ENABLED(FYSETC_MINI_12864_2_1)
-        #define NEOPIXEL_PIN               P1_00
-      #endif
     #else
       #define DOGLCD_CS                    P0_26  // (63) J5-3 & AUX-2
       #define DOGLCD_A0                    P2_06  // (59) J3-8 & AUX-2

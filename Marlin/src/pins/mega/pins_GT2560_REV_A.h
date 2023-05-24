@@ -155,18 +155,9 @@
       #define BTN_EN2                EXP2_03_PIN
     #elif ENABLED(FYSETC_MINI_12864)
       // Disconnect EXP2-1 and EXP2-2, otherwise future firmware upload won't work.
-      #define DOGLCD_CS              EXP1_03_PIN
-      #define DOGLCD_A0              EXP1_04_PIN
 
-      #define NEOPIXEL_PIN           EXP1_06_PIN
-      #define BTN_EN1                EXP2_03_PIN
-      #define BTN_EN2                EXP2_05_PIN
+      // Migrated to pins/lcd
 
-      #define LCD_RESET_PIN          EXP1_05_PIN
-
-      #define LCD_CONTRAST_INIT              220
-
-      #define LCD_BACKLIGHT_PIN               -1
     #else
       #define LCD_PINS_RS            EXP1_04_PIN
       #define LCD_PINS_EN            EXP1_03_PIN

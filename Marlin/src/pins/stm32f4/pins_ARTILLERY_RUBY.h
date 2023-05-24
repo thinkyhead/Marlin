@@ -134,30 +134,11 @@
     #define DOGLCD_MOSI                     PB6
     #define DOGLCD_SCK                      PB5
     #define DOGLCD_A0                LCD_PINS_DC
+
   #elif ENABLED(FYSETC_MINI_12864)
-    #define DOGLCD_CS                       PB6
-    #define DOGLCD_A0                       PC15
 
-    //#define FORCE_SOFT_SPI                      // Use this if default of hardware SPI causes display problems
-                                                  //   results in LCD soft SPI mode 3, SD soft SPI mode 0
+    // Migrated to pins/lcd
 
-    #define LCD_RESET_PIN                   PB5   // Must be high or open for LCD to operate normally.
-
-    #if ANY(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
-      #ifndef RGB_LED_R_PIN
-        #define RGB_LED_R_PIN               PB9
-      #endif
-      #ifndef RGB_LED_G_PIN
-        #define RGB_LED_G_PIN               PB8
-      #endif
-      #ifndef RGB_LED_B_PIN
-        #define RGB_LED_B_PIN               PB7
-      #endif
-    #elif ENABLED(FYSETC_MINI_12864_2_1)
-      #define NEOPIXEL_PIN                  PB9
-    #endif
-
-    #define LCD_CONTRAST_INIT                255
   #else
     #define LCD_PINS_RS                     PC15
     #define LCD_PINS_EN                     PB6

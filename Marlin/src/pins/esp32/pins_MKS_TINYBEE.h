@@ -172,11 +172,9 @@
   #define BTN_EN2                    EXP2_05_PIN
 
   #if ENABLED(FYSETC_MINI_12864_2_1)
-    // MKS_MINI_12864_V3, BTT_MINI_12864_V1, FYSETC_MINI_12864_2_1
-    #define DOGLCD_CS                EXP1_03_PIN
-    #define DOGLCD_A0                EXP1_04_PIN
-    #define LCD_RESET_PIN            EXP1_05_PIN
-    #define NEOPIXEL_PIN             EXP1_06_PIN
+
+  // Migrated to pins/lcd
+
     #if SD_CONNECTION_IS(ONBOARD)
       #define FORCE_SOFT_SPI
     #endif

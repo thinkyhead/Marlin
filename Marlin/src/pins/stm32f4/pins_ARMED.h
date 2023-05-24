@@ -148,29 +148,9 @@
 #define BEEPER_PIN                          PC9
 
 #if ENABLED(FYSETC_MINI_12864)
-  //
-  // See https://wiki.fysetc.com/Mini12864_Panel/
-  //
-  #define DOGLCD_A0                         PE9
-  #define DOGLCD_CS                         PE8
 
-  #define LCD_BACKLIGHT_PIN                 -1
+  // Migrated to pins/lcd
 
-  #define LCD_RESET_PIN                     PB12  // Must be high or open for LCD to operate normally.
-
-  #if ANY(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
-    #ifndef RGB_LED_R_PIN
-      #define RGB_LED_R_PIN                 PB13
-    #endif
-    #ifndef RGB_LED_G_PIN
-      #define RGB_LED_G_PIN                 PB14
-    #endif
-    #ifndef RGB_LED_B_PIN
-      #define RGB_LED_B_PIN                 PB15
-    #endif
-  #elif ENABLED(FYSETC_MINI_12864_2_1)
-    #define NEOPIXEL_PIN                    PB13
-  #endif
 #else
   #define LCD_PINS_RS                       PE9
   #define LCD_PINS_EN                       PE8

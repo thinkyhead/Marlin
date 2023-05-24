@@ -421,30 +421,13 @@
   #define BTN_ENC                    EXP1_02_PIN
 
   #if ENABLED(FYSETC_MINI_12864)
-    #define DOGLCD_CS                EXP1_03_PIN
-    #define DOGLCD_A0                EXP1_04_PIN
-    #define DOGLCD_SCK               EXP2_02_PIN
-    #define DOGLCD_MOSI              EXP2_06_PIN
+
+    // Migrated to pins/lcd
 
     #define SOFTWARE_SPI
     #define FORCE_SOFT_SPI                        // Use this if default of hardware SPI causes display problems
                                                   //   results in LCD soft SPI mode 3, SD soft SPI mode 0
-    //#define LCD_BACKLIGHT_PIN             -1
-    #define LCD_RESET_PIN            EXP1_05_PIN  // Must be high or open for LCD to operate normally.
-    #if ANY(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
-      #ifndef RGB_LED_R_PIN
-        #define RGB_LED_R_PIN        EXP1_06_PIN
-      #endif
-      #ifndef RGB_LED_G_PIN
-        #define RGB_LED_G_PIN        EXP1_07_PIN
-      #endif
-      #ifndef RGB_LED_B_PIN
-        #define RGB_LED_B_PIN        EXP1_08_PIN
-      #endif
-    #elif ENABLED(FYSETC_MINI_12864_2_1)
-      #define NEOPIXEL_PIN           EXP1_06_PIN
-    #endif
-  #endif // !FYSETC_MINI_12864
+  #endif
 
   #if IS_ULTIPANEL
     #define LCD_PINS_D5              EXP1_06_PIN

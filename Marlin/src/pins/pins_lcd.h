@@ -49,6 +49,8 @@
     #include "lcd/RRD_FG_SC.h"
   #elif IS_RRD_SC
     #include "lcd/RRD_SC.h"
+  #elif ANY(FYSETC_MINI_12864_X_X,FYSETC_MINI_12864_1_2,FYSETC_MINI_12864_2_0,FYSETC_MINI_12864_2_1,FYSETC_GENERIC_12864_1_1) // Also covers MKS_MINI_12864_V3 and BTT_MINI_12864_V1
+    #include "lcd/FYSETC_MINI_12864.h"
   #else
 
     // More displays to come
