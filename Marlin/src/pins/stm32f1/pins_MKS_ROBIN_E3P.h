@@ -308,7 +308,19 @@
   #define TFT_BUFFER_SIZE                  14400
 #endif
 
-#if HAS_WIRED_LCD && !HAS_SPI_TFT
+#if ENABLED(FYSETC_MINI_12864_2_1)
+
+  // Migrated to pins/lcd
+  #if SD_CONNECTION_IS(ONBOARD)
+    #define FORCE_SOFT_SPI
+  #endif
+  //#define LCD_SCREEN_ROTATE                180  // 0, 90, 180, 270
+
+#elif HAS_SPI_TFT
+
+  // Nothing to do here
+
+#elif HAS_WIRED_LCD
   #define BEEPER_PIN                 EXP1_01_PIN
   #define BTN_ENC                    EXP1_02_PIN
   #define LCD_PINS_EN                EXP1_03_PIN
@@ -341,15 +353,6 @@
     #ifndef BEEPER_PIN
       #define BEEPER_PIN                    -1
     #endif
-
-  #elif ENABLED(FYSETC_MINI_12864_2_1)
-
-    // Migrated to pins/lcd
-
-    #if SD_CONNECTION_IS(ONBOARD)
-      #define FORCE_SOFT_SPI
-    #endif
-    //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
 
   #else                                           // !MKS_MINI_12864
 

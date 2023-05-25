@@ -232,6 +232,13 @@
 
   #error "ANET_FULL_GRAPHICS_LCD_ALT_WIRING only applies to the ANET 1.0 board."
 
+#elif ENABLED(FYSETC_MINI_12864)
+
+  // Migrated to pins/lcd
+
+  #define FORCE_SOFT_SPI                          // Use this if hardware SPI (default) causes display problems
+                                                  //   results in LCD soft SPI mode 3, SD soft SPI mode 0
+
 #elif HAS_WIRED_LCD
 
   #if ENABLED(WYH_L12864)
@@ -338,6 +345,7 @@
     #endif
 
   #elif IS_TFTGLCD_PANEL
+
     #if ENABLED(TFTGLCD_PANEL_SPI)
       #define TFTGLCD_CS             EXP2_03_PIN
     #endif
@@ -358,41 +366,31 @@
     #define LCD_SDSS                 EXP2_04_PIN  // (16) J3-7 & AUX-4
     #define SD_DETECT_PIN            EXP2_07_PIN  // (49) (NOT 5V tolerant)
 
-    #if ENABLED(FYSETC_MINI_12864)
+    #if ENABLED(MKS_MINI_12864)
+
+      #define DOGLCD_CS              EXP1_06_PIN
+      #define DOGLCD_A0              EXP1_07_PIN
+      #define DOGLCD_SCK             EXP2_02_PIN
+      #define DOGLCD_MOSI            EXP2_06_PIN
+      #define FORCE_SOFT_SPI
+
+    #elif ENABLED(ENDER2_STOCKDISPLAY)
 
       // Migrated to pins/lcd
-
-      #define FORCE_SOFT_SPI                      // Use this if default of hardware SPI causes display problems
-                                                  //   results in LCD soft SPI mode 3, SD soft SPI mode 0
-    #else                                         // !FYSETC_MINI_12864
-
-      #if ENABLED(MKS_MINI_12864)
-
-        #define DOGLCD_CS            EXP1_06_PIN
-        #define DOGLCD_A0            EXP1_07_PIN
-        #define DOGLCD_SCK           EXP2_02_PIN
-        #define DOGLCD_MOSI          EXP2_06_PIN
-        #define FORCE_SOFT_SPI
-
-      #elif ENABLED(ENDER2_STOCKDISPLAY)
-
-        // Migrated to pins/lcd
-        #define FORCE_SOFT_SPI
-
-      #endif
-
-      #if IS_ULTIPANEL
-        #define LCD_PINS_D5          EXP1_06_PIN
-        #define LCD_PINS_D6          EXP1_07_PIN
-        #define LCD_PINS_D7          EXP1_08_PIN
-        #if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
-          #define BTN_ENC_EN         LCD_PINS_D7  // Detect the presence of the encoder
-        #endif
-      #endif
+      #define FORCE_SOFT_SPI
 
     #endif
 
-  #endif // !CR10_STOCKDISPLAY
+    #if IS_ULTIPANEL
+      #define LCD_PINS_D5            EXP1_06_PIN
+      #define LCD_PINS_D6            EXP1_07_PIN
+      #define LCD_PINS_D7            EXP1_08_PIN
+      #if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
+        #define BTN_ENC_EN           LCD_PINS_D7  // Detect the presence of the encoder
+      #endif
+    #endif
+
+  #endif
 
 #endif // HAS_WIRED_LCD
 

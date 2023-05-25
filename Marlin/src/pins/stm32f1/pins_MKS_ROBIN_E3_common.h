@@ -180,7 +180,14 @@
 #define EXP3_07_PIN                         PA5
 #define EXP3_08_PIN                         PA4
 
-#if HAS_WIRED_LCD
+#if ENABLED(FYSETC_MINI_12864_2_1)
+
+  // Migrated to pins/lcd
+  #define FORCE_SOFT_SPI
+  #define SOFTWARE_SPI
+  //#define LCD_SCREEN_ROTATE                180  // 0, 90, 180, 270
+
+#elif HAS_WIRED_LCD
 
   #define BEEPER_PIN                 EXP1_01_PIN
   #define BTN_ENC                    EXP1_02_PIN
@@ -198,14 +205,6 @@
     #define DOGLCD_CS                EXP1_06_PIN
     #define DOGLCD_SCK               EXP2_02_PIN
     #define DOGLCD_MOSI              EXP2_06_PIN
-
-  #elif ENABLED(FYSETC_MINI_12864_2_1)
-
-    // Migrated to pins/lcd
-
-    #define FORCE_SOFT_SPI
-    #define SOFTWARE_SPI
-    //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
 
   #else
 

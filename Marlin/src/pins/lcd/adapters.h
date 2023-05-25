@@ -142,24 +142,22 @@
    *
    *                   Board                               Display
    *                   ------                               ------
-   * (NEOPIXEL)  PA15 | 1  2 | PB6 (BTN_ENC)            5V |10  9 | GND
-   * (BTN_EN2)   PA9  | 3  4 | RESET                    -- | 8  7 | --
-   * (BTN_EN1)   PA10   5  6 | PB9 (LCD_RESET)    NEOPIXEL | 6  5   LCD RESET
-   * (LCD_A0)    PB8  | 7  8 | PB7 (LCD_CS)         LCD_A0 | 4  3 | LCD_CS
+   * (NEOPIXEL)  PA15 | 1  2 | PB6 (ENC)                5V |10  9 | GND
+   *      (EN2)  PA9  | 3  4 | RESET                    -- | 8  7 | --
+   *      (EN1)  PA10   5  6 | PB9 (LCD_RESET)    NEOPIXEL | 6  5   LCD RESET
+   *   (LCD_A0)  PB8  | 7  8 | PB7 (LCD_CS)         LCD_A0 | 4  3 | LCD_CS
    *              GND | 9 10 | 5V                  BTN_ENC | 2  1 | BEEP
    *                   ------                               ------
    *                    EXP1                                 EXP1
    *
-   *
-   *                  -----                                  ------
-   *                  | 1 | RST                         -- |10  9 | --
-   *                  | 2 | PA3 RX2              RESET_BTN | 8  7 | SD_DETECT
-   *                  | 3 | PA2 TX2               LCD_MOSI | 6  5   EN2
-   *                  | 4 | GND                         -- | 4  3 | EN1
-   *                  | 5 | 5V                     LCD_SCK | 2  1 | --
-   *                  -----                                 ------
-   *                   TFT                                   EXP2
-
+   *    -----                         ------
+   *    | 1 | RST                 -- |10  9 | --
+   *    | 2 | PA3 RX2      RESET_BTN | 8  7 | SD_DETECT
+   *    | 3 | PA2 TX2       LCD_MOSI | 6  5   EN2
+   *    | 4 | GND                 -- | 4  3 | EN1
+   *    | 5 | 5V             LCD_SCK | 2  1 | --
+   *    -----                         ------
+   *     TFT                           EXP2
    *
    * Needs custom cable.
    *
@@ -176,20 +174,20 @@
    */
 
   #define LCD1_01_PIN                      -1   // No Beeper
-  #define LCD1_02_PIN              EXP1_02_PIN  // BTN_ENC
-  #define LCD1_03_PIN              EXP1_08_PIN  // DOGLCD_CS
-  #define LCD1_04_PIN              EXP1_07_PIN  // DOGLCD_A0
-  #define LCD1_05_PIN              EXP1_06_PIN  // LCD_RESET_PIN
-  #define LCD1_06_PIN              EXP1_01_PIN  // NEOPIXEL_PIN
+  #define LCD1_02_PIN              EXP1_02_PIN  // ENC
+  #define LCD1_03_PIN              EXP1_08_PIN  // CS
+  #define LCD1_04_PIN              EXP1_07_PIN  // A0
+  #define LCD1_05_PIN              EXP1_06_PIN  // RESET
+  #define LCD1_06_PIN              EXP1_01_PIN  // NEOPIXEL
 
-  #define LCD2_01_PIN                      -1   // no DOGLCD_MISO for sdcard
-  #define LCD2_02_PIN                   TFT_02  // DOGLCD_SCK
-  #define LCD2_03_PIN              EXP1_03_PIN  // BTN_EN1
-  #define LCD2_04_PIN                      -1   // no SDSS for sdcard
-  #define LCD2_05_PIN              EXP1_05_PIN  // BTN_EN2
-  #define LCD2_06_PIN                   TFT_03  // DOGLCD_MOSI
-  #define LCD2_07_PIN                      -1   // no SD_DETECT_PIN for sdcard
-  #define LCD2_08_PIN                      -1   // no KILL_PIN
+  #define LCD2_01_PIN                      -1   // No MISO for SD
+  #define LCD2_02_PIN                   TFT_02  // SCK
+  #define LCD2_03_PIN              EXP1_03_PIN  // EN1
+  #define LCD2_04_PIN                      -1   // No SDSS for SD
+  #define LCD2_05_PIN              EXP1_05_PIN  // EN2
+  #define LCD2_06_PIN                   TFT_03  // MOSI
+  #define LCD2_07_PIN                      -1   // No SD_DETECT_PIN
+  #define LCD2_08_PIN                      -1   // No KILL_PIN
 
   #define FORCE_SOFT_SPI
 
@@ -239,20 +237,20 @@
    */
 
   #define LCD1_01_PIN                      -1   // No Beeper
-  #define LCD1_02_PIN              EXP1_02_PIN  // BTN_ENC
-  #define LCD1_03_PIN              EXP1_03_PIN  // DOGLCD_CS
-  #define LCD1_04_PIN              EXP1_01_PIN  // DOGLCD_A0
-  #define LCD1_05_PIN              EXP1_06_PIN  // LCD_RESET_PIN
-  #define LCD1_06_PIN              EXP1_07_PIN  // NEOPIXEL_PIN
+  #define LCD1_02_PIN              EXP1_02_PIN  // ENC
+  #define LCD1_03_PIN              EXP1_03_PIN  // CS
+  #define LCD1_04_PIN              EXP1_01_PIN  // A0
+  #define LCD1_05_PIN              EXP1_06_PIN  // RESET
+  #define LCD1_06_PIN              EXP1_07_PIN  // NEOPIXEL
 
-  #define LCD2_01_PIN                      -1   // no DOGLCD_MISO for sdcard
-  #define LCD2_02_PIN                   TFT_03  // DOGLCD_SCK
-  #define LCD2_03_PIN              EXP1_06_PIN  // BTN_EN1
-  #define LCD2_04_PIN                      -1   // no SDSS for sdcard
-  #define LCD2_05_PIN              EXP1_08_PIN  // BTN_EN2
-  #define LCD2_06_PIN                   TFT_02  // DOGLCD_MOSI
-  #define LCD2_07_PIN                      -1   // no SD_DETECT_PIN for sdcard
-  #define LCD2_08_PIN                      -1   // no KILL_PIN
+  #define LCD2_01_PIN                      -1   // No MISO for SD
+  #define LCD2_02_PIN                   TFT_03  // SCK
+  #define LCD2_03_PIN              EXP1_06_PIN  // EN1
+  #define LCD2_04_PIN                      -1   // No SDSS for SD
+  #define LCD2_05_PIN              EXP1_08_PIN  // EN2
+  #define LCD2_06_PIN                   TFT_02  // MOSI
+  #define LCD2_07_PIN                      -1   // No SD_DETECT_PIN
+  #define LCD2_08_PIN                      -1   // No KILL_PIN
 
   #define FORCE_SOFT_SPI
 
@@ -262,10 +260,10 @@
    *
    *                 Board (RET6 12864 LCD)              Display
    *                 ------                               ------
-   *  (EN1)    PC6  | 1  2 | PB2  (BTN_ENC)           5V |10  9 | GND
-   *  (LCD_CS) PB10 | 3  4 | PB11 (LCD RESET)         -- | 8  7 | --
-   *  (LCD_A0) PB14   5  6 | PB13 (EN2)           (DIN)  | 6  5   (LCD RESET)
-   *  (LCD_SCK)PB12 | 7  8 | PB15 (MOSI)        (LCD_A0) | 4  3 | (LCD_CS)
+   * (EN1)     PC6  | 1  2 | PB2  (BTN_ENC)           5V |10  9 | GND
+   * (LCD_CS)  PB10 | 3  4 | PB11 (LCD RESET)         -- | 8  7 | --
+   * (LCD_A0)  PB14   5  6 | PB13 (EN2)           (DIN)  | 6  5   (LCD RESET)
+   * (LCD_SCK) PB12 | 7  8 | PB15 (MOSI)        (LCD_A0) | 4  3 | (LCD_CS)
    *            GND | 9 10 | 5V                (BTN_ENC) | 2  1 | --
    *                 ------                               ------
    *                  EXP3                                 EXP1
@@ -285,20 +283,20 @@
    */
 
   #define LCD1_01_PIN                      -1   // No Beeper
-  #define LCD1_02_PIN              EXP3_02_PIN  // BTN_ENC
-  #define LCD1_03_PIN              EXP3_03_PIN  // DOGLCD_CS
-  #define LCD1_04_PIN              EXP3_05_PIN  // DOGLCD_A0
-  #define LCD1_05_PIN              EXP3_04_PIN  // LCD_RESET_PIN
-  #define LCD1_06_PIN              DEBUG_02_PIN // NEOPIXEL_PIN
+  #define LCD1_02_PIN              EXP3_02_PIN  // ENC
+  #define LCD1_03_PIN              EXP3_03_PIN  // CS
+  #define LCD1_04_PIN              EXP3_05_PIN  // A0
+  #define LCD1_05_PIN              EXP3_04_PIN  // RESET
+  #define LCD1_06_PIN              DEBUG_02_PIN // NEOPIXEL
 
-  #define LCD2_01_PIN                      -1   // no DOGLCD_MISO for sdcard
-  #define LCD2_02_PIN              EXP3_07_PIN  // DOGLCD_SCK
-  #define LCD2_03_PIN              EXP3_01_PIN  // BTN_EN1
-  #define LCD2_04_PIN                      -1   // no SDSS for sdcard
-  #define LCD2_05_PIN              EXP3_06_PIN  // BTN_EN2
-  #define LCD2_06_PIN              EXP3_08_PIN  // DOGLCD_MOSI
-  #define LCD2_07_PIN                      -1   // no SD_DETECT_PIN for sdcard
-  #define LCD2_08_PIN                      -1   // no KILL_PIN
+  #define LCD2_01_PIN                      -1   // No MISO for SD
+  #define LCD2_02_PIN              EXP3_07_PIN  // SCK
+  #define LCD2_03_PIN              EXP3_01_PIN  // EN1
+  #define LCD2_04_PIN                      -1   // No SDSS for SD
+  #define LCD2_05_PIN              EXP3_06_PIN  // EN2
+  #define LCD2_06_PIN              EXP3_08_PIN  // MOSI
+  #define LCD2_07_PIN                      -1   // No SD_DETECT_PIN
+  #define LCD2_08_PIN                      -1   // No KILL_PIN
 
   #define FORCE_SOFT_SPI
 
@@ -327,20 +325,20 @@
 
   #if ENABLED(FYSETC_MINI_12864_2_1)
     #define LCD1_01_PIN                      -1   // No Beeper
-    #define LCD1_02_PIN              EXP1_01_PIN  // BTN_ENC
-    #define LCD1_03_PIN              EXP1_07_PIN  // DOGLCD_CS
-    #define LCD1_04_PIN              EXP1_08_PIN  // DOGLCD_A0
-    #define LCD1_05_PIN              EXP1_06_PIN  // LCD_RESET_PIN
-    #define LCD1_06_PIN              EXP1_02_PIN  // NEOPIXEL_PIN
+    #define LCD1_02_PIN              EXP1_01_PIN  // ENC
+    #define LCD1_03_PIN              EXP1_07_PIN  // CS
+    #define LCD1_04_PIN              EXP1_08_PIN  // A0
+    #define LCD1_05_PIN              EXP1_06_PIN  // RESET
+    #define LCD1_06_PIN              EXP1_02_PIN  // NEOPIXEL
 
-    #define LCD2_01_PIN                      -1   // no DOGLCD_MISO for sdcard
-    #define LCD2_02_PIN              SPI1_04_PIN  // DOGLCD_SCK
-    #define LCD2_03_PIN              EXP1_03_PIN  // BTN_EN1
-    #define LCD2_04_PIN                      -1   // no SDSS for sdcard
-    #define LCD2_05_PIN              EXP1_05_PIN  // BTN_EN2
-    #define LCD2_06_PIN              SPI1_05_PIN  // DOGLCD_MOSI
-    #define LCD2_07_PIN                      -1   // no SD_DETECT_PIN for sdcard
-    #define LCD2_08_PIN                      -1   // no KILL_PIN
+    #define LCD2_01_PIN                      -1   // No MISO for SD
+    #define LCD2_02_PIN              SPI1_04_PIN  // SCK
+    #define LCD2_03_PIN              EXP1_03_PIN  // EN1
+    #define LCD2_04_PIN                      -1   // No SDSS for SD
+    #define LCD2_05_PIN              EXP1_05_PIN  // EN2
+    #define LCD2_06_PIN              SPI1_05_PIN  // MOSI
+    #define LCD2_07_PIN                      -1   // No SD_DETECT_PIN
+    #define LCD2_08_PIN                      -1   // No KILL_PIN
 
     #define FORCE_SOFT_SPI
 
@@ -353,10 +351,10 @@
   /**
    *        BTT SKR Mini E3 V3.0 Board                    Display
    *                 ------                               ------
-   *    (EN2)  PB5  | 1  2 | PA15(BTN_ENC)            5V |10  9 | GND
+   *     (EN2) PB5  | 1  2 | PA15(BTN_ENC)            5V |10  9 | GND
    *  (LCD_CS) PA9  | 3  4 | RST (RESET)              -- | 8  7 | --
-   *  (LCD_A0) PA10   5  6 | PB9 (EN1)            (DIN)  | 6  5   (RESET)
-   *  (LCD_SCK)PB8  | 7  8 | PD6 (MOSI)         (LCD_A0) | 4  3 | (LCD_CS)
+   *  (LCD_A0) PA10   5  6 | PB9 (EN1)             (DIN) | 6  5   (RESET)
+   * (LCD_SCK) PB8  | 7  8 | PD6 (MOSI)         (LCD_A0) | 4  3 | (LCD_CS)
    *            GND | 9 10 | 5V                (BTN_ENC) | 2  1 | --
    *                 ------                               ------
    *                  EXP1                                 EXP1
@@ -368,7 +366,7 @@
    *                  | 2 | (DIN)                     -- | 4  3 | (EN1)
    *                  | 1 |                     (LCD_SCK)| 2  1 | --
    *                   ---                                ------
-   *                NeoPixel                               EXP2
+   *                 NeoPixel                              EXP2
    *
    * Needs custom cable. Connect EN2-EN2, LCD_CS-LCD_CS and so on.
    *
@@ -377,20 +375,20 @@
    */
 
   #define LCD1_01_PIN                      -1   // No Beeper
-  #define LCD1_02_PIN              EXP1_02_PIN  // BTN_ENC
-  #define LCD1_03_PIN              EXP1_03_PIN  // DOGLCD_CS
-  #define LCD1_04_PIN              EXP1_05_PIN  // DOGLCD_A0
-  #define LCD1_05_PIN              EXP1_04_PIN  // LCD_RESET_PIN
-  #define LCD1_06_PIN              NEOPIXEL_PIN // NEOPIXEL_PIN
+  #define LCD1_02_PIN              EXP1_02_PIN  // ENC
+  #define LCD1_03_PIN              EXP1_03_PIN  // CS
+  #define LCD1_04_PIN              EXP1_05_PIN  // A0
+  #define LCD1_05_PIN              EXP1_04_PIN  // RESET
+  #define LCD1_06_PIN              NEOPIXEL_PIN // NEOPIXEL
 
-  #define LCD2_01_PIN                      -1   // no DOGLCD_MISO for sdcard
-  #define LCD2_02_PIN              EXP1_07_PIN  // DOGLCD_SCK
-  #define LCD2_03_PIN              EXP1_06_PIN  // BTN_EN1
-  #define LCD2_04_PIN                      -1   // no SDSS for sdcard
-  #define LCD2_05_PIN              EXP1_01_PIN  // BTN_EN2
-  #define LCD2_06_PIN              EXP1_08_PIN  // DOGLCD_MOSI
-  #define LCD2_07_PIN                      -1   // no SD_DETECT_PIN for sdcard
-  #define LCD2_08_PIN                      -1   // no KILL_PIN
+  #define LCD2_01_PIN                      -1   // No MISO for SD
+  #define LCD2_02_PIN              EXP1_07_PIN  // SCK
+  #define LCD2_03_PIN              EXP1_06_PIN  // EN1
+  #define LCD2_04_PIN                      -1   // No SDSS for SD
+  #define LCD2_05_PIN              EXP1_01_PIN  // EN2
+  #define LCD2_06_PIN              EXP1_08_PIN  // MOSI
+  #define LCD2_07_PIN                      -1   // No SD_DETECT_PIN
+  #define LCD2_08_PIN                      -1   // No KILL_PIN
 
   #define FORCE_SOFT_SPI
 

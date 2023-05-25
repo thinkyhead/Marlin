@@ -48,6 +48,8 @@
 
 // U8GLIB_MINI12864_2X_HAL : u8g_dev_uc1701_mini12864_HAL_sw_spi, u8g_dev_uc1701_mini12864_HAL_hw_spi
 
+// MKS_MINI_12864_V3, BTT_MINI_12864_V1 => FYSETC_MINI_12864_2_1
+//
 // FYSETC_MINI_12864_X_X, FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0, FYSETC_MINI_12864_2_1, FYSETC_GENERIC_12864_1_1
 //  FYSETC_MINI_12864
 //  DOGLCD
@@ -107,6 +109,9 @@
 #endif
 
 #if HAS_MEDIA
+  #ifndef LCD_SDSS
+    #define LCD_SDSS      LCD2_04_PIN
+  #endif
   #ifndef SDSS
     #define SDSS          LCD2_04_PIN
   #endif

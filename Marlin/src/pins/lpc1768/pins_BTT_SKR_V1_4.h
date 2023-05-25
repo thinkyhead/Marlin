@@ -300,6 +300,12 @@
     #define BEEPER_PIN               EXP1_06_PIN
   #endif
 
+#elif ENABLED(FYSETC_MINI_12864)
+
+  // Migrated to pins/lcd
+  #define FORCE_SOFT_SPI                          // Use this if default of hardware SPI causes display problems
+                                                  //   results in LCD soft SPI mode 3, SD soft SPI mode 0
+
 #elif HAS_WIRED_LCD
 
   #if HAS_SPI_TFT                                 // Config for Classic UI (emulated DOGM) and Color UI
@@ -332,12 +338,6 @@
 
     #define SD_DETECT_PIN            EXP2_07_PIN
 
-  #elif ENABLED(FYSETC_MINI_12864)
-
-    // Migrated to pins/lcd
-
-    #define FORCE_SOFT_SPI                        // Use this if default of hardware SPI causes display problems
-                                                  //   results in LCD soft SPI mode 3, SD soft SPI mode 0
   #elif IS_ULTIPANEL
 
     #define LCD_PINS_D5              EXP1_06_PIN

@@ -327,6 +327,14 @@
     #define TOUCH_ORIENTATION    TOUCH_LANDSCAPE
   #endif
 
+#elif ENABLED(FYSETC_MINI_12864_2_1)
+
+  // Migrated to pins/lcd
+  #if SD_CONNECTION_IS(ONBOARD)
+    #define FORCE_SOFT_SPI
+  #endif
+  //#define LCD_SCREEN_ROTATE                180  // 0, 90, 180, 270
+
 #elif HAS_WIRED_LCD
 
   #define LCD_PINS_EN                EXP1_03_PIN
@@ -344,15 +352,6 @@
 
     // Required for MKS_MINI_12864 with this board
     //#define MKS_LCD12864B
-
-  #elif ENABLED(FYSETC_MINI_12864_2_1)
-
-    // Migrated to pins/lcd
-
-    #if SD_CONNECTION_IS(ONBOARD)
-      #define FORCE_SOFT_SPI
-    #endif
-    //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
 
   #else                                           // !MKS_MINI_12864
 

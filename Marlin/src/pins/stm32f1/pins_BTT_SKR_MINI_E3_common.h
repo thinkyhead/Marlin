@@ -175,6 +175,15 @@
   #define BTN_EN2                    EXP1_07_PIN
   #define BTN_ENC                    EXP1_01_PIN
 
+#elif ENABLED(FYSETC_MINI_12864_2_1)
+
+  // Migrated to pins/lcd
+  #define ADAPTER_CUSTOM_MINI_E3_TFT
+
+  #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+    #error "CAUTION! FYSETC_MINI_12864_2_1 / MKS_MINI_12864_V3 / BTT_MINI_12864_V1 requires wiring modifications. See 'adapters.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
+  #endif
+
 #elif HAS_WIRED_LCD
 
   #if ENABLED(LCD_FOR_MELZI)
@@ -276,16 +285,6 @@
       #define TFTGLCD_CS             EXP1_03_PIN
 
     #endif
-
-  #elif ENABLED(FYSETC_MINI_12864_2_1)
-
-    #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
-      #error "CAUTION! FYSETC_MINI_12864_2_1 / MKS_MINI_12864_V3 / BTT_MINI_12864_V1 requires wiring modifications. See 'adapters.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
-    #endif
-
-    // Migrated to pins/lcd
-
-    #define ADAPTER_CUSTOM_MINI_E3_TFT
 
   #else
     #error "Only CR10_STOCKDISPLAY, LCD_FOR_MELZI, ZONESTAR_LCD, ENDER2_STOCKDISPLAY, MKS_MINI_12864, TFTGLCD_PANEL_(SPI|I2C), FYSETC_MINI_12864_2_1, MKS_MINI_12864_V3, and BTT_MINI_12864_V1 are currently supported on the BIGTREE_SKR_MINI_E3."

@@ -163,7 +163,19 @@
   // Migrated to pins/lcd
   #define LCD_RESET_PIN                     -1
 
+#elif ENABLED(FYSETC_MINI_12864)
+
+  // Migrated to pins/lcd
+
+  #if SD_CONNECTION_IS(ONBOARD)
+    #define FORCE_SOFT_SPI
+  #endif
+  #if ALL(MKS_MINI_12864_V3, HAS_MEDIA)
+    #define PAUSE_LCD_FOR_BUSY_SD
+  #endif
+
 #elif HAS_WIRED_LCD
+
   #define BEEPER_PIN                 EXP1_01_PIN
   #define LCD_PINS_EN                EXP1_03_PIN
   #define LCD_PINS_RS                EXP1_04_PIN
@@ -171,20 +183,9 @@
   #define BTN_EN1                    EXP2_03_PIN
   #define BTN_EN2                    EXP2_05_PIN
 
-  #if ENABLED(FYSETC_MINI_12864_2_1)
+  #define LCD_PINS_D4                EXP1_05_PIN
+  #define BOARD_ST7920_DELAY_1                96
+  #define BOARD_ST7920_DELAY_2                48
+  #define BOARD_ST7920_DELAY_3               600
 
-  // Migrated to pins/lcd
-
-    #if SD_CONNECTION_IS(ONBOARD)
-      #define FORCE_SOFT_SPI
-    #endif
-    #if ALL(MKS_MINI_12864_V3, HAS_MEDIA)
-      #define PAUSE_LCD_FOR_BUSY_SD
-    #endif
-  #else
-    #define LCD_PINS_D4              EXP1_05_PIN
-    #define BOARD_ST7920_DELAY_1              96
-    #define BOARD_ST7920_DELAY_2              48
-    #define BOARD_ST7920_DELAY_3             600
-  #endif
-#endif // HAS_WIRED_LCD
+#endif

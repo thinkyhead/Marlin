@@ -187,6 +187,15 @@
   #define ADAPTER_BTT_DUAL
   #define FORCE_SOFT_SPI
 
+#elif ENABLED(FYSETC_MINI_12864_2_1)
+
+  // Migrated to pins/lcd
+  #define ADAPTER_CUSTOM_E3_V3_NEO
+
+  #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+    #error "CAUTION! FYSETC_MINI_12864_2_1 and clones require wiring modifications. See 'adapters.h' for details. Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning."
+  #endif
+
 #elif HAS_DWIN_E3V2 || IS_DWIN_MARLINUI
   /**
    *        ------                ------                ------
@@ -214,7 +223,7 @@
 
   #if ENABLED(SKR_MINI_SCREEN_ADAPTER)
 
-  // Migrated to pins/lcd
+    // Migrated to pins/lcd
 
   #else
 
@@ -272,18 +281,6 @@
         #define TFTGLCD_CS           EXP1_03_PIN
 
       #endif
-
-    #elif ENABLED(FYSETC_MINI_12864_2_1)
-
-      // Migrated to pins/lcd
-
-      #define ADAPTER_CUSTOM_E3_V3_NEO
-
-      #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
-        #error "CAUTION! FYSETC_MINI_12864_2_1 and clones require wiring modifications. See 'adapters.h' for details. Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning."
-      #endif
-
-      #define ADAPTER_CUSTOM_E3_V3_NEO
 
     #else
       #error "Only CR10_STOCKDISPLAY, ZONESTAR_LCD, ENDER2_STOCKDISPLAY, MKS_MINI_12864, FYSETC_MINI_12864_2_1, and TFTGLCD_PANEL_(SPI|I2C) are currently supported on the BIGTREE_SKR_MINI_E3."
