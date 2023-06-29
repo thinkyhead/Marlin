@@ -719,9 +719,9 @@
 #elif MB(BTT_E3_RRF)
   #include "stm32f4/pins_BTT_E3_RRF.h"              // STM32F4                              env:BTT_E3_RRF
 #elif MB(BTT_SKR_V2_0_REV_A)
-  #include "stm32f4/pins_BTT_SKR_V2_0_REV_A.h"      // STM32F4                              env:STM32F407VG_btt env:STM32F407VG_btt_USB env:STM32F407VG_btt_USB_debug
+  #include "stm32f4/pins_BTT_SKR_V2_0_REV_A.h"      // STM32F4                              env:STM32F407VG_btt env:STM32F407VG_btt_USB env:STM32F407VG_btt_USB_debug env:STM32F407VG_btt_USB_STLINK_debug
 #elif MB(BTT_SKR_V2_0_REV_B)
-  #include "stm32f4/pins_BTT_SKR_V2_0_REV_B.h"      // STM32F4                              env:STM32F407VG_btt env:STM32F407VG_btt_USB env:STM32F407VG_btt_USB_debug env:STM32F429VG_btt env:STM32F429VG_btt_USB env:STM32F429VG_btt_USB_debug
+  #include "stm32f4/pins_BTT_SKR_V2_0_REV_B.h"      // STM32F4                              env:STM32F407VG_btt env:STM32F407VG_btt_USB env:STM32F407VG_btt_USB_debug env:STM32F429VG_btt env:STM32F429VG_btt_USB env:STM32F429VG_btt_USB_debug env:STM32F407VG_btt_USB_STLINK_debug
 #elif MB(BTT_GTR_V1_0)
   #include "stm32f4/pins_BTT_GTR_V1_0.h"            // STM32F4                              env:BTT_GTR_V1_0 env:BTT_GTR_V1_0_usb_flash_drive
 #elif MB(BTT_OCTOPUS_V1_0)
