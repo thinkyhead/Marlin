@@ -146,6 +146,10 @@ Stepper stepper; // Singleton
   #include "../HAL/ESP32/i2s.h"
 #endif
 
+#if ENABLED(DAC_MCP4725)
+  #include <Adafruit_MCP4725.h>
+#endif
+
 // public:
 
 #if ANY(HAS_EXTRA_ENDSTOPS, Z_STEPPER_AUTO_ALIGN)

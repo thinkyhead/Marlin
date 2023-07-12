@@ -899,6 +899,57 @@
   #define PEN_UP_DOWN_MENU                // Add "Pen Up" and "Pen Down" to the MarlinUI menu
 #endif
 
+/**
+ * Galvo XY Settings
+ * Enable GALVO_XY kinematics and most of the default configuration for Galvo XY.
+ * With this feature enabled the XY steppers are deactivated and XY position is
+ * controlled using a pair of DACs, potentially with compensation for distortion.
+ *
+ * TODO: Set positions of DACs in the Stepper ISR, or with a userland process if
+ *       DAC code cannot be used from within an ISR.
+ * TODO: Apply changes to disable reference to XY steppers while keeping the Z
+ *       stepper. Currently if there is a Z stepper, it is assumed there are also
+ *       X and Y steppers.
+ * TODO: Since galvos are typically used for an SLA printer and motion is extremely
+ *       fast –near instantaneous– allow the acceleration for XY to also be instantaneous
+ *       by asserting a very high jerk.
+ * TODO: Consider the needs of SLA printing, where regular changes in the angle of
+ *       the galvos result in larger translated distances as they get farther from the
+ *       center. This may be handled by using extremely small segments with the angles
+ *       pre-calculated, or by doing the maths within the ISR and segmenting the moves
+ *       according to feedrate and time elapsed according to the Bresenham counters.
+ *
+ * @section galvo-xy
+ */
+//#define GALVO_XY
+
+#if ENABLED(GALVO_XY)
+
+  // TODO: Review some settings based on DELTA
+  // TODO: Galvo custom menu items
+
+  #define GALVOXY_SCALAR 45 // galvo max angle
+
+  #define GALVO_XY_STEPS_MULTIPLIER 652.79 // taken from OpenSL. Must calibrate!
+
+  // Make delta curves from many straight lines (linear interpolation).
+  // This is a trade-off between visible corners (not enough segments)
+  // and processor overload (too many expensive sqrt calls).
+  #define GALVOXY_SEGMENTS_PER_SECOND 160
+
+  // X axis of movement
+  #define GALVOXY_X_WIDTH 150
+
+  // Y axis of movement
+  #define GALVOXY_Y_WIDTH 150
+
+  // height
+  #define GALVOXY_HEIGHT 300
+
+  #define GALVOXY_ENDSTOP_ADJ { 0, 0 }
+
+#endif // GALVO_XY
+
 // @section delta
 
 // Enable for DELTA kinematics and configure below

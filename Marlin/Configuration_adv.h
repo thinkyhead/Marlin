@@ -3366,6 +3366,20 @@
 
 #endif // HAS_TRINAMIC_CONFIG || HAS_TMC26X
 
+// @section dac-mcp
+
+/**
+ * MCP4725 12-bit I2C DAC
+ * Requires https://github.com/adafruit/Adafruit_MCP4725
+ */
+//#define DAC_MCP4725
+
+/**
+ * MCP4922 12-bit I2C DAC
+ * Requires https://github.com/exscape/electronics/tree/master/Arduino/Libraries/DAC_MCP49xx
+ */
+//#define DAC_MCP4922
+
 // @section i2cbus
 
 //
