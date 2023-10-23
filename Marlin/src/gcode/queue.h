@@ -82,6 +82,7 @@ public:
     inline void advance_r() { if (length) advance_pos(index_r, -1); }
 
     void commit_command(const bool skip_ok
+      OPTARG(POWER_LOSS_RECOVERY, const bool is_sd_cmd=false)
       OPTARG(HAS_MULTI_SERIAL, serial_index_t serial_ind=serial_index_t())
     );
 
