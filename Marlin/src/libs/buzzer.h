@@ -27,7 +27,7 @@
 
   #include "circularqueue.h"
 
-  #define TONE_QUEUE_LENGTH 4
+  #define TONE_QUEUE_LENGTH 20
 
   /**
    * @brief Tone structure

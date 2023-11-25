@@ -375,6 +375,9 @@ namespace Language_en {
   PROGMEM Language_Str MSG_CANCEL_OBJECT_N                 = _UxGT("Cancel Object =");
   PROGMEM Language_Str MSG_OUTAGE_RECOVERY                 = _UxGT("Power Outage");
   PROGMEM Language_Str MSG_MEDIA_MENU                      = _UxGT("Print from Media");
+  PROGMEM Language_Str MSG_MEDIA_TFTSD_MENU                = _UxGT("TFT SD");
+  PROGMEM Language_Str MSG_MEDIA_UDISK_MENU                = _UxGT("U Disk");
+  PROGMEM Language_Str MSG_MEDIA_BOARDSD_MENU              = _UxGT("OnBoard SD");
   PROGMEM Language_Str MSG_NO_MEDIA                        = _UxGT("No Media");
   PROGMEM Language_Str MSG_DWELL                           = _UxGT("Sleep...");
   PROGMEM Language_Str MSG_USERWAIT                        = _UxGT("Click to Resume...");

@@ -1002,7 +1002,7 @@ namespace ExtUI {
   bool FileList::seek(const uint16_t pos, const bool skip_range_check) {
     #if ENABLED(SDSUPPORT)
       if (!skip_range_check && (pos + 1) > count()) return false;
-      card.getfilename_sorted(SD_ORDER(pos, count()));
+      //card.getfilename_sorted(SD_ORDER(pos, count()));  // MSQTODO
       return card.filename[0] != '\0';
     #else
       UNUSED(pos);
@@ -1037,14 +1037,14 @@ namespace ExtUI {
 
   void FileList::upDir() {
     #if ENABLED(SDSUPPORT)
-      card.cdup();
+      //card.cdup();  // MSQTODO
       num_files = 0xFFFF;
     #endif
   }
 
   void FileList::changeDir(const char * const dirname) {
     #if ENABLED(SDSUPPORT)
-      card.cd(dirname);
+      //card.cd(dirname);  // MSQTODO
       num_files = 0xFFFF;
     #else
       UNUSED(dirname);

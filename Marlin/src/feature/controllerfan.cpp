@@ -46,11 +46,13 @@ void ControllerFan::set_fan_speed(const uint8_t s) {
 }
 
 void ControllerFan::update() {
+#if 0
   static millis_t lastMotorOn = 0,    // Last time a motor was turned on
                   nextMotorCheck = 0; // Last time the state was checked
   const millis_t ms = millis();
   if (ELAPSED(ms, nextMotorCheck)) {
     nextMotorCheck = ms + 2500UL; // Not a time critical function, so only check every 2.5s
+#endif
 
     #define MOTOR_IS_ON(A,B) (A##_ENABLE_READ() == bool(B##_ENABLE_ON))
     #define _OR_ENABLED_E(N) || MOTOR_IS_ON(E##N,E)
@@ -74,6 +76,7 @@ void ControllerFan::update() {
       )
     );
 
+#if 0
     // If any of the drivers or the heated bed are enabled...
     if (motor_on || TERN0(HAS_HEATED_BED, thermalManager.temp_bed.soft_pwm_amount > 0))
       lastMotorOn = ms; //... set time to NOW so the fan will turn on
@@ -85,11 +88,15 @@ void ControllerFan::update() {
       settings.auto_mode && lastMotorOn && PENDING(ms, lastMotorOn + SEC_TO_MS(settings.duration))
       ? settings.active_speed : settings.idle_speed
     );
+#endif
 
     // Allow digital or PWM fan output (see M42 handling)
-    WRITE(CONTROLLER_FAN_PIN, speed);
+    WRITE(CONTROLLER_FAN_PIN, (motor_on || TERN0(HAS_HEATED_BED, thermalManager.temp_bed.soft_pwm_amount > 0)) ? 1 : 0);
+
+#if 0
     analogWrite(pin_t(CONTROLLER_FAN_PIN), speed);
   }
+#endif
 }
 
 #endif // USE_CONTROLLER_FAN

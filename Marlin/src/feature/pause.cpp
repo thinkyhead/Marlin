@@ -75,7 +75,7 @@
 
 static xyze_pos_t resume_position;
 
-#if HAS_LCD_MENU
+#if EITHER(HAS_LCD_MENU, HOST_PROMPT_SUPPORT)
   PauseMenuResponse pause_menu_response;
   PauseMode pause_mode = PAUSE_MODE_PAUSE_PRINT;
 #endif
@@ -144,7 +144,7 @@ static bool ensure_safe_temperature(const bool wait=true, const PauseMode mode=P
     return thermalManager.wait_for_hotend(active_extruder);
 
   wait_for_heatup = true; // Allow interruption by Emergency Parser M108
-  while (wait_for_heatup && ABS(thermalManager.degHotend(active_extruder) - thermalManager.degTargetHotend(active_extruder)) > TEMP_WINDOW)
+  while (wait_for_heatup && thermalManager.degTargetHotend(active_extruder) && ABS(thermalManager.degHotend(active_extruder) - thermalManager.degTargetHotend(active_extruder)) > TEMP_WINDOW)
     idle();
   wait_for_heatup = false;
 
@@ -276,18 +276,25 @@ bool load_filament(const float &slow_load_length/*=0*/, const float &fast_load_l
 
       TERN_(HOST_PROMPT_SUPPORT, filament_load_host_prompt()); // Initiate another host prompt. (NOTE: host_response_handler may also do this!)
 
-      #if HAS_LCD_MENU
+      #if HAS_LCD_MENU || BOTH(HOST_PROMPT_SUPPORT, ADVANCED_PAUSE_FEATURE)
         if (show_lcd) {
+          pause_menu_response = PAUSE_RESPONSE_WAIT_FOR;
           // Show "Purge More" / "Resume" menu and wait for reply
           KEEPALIVE_STATE(PAUSED_FOR_USER);
           wait_for_user = false;
-          lcd_pause_show_message(PAUSE_MESSAGE_OPTION);
+          TERN_(HAS_LCD_MENU, lcd_pause_show_message(PAUSE_MESSAGE_OPTION));
           while (pause_menu_response == PAUSE_RESPONSE_WAIT_FOR) idle_no_sleep();
         }
       #endif
 
       // Keep looping if "Purge More" was selected
-    } while (TERN0(HAS_LCD_MENU, show_lcd && pause_menu_response == PAUSE_RESPONSE_EXTRUDE_MORE));
+    } while (
+      #if ENABLED(ADVANCED_PAUSE_FEATURE) && EITHER(HAS_LCD_MENU, HOST_PROMPT_SUPPORT)
+        show_lcd && pause_menu_response == PAUSE_RESPONSE_EXTRUDE_MORE
+      #else
+        0
+      #endif
+    );
 
   #endif
   TERN_(HOST_PROMPT_SUPPORT, host_action_prompt_end());

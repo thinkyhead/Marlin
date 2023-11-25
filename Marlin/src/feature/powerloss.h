@@ -101,7 +101,7 @@ typedef struct {
   uint8_t axis_relative;
 
   // SD Filename and position
-  char sd_filename[MAXPATHNAMELENGTH];
+  char sd_filename[MAX_PATH_LEN];
   volatile uint32_t sdpos;
 
   // Job elapsed time
@@ -123,7 +123,7 @@ class PrintJobRecovery {
   public:
     static const char filename[5];
 
-    static SdFile file;
+    static FatApi file;
     static job_recovery_info_t info;
 
     static uint8_t queue_index_r;     //!< Queue index of the active command

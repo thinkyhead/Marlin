@@ -35,8 +35,13 @@
  */
 void GcodeSuite::M23() {
   // Simplify3D includes the size, so zero out all spaces (#7227)
-  for (char *fn = parser.string_arg; *fn; ++fn) if (*fn == ' ') *fn = '\0';
-  card.openFileRead(parser.string_arg);
+  char *fn = parser.string_arg;
+  for (; *fn; ++fn) if (*fn == ' ') *fn = '\0';
+
+  // Skip a leading slash (for some implementations)
+  TERN(BIQU_BX, if (*fn == '/') fn++);
+
+  card.openFileRead(fn);
 
   TERN_(LCD_SET_PROGRESS_MANUALLY, ui.set_progress(0));
 }
