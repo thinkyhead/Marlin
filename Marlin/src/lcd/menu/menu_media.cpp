@@ -53,6 +53,7 @@ void lcd_sd_updir() {
 #endif
 
 inline void sdcard_start_selected_file() {
+  EnterDir(card.filename);
   card.openAndPrintFile(card.filename);
   ui.return_to_status();
   ui.reset_status();
