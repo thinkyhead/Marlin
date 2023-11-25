@@ -557,7 +557,7 @@ void CardReader::selectFileByIndex(const uint16_t nr) {
 
 void CardReader::cd(const char * relpath) {
 
-  if (EnterDir(relpath)) {
+  if (enterDir(relpath)) {
     scanPrintFilesFatFs();
     flag.workDirIsRoot = false;
     TERN_(SDCARD_SORT_ALPHA, presort());

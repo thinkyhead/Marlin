@@ -38,7 +38,7 @@ bool scanPrintFiles(void);
 TCHAR* getCurFileSource(void);
 void clearInfoFile(void);
 void resetInfoFile(void);
-bool EnterDir(const char *nextdir);
+bool enterDir(const char *nextdir);
 void ExitDir(void);
 bool IsRootDir(void);
 

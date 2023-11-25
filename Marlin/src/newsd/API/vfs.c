@@ -86,7 +86,7 @@ bool scanPrintFiles(void)
 
 /*
 */
-bool EnterDir(const char *nextdir)
+bool enterDir(const char *nextdir)
 {
   if(strlen(infoFile.title)+strlen(nextdir)+2>=MAX_PATH_LEN) return 0;
   strcat(infoFile.title,"/");
