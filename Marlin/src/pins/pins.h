@@ -640,6 +640,8 @@
   #include "teensy4/pins_TEENSY41.h"            // Teensy-4.x                             env:teensy41
 #elif MB(T41U5XBB)
   #include "teensy4/pins_T41U5XBB.h"            // Teensy-4.x                             env:teensy41
+#elif MB(BTT_SKR_SE_BX_V1_0)
+  #include "stm32h7/pins_BTT_SKR_SE_BX_V1_0.h"  // STM32H7                                env:BTT_SKR_SE_BX
 
 //
 // Espressif ESP32
