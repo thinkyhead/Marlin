@@ -343,8 +343,8 @@
   #define HAS_TFT_LVGL_UI 1
 #endif
 
-// FSMC/SPI TFT Panels
-#if ENABLED(TFT_CLASSIC_UI)
+// FSMC/SPI/LTDC TFT Panels
+#if ENABLED(TFT_CLASSIC_UI, LTDC_GRAPHICAL_TFT)
   #define TFT_SCALED_DOGLCD 1
 #endif
 
@@ -354,6 +354,16 @@
   #define DELAYED_BACKLIGHT_INIT
 #elif ENABLED(TFT_LVGL_UI)
   #define DELAYED_BACKLIGHT_INIT
+#endif
+
+#if EITHER(TFT_1024x600_LTDC, LTDC_GRAPHICAL_TFT)
+  #define HAS_LTDC_TFT 1
+#endif
+
+#if defined(TFT_1024x600_LTDC)
+  #define TFT_COLOR_UI
+  #define HAS_UI_1024x600 1
+  #define LCD_HEIGHT TERN(TOUCH_SCREEN, 10, 12)
 #endif
 
 // Color UI

@@ -670,6 +670,151 @@ inline void manage_inactivity(const bool ignore_stepper_queue=false) {
 }
 
 /**
+ * Safe Power feature
+ */
+#if ENABLED(SAFE_POWER)
+
+  uint16_t safe_power_adc_filtering() {
+    #define FILTERING_TIMES 10
+    #define LOST_TIMES 1
+    uint16_t temp_adc[FILTERING_TIMES];
+
+    for (uint8_t i = 0; i < FILTERING_TIMES; i++)
+      temp_adc[i] = analogRead(POWER_MONITOR_PIN);
+
+    for (uint8_t i = 0; i < FILTERING_TIMES - 1; i++) { // Sort
+      for (uint8_t j = i + 1; j < FILTERING_TIMES; j++) {
+        if (temp_adc[i] > temp_adc[j]) {
+          uint16_t temp = temp_adc[i];
+          temp_adc[i] = temp_adc[j];
+          temp_adc[j] = temp;
+        }
+      }
+    }
+
+    uint32_t sum = 0;
+    for (uint8_t i = LOST_TIMES; i < FILTERING_TIMES - LOST_TIMES; i++)
+      sum += temp_adc[i];
+
+    return (sum / (FILTERING_TIMES - 2 * LOST_TIMES));
+  }
+
+  float safe_power_vin() {
+    #define RREF             4.7  // 4.7K reference resistance
+    #define RSAM             60.4 // 60.4K sampling resistance
+    uint16_t adc = safe_power_adc_filtering();
+    return ((adc * ADC_VREF / (1 << HAL_ADC_RESOLUTION)) * (RREF + RSAM) / RREF);
+  }
+
+  #define VIN_ERROR_WINDOW 3    // +-3V error range
+  uint8_t safe_power_vin_supported(float vin) {
+    uint8_t  supported_vin[] = {12, 24}; // support 12V / 24V input.
+    for (uint8_t i = 0 ; i < COUNT(supported_vin); i++)
+      if (ABS(vin - supported_vin[i]) < VIN_ERROR_WINDOW)
+        return true;
+    return false;
+  }
+
+  void safe_power_monitor() {
+    static bool status_known = false,
+                last_abnormal = false;
+    static float last_vin = -999;
+
+    const float vin = safe_power_vin();
+    if (ABS(last_vin - vin) < VIN_ERROR_WINDOW) return;
+    last_vin = vin;
+
+    const bool abnormal = !safe_power_vin_supported(vin);
+    if (abnormal != last_abnormal) {
+      last_abnormal = abnormal;
+      WRITE(SAFE_POWER_PIN, abnormal ? LOW : HIGH);
+    }
+
+    char buf[64], vin_string[10];
+    sprintf_P(buf, "Power detect %s, Vin = %sV", last_abnormal ? "error" : "ok", dtostrf(vin, 1, 2, vin_string));
+
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPGM_P(buf);
+
+    if (status_known || last_abnormal) ui.set_status(buf);
+
+    status_known = true;
+  }
+
+  #define ANTI_PLUG_DETECT(axis) do { \
+    SET_INPUT(axis##_ENABLE_PIN); \
+    OUT_WRITE(axis##_STEP_PIN, false); \
+    delay(20); \
+    if (READ(axis##_ENABLE_PIN) == false) { \
+      axis_anti_plugged++; \
+      SERIAL_ERROR_MSG(#axis"-Axis anti pluged"); ui.set_status_P(PSTR(#axis"-Axis anti pluged")); \
+    } \
+  }while(0)
+
+  uint8_t stepper_driver_anti_plug_detect() {
+    uint8_t axis_anti_plugged = 0;
+
+    #if HAS_X_ENABLE
+      ANTI_PLUG_DETECT(X);
+    #endif
+    #if HAS_X2_ENABLE
+      ANTI_PLUG_DETECT(X2);
+    #endif
+
+    #if HAS_Y_ENABLE
+      ANTI_PLUG_DETECT(Y);
+    #endif
+    #if HAS_Y2_ENABLE
+      ANTI_PLUG_DETECT(Y2);
+    #endif
+
+    #if HAS_Z_ENABLE
+      ANTI_PLUG_DETECT(Z);
+    #endif
+    #if HAS_Z2_ENABLE
+      ANTI_PLUG_DETECT(Z2);
+    #endif
+    #if HAS_Z3_ENABLE
+      ANTI_PLUG_DETECT(Z3);
+    #endif
+
+    #if HAS_E0_ENABLE
+      ANTI_PLUG_DETECT(E0);
+    #endif
+    #if HAS_E1_ENABLE
+      ANTI_PLUG_DETECT(E1);
+    #endif
+    #if HAS_E2_ENABLE
+      ANTI_PLUG_DETECT(E2);
+    #endif
+    #if HAS_E3_ENABLE
+      ANTI_PLUG_DETECT(E3);
+    #endif
+    #if HAS_E4_ENABLE
+      ANTI_PLUG_DETECT(E4);
+    #endif
+    #if HAS_E5_ENABLE
+      ANTI_PLUG_DETECT(E5);
+    #endif
+
+    return axis_anti_plugged;
+  }
+
+  void safe_power_selfcheck() {
+    OUT_WRITE(SAFE_POWER_PIN, LOW);
+    uint8_t failed_status = !safe_power_vin_supported(safe_power_vin());
+    if (stepper_driver_anti_plug_detect()) SBI(failed_status, 1);
+    if (failed_status)
+      SERIAL_ECHO_MSG("safe power error");
+    else {
+      WRITE(SAFE_POWER_PIN, HIGH);
+      SERIAL_ECHO_MSG("safe power ok");
+    }
+  }
+
+#endif // SAFE_POWER
+
+/**
  * Standard idle routine keeps the machine alive:
  *  - Core Marlin activities
  *  - Manage heaters (and Watchdog)
@@ -691,10 +836,17 @@ inline void manage_inactivity(const bool ignore_stepper_queue=false) {
  *  - Update the Průša MMU2
  *  - Handle Joystick jogging
  */
+extern "C" void USBH_HAL_Init(void);
+extern "C" void USB_HAL_Loop(void);
+
 void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
 
+  USB_HAL_Loop();
   // Core Marlin activities
   manage_inactivity(TERN_(ADVANCED_PAUSE_FEATURE, no_stepper_sleep));
+
+  // Monitor power for safety
+  TERN_(SAFE_POWER, safe_power_monitor());
 
   // Manage Heaters (and Watchdog)
   thermalManager.manage_heater();
@@ -824,6 +976,8 @@ void minkill(const bool steppers_off/*=false*/) {
 
   // Power off all steppers (for M112) or just the E steppers
   steppers_off ? disable_all_steppers() : disable_e_steppers();
+
+  TERN_(SAFE_POWER, WRITE(SAFE_POWER_PIN, LOW));
 
   TERN_(PSU_CONTROL, PSU_OFF());
 
@@ -1083,6 +1237,8 @@ void setup() {
     SETUP_RUN(ui.reset_status());     // Load welcome message early. (Retained if no errors exist.)
   #endif
 
+  SETUP_RUN(TERN_(SAFE_POWER, safe_power_selfcheck()));
+
   #if BOTH(SDSUPPORT, SDCARD_EEPROM_EMULATION)
     SETUP_RUN(card.mount());          // Mount media with settings before first_load
   #endif
@@ -1290,6 +1446,7 @@ void setup() {
 
   marlin_state = MF_RUNNING;
 
+  USBH_HAL_Init();
   SETUP_LOG("setup() completed.");
 }
 

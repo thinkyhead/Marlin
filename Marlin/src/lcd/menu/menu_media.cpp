@@ -53,7 +53,8 @@ void lcd_sd_updir() {
 #endif
 
 inline void sdcard_start_selected_file() {
-  card.openAndPrintFile(card.filename);
+  enterDir(card.filename);
+  card.openAndPrintFile(infoFile.title);
   ui.return_to_status();
   ui.reset_status();
 }
@@ -104,7 +105,7 @@ class MenuItem_sdfolder : public MenuItem_sdbase {
     }
 };
 
-void menu_media() {
+void menu_media_source() {
   ui.encoder_direction_menus();
 
   #if HAS_MARLINUI_U8GLIB
@@ -115,10 +116,16 @@ void menu_media() {
   #endif
 
   START_MENU();
-  BACK_ITEM(MSG_MAIN);
+  switch (infoFile.source) {
+    case TFT_SD:    BACK_ITEM(MSG_MEDIA_TFTSD_MENU);    break;
+    case TFT_UDISK: BACK_ITEM(MSG_MEDIA_UDISK_MENU);    break;
+    case BOARD_SD:  BACK_ITEM(MSG_MEDIA_BOARDSD_MENU);  break;
+    default: break;
+  }
+
   if (card.flag.workDirIsRoot) {
     #if !PIN_EXISTS(SD_DETECT)
-      ACTION_ITEM(MSG_REFRESH, []{ encoderTopLine = 0; card.mount(); });
+      ACTION_ITEM(MSG_REFRESH, []{ encoderTopLine = 0; card.mount(false); scanPrintFilesFatFs();});
     #endif
   }
   else if (card.isMounted())
@@ -134,7 +141,52 @@ void menu_media() {
     }
     else
       SKIP_ITEM();
+    }
+
+  END_MENU();
+}
+
+bool ireset = false;
+void menu_media_tftsd() {
+  if (!ireset) {
+    infoFile.source = TFT_SD;
+    resetInfoFile();
+    card.flag.workDirIsRoot = true;
+    scanPrintFilesFatFs();
+    ireset = true;
   }
+  menu_media_source();
+}
+
+void menu_media_udisk() {
+  if (!ireset) {
+    infoFile.source = TFT_UDISK;
+    resetInfoFile();
+    card.flag.workDirIsRoot = true;
+    scanPrintFilesFatFs();
+    ireset = true;
+  }
+  menu_media_source();
+}
+
+void menu_media_boardsd() {
+  if (!ireset) {
+    infoFile.source = BOARD_SD;
+    resetInfoFile();
+    card.flag.workDirIsRoot = true;
+    scanPrintFilesFatFs();
+    ireset = true;
+  }
+  menu_media_source();
+}
+
+void menu_media() {
+  ireset = false;
+  START_MENU();
+  BACK_ITEM(MSG_MAIN);
+  SUBMENU(MSG_MEDIA_TFTSD_MENU, menu_media_tftsd);
+  SUBMENU(MSG_MEDIA_UDISK_MENU, menu_media_udisk);
+  SUBMENU(MSG_MEDIA_BOARDSD_MENU, menu_media_boardsd);
   END_MENU();
 }
 

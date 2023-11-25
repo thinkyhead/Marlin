@@ -109,7 +109,7 @@ class Endstops {
     FORCE_INLINE static esbits_t state() {
       return
         #if ENDSTOP_NOISE_THRESHOLD
-          validated_live_state
+          (validated_live_state & _BV(Z_MIN)) | (live_state & esbits_t(~_BV(Z_MIN)))
         #else
           live_state
         #endif

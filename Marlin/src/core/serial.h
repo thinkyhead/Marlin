@@ -55,9 +55,11 @@ extern uint8_t marlin_debug_flags;
   #ifdef SERIAL_CATCHALL
     #define SERIAL_OUT(WHAT, V...) (void)CAT(MYSERIAL,SERIAL_CATCHALL).WHAT(V)
   #else
+    #include "../lcd/extui/lib/btt_ui/TscAPI.h"
     #define SERIAL_OUT(WHAT, V...) do{ \
-      if (!serial_port_index || serial_port_index == SERIAL_BOTH) (void)MYSERIAL0.WHAT(V); \
-      if ( serial_port_index) (void)MYSERIAL1.WHAT(V); \
+      if (serial_port_index == 0 || serial_port_index == SERIAL_BOTH) (void)MYSERIAL0.WHAT(V); \
+      if (serial_port_index == 1 || serial_port_index == SERIAL_BOTH) (void)MYSERIAL1.WHAT(V); \
+      (void)terminalAck.WHAT(V); \
     }while(0)
   #endif
 

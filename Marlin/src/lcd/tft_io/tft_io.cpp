@@ -90,6 +90,9 @@ if (lcd_id != 0xFFFFFFFF) return;
     lcd_id = io.GetID() & 0xFFFF;
 
     switch (lcd_id) {
+      case ST_LTDC:
+        DEBUG_ECHO_MSG(" ST_LTDC");
+        break;
       case ST7796:    // ST7796S    480x320
         DEBUG_ECHO_MSG(" ST7796S");
         write_esc_sequence(st7796s_init);
@@ -144,6 +147,13 @@ void TFT_IO::set_window(uint16_t Xmin, uint16_t Ymin, uint16_t Xmax, uint16_t Ym
   #endif
 
   switch (lcd_id) {
+    case ST_LTDC:
+      io.WriteReg(0x01); io.WriteData(Xmin);
+      io.WriteReg(0x02); io.WriteData(Xmax);
+      io.WriteReg(0x03); io.WriteData(Ymin);
+      io.WriteReg(0x04); io.WriteData(Ymax);
+      io.WriteReg(0x00);
+      break;
     case ST7735:    // ST7735     160x128
     case ST7789:    // ST7789V    320x240
     case ST7796:    // ST7796     480x320

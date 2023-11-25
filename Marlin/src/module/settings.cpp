@@ -36,7 +36,7 @@
  */
 
 // Change EEPROM version if the structure changes
-#define EEPROM_VERSION "V82"
+#define EEPROM_VERSION "V86"
 #define EEPROM_OFFSET 100
 
 // Check the integrity of data offsets.
@@ -429,6 +429,10 @@ typedef struct SettingsDataStruct {
   //
   #if ENABLED(TOUCH_SCREEN_CALIBRATION)
     touch_calibration_t touch_calibration;
+  #endif
+
+  #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+    int16_t babystep_z_steps;
   #endif
 
 } SettingsData;
@@ -1383,6 +1387,10 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(touch.calibration);
     #endif
 
+    #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+      EEPROM_WRITE(babystep.axis_total[BS_AXIS_IND(Z_AXIS)]);
+    #endif
+
     //
     // Validate CRC and Data Size
     //
@@ -2241,6 +2249,10 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(touch.calibration);
       #endif
 
+      #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+        EEPROM_READ(babystep.axis_total[BS_AXIS_IND(Z_AXIS)]);
+      #endif
+
       eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
       if (eeprom_error) {
         DEBUG_ECHO_START();
@@ -2547,6 +2559,10 @@ void MarlinSettings::reset() {
   // TOUCH_SCREEN_CALIBRATION
   //
   TERN_(TOUCH_SCREEN_CALIBRATION, touch.calibration_reset());
+
+  #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+    babystep.axis_total[BS_AXIS_IND(Z_AXIS)] = 0;
+  #endif
 
   //
   // Magnetic Parking Extruder
@@ -3777,6 +3793,12 @@ void MarlinSettings::reset() {
           , " D", LINEAR_UNIT(runout.runout_distance())
         #endif
       );
+    #endif
+
+    #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+      CONFIG_ECHO_HEADING("Babystep total:");
+      CONFIG_ECHO_START();
+      SERIAL_ECHOLNPAIR("  M290 Z", babystep.axis_total[BS_AXIS_IND(Z_AXIS)]);
     #endif
   }
 

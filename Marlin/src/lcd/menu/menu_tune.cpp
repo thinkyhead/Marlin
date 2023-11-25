@@ -67,7 +67,7 @@
     if (ui.should_draw()) {
       const float spm = planner.steps_to_mm[axis];
       MenuEditItemBase::draw_edit_screen(msg, BABYSTEP_TO_STR(spm * babystep.accum));
-      #if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+      #if 0 && ENABLED(BABYSTEP_DISPLAY_TOTAL)
         const bool in_view = TERN1(HAS_MARLINUI_U8GLIB, PAGE_CONTAINS(LCD_PIXEL_HEIGHT - MENU_FONT_HEIGHT, LCD_PIXEL_HEIGHT - 1));
         if (in_view) {
           TERN_(HAS_MARLINUI_U8GLIB, ui.set_font(FONT_MENU));

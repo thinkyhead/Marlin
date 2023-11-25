@@ -2635,3 +2635,7 @@
 #elif NUM_SERIAL > 1
   #define HAS_MULTI_SERIAL 1
 #endif
+
+#if PINS_EXIST(POWER_MONITOR, SAFE_POWER)
+  #define SAFE_POWER 1
+#endif

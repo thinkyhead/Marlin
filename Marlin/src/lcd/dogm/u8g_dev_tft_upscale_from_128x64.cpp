@@ -55,14 +55,14 @@
 
 #include "../../inc/MarlinConfig.h"
 
-#if HAS_MARLINUI_U8GLIB && (PIN_EXISTS(FSMC_CS) || ENABLED(SPI_GRAPHICAL_TFT))
+#if HAS_MARLINUI_U8GLIB && (PIN_EXISTS(FSMC_CS) || EITHER(SPI_GRAPHICAL_TFT, LTDC_GRAPHICAL_TFT))
 
 #include "HAL_LCD_com_defines.h"
 #include "ultralcd_DOGM.h"
 
 #include <string.h>
 
-#if EITHER(LCD_USE_DMA_FSMC, LCD_USE_DMA_SPI)
+#if ANY(LCD_USE_DMA_FSMC, LCD_USE_DMA_SPI, LTDC_GRAPHICAL_TFT)
   #define HAS_LCD_IO 1
 #endif
 
@@ -358,7 +358,14 @@ uint8_t u8g_dev_tft_320x240_upscale_from_128x64_fn(u8g_t *u8g, u8g_dev_t *dev, u
       // Clear Screen
       setWindow(u8g, dev, 0, 0, (TFT_WIDTH) - 1, (TFT_HEIGHT) - 1);
       #if HAS_LCD_IO
-        tftio.WriteMultiple(TFT_MARLINBG_COLOR, uint32_t(TFT_WIDTH) * (TFT_HEIGHT));
+        {
+          uint32_t full_screen_size = uint32_t(TFT_WIDTH * TFT_HEIGHT);
+          while (full_screen_size > 65535) {
+            tftio.WriteMultiple(TFT_MARLINBG_COLOR, 65535);
+            full_screen_size -= 65535;
+          }
+          if (full_screen_size) tftio.WriteMultiple(TFT_MARLINBG_COLOR, full_screen_size);
+        }
       #else
         memset2(buffer, TFT_MARLINBG_COLOR, (TFT_WIDTH) / 2);
         for (uint16_t i = 0; i < (TFT_HEIGHT) * sq(GRAPHICAL_TFT_UPSCALE); i++)

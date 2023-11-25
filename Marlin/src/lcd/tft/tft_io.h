@@ -19,24 +19,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
 #include "../../inc/MarlinConfig.h"
 
-#if HAS_GRAPHICAL_TFT
-
-#include "tft.h"
-
-//#define DEBUG_GRAPHICAL_TFT
-#define DEBUG_OUT ENABLED(DEBUG_GRAPHICAL_TFT)
-#include "../../core/debug_out.h"
-
-uint16_t * TFT::buffer = (uint16_t *)0xC0400000;
-
-void TFT::init() {
-  io.Init();
-  io.InitTFT();
-}
-
-TFT tft;
-
-#endif // HAS_GRAPHICAL_TFT
+#if HAS_SPI_TFT
+  #include HAL_PATH(../../HAL, tft/tft_spi.h)
+#elif HAS_FSMC_TFT
+  #include HAL_PATH(../../HAL, tft/tft_fsmc.h)
+#elif HAS_LTDC_TFT
+  #include HAL_PATH(../../HAL, tft/tft_ltdc.h)
+#endif

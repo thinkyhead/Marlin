@@ -36,6 +36,9 @@
 #elif HAS_UI_480x320
   #define TFT_WIDTH         480
   #define TFT_HEIGHT        320
+#elif HAS_UI_1024x600
+  #define TFT_WIDTH         1024
+  #define TFT_HEIGHT        600
 #else
   #error "Unsupported display resolution!"
 #endif
@@ -48,13 +51,13 @@
   #elif defined(STM32F1)
     #define TFT_BUFFER_SIZE       8192
   #else
-    #define TFT_BUFFER_SIZE       19200 // 320 * 60
+    #define TFT_BUFFER_SIZE       (1024*600)
   #endif
 #endif
 
 #if TFT_BUFFER_SIZE > 65535
   // DMA Count parameter is uint16_t
-  #error "TFT_BUFFER_SIZE can not exceed 65535"
+  //#error "TFT_BUFFER_SIZE can not exceed 65535"
 #endif
 
 class TFT {
@@ -65,7 +68,7 @@ class TFT {
   public:
     static TFT_Queue queue;
 
-    static uint16_t buffer[TFT_BUFFER_SIZE];
+    static uint16_t *buffer;
 
     static void init();
     static inline void set_font(const uint8_t *Font) { string.set_font(Font); }

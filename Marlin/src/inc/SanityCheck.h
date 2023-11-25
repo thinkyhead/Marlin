@@ -2572,8 +2572,12 @@ static_assert(hbm[Z_AXIS] >= 0, "HOMING_BUMP_MM.Z must be greater than or equal 
     #else
       #error "SENSORLESS_HOMING requires Z_MAX_ENDSTOP_INVERTING = false when homing TMC2209 to Z_MAX."
     #endif
-  #elif ENDSTOP_NOISE_THRESHOLD
-    #error "SENSORLESS_HOMING is incompatible with ENDSTOP_NOISE_THRESHOLD."
+  #elif ENABLED(ENDSTOP_NOISE_X) && defined(X_STALL_SENSITIVITY)
+    #error "X_STALL_SENSITIVITY is incompatible with ENDSTOP_NOISE_X."
+  #elif ENABLED(ENDSTOP_NOISE_Y) && defined(Y_STALL_SENSITIVITY)
+    #error "Y_STALL_SENSITIVITY is incompatible with ENDSTOP_NOISE_Y."
+  #elif ENABLED(ENDSTOP_NOISE_Z) && defined(Z_STALL_SENSITIVITY)
+    #error "Z_STALL_SENSITIVITY is incompatible with ENDSTOP_NOISE_Z."
   #elif !(X_SENSORLESS || Y_SENSORLESS || Z_SENSORLESS)
     #error "SENSORLESS_HOMING requires a TMC stepper driver with StallGuard on X, Y, or Z axes."
   #endif
