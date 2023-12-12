@@ -293,7 +293,7 @@ private:
       #define SORTED_LONGNAME_STORAGE (SORTED_LONGNAME_MAXLEN + 1)
     #else
       #define SORTED_LONGNAME_MAXLEN LONG_FILENAME_LENGTH
-      #define SORTED_LONGNAME_STORAGE (SORTED_LONGNAME_MAXLEN + 1)
+      #define SORTED_LONGNAME_STORAGE SORTED_LONGNAME_MAXLEN
     #endif
 
     // Cache filenames to speed up SD menus.
