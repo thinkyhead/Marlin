@@ -108,6 +108,7 @@ void GcodeSuite::G34() {
   }
 
   #if ENABLED(Z_STEPPER_AUTO_ALIGN)
+
     do { // break out on error
 
       const int8_t z_auto_align_iterations = parser.intval('I', Z_STEPPER_ALIGN_ITERATIONS);
