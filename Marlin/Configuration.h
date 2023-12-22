@@ -3469,10 +3469,10 @@
 //#define TEMP_STAT_LEDS
 
 // Support for BlinkM/CyzRgb
-#define BLINKM
+//#define BLINKM
 
 // Support for PCA9632 PWM LED driver
-#define PCA9632
+//#define PCA9632
 
 // Support for PCA9533 PWM LED driver
 //#define PCA9533
@@ -3501,13 +3501,13 @@
  */
 
 // LED Type. Enable only one of the following two options:
-#define RGB_LED
+//#define RGB_LED
 //#define RGBW_LED
 
 #if ANY(RGB_LED, RGBW_LED)
-  #define RGB_LED_R_PIN 34
-  #define RGB_LED_G_PIN 43
-  #define RGB_LED_B_PIN 35
+  //#define RGB_LED_R_PIN 34
+  //#define RGB_LED_G_PIN 43
+  //#define RGB_LED_B_PIN 35
   //#define RGB_LED_W_PIN -1
 #endif
 
