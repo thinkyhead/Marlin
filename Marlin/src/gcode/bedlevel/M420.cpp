@@ -226,7 +226,7 @@ void GcodeSuite::M420() {
 
   // Error if leveling failed to enable or reenable
   if (to_enable && !planner.leveling_active)
-    SERIAL_ERROR_MSG(STR_ERR_M420_FAILED);
+    SERIAL_WARN_MSG(STR_WARN_M420_FAILED);
 
   SERIAL_ECHO_START();
   SERIAL_ECHOPGM("Bed Leveling ");
