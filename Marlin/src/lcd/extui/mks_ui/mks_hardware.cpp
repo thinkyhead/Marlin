@@ -87,9 +87,9 @@
     #if PIN_EXISTS(MT_DET_2)
       mt_det2_sta = (READ(MT_DET_2_PIN) == LOW);
     #endif
-    #if HAS_X_MIN
+    #if USE_X_MIN
       endstopx1_sta = ESTATE(X_MIN);
-    #elif HAS_X_MAX
+    #elif USE_X_MAX
       endstopx1_sta = ESTATE(X_MAX);
     #endif
     #if HAS_X2_MIN
@@ -97,9 +97,9 @@
     #elif HAS_X2_MAX
       endstopx2_sta = ESTATE(X2_MAX);
     #endif
-    #if HAS_Y_MIN
+    #if USE_Y_MIN
       endstopy1_sta = ESTATE(Y_MIN);
-    #elif HAS_Y_MAX
+    #elif USE_Y_MAX
       endstopy1_sta = ESTATE(Y_MAX);
     #endif
     #if HAS_Y2_MIN
@@ -107,9 +107,9 @@
     #elif HAS_Y2_MAX
       endstopy2_sta = ESTATE(Y2_MAX);
     #endif
-    #if HAS_Z_MIN
+    #if USE_Z_MIN
       endstopz1_sta = ESTATE(Z_MIN);
-    #elif HAS_Z_MAX
+    #elif USE_Z_MAX
       endstopz1_sta = ESTATE(Z_MAX);
     #endif
     #if HAS_Z2_MIN
@@ -128,9 +128,9 @@
     #if PIN_EXISTS(MT_DET_2)
       mt_det2_sta = (READ(MT_DET_2_PIN) == HIGH);
     #endif
-    #if HAS_X_MIN
+    #if USE_X_MIN
       endstopx1_sta = !ESTATE(X_MIN);
-    #elif HAS_X_MAX
+    #elif USE_X_MAX
       endstopx1_sta = !ESTATE(X_MAX);
     #endif
     #if HAS_X2_MIN
@@ -138,9 +138,9 @@
     #elif HAS_X2_MAX
       endstopx2_sta = !ESTATE(X2_MAX);
     #endif
-    #if HAS_Y_MIN
+    #if USE_Y_MIN
       endstopy1_sta = !ESTATE(Y_MIN);
-    #elif HAS_Y_MAX
+    #elif USE_Y_MAX
       endstopy1_sta = !ESTATE(Y_MAX);
     #endif
     #if HAS_Y2_MIN
@@ -148,9 +148,9 @@
     #elif HAS_Y2_MAX
       endstopy2_sta = !ESTATE(Y2_MAX);
     #endif
-    #if HAS_Z_MIN
+    #if USE_Z_MIN
       endstopz1_sta = !ESTATE(Z_MIN);
-    #elif HAS_Z_MAX
+    #elif USE_Z_MAX
       endstopz1_sta = !ESTATE(Z_MAX);
     #endif
     #if HAS_Z2_MIN
@@ -178,7 +178,9 @@
     SET_INPUT_PULLUP(MKS_TEST_PS_ON_PIN);
     SET_INPUT_PULLUP(SERVO0_PIN);
 
-    OUT_WRITE(X_ENABLE_PIN, LOW);
+    #if HAS_X_AXIS
+      OUT_WRITE(X_ENABLE_PIN, LOW);
+    #endif
     #if HAS_Y_AXIS
       OUT_WRITE(Y_ENABLE_PIN, LOW);
     #endif
@@ -240,7 +242,9 @@
     void mks_hardware_test() {
       if (millis() % 2000 < 1000) {
         thermalManager.fan_speed[0] = 255;
-        WRITE(X_DIR_PIN, LOW);
+        #if HAS_X_AXIS
+          WRITE(X_DIR_PIN, LOW);
+        #endif
         #if HAS_Y_AXIS
           WRITE(Y_DIR_PIN, LOW);
         #endif
@@ -265,11 +269,13 @@
       }
       else {
         thermalManager.fan_speed[0] = 0;
-        WRITE(X_DIR_PIN, HIGH);
+        #if HAS_X_AXIS
+          WRITE(X_DIR_PIN, HIGH);
+        #endif
         #if HAS_Y_AXIS
           WRITE(Y_DIR_PIN, HIGH);
         #endif
-        #if HAS_Y_AXIS
+        #if HAS_Z_AXIS
           WRITE(Z_DIR_PIN, HIGH);
         #endif
         #if HAS_EXTRUDERS
@@ -690,7 +696,7 @@ void disp_char_1624(uint16_t x, uint16_t y, uint8_t c, uint16_t charColor, uint1
   for (uint16_t i = 0; i < 24; i++) {
     const uint16_t tmp_char = pgm_read_word(&ASCII_Table_16x24[((c - 0x20) * 24) + i]);
     for (uint16_t j = 0; j < 16; j++)
-      SPI_TFT.SetPoint(x + j, y + i, ((tmp_char >> j) & 0x01) ? charColor : bkColor);
+      SPI_TFT.setPoint(x + j, y + i, ((tmp_char >> j) & 0x01) ? charColor : bkColor);
   }
 }
 
@@ -706,7 +712,7 @@ void disp_string(uint16_t x, uint16_t y, FSTR_P const fstr, uint16_t charColor, 
 }
 
 void disp_assets_update() {
-  SPI_TFT.LCD_clear(0x0000);
+  SPI_TFT.lcdClear(0x0000);
   disp_string(100, 140, F("Assets Updating..."), 0xFFFF, 0x0000);
 }
 
@@ -715,8 +721,7 @@ void disp_assets_update_progress(FSTR_P const fmsg) {
     static constexpr int buflen = 30;
     char buf[buflen];
     memset(buf, ' ', buflen);
-    strncpy_P(buf, FTOP(fmsg), buflen - 1);
-    buf[buflen - 1] = '\0';
+    strlcpy_P(buf, FTOP(fmsg), buflen);
     disp_string(100, 165, buf, 0xFFFF, 0x0000);
   #else
     disp_string(100, 165, FTOP(fmsg), 0xFFFF, 0x0000);

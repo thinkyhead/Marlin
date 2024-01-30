@@ -235,10 +235,10 @@ namespace Language_zh_TW {
   LSTR MSG_BED                            = " " LCD_STR_THERMOMETER _UxGT(" 熱床");     // "Bed"
   LSTR MSG_CHAMBER                        = _UxGT("Enclosure");
   LSTR MSG_FAN_SPEED                      = _UxGT("風扇速率");     // "Fan speed"
-  LSTR MSG_FAN_SPEED_N                    = _UxGT("風扇速率 =");
-  LSTR MSG_STORED_FAN_N                   = _UxGT("Stored Fan =");
+  LSTR MSG_FAN_SPEED_N                    = _UxGT("風扇速率 {");
+  LSTR MSG_STORED_FAN_N                   = _UxGT("Stored Fan {");
   LSTR MSG_EXTRA_FAN_SPEED                = _UxGT("額外風扇速率");     // "Extra fan speed"
-  LSTR MSG_EXTRA_FAN_SPEED_N              = _UxGT("額外風扇速率 =");
+  LSTR MSG_EXTRA_FAN_SPEED_N              = _UxGT("額外風扇速率 {");
   LSTR MSG_FLOW                           = _UxGT("擠出速率");
   LSTR MSG_FLOW_N                         = _UxGT("擠出速率 ~");     // "Flow"
   LSTR MSG_CONTROL                        = _UxGT("控制");     // "Control"
@@ -322,7 +322,7 @@ namespace Language_zh_TW {
   LSTR MSG_STOP_PRINT                     = _UxGT("停止列印");     // "Stop print"
   LSTR MSG_PRINTING_OBJECT                = _UxGT("列印物件");   // "Printing Object"
   LSTR MSG_CANCEL_OBJECT                  = _UxGT("中止物件");   // "Cancel Object"
-  LSTR MSG_CANCEL_OBJECT_N                = _UxGT("中止物件 =");   // "Cancel Object ="
+  LSTR MSG_CANCEL_OBJECT_N                = _UxGT("中止物件 {");   // "Cancel Object ="
   LSTR MSG_OUTAGE_RECOVERY                = _UxGT("中斷恢復");   // "Outage Recovery"
   LSTR MSG_MEDIA_MENU                     = _UxGT("從記憶卡上列印");     // "Print from SD"
   LSTR MSG_NO_MEDIA                       = _UxGT("無記憶卡");     // "No SD card"

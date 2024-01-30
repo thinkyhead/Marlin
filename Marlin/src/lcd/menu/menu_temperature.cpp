@@ -222,7 +222,7 @@ void menu_temperature() {
     DEFINE_SINGLENOZZLE_ITEM();
 
     #if HAS_FAN0
-      _FAN_EDIT_ITEMS(0,FIRST_FAN_SPEED);
+      _FAN_EDIT_ITEMS(0, FIRST_FAN_SPEED);
     #endif
     #if HAS_FAN1 && REDUNDANT_PART_COOLING_FAN != 1
       FAN_EDIT_ITEMS(1);
