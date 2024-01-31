@@ -64,6 +64,7 @@ inline void echo_not_entered(const char c) { SERIAL_CHAR(c); SERIAL_ECHOLNPGM(" 
  *  S5              Reset and disable mesh
  */
 void GcodeSuite::G29() {
+
   DEBUG_SECTION(log_G29, "G29", true);
 
   // G29 Q is also available if debugging
@@ -169,7 +170,7 @@ void GcodeSuite::G29() {
         SET_SOFT_ENDSTOP_LOOSE(false);
       }
       // If there's another point to sample, move there with optional lift.
-      if (mbl_probe_index < (GRID_MAX_POINTS)) {
+      if (mbl_probe_index < GRID_MAX_POINTS) {
         // Disable software endstops to allow manual adjustment
         // If G29 is left hanging without completion they won't be re-enabled!
         SET_SOFT_ENDSTOP_LOOSE(true);

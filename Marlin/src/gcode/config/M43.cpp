@@ -196,7 +196,7 @@ inline void servo_probe_test() {
       // DEPLOY and STOW 4 times and see if the signal follows
       // Then it is a mechanical switch
       SERIAL_ECHOLNPGM(". Deploy & stow 4 times");
-      LOOP_L_N(i, 4) {
+      for (uint8_t i = 0; i < 4; ++i) {
         servo[probe_index].move(servo_angles[Z_PROBE_SERVO_NR][0]); // Deploy
         safe_delay(500);
         deploy_state = READ(PROBE_TEST_PIN);
