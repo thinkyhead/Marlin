@@ -921,3 +921,11 @@
 #if defined(ARDUINO_ARCH_HC32) && F_CPU == 200000000
   #warning "HC32 clock is assumed to be 200MHz. If this isn't the case for your board please submit a report so we can add support."
 #endif
+
+#if ENABLED(TFT_COLOR_UI_PORTRAIT)
+  #if ENABLED(TFT_RES_480x272)
+    #warning "TFT_COLOR_UI_PORTRAIT is not fully implemented for 480x272 TFT."
+  #elif ENABLED(TFT_RES_1024x600)
+    #warning "TFT_COLOR_UI_PORTRAIT is not fully implemented for 1024x600 TFT."
+  #endif
+#endif

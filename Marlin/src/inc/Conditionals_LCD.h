@@ -1908,8 +1908,13 @@
   #endif
   #define GRAPHICAL_TFT_UPSCALE 2
 #elif ENABLED(TFT_RES_480x272)
-  #define TFT_WIDTH  480
-  #define TFT_HEIGHT 272
+  #if ENABLED(TFT_COLOR_UI_PORTRAIT)
+    #define TFT_WIDTH  272
+    #define TFT_HEIGHT 480
+  #else
+    #define TFT_WIDTH  480
+    #define TFT_HEIGHT 272
+  #endif
   #define GRAPHICAL_TFT_UPSCALE 2
 #elif ENABLED(TFT_RES_480x320)
   #if ENABLED(TFT_COLOR_UI_PORTRAIT)
@@ -1921,8 +1926,13 @@
   #endif
   #define GRAPHICAL_TFT_UPSCALE 3
 #elif ENABLED(TFT_RES_1024x600)
-  #define TFT_WIDTH  1024
-  #define TFT_HEIGHT 600
+  #if ENABLED(TFT_COLOR_UI_PORTRAIT)
+    #define TFT_WIDTH   600
+    #define TFT_HEIGHT 1024
+  #else
+    #define TFT_WIDTH  1024
+    #define TFT_HEIGHT  600
+  #endif
   #if ENABLED(TOUCH_SCREEN)
     #define GRAPHICAL_TFT_UPSCALE 6
     #define TFT_PIXEL_OFFSET_X 120
@@ -1939,19 +1949,19 @@
     #elif ENABLED(TFT_INTERFACE_FSMC)
       #define TFT_320x240
     #endif
-  #elif TFT_HEIGHT == 320 || (TFT_HEIGHT == 480 && ENABLED(TFT_COLOR_UI_PORTRAIT))
+  #elif (TFT_WIDTH == 480 && TFT_HEIGHT == 320) || (TFT_WIDTH == 320 && TFT_HEIGHT == 480)
     #if ENABLED(TFT_INTERFACE_SPI)
       #define TFT_480x320_SPI
     #elif ENABLED(TFT_INTERFACE_FSMC)
       #define TFT_480x320
     #endif
-  #elif TFT_HEIGHT == 272
+  #elif (TFT_WIDTH == 480 && TFT_HEIGHT == 272) || (TFT_WIDTH == 272 && TFT_HEIGHT == 480)
     #if ENABLED(TFT_INTERFACE_SPI)
       #define TFT_480x272_SPI
     #elif ENABLED(TFT_INTERFACE_FSMC)
       #define TFT_480x272
     #endif
-  #elif TFT_HEIGHT == 600
+  #elif (TFT_WIDTH == 1024 && TFT_HEIGHT == 600) || (TFT_WIDTH == 600 && TFT_HEIGHT == 1024)
     #if ENABLED(TFT_INTERFACE_LTDC)
       #define TFT_1024x600_LTDC
     #else
@@ -1985,7 +1995,11 @@
     #define LCD_HEIGHT TERN(TOUCH_SCREEN, 6, 7)
   #endif
 #elif HAS_UI_1024x600
-  #define LCD_HEIGHT TERN(TOUCH_SCREEN, 12, 13)
+  #if ENABLED(TFT_COLOR_UI_PORTRAIT)
+    #define LCD_HEIGHT TERN(TOUCH_SCREEN, 18, 19)
+  #else
+    #define LCD_HEIGHT TERN(TOUCH_SCREEN, 12, 13)
+  #endif
 #endif
 
 // This emulated DOGM has 'touch/xpt2046', not 'tft/xpt2046'

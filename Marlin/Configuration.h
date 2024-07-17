@@ -3397,10 +3397,10 @@
   #define TFT_INTERFACE_SPI
 
   // TFT Resolution. Enable one of the following options:
-  #define TFT_RES_320x240
+  //#define TFT_RES_320x240
   //#define TFT_RES_480x272
   //#define TFT_RES_480x320
-  //#define TFT_RES_1024x600
+  #define TFT_RES_1024x600
 #endif
 
 /**
