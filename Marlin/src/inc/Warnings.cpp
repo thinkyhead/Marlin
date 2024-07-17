@@ -993,3 +993,11 @@
 #if ALL(SMOOTH_LIN_ADVANCE, MIXING_EXTRUDER)
   #warning "SMOOTH_LIN_ADVANCE with MIXING_EXTRUDER is untested. Use with caution."
 #endif
+
+#if ENABLED(TFT_COLOR_UI_PORTRAIT)
+  #if ENABLED(TFT_RES_480x272)
+    #warning "TFT_COLOR_UI_PORTRAIT is not fully implemented for 480x272 TFT."
+  #elif ENABLED(TFT_RES_1024x600)
+    #warning "TFT_COLOR_UI_PORTRAIT is not fully implemented for 1024x600 TFT."
+  #endif
+#endif
