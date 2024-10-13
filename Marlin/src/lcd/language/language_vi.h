@@ -170,7 +170,8 @@ namespace LanguageNarrow_vi {
   LSTR MSG_UBL_7_SAVE_MESH                = _UxGT("7.Lưu lưới bàn");
 
   LSTR MSG_LED_CONTROL                    = _UxGT("Điều khiển LED");                       // LED Control
-  LSTR MSG_LEDS                           = _UxGT("Đèn");                                  // Lights
+  LSTR MSG_LIGHTS                         = _UxGT("Đèn");                                  // Lights
+  LSTR MSG_LIGHTS_N                       = _UxGT("Đèn #{");                               // Lights #{
   LSTR MSG_LED_PRESETS                    = _UxGT("Đèn định sẵn");                         // Light Presets
   LSTR MSG_SET_LEDS_RED                   = _UxGT("Đỏ");                                   // Red
   LSTR MSG_SET_LEDS_ORANGE                = _UxGT("Cam");                                  // Orange
@@ -449,4 +450,5 @@ namespace LanguageTall_vi {
 
 namespace Language_vi {
   using namespace LanguageTall_vi;
+  // Add your own custom string overrides here
 }

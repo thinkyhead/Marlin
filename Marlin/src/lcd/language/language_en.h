@@ -310,7 +310,8 @@ namespace LanguageNarrow_en {
   LSTR MSG_UBL_7_SAVE_MESH                = _UxGT("7. Save Bed Mesh");
 
   LSTR MSG_LED_CONTROL                    = _UxGT("LED Control");
-  LSTR MSG_LEDS                           = _UxGT("Lights");
+  LSTR MSG_LIGHTS                         = _UxGT("Lights");
+  LSTR MSG_LIGHTS_N                       = _UxGT("Lights #{");
   LSTR MSG_LED_PRESETS                    = _UxGT("Light Presets");
   LSTR MSG_SET_LEDS_RED                   = _UxGT("Red");
   LSTR MSG_SET_LEDS_ORANGE                = _UxGT("Orange");
@@ -322,7 +323,6 @@ namespace LanguageNarrow_en {
   LSTR MSG_SET_LEDS_WHITE                 = _UxGT("White");
   LSTR MSG_SET_LEDS_DEFAULT               = _UxGT("Default");
   LSTR MSG_LED_CHANNEL_N                  = _UxGT("Channel {");
-  LSTR MSG_LEDS2                          = _UxGT("Lights #2");
   LSTR MSG_NEO2_PRESETS                   = _UxGT("Light #2 Presets");
   LSTR MSG_NEO2_BRIGHTNESS                = _UxGT("Brightness");
   LSTR MSG_CUSTOM_LEDS                    = _UxGT("Custom Lights");
@@ -1120,4 +1120,5 @@ namespace LanguageTall_en {
 
 namespace Language_en {
   using namespace LanguageTall_en;
+  // Add your own custom string overrides here
 }

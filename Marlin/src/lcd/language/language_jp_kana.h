@@ -262,4 +262,5 @@ namespace LanguageTall_jp_kana {
 
 namespace Language_jp_kana {
   using namespace LanguageTall_jp_kana;
+  // Add your own custom string overrides here
 }

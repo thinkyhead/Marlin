@@ -224,4 +224,5 @@ namespace LanguageTall_el {
 
 namespace Language_el {
   using namespace LanguageTall_el;
+  // Add your own custom string overrides here
 }

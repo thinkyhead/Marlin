@@ -194,7 +194,8 @@ namespace LanguageNarrow_ro {
   LSTR MSG_UBL_7_SAVE_MESH                = _UxGT("7. Save Bed Mesh");
 
   LSTR MSG_LED_CONTROL                    = _UxGT("LED Control");
-  LSTR MSG_LEDS                           = _UxGT("Lights");
+  LSTR MSG_LIGHTS                         = _UxGT("Lights");
+  LSTR MSG_LIGHTS_N                       = _UxGT("Lights #{");
   LSTR MSG_LED_PRESETS                    = _UxGT("Light Presets");
   LSTR MSG_SET_LEDS_RED                   = _UxGT("Red");
   LSTR MSG_SET_LEDS_ORANGE                = _UxGT("Orange");
@@ -607,4 +608,5 @@ namespace LanguageTall_ro {
 
 namespace Language_ro {
   using namespace LanguageTall_ro;
+  // Add your own custom string overrides here
 }

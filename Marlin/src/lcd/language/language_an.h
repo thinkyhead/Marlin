@@ -236,4 +236,5 @@ namespace LanguageTall_an {
 
 namespace Language_an {
   using namespace LanguageTall_an;
+  // Add your own custom string overrides here
 }

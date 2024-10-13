@@ -122,4 +122,5 @@ namespace LanguageTall_ko_KR {
 
 namespace Language_ko_KR {
   using namespace LanguageTall_ko_KR;
+  // Add your own custom string overrides here
 }

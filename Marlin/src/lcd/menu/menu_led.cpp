@@ -56,7 +56,7 @@
       END_MENU();
     }
 
-  #endif
+  #endif // LED_COLOR_PRESETS
 
   #if ENABLED(NEO2_COLOR_PRESETS)
 
@@ -77,7 +77,7 @@
       END_MENU();
     }
 
-  #endif
+  #endif // NEO2_COLOR_PRESETS
 
   void menu_led_custom() {
     START_MENU();
@@ -106,32 +106,36 @@
     #endif
     END_MENU();
   }
-#endif
+#endif // LED_CONTROL_MENU
 
-#if ENABLED(CASE_LIGHT_MENU)
+#if ALL(CASE_LIGHT_MENU, CASELIGHT_USES_BRIGHTNESS)
   #include "../../feature/caselight.h"
-
-
-  #if CASELIGHT_USES_BRIGHTNESS
-    void menu_case_light() {
-      START_MENU();
-      BACK_ITEM(MSG_CONFIGURATION);
-      EDIT_ITEM(percent, MSG_CASE_LIGHT_BRIGHTNESS, &caselight.brightness, 0, 255, caselight.update_brightness, true);
-      EDIT_ITEM(bool, MSG_CASE_LIGHT, &caselight.on, caselight.update_enabled);
-      END_MENU();
-    }
-  #endif
+  void menu_case_light() {
+    START_MENU();
+    BACK_ITEM(MSG_CONFIGURATION);
+    EDIT_ITEM(percent, MSG_CASE_LIGHT_BRIGHTNESS, &caselight.brightness, 0, 255, caselight.update_brightness, true);
+    EDIT_ITEM(bool, MSG_CASE_LIGHT, &caselight.on, caselight.update_enabled);
+    END_MENU();
+  }
 #endif
 
 #if ENABLED(LED_CONTROL_MENU)
 
   void menu_led() {
+    #if ENABLED(CASE_LIGHT_MENU)
+      const bool has_bright = TERN0(CASELIGHT_USES_BRIGHTNESS, caselight.has_brightness());
+    #endif
+
     START_MENU();
     BACK_ITEM(MSG_MAIN_MENU);
 
     if (TERN1(PSU_CONTROL, powerManager.psu_on)) {
       editable.state = leds.lights_on;
-      EDIT_ITEM(bool, MSG_LEDS, &editable.state, leds.toggle);
+      #if ENABLED(NEOPIXEL2_SEPARATE)
+        EDIT_ITEM_N(bool, 1, MSG_LIGHTS_N, &editable.state, leds.toggle);
+      #else
+        EDIT_ITEM(bool, MSG_LIGHTS, &editable.state, leds.toggle);
+      #endif
     }
 
     #if ENABLED(LED_COLOR_PRESETS)
@@ -140,29 +144,33 @@
 
     #if ENABLED(NEOPIXEL2_SEPARATE)
       editable.state = leds2.lights_on;
-      EDIT_ITEM(bool, MSG_LEDS2, &editable.state, leds2.toggle);
+      EDIT_ITEM_N(bool, 2, MSG_LIGHTS_N, &editable.state, leds2.toggle);
       #if ENABLED(NEO2_COLOR_PRESETS)
         ACTION_ITEM(MSG_SET_LEDS_DEFAULT, leds2.set_default);
       #endif
     #endif
+
     #if ENABLED(LED_COLOR_PRESETS)
       SUBMENU(MSG_LED_PRESETS, menu_led_presets);
     #endif
+
     #if ENABLED(NEO2_COLOR_PRESETS)
       SUBMENU(MSG_NEO2_PRESETS, menu_leds2_presets);
     #endif
+
     SUBMENU(MSG_CUSTOM_LEDS, menu_led_custom);
 
     //
     // Set Case light on/off/brightness
     //
     #if ENABLED(CASE_LIGHT_MENU)
-      #if CASELIGHT_USES_BRIGHTNESS
-        if (caselight.has_brightness())
+      if (has_bright) {
+        #if CASELIGHT_USES_BRIGHTNESS
           SUBMENU(MSG_CASE_LIGHT, menu_case_light);
-        else
-      #endif
-          EDIT_ITEM(bool, MSG_CASE_LIGHT, &caselight.on, caselight.update_enabled);
+        #endif
+      }
+      else
+        EDIT_ITEM(bool, MSG_CASE_LIGHT, &caselight.on, caselight.update_enabled);
     #endif
 
     END_MENU();

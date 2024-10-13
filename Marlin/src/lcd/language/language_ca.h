@@ -236,4 +236,5 @@ namespace LanguageTall_ca {
 
 namespace Language_ca {
   using namespace LanguageTall_ca;
+  // Add your own custom string overrides here
 }

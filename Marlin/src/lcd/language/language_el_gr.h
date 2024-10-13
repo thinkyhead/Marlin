@@ -212,4 +212,5 @@ namespace LanguageTall_el_gr {
 
 namespace Language_el_gr {
   using namespace LanguageTall_el_gr;
+  // Add your own custom string overrides here
 }

@@ -206,4 +206,5 @@ namespace LanguageTall_da {
 
 namespace Language_da {
   using namespace LanguageTall_da;
+  // Add your own custom string overrides here
 }

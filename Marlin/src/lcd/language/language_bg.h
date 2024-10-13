@@ -172,4 +172,5 @@ namespace LanguageTall_bg {
 
 namespace Language_bg {
   using namespace LanguageTall_bg;
+  // Add your own custom string overrides here
 }

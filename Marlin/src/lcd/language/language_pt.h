@@ -186,4 +186,5 @@ namespace LanguageTall_pt {
 
 namespace Language_pt {
   using namespace LanguageTall_pt;
+  // Add your own custom string overrides here
 }

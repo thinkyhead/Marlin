@@ -234,4 +234,5 @@ namespace LanguageTall_nl {
 
 namespace Language_nl {
   using namespace LanguageTall_nl;
+  // Add your own custom string overrides here
 }

@@ -195,7 +195,8 @@ namespace LanguageNarrow_gl {
   LSTR MSG_UBL_7_SAVE_MESH                = _UxGT("7. Gardar Malla Cama");
 
   LSTR MSG_LED_CONTROL                    = _UxGT("Control LED");
-  LSTR MSG_LEDS                           = _UxGT("Luces");
+  LSTR MSG_LIGHTS                         = _UxGT("Luces");
+  LSTR MSG_LIGHTS_N                       = _UxGT("Luces #{");
   LSTR MSG_LED_PRESETS                    = _UxGT("Axustes Luz");
   LSTR MSG_SET_LEDS_RED                   = _UxGT("Vermello");
   LSTR MSG_SET_LEDS_ORANGE                = _UxGT("Laranxa");
@@ -593,4 +594,5 @@ namespace LanguageTall_gl {
 
 namespace Language_gl {
   using namespace LanguageTall_gl;
+  // Add your own custom string overrides here
 }

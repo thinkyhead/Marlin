@@ -180,7 +180,8 @@ namespace LanguageNarrow_pt_br {
   LSTR MSG_UBL_7_SAVE_MESH                = _UxGT("7.Salvar Malha");
 
   LSTR MSG_LED_CONTROL                    = _UxGT("Controle do LED");
-  LSTR MSG_LEDS                           = _UxGT("Luz");
+  LSTR MSG_LIGHTS                         = _UxGT("Luz");
+  LSTR MSG_LIGHTS_N                       = _UxGT("Luz #{");
   LSTR MSG_LED_PRESETS                    = _UxGT("Configuração da Luz");
   LSTR MSG_SET_LEDS_RED                   = _UxGT("Luz Vermelha");
   LSTR MSG_SET_LEDS_ORANGE                = _UxGT("Luz Laranja");
@@ -483,4 +484,5 @@ namespace LanguageTall_pt_br {
 
 namespace Language_pt_br {
   using namespace LanguageTall_pt_br;
+  // Add your own custom string overrides here
 }

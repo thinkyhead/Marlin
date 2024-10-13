@@ -108,7 +108,8 @@ namespace LanguageNarrow_eu {
   LSTR MSG_UBL_MESH_LEVEL                 = _UxGT("Sarea berdindu");
   LSTR MSG_UBL_MAP_TYPE                   = _UxGT("Mapa mota");
   LSTR MSG_LED_CONTROL                    = _UxGT("LED ezarpenak");
-  LSTR MSG_LEDS                           = _UxGT("Argiak");
+  LSTR MSG_LIGHTS                         = _UxGT("Argiak");
+  LSTR MSG_LIGHTS_N                       = _UxGT("Argiak #{");
   LSTR MSG_LED_PRESETS                    = _UxGT("Argi aurrehautaketak");
   LSTR MSG_SET_LEDS_RED                   = _UxGT("Gorria");
   LSTR MSG_SET_LEDS_ORANGE                = _UxGT("Laranja");
@@ -324,4 +325,5 @@ namespace LanguageTall_eu {
 
 namespace Language_eu {
   using namespace LanguageTall_eu;
+  // Add your own custom string overrides here
 }

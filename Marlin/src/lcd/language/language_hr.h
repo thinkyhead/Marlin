@@ -179,4 +179,5 @@ namespace LanguageTall_hr {
 
 namespace Language_hr {
   using namespace LanguageTall_hr;
+  // Add your own custom string overrides here
 }

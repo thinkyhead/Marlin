@@ -145,4 +145,5 @@ namespace LanguageTall_fi {
 
 namespace Language_fi {
   using namespace LanguageTall_fi;
+  // Add your own custom string overrides here
 }
