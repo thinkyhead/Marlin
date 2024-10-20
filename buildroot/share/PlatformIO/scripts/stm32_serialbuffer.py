@@ -50,7 +50,7 @@ def tryAddFlag(name, value):
 
 # Get the largest defined buffer sizes for RX or TX, using defaults for undefined
 rxBuf = getBufferSize("RX", 128)
-txBuf = getBufferSize("TX",  64)
+txBuf = getBufferSize("TX", 1024)
 
 # Provide serial buffer sizes to the stm32duino platform
 tryAddFlag("SERIAL_RX_BUFFER_SIZE", rxBuf)

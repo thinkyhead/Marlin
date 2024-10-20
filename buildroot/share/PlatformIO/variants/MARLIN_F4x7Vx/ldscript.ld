@@ -86,6 +86,34 @@ SECTIONS
 
     KEEP (*(.init))
     KEEP (*(.fini))
+    . = ALIGN(4);
+
+    /*for cli, task item*/
+    __task_tbl_start_ = .;
+    KEEP (*(SORT(.task.item.*)))
+    __task_tbl_end_ = .;
+
+   . = ALIGN(4);
+
+
+    __init_cmd_start_ = .;
+    KEEP (*(SORT(.cli.cmd.*)))
+    __init_cmd_end_ = .;
+   . = ALIGN(4);
+
+    __init_tbl_start_ = .;
+    KEEP (*(SORT(.init.item.*)))
+    __init_tbl_end_ = .;
+
+    . = ALIGN(4);
+    __gui_tbl_start_ = .;
+    KEEP (*(SORT(.gui.var.*)))
+    __gui_tbl_end_ = .;
+
+    . = ALIGN(4);
+    __gui_event_tbl_start_ = .;
+    KEEP (*(SORT(.gui.page.*)))
+    __gui_event_tbl_end_ = .;
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
