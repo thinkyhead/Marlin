@@ -33,6 +33,23 @@
 
 bool GCodeParser::volumetric_enabled;
 
+#if ENABLED(PHOTO_Z_LAYER)
+  //begin add by jason.wu for detect layer change to notify remote controller capture
+  uint8_t GCodeParser::layer_change_flag = 0;
+
+  float GCodeParser::layer_num = 0;
+  //end add by jason.wu for detect layer change to notify remote controller capture
+
+  /******************************************************************/
+    bool       GCodeParser::report_layer;
+    float     GCodeParser::report_layer_num;
+    xyze_pos_t GCodeParser::report_pos;
+#endif
+
+#if ENABLED(ANKER_M_CMDBUF)
+  uint8_t GCodeParser::anker_m_cmdbuf_large_queue_flag = 0;
+#endif
+
 #if ENABLED(INCH_MODE_SUPPORT)
   float GCodeParser::linear_unit_factor, GCodeParser::volumetric_unit_factor;
 #endif
@@ -133,6 +150,8 @@ void GCodeParser::parse(char *p) {
 
   // *p now points to the current command, which should be G, M, or T
   command_ptr = p;
+
+  // SERIAL_ECHOLNPAIR("<==>",command_ptr);
 
   // Get the command letter, which must be G, M, or T
   const char letter = uppercase(*p++);

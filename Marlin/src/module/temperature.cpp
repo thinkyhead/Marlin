@@ -49,12 +49,28 @@
   #include "../lcd/e3v2/creality/dwin.h"
 #endif
 
+#if ENABLED(ANKERUI)
+  #include "src/user/marlin_api.h"
+#endif
+
 #if ENABLED(EXTENSIBLE_UI)
   #include "../lcd/extui/ui_api.h"
 #endif
 
 #if ENABLED(HOST_PROMPT_SUPPORT)
   #include "../feature/host_actions.h"
+#endif
+
+#if ENABLED(ADAPT_DETACHED_NOZZLE)
+  #include "../feature/interactive/uart_nozzle_rx.h"
+  #include "../feature/interactive/oci.h"
+#endif
+
+#if ENABLED(ANKER_TEMP_WATCH)
+  #include "settings.h"
+  #if ENABLED(ANKER_NOZZLE_BOARD)
+    #include "../feature/anker/anker_nozzle_board.h"
+  #endif
 #endif
 
 // MAX TC related macros
@@ -960,6 +976,11 @@ void Temperature::_temp_error(const heater_id_t heater_id, PGM_P const serial_ms
 
   static uint8_t killed = 0;
 
+  if (hw_ver_read()) {
+    OUT_WRITE(NOZZLE_BOARD_PWR_PIN, !NOZZLE_BOARD_PWR_STATE); // power off nozzle
+    MYSERIAL2.printf("temp error power off\n");
+  }
+
   if (IsRunning() && TERN1(BOGUS_TEMPERATURE_GRACE_PERIOD, killed == 2)) {
     SERIAL_ERROR_START();
     SERIAL_ECHOPGM_P(serial_msg);
@@ -1011,6 +1032,14 @@ void Temperature::_temp_error(const heater_id_t heater_id, PGM_P const serial_ms
   #else
     if (!killed) { killed = 1; loud_kill(lcd_msg, heater_id); }
   #endif
+}
+
+void Temperature::heater_temp_error(const heater_id_t heater_id) {
+  _temp_error(heater_id, STR_T_HEATING_FAILED, GET_TEXT(MSG_HEATING_FAILED_LCD));
+}
+
+void Temperature::heater_temp_runaway(const heater_id_t heater_id) {
+  _temp_error(heater_id, STR_T_THERMAL_RUNAWAY, GET_TEXT(MSG_THERMAL_RUNAWAY));
 }
 
 void Temperature::max_temp_error(const heater_id_t heater_id) {
@@ -1275,6 +1304,10 @@ void Temperature::min_temp_error(const heater_id_t heater_id) {
 void Temperature::manage_heater() {
   if (marlin_state == MF_INITIALIZING) return watchdog_refresh(); // If Marlin isn't started, at least reset the watchdog!
 
+  #if ENABLED(ANKER_TEMP_WATCH)
+    if (!IS_NEW_MARLIN_NEW_NOZZLE) _temp_watch();
+  #endif
+
   static bool no_reentry = false;  // Prevent recursion
   if (no_reentry) return;
   REMEMBER(mh, no_reentry, true);
@@ -1289,6 +1322,8 @@ void Temperature::manage_heater() {
   #endif
 
   if (!updateTemperaturesIfReady()) return; // Will also reset the watchdog if temperatures are ready
+
+  TERN_(ANKER_TEMP_WATCH, temp_protect_process());
 
   #if DISABLED(IGNORE_THERMOCOUPLE_ERRORS)
     #if TEMP_SENSOR_0_IS_MAX_TC
@@ -1311,7 +1346,27 @@ void Temperature::manage_heater() {
 
     HOTEND_LOOP() {
       #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-        if (degHotend(e) > temp_range[e].maxtemp) max_temp_error((heater_id_t)e);
+        if (degHotend(e) > temp_range[e].maxtemp) {
+          hotend_maxtemp_err_cnt[e]++;
+          MYSERIAL2.printf("hotend: maxtemp error: cnt %d, cur %.2f, maxtemp %d\r\n", hotend_maxtemp_err_cnt[e], degHotend(e), temp_range[e].maxtemp);
+          if (hotend_maxtemp_err_cnt[e] >= HOTEND_BED_TEMP_ERR_CNT_MAX) {
+            max_temp_error((heater_id_t)e);
+          }
+        }
+        else {
+          hotend_maxtemp_err_cnt[e] = 0;
+          if (temp_hotend[0].celsius > (temp_range[e].maxtemp - 5)) {
+            hotend_maxtemp_pre_stable_cnt++;
+            if (hotend_maxtemp_pre_stable_cnt < HOTEND_BED_TEMP_ERR_CNT_MAX) {
+              hotend_maxtemp_pre_stable_cnt = HOTEND_BED_TEMP_ERR_CNT_MAX;
+              temp_hotend[0].celsius = hotend_maxtemp_pre_value;
+            }
+          }
+          else {
+            hotend_maxtemp_pre_stable_cnt = 0;
+            hotend_maxtemp_pre_value = temp_hotend[0].celsius;
+          }
+        }
       #endif
 
       TERN_(HEATER_IDLE_HANDLER, heater_idle[e].update(ms));
@@ -1321,7 +1376,14 @@ void Temperature::manage_heater() {
         tr_state_machine[e].run(temp_hotend[e].celsius, temp_hotend[e].target, (heater_id_t)e, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
       #endif
 
-      temp_hotend[e].soft_pwm_amount = (temp_hotend[e].celsius > temp_range[e].mintemp || is_preheating(e)) && temp_hotend[e].celsius < temp_range[e].maxtemp ? (int)get_pid_output_hotend(e) >> 1 : 0;
+      #if ADAPT_DETACHED_NOZZLE
+      if (IS_new_nozzle_board())
+          temp_hotend[e].soft_pwm_amount = 0;
+      else
+          temp_hotend[e].soft_pwm_amount = (temp_hotend[e].celsius > temp_range[e].mintemp || is_preheating(e)) && temp_hotend[e].celsius < temp_range[e].maxtemp ? (int)get_pid_output_hotend(e) >> 1 : 0;
+      #else
+          temp_hotend[e].soft_pwm_amount = (temp_hotend[e].celsius > temp_range[e].mintemp || is_preheating(e)) && temp_hotend[e].celsius < temp_range[e].maxtemp ? (int)get_pid_output_hotend(e) >> 1 : 0;
+      #endif
 
       #if WATCH_HOTENDS
         // Make sure temperature is increasing
@@ -1330,10 +1392,26 @@ void Temperature::manage_heater() {
             start_watching_hotend(e);               // If temp reached, turn off elapsed check
           else {
             TERN_(DWIN_CREALITY_LCD, DWIN_Popup_Temperature(0));
+            TERN_(ANKERUI,ankerUI.gui_heat_failed_show());
+            MYSERIAL2.printf("hotend: watch error\r\n");
+            MYSERIAL2.printf("TempErrorCode:1005\r\n");
             _temp_error((heater_id_t)e, str_t_heating_failed, GET_TEXT(MSG_HEATING_FAILED_LCD));
           }
         }
+        #if ENABLED(ANKER_TEMP_WATCH)
+          // Make sure temperature is increasing
+          if (anker_watch_hotend[e].elapsed(ms)) {          // Enabled and time to check?
+            if (anker_watch_hotend[e].check(degHotend(e)))  // Increased enough?
+              anker_start_watching_hotend(e);               // If temp reached, turn off elapsed check
+            else {
+              MYSERIAL2.printf("hotend: anker watch error\r\n");
+              MYSERIAL2.printf("TempErrorCode:1006\r\n");
+              _temp_error((heater_id_t)e, str_t_heating_failed, GET_TEXT(MSG_HEATING_FAILED_LCD));
+            }
+          }
+        #endif
       #endif
+
 
     } // HOTEND_LOOP
 
@@ -1363,7 +1441,16 @@ void Temperature::manage_heater() {
   #if HAS_HEATED_BED
 
     #if ENABLED(THERMAL_PROTECTION_BED)
-      if (degBed() > BED_MAXTEMP) max_temp_error(H_BED);
+      if (degBed() > BED_MAXTEMP) {
+        bed_maxtemp_err_cnt++;
+        MYSERIAL2.printf("bed: maxtemp error: cnt %d, cur %.2f, maxtemp %d\r\n", bed_maxtemp_err_cnt, degBed(), BED_MAXTEMP);
+        if (bed_maxtemp_err_cnt >= HOTEND_BED_TEMP_ERR_CNT_MAX) {
+          max_temp_error(H_BED);
+        }
+      }
+      else {
+        bed_maxtemp_err_cnt = 0;
+      }
     #endif
 
     #if WATCH_BED
@@ -1373,6 +1460,11 @@ void Temperature::manage_heater() {
           start_watching_bed();                 // If temp reached, turn off elapsed check
         else {
           TERN_(DWIN_CREALITY_LCD, DWIN_Popup_Temperature(0));
+          #if IS_ANKERMAKE_M5
+            TERN_(AnkerUI, ankerUI.gui_heat_failed_show());
+            MYSERIAL2.printf("bed: watch error\r\n");
+            MYSERIAL2.printf("TempErrorCode:1016\r\n");
+          #endif
           _temp_error(H_BED, str_t_heating_failed, GET_TEXT(MSG_HEATING_FAILED_LCD));
         }
       }
@@ -2036,9 +2128,17 @@ void Temperature::updateTemperaturesFromRawValues() {
   TERN_(TEMP_SENSOR_1_IS_MAX_TC, temp_hotend[1].raw = READ_MAX_TC(1));
   TERN_(TEMP_SENSOR_REDUNDANT_IS_MAX_TC, temp_redundant.raw = READ_MAX_TC(HEATER_ID(TEMP_SENSOR_REDUNDANT_SOURCE)));
 
-  #if HAS_HOTEND
-    HOTEND_LOOP() temp_hotend[e].celsius = analog_to_celsius_hotend(temp_hotend[e].raw, e);
+  #if ADAPT_DETACHED_NOZZLE
+    if (IS_new_nozzle_board()) {
+      temp_hotend[0].raw = 0; // ?
+    }
+    else
   #endif
+  {
+    #if HAS_HOTEND
+    HOTEND_LOOP() temp_hotend[e].celsius = analog_to_celsius_hotend(temp_hotend[e].raw, e);
+    #endif
+  }
 
   TERN_(HAS_HEATED_BED,     temp_bed.celsius       = analog_to_celsius_bed(temp_bed.raw));
   TERN_(HAS_TEMP_CHAMBER,   temp_chamber.celsius   = analog_to_celsius_chamber(temp_chamber.raw));
@@ -2070,32 +2170,72 @@ void Temperature::updateTemperaturesFromRawValues() {
       #endif
     };
 
-    LOOP_L_N(e, COUNT(temp_dir)) {
+    if (nozzle_board_type == NOZZLE_TYPE_OLD) {
+      LOOP_L_N(e, COUNT(temp_dir)) {
       const int8_t tdir = temp_dir[e];
       if (tdir) {
         const int16_t rawtemp = temp_hotend[e].raw * tdir; // normal direction, +rawtemp, else -rawtemp
-        if (rawtemp > temp_range[e].raw_max * tdir) max_temp_error((heater_id_t)e);
+        if (rawtemp > temp_range[e].raw_max * tdir) {
+          hotend_maxraw_err_cnt[e]++;
+          MYSERIAL2.printf("hotend: maxraw error: cnt %d, raw %d, raw_max %d\r\n", hotend_maxraw_err_cnt[e], rawtemp, temp_range[e].raw_max * tdir);
+          if (hotend_maxraw_err_cnt[e] >= HOTEND_BED_TEMP_ERR_CNT_MAX) {
+            MYSERIAL2.printf("TempErrorCode:1003\r\n");
+            max_temp_error((heater_id_t)e);
+          }
+        }
+        else {
+          hotend_maxraw_err_cnt[e] = 0;
+        }
 
         const bool heater_on = temp_hotend[e].target > 0;
         if (heater_on && rawtemp < temp_range[e].raw_min * tdir && !is_preheating(e)) {
           #if MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED > 1
             if (++consecutive_low_temperature_error[e] >= MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED)
           #endif
-              min_temp_error((heater_id_t)e);
+          hotend_minraw_err_cnt[e]++;
+          MYSERIAL2.printf("hotend: minraw error: cnt %d, raw %d, raw_min %d\r\n", hotend_minraw_err_cnt[e], rawtemp, temp_range[e].raw_min * tdir);
+          if (hotend_minraw_err_cnt[e] >= HOTEND_BED_TEMP_ERR_CNT_MAX) {
+            MYSERIAL2.printf("TempErrorCode:1004\r\n");
+            min_temp_error((heater_id_t)e);
+          }
         }
+        else {
+          hotend_minraw_err_cnt[e] = 0;
+        }
+
         #if MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED > 1
           else
             consecutive_low_temperature_error[e] = 0;
         #endif
       }
     }
-
+  }
   #endif // HAS_HOTEND
 
   #define TP_CMP(S,A,B) (TEMPDIR(S) < 0 ? ((A)<(B)) : ((A)>(B)))
   #if ENABLED(THERMAL_PROTECTION_BED)
-    if (TP_CMP(BED, temp_bed.raw, maxtemp_raw_BED)) max_temp_error(H_BED);
-    if (temp_bed.target > 0 && TP_CMP(BED, mintemp_raw_BED, temp_bed.raw)) min_temp_error(H_BED);
+    if (TP_CMP(BED, temp_bed.raw, maxtemp_raw_BED)) {
+      bed_maxraw_err_cnt++;
+      MYSERIAL2.printf("bed: maxraw error: cnt %d, raw %d, raw_max %d\r\n", bed_maxraw_err_cnt, temp_bed.raw, maxtemp_raw_BED);
+      if (bed_maxraw_err_cnt >= HOTEND_BED_TEMP_ERR_CNT_MAX) {
+        MYSERIAL2.printf("TempErrorCode:1014\r\n");
+        max_temp_error(H_BED);
+      }
+    }
+    else {
+      bed_maxraw_err_cnt = 0;
+    }
+    if (temp_bed.target > 0 && TP_CMP(BED, mintemp_raw_BED, temp_bed.raw)) {
+      bed_minraw_err_cnt++;
+      MYSERIAL2.printf("bed: minraw error: cnt %d, raw %d, raw_min %d\r\n", bed_minraw_err_cnt, temp_bed.raw, mintemp_raw_BED);
+      if (bed_minraw_err_cnt >= HOTEND_BED_TEMP_ERR_CNT_MAX) {
+        MYSERIAL2.printf("TempErrorCode:1015\r\n");
+        min_temp_error(H_BED);
+      }
+    }
+    else {
+      bed_minraw_err_cnt = 0;
+    }
   #endif
 
   #if BOTH(HAS_HEATED_CHAMBER, THERMAL_PROTECTION_CHAMBER)
@@ -2217,7 +2357,7 @@ void Temperature::init() {
 
   #if HAS_HEATER_0
     #ifdef BOARD_OPENDRAIN_MOSFETS
-      OUT_WRITE_OD(HEATER_0_PIN, HEATER_0_INVERTING);
+      OUT_WRITE_OD(HEATER_0_PIN, hw_ver_read() ? !HEATER_0_INVERTING : HEATER_0_INVERTING);
     #else
       OUT_WRITE(HEATER_0_PIN, HEATER_0_INVERTING);
     #endif
@@ -2249,6 +2389,12 @@ void Temperature::init() {
       OUT_WRITE_OD(HEATER_BED_PIN, HEATER_BED_INVERTING);
     #else
       OUT_WRITE(HEATER_BED_PIN, HEATER_BED_INVERTING);
+      #if ENABLED(COMPATIBLE_0_2AND_0_3)
+        OUT_WRITE(HEATER_BED_PIN2, HEATER_BED_INVERTING);
+      #endif
+      #if PIN_EXISTS(HEATER_BED_CTRL_2)
+        OUT_WRITE(HEATER_BED_CTRL_2_PIN, HEATER_BED_CTRL_2_INVERTING);
+      #endif
     #endif
   #endif
 
@@ -2552,12 +2698,31 @@ void Temperature::init() {
 
     switch (state) {
       // Inactive state waits for a target temperature to be set
-      case TRInactive: break;
+      case TRInactive:
+        cnt = 0;
+        break;
 
       // When first heating, wait for the temperature to be reached then go to Stable state
       case TRFirstHeating:
         if (current < running_temp) break;
-        state = TRStable;
+        timer = millis() + SEC_TO_MS(3);
+        state = TRprestable;
+
+      case TRprestable:
+        if (current >= running_temp - hysteresis_degc) {
+          if (ELAPSED(millis(), timer))
+            state = TRStable;
+        }
+        else {
+          cnt++;
+          state = TRFirstHeating;
+          if (heater_id == H_E0)
+            MYSERIAL2.printf("TempErrorCode:1002\r\n");
+          else if (heater_id == H_BED)
+            MYSERIAL2.printf("TempErrorCode:1013\r\n");
+          MYSERIAL2.printf("tr_state error: fallback, cnt %d, id %d, cur %f, tar %f\r\n", cnt, heater_id, current, running_temp);
+        }
+        break;
 
       // While the temperature is stable watch for a bad temperature
       case TRStable:
@@ -2587,6 +2752,10 @@ void Temperature::init() {
 
       case TRRunaway:
         TERN_(DWIN_CREALITY_LCD, DWIN_Popup_Temperature(0));
+        if (heater_id == H_E0)
+          MYSERIAL2.printf("TempErrorCode:1007\r\n");
+        else if (heater_id == H_BED)
+          MYSERIAL2.printf("TempErrorCode:1017\r\n");
         _temp_error(heater_id, str_t_thermal_runaway, GET_TEXT(MSG_THERMAL_RUNAWAY));
     }
   }
@@ -2608,7 +2777,9 @@ void Temperature::disable_all_heaters() {
 
   #if HAS_TEMP_HOTEND
     #define DISABLE_HEATER(N) WRITE_HEATER_##N(LOW);
-    REPEAT(HOTENDS, DISABLE_HEATER);
+    if (nozzle_board_type == NOZZLE_TYPE_OLD) {
+      REPEAT(HOTENDS, DISABLE_HEATER);
+    }
   #endif
 
   #if HAS_HEATED_BED
@@ -3031,7 +3202,9 @@ void Temperature::isr() {
 
       #if HAS_HOTEND
         #define _PWM_MOD_E(N) _PWM_MOD(N,soft_pwm_hotend[N],temp_hotend[N]);
-        REPEAT(HOTENDS, _PWM_MOD_E);
+        if (nozzle_board_type == NOZZLE_TYPE_OLD) {
+          REPEAT(HOTENDS, _PWM_MOD_E);
+        }
       #endif
 
       #if HAS_HEATED_BED
@@ -3082,7 +3255,9 @@ void Temperature::isr() {
       #define _PWM_LOW(N,S) do{ if (S.count <= pwm_count_tmp) WRITE_HEATER_##N(LOW); }while(0)
       #if HAS_HOTEND
         #define _PWM_LOW_E(N) _PWM_LOW(N, soft_pwm_hotend[N]);
-        REPEAT(HOTENDS, _PWM_LOW_E);
+        if (nozzle_board_type == NOZZLE_TYPE_OLD) {
+          REPEAT(HOTENDS, _PWM_LOW_E);
+        }
       #endif
 
       #if HAS_HEATED_BED

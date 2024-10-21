@@ -53,6 +53,9 @@
     #define LEVELING_BED_TEMP 0
   #endif
 #endif
+#if ENABLED(ANKER_LEVELING)
+    extern bool anker_level_pause;
+#endif
 
 class Probe {
 public:
@@ -71,6 +74,10 @@ public:
     #endif
 
     static bool set_deployed(const bool deploy);
+
+    #if ENABLED(WS1_HOMING_5X)
+     static bool anker_set_deployed(const bool deploy);
+    #endif
 
     #if IS_KINEMATIC
 
@@ -154,6 +161,11 @@ public:
 
   static bool deploy() { return set_deployed(true); }
   static bool stow()   { return set_deployed(false); }
+
+  #if ENABLED(WS1_HOMING_5X)
+    static bool anker_deploy() { return anker_set_deployed(true); }
+    static bool anker_stow()   { return anker_set_deployed(false); }
+  #endif
 
   #if HAS_BED_PROBE || HAS_LEVELING
     #if IS_KINEMATIC
@@ -255,6 +267,9 @@ public:
 
   #if HAS_QUIET_PROBING
     static void set_probing_paused(const bool p);
+   #if ENABLED(ANKER_LEVELING)
+    static void anker_level_set_probing_paused(const bool p,uint16_t ms);
+   #endif
   #endif
 
   #if ENABLED(PROBE_TARE)

@@ -111,7 +111,7 @@ void GcodeSuite::M3003_add_on() {
 }
 
 void GcodeSuite::M3020() {
-  if (!IS_new_nozzle_board()) return;
+  if (IS_old_nozzle_board()) return;
   if (parser.seen('V')) {
     anker_probe_set.leveling_value = parser.value_int();
     uart_nozzle_tx_probe_leveling_val_set(anker_probe_set.leveling_value);

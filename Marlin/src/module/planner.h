@@ -73,6 +73,11 @@
   #define IS_PAGE(B) false
 #endif
 
+#if ENABLED(ANKER_M_CMDBUF)
+  #include "../feature/anker/anker_m_cmdbuf.h"
+#endif
+
+
 // Feedrate for manual moves
 #ifdef MANUAL_FEEDRATE
   constexpr xyze_feedrate_t _mf = MANUAL_FEEDRATE,
@@ -150,6 +155,42 @@ enum BlockFlag : char {
 
 #endif
 
+#if ENABLED(ANKER_E_SMOOTH)
+  //begin add by Anan.huang
+  typedef struct { // for linear advance control
+    #define LA_MAX_NOISE_STEP   3  // When the number of steps is small, velocity smoothing is not performed to remove noise.
+    #define LA_ONLY_ACC         1  // Only the case of acceleration.
+    #define LA_ONLY_CRUISE      2  // no acceleration and deceleration
+    #define LA_ONLY_DEC         4  // Only deceleration
+    #define LA_HAS_ACC(bits)    TEST(bits, 0) // Including acceleration.
+    #define LA_HAS_CRUISE(bits) TEST(bits, 1) // Including cruise situation.
+    #define LA_HAS_DEC(bits)    TEST(bits, 2) // Including deceleration.
+    #define LA_HAS_CRUISE_OR_DEC(bits)   (!!((bits)&(0x06))) // Including acceleration and cruise situations.
+    #define LA_HAS_ACC_OR_CRUISE(bits)   (!!((bits)&(0x03))) // Including deceleration and cruise situations.
+    #define LA_CLEAR_SEGMENT(segment)    do{segment.bits=0;segment.acc_v2=0;segment.dec_v2=0;segment.la_advance_rate=0;}while(0) // clear
+
+    union {// Mark whether there is an acceleration or deceleration section in the block.
+      uint8_t bits;
+      struct {
+        bool acc:1;// BIT0
+        bool cruise:1;// BIT1
+        bool dec:1;// BIT2
+      };
+    };
+    uint32_t acc_v2,     // Max advance speed in accelerating (steps/sec)^2
+             dec_v2,     // Max advance speed in decelerating (steps/sec)^2
+             double_steps_per_s2; // Smooth acceleration of K-value velocity(steps/s2)*2 = 2a
+    uint32_t la_advance_rate;   // The rate at which steps are added whilst accelerating
+  }la_block_bits_t;
+
+  #define LIN_ADV_VERSION_0 0  //  old version.
+  #define LIN_ADV_VERSION_1 1  //  old version. read from flash
+  #define LIN_ADV_VERSION_2 2 // new version only new K lin_adv
+  #define LIN_ADV_VERSION_3 3 // new version Scurve + new K lin_adv
+
+  //end add by Anan.huang
+#endif
+
 /**
  * struct block_t
  *
@@ -196,7 +237,8 @@ typedef struct block_t {
              deceleration_time,
              acceleration_time_inverse,     // Inverse of acceleration and deceleration periods, expressed as integer. Scale depends on CPU being used
              deceleration_time_inverse;
-  #else
+  #endif
+  #if (DISABLED(S_CURVE_ACCELERATION) || ENABLED(ANKER_E_SMOOTH)) // LA_V0
     uint32_t acceleration_rate;             // The acceleration rate used for acceleration calculation
   #endif
 
@@ -204,11 +246,20 @@ typedef struct block_t {
 
   // Advance extrusion
   #if ENABLED(LIN_ADVANCE)
+   // version 0
     bool use_advance_lead;
     uint16_t advance_speed,                 // STEP timer value for extruder speed offset ISR
              max_adv_steps,                 // max. advance steps to get cruising speed pressure (not always nominal_speed!)
              final_adv_steps;               // advance steps due to exit speed
     float e_D_ratio;
+    // version 1
+    uint32_t la_advance_rate;               // The rate at which steps are added whilst accelerating
+    uint8_t  la_scaling;                    // Scale ISR frequency down and step frequency up by 2 ^ la_scaling
+    uint16_t max_adv_steps_v1,                 // Max advance steps to get cruising speed pressure
+             final_adv_steps_v1;               // Advance steps for exit speed pressure
+    #if ENABLED(ANKER_E_SMOOTH)
+     la_block_bits_t la_segment;
+    #endif
   #endif
 
   uint32_t nominal_rate,                    // The nominal step rate for this block in step_events/sec
@@ -243,7 +294,13 @@ typedef struct block_t {
   #if ENABLED(LASER_POWER_INLINE)
     block_laser_t laser;
   #endif
-
+  #if ENABLED(PHOTO_Z_LAYER)
+    //begin add by jason.wu for detect layer change to notify remote controller capture
+    int8_t layer_change_flag;
+    float layer_num;
+    xyze_pos_t target_layer_start_pos;
+    //end add by jason.wu for detect layer change to notify remote controller capture
+  #endif
 } block_t;
 
 #if ANY(LIN_ADVANCE, SCARA_FEEDRATE_SCALING, GRADIENT_MIX, LCD_SHOW_E_TOTAL)
@@ -400,6 +457,10 @@ class Planner {
 
     #if ENABLED(LIN_ADVANCE)
       static float extruder_advance_K[EXTRUDERS];
+      #if ENABLED(ANKER_E_SMOOTH)
+       static uint32_t extruder_K_steps_per_s2; // (steps/s^2)
+      #endif
+      static uint8_t LIN_ADV_version_change; // = 1 version2 =0 default
     #endif
 
     /**
@@ -582,16 +643,31 @@ class Planner {
        *  Returns 1.0 if planner.z_fade_height is 0.0.
        *  Returns 0.0 if Z is past the specified 'Fade Height'.
        */
-      static inline float fade_scaling_factor_for_z(const_float_t rz) {
-        static float z_fade_factor = 1;
-        if (!z_fade_height) return 1;
-        if (rz >= z_fade_height) return 0;
-        if (last_fade_z != rz) {
-          last_fade_z = rz;
-          z_fade_factor = 1 - rz * inverse_z_fade_height;
+
+      #if ENABLED(ANKER_LEVELING_FADE)
+        //The first 0.2mm leveling decay value is 1, and the 0.2 to 1mm is gradually decreasing
+        static inline float fade_scaling_factor_for_z(const_float_t rz) {
+          static float z_fade_factor = 1;
+          if (rz<=(0.4)) return 1;
+          if (rz >= z_fade_height) return 0;
+          if (last_fade_z != rz) {
+            last_fade_z = rz;
+            z_fade_factor = 1 - rz * inverse_z_fade_height;
+          }
+          return z_fade_factor;
         }
-        return z_fade_factor;
-      }
+      #else
+        static inline float fade_scaling_factor_for_z(const_float_t rz) {
+          static float z_fade_factor = 1;
+          if (!z_fade_height) return 1;
+          if (rz >= z_fade_height) return 0;
+          if (last_fade_z != rz) {
+            last_fade_z = rz;
+            z_fade_factor = 1 - rz * inverse_z_fade_height;
+          }
+          return z_fade_factor;
+        }
+      #endif
 
       FORCE_INLINE static void force_fade_recalc() { last_fade_z = -999.999f; }
 
@@ -866,6 +942,11 @@ class Planner {
     // Block until all buffered steps are executed / cleaned
     static void synchronize();
 
+    #if ENABLED(EVT_HOMING_5X)
+      // Block until all buffered steps are executed / cleaned
+      static bool anker_probe_home_synchronize();
+    #endif
+
     // Wait for moves to finish and disable all steppers
     static void finish_and_disable();
 
@@ -966,7 +1047,7 @@ class Planner {
       return target_velocity_sqr - 2 * accel * distance;
     }
 
-    #if ENABLED(S_CURVE_ACCELERATION)
+    #if EITHER(S_CURVE_ACCELERATION, LIN_ADVANCE)
       /**
        * Calculate the speed reached given initial speed, acceleration and distance
        */

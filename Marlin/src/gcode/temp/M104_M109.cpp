@@ -49,6 +49,10 @@
   #include "../../module/tool_change.h"
 #endif
 
+#if ENABLED(ADAPT_DETACHED_NOZZLE)
+  #include "../../feature/interactive/uart_nozzle_rx.h"
+#endif
+
 /**
  * M104: Set Hotend Temperature target and return immediately
  * M109: Set Hotend Temperature target and wait
@@ -77,6 +81,16 @@ void GcodeSuite::M104_M109(const bool isM109) {
 
   if (DEBUGGING(DRYRUN)) return;
 
+  #if ENABLED(ANKER_TEMP_WATCH)
+    if (nozzle_board_type == NOZZLE_TYPE_OLD)
+    {
+        if (thermalManager.temp_watch_is_error())
+        {
+          return;
+        }
+    }
+  #endif
+
   #if ENABLED(MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
     constexpr int8_t target_extruder = 0;
   #else
@@ -86,7 +100,10 @@ void GcodeSuite::M104_M109(const bool isM109) {
 
   bool got_temp = false;
   celsius_t temp = 0;
-
+  if (isM109)
+    SERIAL_ECHO("Deal M109\r\n");
+  else
+    SERIAL_ECHO("Deal M104\r\n");
   // Accept 'I' if temperature presets are defined
   #if PREHEAT_COUNT
     got_temp = parser.seenval('I');

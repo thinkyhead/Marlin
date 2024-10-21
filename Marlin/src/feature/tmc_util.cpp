@@ -1166,7 +1166,6 @@
 
   bool tmc_enable_stallguard(TMC2209Stepper &st) {
     const bool stealthchop_was_enabled = !st.en_spreadCycle();
-
     st.TCOOLTHRS(0xFFFFF);
     st.en_spreadCycle(false);
     return stealthchop_was_enabled;
@@ -1175,7 +1174,6 @@
     st.en_spreadCycle(!restore_stealth);
     st.TCOOLTHRS(0);
   }
-
   bool tmc_enable_stallguard(TMC2660Stepper) {
     // TODO
     return false;
@@ -1183,6 +1181,35 @@
   void tmc_disable_stallguard(TMC2660Stepper, const bool) {};
 
 #endif // USE_SENSORLESS
+
+#if ENABLED(ANKER_TMC_SET)
+
+  Anker_TMC2209 anker_tmc2209;
+
+  uint32_t Anker_TMC2209::thrs_x = 0;
+  uint32_t Anker_TMC2209::thrs_y = 0;
+  uint32_t Anker_TMC2209::thrs_z1 = 0;
+  uint32_t Anker_TMC2209::thrs_z2 = 0;
+
+  void Anker_TMC2209::set_tcoolthrs(TMC2209Stepper &st,uint32_t value) { st.TCOOLTHRS(value); }
+  uint32_t Anker_TMC2209::get_tcoolthrs(TMC2209Stepper &st) { return st.TCOOLTHRS(); }
+
+  bool Anker_TMC2209::tmc_enable_stallguard(TMC2209Stepper &st,uint32_t anker_thrs) {
+    const bool stealthchop_was_enabled = !st.en_spreadCycle();
+    st.TCOOLTHRS(anker_thrs);
+    st.en_spreadCycle(false);
+    return stealthchop_was_enabled;
+  }
+  void Anker_TMC2209::tmc_disable_stallguard(TMC2209Stepper &st, const bool restore_stealth) {
+    st.en_spreadCycle(!restore_stealth);
+    st.TCOOLTHRS(0);
+  }
+  void Anker_TMC2209::tmc_set_scale(TMC2209Stepper &st,uint32_t anker_thrs) {
+    //st.pwm_autoscale
+  }
+  void Anker_TMC2209::tmc_set_grand(TMC2209Stepper &st,uint32_t anker_thrs) {}
+
+#endif // ANKER_TMC_SET
 
 #if HAS_TMC_SPI
   #define SET_CS_PIN(st) OUT_WRITE(st##_CS_PIN, HIGH)

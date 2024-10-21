@@ -134,11 +134,27 @@ void extrapolate_unprobed_bed_level() {
 
 }
 
+float find_max_min_diff(void)
+{
+  // Find the low and high mesh values.
+  float lo_val = 100, hi_val = -100;
+
+  for(int i = 0 ;i < GRID_MAX_POINTS_X;i++){
+    for(int j = 0;j < GRID_MAX_POINTS_Y;j++){
+      NOMORE(lo_val, z_values[i][j]);
+      NOLESS(hi_val, z_values[i][j]);
+    }
+  }
+  SERIAL_ECHOLNPAIR_P("MATRIX: MIN=",lo_val,",MAX=",hi_val,",DIFF=",hi_val-lo_val);
+  return hi_val - lo_val;
+}
+
 void print_bilinear_leveling_grid() {
   SERIAL_ECHOLNPGM("Bilinear Leveling Grid:");
   print_2d_array(GRID_MAX_POINTS_X, GRID_MAX_POINTS_Y, 3,
     [](const uint8_t ix, const uint8_t iy) { return z_values[ix][iy]; }
   );
+  find_max_min_diff(); //Traverse the matrix to find the maximum and minimum differences
 }
 
 #if ENABLED(ABL_BILINEAR_SUBDIVISION)
@@ -417,5 +433,20 @@ float bilinear_z_offset(const xy_pos_t &raw) {
   }
 
 #endif // IS_CARTESIAN && !SEGMENT_LEVELED_MOVES
+
+#include "../../anker/anker_align.h"
+
+#if ENABLED(ANKER_LEVELING)
+
+  bool abl_is_valid() {
+    //if (!anker_align.anker_is_leveing) return false;
+    GRID_LOOP(x, y) {
+      if ((z_values[x][y]<-Z_CLEARANCE_MULTI_PROBE)||(z_values[x][y]>Z_CLEARANCE_MULTI_PROBE))
+        return false;
+    }
+    return true;
+  }
+
+#endif
 
 #endif // AUTO_BED_LEVELING_BILINEAR

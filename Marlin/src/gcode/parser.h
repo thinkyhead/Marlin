@@ -89,6 +89,29 @@ public:
     static uint8_t subcode;               // .1
   #endif
 
+  #if ENABLED(PHOTO_Z_LAYER)
+    //begin add by jason.wu for detect layer change to notify remote controller capture
+    static uint8_t layer_change_flag;
+    static float layer_num;
+    //end add by jason.wu for detect layer change to notify remote controller capture
+    static bool  report_layer; // diretion
+    static float report_layer_num;
+    static xyze_pos_t report_pos;
+
+    FORCE_INLINE static void report_z_axis_process() {
+      if (report_layer) {
+        char buf[128];
+        snprintf(buf, sizeof(buf), "\r\n\r\nz-upraise:%d,%.3f,%.4f,%.4f,%.4f\r\n", report_layer, report_layer_num, report_pos.a, report_pos.b, report_pos.c);
+        SERIAL_ECHO(buf);
+        report_layer = 0;
+      }
+    }
+  #endif // PHOTO_Z_LAYER
+
+  #if ENABLED(ANKER_M_CMDBUF)
+    static uint8_t anker_m_cmdbuf_large_queue_flag;
+  #endif
+
   #if ENABLED(GCODE_MOTION_MODES)
     static int16_t motion_mode_codenum;
     #if USE_GCODE_SUBCODES

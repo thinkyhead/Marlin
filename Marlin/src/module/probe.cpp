@@ -81,6 +81,15 @@
   #include "../lcd/extui/ui_api.h"
 #endif
 
+#if ENABLED(ANKER_PROBE_SET)
+  #include "../feature/anker/anker_z_offset.h"
+#endif
+
+#if ENABLED(ADAPT_DETACHED_NOZZLE)
+#include "../feature/interactive/uart_nozzle_rx.h"
+#endif
+
+
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../core/debug_out.h"
 
@@ -94,6 +103,10 @@ xyz_pos_t Probe::offset; // Initialized by settings.load()
 
 #if ENABLED(SENSORLESS_PROBING)
   Probe::sense_bool_t Probe::test_sensitivity;
+#endif
+
+#if ENABLED(ANKER_LEVELING)
+  bool anker_level_pause = true;
 #endif
 
 #if ENABLED(Z_PROBE_SLED)
@@ -265,6 +278,27 @@ xyz_pos_t Probe::offset; // Initialized by settings.load()
     #endif
     if (dopause) safe_delay(_MAX(DELAY_BEFORE_PROBING, 25));
   }
+   #if ENABLED(ANKER_LEVELING)
+    void Probe::anker_level_set_probing_paused(const bool dopause,uint16_t ms) {
+    TERN_(PROBING_HEATERS_OFF, thermalManager.pause_heaters(dopause));
+    TERN_(PROBING_FANS_OFF, thermalManager.set_fans_paused(dopause));
+    TERN_(PROBING_ESTEPPERS_OFF, if (dopause) disable_e_steppers());
+    #if ENABLED(PROBING_STEPPERS_OFF) && DISABLED(DELTA)
+      static uint8_t old_trusted;
+      if (dopause) {
+        old_trusted = axis_trusted;
+        DISABLE_AXIS_X();
+        DISABLE_AXIS_Y();
+      }
+      else {
+        if (TEST(old_trusted, X_AXIS)) ENABLE_AXIS_X();
+        if (TEST(old_trusted, Y_AXIS)) ENABLE_AXIS_Y();
+        axis_trusted = old_trusted;
+      }
+    #endif
+    if (dopause) safe_delay(ms);
+  }
+  #endif
 
 #endif // HAS_QUIET_PROBING
 
@@ -275,7 +309,11 @@ void Probe::do_z_raise(const float z_raise) {
   if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Probe::do_z_raise(", z_raise, ")");
   float z_dest = z_raise;
   if (offset.z < 0) z_dest -= offset.z;
+  //#if ENABLED(WS1_HOMING_5X)
+  //  WS1_do_z_clearance(z_dest);
+  //#else
   do_z_clearance(z_dest);
+  //#endif
 }
 
 FORCE_INLINE void probe_specific_action(const bool deploy) {
@@ -457,6 +495,82 @@ bool Probe::set_deployed(const bool deploy) {
   return false;
 }
 
+#if ENABLED(WS1_HOMING_5X)
+  /**
+   * Attempt to deploy or stow the probe
+   *
+   * Return TRUE if the probe could not be deployed/stowed
+   */
+  bool Probe::anker_set_deployed(const bool deploy) {
+
+    if (DEBUGGING(LEVELING)) {
+      DEBUG_POS("Probe::set_deployed", current_position);
+      DEBUG_ECHOLNPAIR("deploy: ", deploy);
+    }
+
+    if (endstops.z_probe_enabled == deploy) return false;
+
+    // Make room for probe to deploy (or stow)
+    // Fix-mounted probe should only raise for deploy
+    // unless PAUSE_BEFORE_DEPLOY_STOW is enabled
+    #if EITHER(FIX_MOUNTED_PROBE, NOZZLE_AS_PROBE) && DISABLED(PAUSE_BEFORE_DEPLOY_STOW)
+      const bool z_raise_wanted = deploy;
+    #else
+      constexpr bool z_raise_wanted = true;
+    #endif
+
+    if (z_raise_wanted) {
+      #if IS_ANKERMAKE_M5
+        do_z_raise(HOMING_PROBE_Z_RISE);
+      #else
+        do_z_raise(_MAX(Z_CLEARANCE_BETWEEN_PROBES, Z_CLEARANCE_DEPLOY_PROBE));
+      #endif
+    }
+
+    #if EITHER(Z_PROBE_SLED, Z_PROBE_ALLEN_KEY)
+      if (homing_needed_error(TERN_(Z_PROBE_SLED, _BV(X_AXIS)))) {
+        SERIAL_ERROR_MSG(STR_STOP_UNHOMED);
+        stop();
+        return true;
+      }
+    #endif
+
+    const xy_pos_t old_xy = current_position;
+
+    #if ENABLED(PROBE_TRIGGERED_WHEN_STOWED_TEST)
+
+      // Only deploy/stow if needed
+      if (PROBE_TRIGGERED() == deploy) {
+        if (!deploy) endstops.enable_z_probe(false); // Switch off triggered when stowed probes early
+                                                     // otherwise an Allen-Key probe can't be stowed.
+        probe_specific_action(deploy);
+      }
+
+      if (PROBE_TRIGGERED() == deploy) {             // Unchanged after deploy/stow action?
+        if (IsRunning()) {
+          SERIAL_ERROR_MSG("Z-Probe failed");
+          LCD_ALERTMESSAGEPGM_P(PSTR("Err: ZPROBE"));
+        }
+        stop();
+        return true;
+      }
+
+    #else
+
+      probe_specific_action(deploy);
+
+    #endif
+
+    // If preheating is required before any probing...
+    TERN_(PREHEAT_BEFORE_PROBING, if (deploy) preheat_for_probing(PROBING_NOZZLE_TEMP, PROBING_BED_TEMP));
+
+    do_blocking_move_to(old_xy);
+    endstops.enable_z_probe(deploy);
+    return false;
+  }
+
+#endif // WS1_HOMING_5X
+
 /**
  * @brief Used by run_z_probe to do a single Z probe move.
  *
@@ -495,12 +609,47 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
       if (probe.test_sensitivity.x) stealth_states.x = tmc_enable_stallguard(stepperX);  // Delta watches all DIAG pins for a stall
       if (probe.test_sensitivity.y) stealth_states.y = tmc_enable_stallguard(stepperY);
     #endif
-    if (probe.test_sensitivity.z) stealth_states.z = tmc_enable_stallguard(stepperZ);    // All machines will check Z-DIAG for stall
+    // All machines will check Z-DIAG for stall
+    if (probe.test_sensitivity.z) {
+      #if ENABLED(USE_Z_SENSORLESS)
+        anker_tmc2209.tmc_enable_stallguard(stepperZ,anker_tmc2209.thrs_z1);
+      #else
+        stealth_states.z = tmc_enable_stallguard(stepperZ);
+      #endif
+    }
     endstops.enable(true);
     set_homing_current(true);                                 // The "homing" current also applies to probing
   #endif
 
-  TERN_(HAS_QUIET_PROBING, set_probing_paused(true));
+  #if ENABLED(USE_Z_SENSORLESS_AS_PROBE)
+    TERN_(ANKER_FIX_ENDSTOPS, endstops.set_anker_endstop(2));
+
+    #if ENABLED(USE_Z_SENSORLESS)
+      anker_tmc2209.tmc_enable_stallguard(stepperZ,anker_tmc2209.thrs_z1);
+      #ifdef Z2_STALL_SENSITIVITY
+        anker_tmc2209.tmc_enable_stallguard(stepperZ2,anker_tmc2209.thrs_z2);
+      #endif
+    #endif
+    endstops.enable(true);
+    set_homing_current(true);
+  #endif
+
+  #if ENABLED(PROBE_CONTROL)
+    if (IS_old_nozzle_board()) WRITE(PROBE_CONTROL_PIN, !PROBE_CONTROL_STATE);
+  #endif
+  #if HAS_QUIET_PROBING
+    #if ENABLED(ANKER_LEVELING)
+      if (anker_level_pause)
+        anker_level_set_probing_paused(true, ANKER_LEVELING_DELAY_BEFORE_PROBING);
+      else
+        set_probing_paused(true);
+    #else
+      set_probing_paused(true);
+    #endif
+  #endif
+  #if ENABLED(PROBE_CONTROL)
+    if (IS_old_nozzle_board()) WRITE(PROBE_CONTROL_PIN, PROBE_CONTROL_STATE);
+  #endif
 
   // Move down until the probe is triggered
   do_blocking_move_to_z(z, fr_mm_s);
@@ -514,6 +663,10 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
     #endif
   ;
 
+  #if ENABLED(PROBE_CONTROL)
+    if (IS_old_nozzle_board()) WRITE(PROBE_CONTROL_PIN, !PROBE_CONTROL_STATE);
+  #endif
+
   TERN_(HAS_QUIET_PROBING, set_probing_paused(false));
 
   // Re-enable stealthChop if used. Disable diag1 pin on driver.
@@ -523,7 +676,18 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
       if (probe.test_sensitivity.x) tmc_disable_stallguard(stepperX, stealth_states.x);
       if (probe.test_sensitivity.y) tmc_disable_stallguard(stepperY, stealth_states.y);
     #endif
-    if (probe.test_sensitivity.z) tmc_disable_stallguard(stepperZ, stealth_states.z);
+    if (probe.test_sensitivity.z) {
+      #if ENABLED(USE_Z_SENSORLESS)
+        anker_tmc2209.tmc_disable_stallguard(stepperZ, stealth_states.z);
+      #else
+        tmc_disable_stallguard(stepperZ, stealth_states.z);
+      #endif
+    }
+    set_homing_current(false);
+  #endif
+
+  #if ENABLED(USE_Z_SENSORLESS_AS_PROBE)
+    endstops.not_homing();
     set_homing_current(false);
   #endif
 
@@ -550,7 +714,11 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
    * @details Init tare pin to ON state for a strain gauge, otherwise OFF
    */
   void Probe::tare_init() {
-    OUT_WRITE(PROBE_TARE_PIN, !PROBE_TARE_STATE);
+    #if ENABLED(PROBE_CONTROL)
+      OUT_WRITE(PROBE_TARE_PIN, PROBE_TARE_STATE);
+    #else
+      OUT_WRITE(PROBE_TARE_PIN, !PROBE_TARE_STATE);
+    #endif
   }
 
   /**
@@ -561,12 +729,12 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
    * @return TRUE if the tare cold not be completed
    */
   bool Probe::tare() {
-    #if BOTH(PROBE_ACTIVATION_SWITCH, PROBE_TARE_ONLY_WHILE_INACTIVE)
-      if (endstops.probe_switch_activated()) {
-        SERIAL_ECHOLNPGM("Cannot tare an active probe");
-        return true;
-      }
-    #endif
+    // #if BOTH(PROBE_ACTIVATION_SWITCH, PROBE_TARE_ONLY_WHILE_INACTIVE)
+    //   if (endstops.probe_switch_activated()) {
+    //     SERIAL_ECHOLNPGM("Cannot tare an active probe");
+    //     return true;
+    //   }
+    // #endif
 
     SERIAL_ECHOLNPGM("Taring probe");
     WRITE(PROBE_TARE_PIN, PROBE_TARE_STATE);
@@ -608,6 +776,7 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
     #else
       UNUSED(plbl);
     #endif
+
     return probe_fail || early_fail;
   };
 
@@ -621,16 +790,35 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
     // Attempt to tare the probe
     if (TERN0(PROBE_TARE, tare())) return NAN;
 
+    #if ENABLED(ANKER_PROBE_SET)
+    anker_probe_set.probe_start(anker_probe_set.leveling_value);
+    // anker_probe_set.probe_start(0);
+    #endif
+
     // Do a first probe at the fast speed
     if (try_to_probe(PSTR("FAST"), z_probe_low_point, z_probe_fast_mm_s,
                      sanity_check, Z_CLEARANCE_BETWEEN_PROBES) ) return NAN;
 
-    const float first_probe_z = current_position.z;
+    #if ENABLED(ANKER_PROBE_DETECT_TIMES)
+      float first_probe_z = current_position.z;
+    #else
+      const float first_probe_z = current_position.z;
+    #endif
 
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("1st Probe Z:", first_probe_z);
 
     // Raise to give the probe clearance
-    do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
+    #if ENABLED(PROBE_CONTROL)
+     do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, MMM_TO_MMS(HOMING_RISE_SPEED));
+    #else
+     do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
+    #endif
+
+    if (READ(Z_MIN_PROBE_PIN) == Z_MIN_PROBE_STATE)
+    {
+      MYSERIAL2.printf("probe: up 1 signal error!\r\n");
+      return NAN;
+    }
 
   #elif Z_PROBE_FEEDRATE_FAST != Z_PROBE_FEEDRATE_SLOW
 
@@ -662,9 +850,42 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
       // If the probe won't tare, return
       if (TERN0(PROBE_TARE, tare())) return true;
 
+      #if ENABLED(ANKER_PROBE_SET)
+      anker_probe_set.probe_start(anker_probe_set.leveling_value);
+      // anker_probe_set.probe_start(1);
+      #endif
+
       // Probe downward slowly to find the bed
-      if (try_to_probe(PSTR("SLOW"), z_probe_low_point, MMM_TO_MMS(Z_PROBE_FEEDRATE_SLOW),
-                       sanity_check, Z_CLEARANCE_MULTI_PROBE) ) return NAN;
+      #if ENABLED(ANKER_PROBE_DETECT_TIMES)
+        const float Z_probe_deviation = TERN(ADAPT_DETACHED_NOZZLE, IS_new_nozzle_board() ? NOZZLE_TYPE_NEW_Z_PROBE_DETECTION_DEVIATION : Z_PROBE_DETECTION_DEVIATION, Z_PROBE_DETECTION_DEVIATION);
+        uint8_t count_flag = 5; // The maximum number of consecutive attempts
+        do{
+          if (try_to_probe(PSTR("SLOW"), z_probe_low_point, MMM_TO_MMS(Z_PROBE_FEEDRATE_SLOW),
+                          sanity_check, Z_CLEARANCE_MULTI_PROBE) ) return NAN;
+          const float second_probe_z = current_position.z;
+          MYSERIAL2.printf("echo: num:%d Probe Z:%3.5f diff:%3.5f %3.5f\r\n", (uint8_t)(5-count_flag), second_probe_z, ABS((first_probe_z - second_probe_z)), planner.get_axis_position_mm(Z_AXIS));
+          if (ABS(first_probe_z - second_probe_z) < Z_probe_deviation)
+            {break;} // OK
+          else{ // try again
+            if (--count_flag){
+              first_probe_z = second_probe_z;
+              do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, MMM_TO_MMS(HOMING_RISE_SPEED));
+              #if ENABLED(ANKER_PROBE_SET)
+                anker_probe_set.probe_start(anker_probe_set.leveling_value);
+              #endif
+              safe_delay(200);
+            }else{
+              break;
+            }
+          }
+        }while(count_flag > 0);
+
+        if (count_flag == 0 && TERN1(ADAPT_DETACHED_NOZZLE, IS_new_nozzle_board())) return NAN; // error!!!  Only try on new_nozzle_board.
+        if (count_flag == 0) MYSERIAL2.printf("ERR CHECK----echo: num:%d Probe Z:%3.5f %3.5f\r\n", (uint8_t)(5-count_flag), current_position.z, planner.get_axis_position_mm(Z_AXIS));
+      #else // ! ENABLED(ANKER_PROBE_DETECT_TIMES)
+        if (try_to_probe(PSTR("SLOW"), z_probe_low_point, MMM_TO_MMS(Z_PROBE_FEEDRATE_SLOW),
+                        sanity_check, Z_CLEARANCE_MULTI_PROBE) ) return NAN;
+      #endif
 
       TERN_(MEASURE_BACKLASH_WHEN_PROBING, backlash.measure_with_probe());
 
@@ -724,7 +945,8 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("2nd Probe Z:", z2, " Discrepancy:", first_probe_z - z2);
 
     // Return a weighted average of the fast and slow probes
-    const float measured_z = (z2 * 3.0 + first_probe_z * 2.0) * 0.2;
+    // const float measured_z = (z2 * 3.0 + first_probe_z * 2.0) * 0.2;
+    const float measured_z = current_position.z;
 
   #else
 
@@ -776,17 +998,51 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
   // Move the probe to the starting XYZ
   do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
 
-  float measured_z = NAN;
-  if (!deploy()) measured_z = run_z_probe(sanity_check) + offset.z;
-  if (!isnan(measured_z)) {
-    const bool big_raise = raise_after == PROBE_PT_BIG_RAISE;
-    if (big_raise || raise_after == PROBE_PT_RAISE)
-      do_blocking_move_to_z(current_position.z + (big_raise ? 25 : Z_CLEARANCE_BETWEEN_PROBES), z_probe_fast_mm_s);
-    else if (raise_after == PROBE_PT_STOW || raise_after == PROBE_PT_LAST_STOW)
-      if (stow()) measured_z = NAN;   // Error on stow?
+  #if ENABLED(PROBE_CONTROL)
+  if (IS_old_nozzle_board())
+      WRITE(PROBE_CONTROL_PIN, !PROBE_CONTROL_STATE);
+    //_delay_ms(200);
+  #endif
 
-    if (verbose_level > 2)
-      SERIAL_ECHOLNPAIR("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
+  float measured_z = NAN;
+  uint8_t retry_cnt = 0;
+  while(retry_cnt <= 3)
+  {
+    if (!deploy()) measured_z = run_z_probe(sanity_check) + offset.z;
+    if (!isnan(measured_z)) {
+      const bool big_raise = raise_after == PROBE_PT_BIG_RAISE;
+      if (big_raise || raise_after == PROBE_PT_RAISE)
+      {
+        #if ENABLED(PROBE_CONTROL)
+        do_blocking_move_to_z(current_position.z + (big_raise ? 25 : Z_CLEARANCE_BETWEEN_PROBES),  MMM_TO_MMS(HOMING_RISE_SPEED));
+        #else
+        do_blocking_move_to_z(current_position.z + (big_raise ? 25 : Z_CLEARANCE_BETWEEN_PROBES), z_probe_fast_mm_s);
+        #endif
+      }
+      else if (raise_after == PROBE_PT_STOW || raise_after == PROBE_PT_LAST_STOW)
+        if (stow()) measured_z = NAN;   // Error on stow?
+
+      if (verbose_level > 2)
+        SERIAL_ECHOLNPAIR("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
+
+      if (READ(Z_MIN_PROBE_PIN) == Z_MIN_PROBE_STATE)
+      {
+        MYSERIAL2.printf("probe: up 2 signal error!\r\n");
+        measured_z = NAN;
+      }
+      else
+      {
+        retry_cnt = 0;
+        break;
+      }
+    }
+    if (isnan(measured_z))
+    {
+      retry_cnt++;
+      MYSERIAL2.printf("probe: retry_cnt %d\r\n", retry_cnt);
+      do_blocking_move_to_z(current_position.z + 1, MMM_TO_MMS(HOMING_RISE_SPEED));
+      do_blocking_move_to_z(current_position.z - 1, MMM_TO_MMS(HOMING_RISE_SPEED));
+    }
   }
 
   if (isnan(measured_z)) {
@@ -829,7 +1085,11 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
         stealth_states.x = tmc_enable_stallguard(stepperX);
         stealth_states.y = tmc_enable_stallguard(stepperY);
       #endif
-      stealth_states.z = tmc_enable_stallguard(stepperZ);
+       #if ENABLED(USE_Z_SENSORLESS)
+        anker_tmc2209.tmc_enable_stallguard(stepperZ,anker_tmc2209.thrs_z1);
+       #else
+        stealth_states.z = tmc_enable_stallguard(stepperZ);
+       #endif
       endstops.enable(true);
     #endif
   }
@@ -844,7 +1104,11 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
         tmc_disable_stallguard(stepperX, stealth_states.x);
         tmc_disable_stallguard(stepperY, stealth_states.y);
       #endif
-      tmc_disable_stallguard(stepperZ, stealth_states.z);
+       #if ENABLED(USE_Z_SENSORLESS)
+          anker_tmc2209.tmc_disable_stallguard(stepperZ, stealth_states.z);
+       #else
+         tmc_disable_stallguard(stepperZ, stealth_states.z);
+       #endif
     #endif
   }
 
@@ -884,6 +1148,9 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
           debug_current_on(PSTR("Z"), saved_current_Z, Z_CURRENT_HOME);
         #endif
         TERN_(IMPROVE_HOMING_RELIABILITY, planner.enable_stall_prevention(true));
+        #if SENSORLESS_STALLGUARD_DELAY
+          safe_delay(SENSORLESS_STALLGUARD_DELAY);
+        #endif
       }
       else {
         #if ENABLED(DELTA)
@@ -901,6 +1168,9 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
           debug_current_on(PSTR("Z"), Z_CURRENT_HOME, saved_current_Z);
         #endif
         TERN_(IMPROVE_HOMING_RELIABILITY, planner.enable_stall_prevention(false));
+        #if SENSORLESS_STALLGUARD_DELAY
+          safe_delay(SENSORLESS_STALLGUARD_DELAY);
+        #endif
       }
     #endif
   }

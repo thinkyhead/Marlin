@@ -20,7 +20,10 @@ extern "C" {
 
   extern nozzle_t nozzle;
   const float* Get_NOZZLE_TO_PROBE_OFFSET();
+
   bool IS_new_nozzle_board();
+  inline bool IS_old_nozzle_board() { return !IS_new_nozzle_board(); }
+
   void uart_nozzle_init();
 
   void uart_nozzle_polling();

@@ -106,6 +106,8 @@ public:
 
   static void changeMedia(DiskIODriver *_driver) { driver = _driver; }
 
+  static DiskIODriver* getMedia() { return driver; }
+
   static SdFile getroot() { return root; }
 
   static void mount();

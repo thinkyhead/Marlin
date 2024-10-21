@@ -34,6 +34,9 @@
 #include "../../module/temperature.h"
 #include "../../lcd/marlinui.h"
 
+#if ENABLED(ADAPT_DETACHED_NOZZLE)
+  #include "../../feature/interactive/uart_nozzle_rx.h"
+#endif
 /**
  * M140 - Set Bed Temperature target and return immediately
  * M190 - Set Bed Temperature target and wait
@@ -58,6 +61,16 @@
 void GcodeSuite::M140_M190(const bool isM190) {
 
   if (DEBUGGING(DRYRUN)) return;
+
+  #if ENABLED(ANKER_TEMP_WATCH)
+    if (nozzle_board_type == NOZZLE_TYPE_OLD)
+    {
+        if (thermalManager.temp_watch_is_error())
+        {
+          return;
+        }
+    }
+  #endif
 
   bool got_temp = false;
   celsius_t temp = 0;

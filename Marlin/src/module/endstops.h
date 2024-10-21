@@ -200,6 +200,10 @@ class Endstops {
       FORCE_INLINE static void validate_homing_move() { hit_on_purpose(); }
     #endif
 
+    #if ENABLED(ANKER_VALIDATE_HOMING_ENDSTOPS)
+      static void anker_validate_homing_move(const AxisEnum axis);
+    #endif
+
     // Clear endstops (i.e., they were hit intentionally) to suppress the report
     FORCE_INLINE static void hit_on_purpose() { hit_state = 0; }
 
@@ -229,6 +233,10 @@ class Endstops {
       static void clear_endstop_state();
       static bool tmc_spi_homing_check();
     #endif
+
+     #if ENABLED(ANKER_FIX_ENDSTOPS)
+       void set_anker_endstop(uint16_t value);
+     #endif
 };
 
 extern Endstops endstops;
@@ -246,3 +254,5 @@ class TemporaryGlobalEndstopsState {
     }
     ~TemporaryGlobalEndstopsState() { endstops.enable_globally(saved); }
 };
+
+

@@ -326,6 +326,14 @@ enum AxisRelative : uint8_t {
 
 extern const char G28_STR[];
 
+#if ENABLED(HOMING_BACKOFF)
+    extern bool IsBackOff;
+#endif
+
+#if ENABLED(EVT_HOMING_5X)
+ bool get_e_is_absolute();
+#endif
+
 class GcodeSuite {
 public:
 
@@ -559,6 +567,18 @@ private:
 
   #if ENABLED(CALIBRATION_GCODE)
     static void G425();
+  #endif
+
+  #if ANKER_MAKE_API
+    #if ENABLED(ANKER_ALIGN)
+      static void G36();
+    #endif
+    #if ENABLED(ANKER_ALIGN_ONLY_Z)
+      static void G40();
+    #endif
+    #if ENABLED(EVT_HOMING_5X)
+      static void G2001();
+    #endif
   #endif
 
   #if HAS_RESUME_CONTINUE
@@ -1060,6 +1080,13 @@ private:
     #if ENABLED(USE_SENSORLESS)
       static void M914();
     #endif
+    #if ENABLED(ANKER_TMC_SET)
+      static void M915();
+    #endif
+     #if ENABLED(EVT_HOMING_5X)
+      static void M89();
+      static void M2004();
+     #endif
   #endif
 
   #if HAS_L64XX
@@ -1127,6 +1154,70 @@ private:
 
   #if ENABLED(CONTROLLER_FAN_EDITABLE)
     static void M710();
+  #endif
+
+  #if ANKER_MAKE_API
+      #if ENABLED(MULTI_VOLUME) //harley 2021-9-29
+        static void M35();
+      #endif
+        static void M116();
+      #if ENABLED(PROBE_CONTROL)
+        static void M2000();
+      #endif
+      #if ENABLED(ANKER_LOG_DEBUG)
+        static void M1800();
+        static void M1801();
+      #endif
+      #if ENABLED(READ_BUFFER_SIZE)
+        static void M2001();
+      #endif
+      #if ENABLED(BOARD_CONFIGURE)
+        static void M2002();
+      #endif
+      #if ENABLED(USE_Z_SENSORLESS)
+        static void M2003();
+        static void M2005();
+        static void M2006();
+      #endif
+      #if ENABLED(TMC_AUTO_CONFIG)
+        static void M2007();
+      #endif
+      #if ENABLED(ANKER_EXTRUDERS_RECEIVE)
+        static void M2008();
+      #endif
+
+      #if ENABLED(ANKER_LIN_PARAMETER)
+        static void M2030();
+        static float M2031();
+      #endif
+
+      #if ENABLED(ANKER_NOZZLE_BOARD)
+        static void M3001();
+        static void M3002();
+        static void M3003();
+        static void M3004();
+        static void M3005();
+        static void M3009();
+        static void M3001_add_on();
+        static void M3002_add_on();
+        static void M3003_add_on();
+      #endif
+      #if ENABLED(ADAPT_DETACHED_NOZZLE)
+        static void M3011();
+        static void M3013();
+        static void M3015();
+        static void M3020();
+        static void M106_add_on();
+        static void M107_add_on();
+      #endif
+      #if ANKER_MAKE_API
+        static void M4201();
+        static void M4203();
+        static void M4204();
+        static void M4205();
+        static void M4899();
+        static void M4900();
+      #endif
   #endif
 
   static void T(const int8_t tool_index);
