@@ -1755,10 +1755,10 @@
   #endif
   // Disable Z axis sensorless homing if a probe is used to home the Z axis
   #if HOMING_Z_WITH_PROBE
-    #undef Z_STALL_SENSITIVITY
-    #undef Z2_STALL_SENSITIVITY
-    #undef Z3_STALL_SENSITIVITY
-    #undef Z4_STALL_SENSITIVITY
+    //#undef Z_STALL_SENSITIVITY
+    //#undef Z2_STALL_SENSITIVITY
+    //#undef Z3_STALL_SENSITIVITY
+    //#undef Z4_STALL_SENSITIVITY
   #endif
   #if defined(X_STALL_SENSITIVITY)  && AXIS_HAS_STALLGUARD(X)
     #define X_SENSORLESS 1
@@ -2792,7 +2792,12 @@
   #ifndef HEATER_BED_INVERTING
     #define HEATER_BED_INVERTING false
   #endif
-  #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN, (v) ^ HEATER_BED_INVERTING)
+
+  #if ENABLED(COMPATIBLE_0_2AND_0_3)
+    #define WRITE_HEATER_BED(v) {WRITE(HEATER_BED_PIN, (v) ^ HEATER_BED_INVERTING); WRITE(HEATER_BED_PIN2, (v) ^ HEATER_BED_INVERTING);}
+  #else
+    #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN, (v) ^ HEATER_BED_INVERTING)
+  #endif
 #endif
 
 /**
