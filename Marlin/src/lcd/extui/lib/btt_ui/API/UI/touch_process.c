@@ -191,9 +191,9 @@ uint8_t isPress(void)
 //      } else {
 //        pressed = false;
 //        nextTime = OS_GetTimeMs() + 10;
-//      }  
+//      }
 //       CapScreen=false;
-//    } 
+//    }
 //  else
   {
     u16 x ,y;
@@ -207,9 +207,9 @@ uint8_t isPress(void)
 		 }
      CapScreen=true;
   }
- 
- 
-    return pressed; 
+
+
+    return pressed;
 }
 
 void (*TSC_ReDrawIcon)(uint8_t positon, uint8_t is_press) = NULL;
@@ -219,7 +219,7 @@ uint16_t KEY_GetValue(uint8_t total_rect,const GUI_RECT* menuRect)
   static bool firstPress = true;
 	static uint16_t   key_num = IDLE_TOUCH;
 	uint16_t key_return=IDLE_TOUCH;
- 
+
 //  if(CapScreen == false)
 //   {
 //     if (isPress())
@@ -245,8 +245,8 @@ uint16_t KEY_GetValue(uint8_t total_rect,const GUI_RECT* menuRect)
 // 		}
 //     CapScreen=0;
 //   }
-//   else 
-  { 
+//   else
+  {
     	u16 x ,y,i;
 		switch (ReadRelasePoint(&x,&y))
 		{
@@ -262,7 +262,7 @@ uint16_t KEY_GetValue(uint8_t total_rect,const GUI_RECT* menuRect)
              #endif
              key_num=i;
             }
-           } 
+           }
             firstPress = false;
             if(TSC_ReDrawIcon)
             TSC_ReDrawIcon(key_num, 1);
@@ -275,10 +275,10 @@ uint16_t KEY_GetValue(uint8_t total_rect,const GUI_RECT* menuRect)
             if(TSC_ReDrawIcon)
             {
             TSC_ReDrawIcon(key_num, 0);
-            }      
+            }
             key_return=key_num;
             key_num = IDLE_TOUCH;
-         }		
+         }
 					break;
 				  default:
 					break;
@@ -286,15 +286,15 @@ uint16_t KEY_GetValue(uint8_t total_rect,const GUI_RECT* menuRect)
      CapScreen=1;
   }
     return key_return;
-}              
+}
 
 uint16_t KEY_Keep_pressing(uint8_t total_rect,const GUI_RECT* menuRect)//Read the value that has been pressed
 {
 	static uint16_t   key_num = IDLE_TOUCH;
 	uint16_t key_return=IDLE_TOUCH;
-    
+
   // if(CapScreen==false)
-  // {   
+  // {
   //   if (!XPT2046_Read_Pen())
 	// 	{
   //   	key_num = Key_value(total_rect, menuRect);
@@ -323,7 +323,7 @@ uint16_t KEY_Keep_pressing(uint8_t total_rect,const GUI_RECT* menuRect)//Read th
           #endif
           key_num=i;
         }
-      }  
+      }
       if((i==0)||(i==3))
       {
         if(TSC_ReDrawIcon)
@@ -331,12 +331,12 @@ uint16_t KEY_Keep_pressing(uint8_t total_rect,const GUI_RECT* menuRect)//Read th
       }
     }
     else
-    { 
+    {
        key_num = IDLE_TOUCH;
       if(TSC_ReDrawIcon)
       {
       TSC_ReDrawIcon(key_num, 0);
-      }     
+      }
     }
   //   CapScreen=true;
   // }

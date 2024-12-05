@@ -148,7 +148,7 @@ void menuModeCallBack(void)
     {
       infoSettings.mode = nowMode;
       storePara();
-    }    
+    }
     infoMenuSelect();
   }
 }

@@ -55,22 +55,20 @@ namespace ExtUI {
     MarlinAPI_RPI_PowerInit();
     LTDC_Init();
     GT911_Init();
- 
+
     W25Qxx_Init();
     readStoredPara();
     ltdc_dir = infoSettings.rotate_ui;
     scanUpdates();
 
-    if (readIsTSCExist() == false) // Read settings parameter
-    {
+    if (readIsTSCExist() == false) { // Read settings parameter
       // if(CapScreen == false)
       //  {
       //   TSC_Calibration();
       //   storePara();
       //  }
     }
-    else if (readIsRestored())
-    {
+    else if (readIsRestored()) {
       storePara();
     }
 

@@ -57,7 +57,7 @@ void menuWaitHeatBed(void)
   menuDrawPage(&waitHeatBedItems);
   GUI_DispStringInRect(0, 0, BTT_LCD_WIDTH, BTT_LCD_HEIGHT, (uint8_t *)"Please wait for the hotbed temperature to rise to 50℃ for auto bed leveling");
   menuSetFrontCallBack(menuWaitHeatBedCallBack);
-  
+
   heatSetTargetTemp(TSC_BED, 50);
 }
 void gotoWaitHeatingBed(void)
@@ -73,7 +73,7 @@ void menuAutoLevelingCallBack(void)
     case KEY_ICON_0:
     showDialog(DIALOG_TYPE_ALERT,  (uint8_t *)"Heating hotbed", (uint8_t *)"It is necessary to heat the hotbed to 50℃ before auto leveling. Confirm heating?",
                 textSelect(LABEL_CONFIRM), textSelect(LABEL_CANCEL), gotoWaitHeatingBed, NULL, NULL);
-      
+
       break;
 
     case KEY_ICON_1:

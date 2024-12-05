@@ -39,7 +39,7 @@ void unifiedMenuCallBack(void){
 
     case KEY_ICON_7:
       infoMenu.cur--;
-      break; 
+      break;
 
     default:
       break;

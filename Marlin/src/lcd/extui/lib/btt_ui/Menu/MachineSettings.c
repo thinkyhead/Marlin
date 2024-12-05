@@ -193,7 +193,7 @@ void menuRGBSettings(void)
     {ICON_BACK,                 LABEL_BACK},}
   };
 
-  menuDrawPage(&RGBItems); 
+  menuDrawPage(&RGBItems);
 
   menuSetFrontCallBack(menuRGBSettingsCallBack);
 }

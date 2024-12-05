@@ -81,7 +81,7 @@ void menuHeatCallBack(void)
         heatSetTargetTemp(c_heater, actTarget + item_degree[item_degree_i]);
       break;
     default :
-     
+
       break;
   }
  #endif
@@ -97,7 +97,7 @@ void menuHeatCallBack(void)
         heatSetTargetTemp(c_heater, actTarget + item_degree[item_degree_i]);
       break;
     #endif
-    
+
     case KEY_ICON_4:
       do{
         c_heater = (c_heater + 1) % MAX_HEATER_COUNT;
@@ -164,6 +164,6 @@ void menuHeat(void)
   #if LCD_ENCODER_SUPPORT
     encoderPosition = 0;
   #endif
-  
+
   menuSetFrontCallBack(menuHeatCallBack);
 }

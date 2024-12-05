@@ -52,7 +52,7 @@ void menuFanCallBack(void)
   KEY_VALUES key_num = menuKeyGetValue();
   uint8_t actFan = fanGetSpeedPercent(curIndex);
   uint8_t actFanPercent = fanGetSpeedPercent(curIndex);
-  
+
   #ifdef SUTOADD
   KEY_VALUES key_num_P=menuKeyPressValue();
   switch (key_num_P)

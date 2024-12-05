@@ -72,7 +72,7 @@ void menuNotificationCallBack(void)
       break;
   }
   loopFrontEnd();
-  
+
   if (infoMenu.menu[infoMenu.cur] != menuNotification)
     setNotificationHandler(NULL);
 }
@@ -83,6 +83,6 @@ void menuNotification(void)
 
   loadNotificationItems();
   setNotificationHandler(loadNotificationItems);
-  
+
   menuSetFrontCallBack(menuNotificationCallBack);
 }

@@ -42,10 +42,10 @@ void fanBuildList(void)
 void fanControlInit(void) {
   fanBuildList();
 
-  fanQueryEnable = 
-    ( infoSettings.fan_ctrl_count > 0 && 
-      (fanGetTypID( infoSettings.fan_count -1,FAN_TYPE_CTRL_I ) || 
-       fanGetTypID( infoSettings.fan_count -1,FAN_TYPE_CTRL_S ) ) 
+  fanQueryEnable =
+    ( infoSettings.fan_ctrl_count > 0 &&
+      (fanGetTypID( infoSettings.fan_count -1,FAN_TYPE_CTRL_I ) ||
+       fanGetTypID( infoSettings.fan_count -1,FAN_TYPE_CTRL_S ) )
     );
 }
 
@@ -95,7 +95,7 @@ void loopFan(void)
         fan_send_waiting[i] = true;
         if(fanIsType(i,FAN_TYPE_F) || fanIsType(i,FAN_TYPE_CTRL_S)) {
           storeCmd("%s S%d\n", fanCmd[i],fanSpeed[i]);
-        } 
+        }
         else if (fanIsType(i,FAN_TYPE_CTRL_I)) {
           storeCmd("%s I%d\n", fanCmd[i],fanSpeed[i]);
         }
@@ -107,7 +107,7 @@ void loopFan(void)
 void fanSpeedQuery(void)
 {
   if( fanQueryEnable && !fanQueryWait )
-  { 
+  {
     storeCmd("M710\n");
     fanQueryWait = true;
   }

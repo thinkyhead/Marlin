@@ -84,7 +84,7 @@ void menuExtrudeCallBack(void)
       eTemp += item_len[item_len_i];
       break;
     default:
-     
+
      break;
   }
   #endif
@@ -100,7 +100,7 @@ void menuExtrudeCallBack(void)
       eTemp += item_len[item_len_i];
       break;
     #endif
-    
+
     case KEY_ICON_4:
       item_extruder_i = (item_extruder_i + 1) % infoSettings.ext_count;
       extrudeCoordinateReDraw(false);
@@ -156,7 +156,7 @@ void menuExtrude(void)
   feedrate = coordinateGetFeedRate();
   eRelative = eGetRelative();
 
-  if(eRelative) mustStoreCmd("M82\n"); // Set extruder to absolute  
+  if(eRelative) mustStoreCmd("M82\n"); // Set extruder to absolute
   menuDrawPage(&extrudeItems);
   extrudeCoordinateReDraw(false);
 

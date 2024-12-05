@@ -57,10 +57,10 @@ void percentageReDraw(char * title)
 }
 
 void menuSpeedCallBack(void)
-{ 
+{
   KEY_VALUES key_num   = menuKeyGetValue();
   uint16_t now = speedGetPercent(item_percentage_i);
-  
+
   #ifdef SUTOADD
   KEY_VALUES key_num_P = menuKeyPressValue();
   switch (key_num_P)
@@ -148,7 +148,7 @@ void menuSpeed(void)
   percentageItems.items[KEY_ICON_4] = itemPercentage[item_percentage_i];
   menuDrawPage(&percentageItems);
   percentageReDraw((char*)textSelect(percentageItems.title.index));
-  
+
   #if LCD_ENCODER_SUPPORT
     encoderPosition = 0;
   #endif

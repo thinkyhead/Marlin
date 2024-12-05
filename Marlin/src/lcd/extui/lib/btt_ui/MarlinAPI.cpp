@@ -145,10 +145,10 @@ float MarlinAPI_GetAxisPosition(AXIS axis)
   case TSC_Y_AXIS:
   case TSC_Z_AXIS:
     return ExtUI::getAxisPosition_mm((ExtUI::axis_t)axis);
-    
+
   case TSC_E_AXIS:
     return ExtUI::getAxisPosition_mm((ExtUI::extruder_t)ExtUI::E0);
-  
+
   default:
     return 0;
   }

@@ -141,7 +141,7 @@ void menuBabyStepCallBack(void)
       curUnit = (curUnit + 1) % ITEM_BABYSTEP_UNIT_NUM;
       max_unit = babystep_unit[curUnit];
       babyStepItems.items[key_num] = itemBabyStepUnit[curUnit];
-      
+
       menuDrawItem(&babyStepItems.items[key_num], key_num);
 
       break;

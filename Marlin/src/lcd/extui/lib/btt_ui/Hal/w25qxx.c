@@ -348,10 +348,10 @@ void W25Qxx_WriteBuffer(uint8_t* pBuffer,uint32_t WriteAddr,uint16_t NumByteToWr
       W25Qxx_WritePage(pBuffer, WriteAddr, NumOfSingle);
     }
   }
-  else // WriteAddr is not sFLASH_PAGESIZE aligned  
+  else // WriteAddr is not sFLASH_PAGESIZE aligned
   {
    //  SERIAL_ECHO("Addr!=0");
-    if (NumOfPage == 0) // NumByteToWrite < sFLASH_PAGESIZE 
+    if (NumOfPage == 0) // NumByteToWrite < sFLASH_PAGESIZE
     {
       //  SERIAL_ECHO("NumOfPage=0");
       if (NumOfSingle > count) // (NumByteToWrite + WriteAddr) > sFLASH_PAGESIZE

@@ -121,7 +121,7 @@ void menuMoveCallBack(void)
   // loopProcess();
   loopFrontEnd();
   update_gantry();
-  
+
   if(infoMenu.menu[infoMenu.cur] != menuMove)
     mustStoreCmd("G90\n");
 }

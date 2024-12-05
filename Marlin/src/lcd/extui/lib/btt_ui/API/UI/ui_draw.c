@@ -28,7 +28,7 @@ void lcd_frame_display(uint16_t sx,uint16_t sy,uint16_t w,uint16_t h, uint32_t a
   //    GUI_DrawPixel(x, y, c);
   //   }
   // }
-  
+
   W25Qxx_Read16bitBuffer(color, addr, w * h *2);
   LTDC_Color_Fill(sx,sy,sx+w,sy+h,color);
 }

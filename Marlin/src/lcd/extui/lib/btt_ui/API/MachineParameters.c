@@ -35,7 +35,7 @@ const VAL_TYPE parameter_val_type[PARAMETERS_COUNT][STEPPER_COUNT] = {
   {VAL_TYPE_FLOAT,      VAL_TYPE_FLOAT,     VAL_TYPE_INT,         VAL_TYPE_FLOAT},                        //FW retract
   {VAL_TYPE_FLOAT,      VAL_TYPE_FLOAT,     VAL_TYPE_INT,         VAL_TYPE_INT},                          //FW retract recover
   {VAL_TYPE_INT},                                                                                         //Set auto FW retract
-  {VAL_TYPE_FLOAT,      VAL_TYPE_FLOAT},                                                                  //Linear Advance 
+  {VAL_TYPE_FLOAT,      VAL_TYPE_FLOAT},                                                                  //Linear Advance
   {VAL_TYPE_INT,        VAL_TYPE_FLOAT},                                                                  //ABL State + Z Fade
   {VAL_TYPE_NEG_FLOAT,  VAL_TYPE_NEG_FLOAT, VAL_TYPE_NEG_FLOAT},                                          //Offset Tools
   {VAL_TYPE_INT,        VAL_TYPE_INT,       VAL_TYPE_INT,         VAL_TYPE_INT,         VAL_TYPE_INT},    //TMC Hybrid Threshold Speed
@@ -93,7 +93,7 @@ float getParameter(PARAMETER_NAME name, uint8_t index)
   case P_OFFSET_TOOL:
     return infoParameters.OffsetTool[index];
   case P_HYBRID_THRESHOLD:
-    return infoParameters.HybridThreshold[index];  
+    return infoParameters.HybridThreshold[index];
   default:
     return 0.0f;
   }
@@ -183,7 +183,7 @@ void sendParameterCmd(PARAMETER_NAME para, uint8_t stepper_index, float Value)
         storeCmd(dualStepperParameter_cmd[0][stepper_index], Value);
       if(para == P_BUMPSENSITIVITY)
         storeCmd(dualStepperParameter_cmd[1][stepper_index], Value);
-      if(para == P_HYBRID_THRESHOLD)  
+      if(para == P_HYBRID_THRESHOLD)
         storeCmd(dualStepperParameter_cmd[2][stepper_index], Value);
     }
 }

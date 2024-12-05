@@ -46,7 +46,7 @@ void menuMoreCallBack(void)
     case KEY_ICON_6:
       infoMenu.menu[++infoMenu.cur] = menuSendGcode;
       break;
-      
+
     case KEY_ICON_7:
       infoMenu.cur--;
       break;
