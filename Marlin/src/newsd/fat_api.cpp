@@ -94,7 +94,7 @@ size_t FatApi::write(uint8_t b) {
   return f_write(&fat_fil, &b, 1, &bw) == FR_OK ? bw : 0;
 }
 
-int16_t FatApi::write(const void* buf, uint16_t nbyte) {  
+int16_t FatApi::write(const void* buf, uint16_t nbyte) {
   UINT bw;
   return f_write(&fat_fil, buf, nbyte, &bw) == FR_OK ? bw : 0;
 }

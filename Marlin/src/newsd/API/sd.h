@@ -6,18 +6,18 @@ extern "C" {
 #endif
 
 #include "stdint.h"
-        
+
 
 #define SD_TYPE_ERR     0X00
 #define SD_TYPE_MMC     0X01
 #define SD_TYPE_V1      0X02
 #define SD_TYPE_V2      0X04
-#define SD_TYPE_V2HC    0X06     
+#define SD_TYPE_V2HC    0X06
 
 #define SD_SLOT_BOARD   0x00
 #define SD_SLOT_TFT     0x01
 
-#define CMD0    0 
+#define CMD0    0
 #define CMD1    1
 #define CMD8    8
 #define CMD9    9
@@ -25,7 +25,7 @@ extern "C" {
 #define CMD12   12
 #define CMD16   16
 #define CMD17   17
-#define CMD18   18 
+#define CMD18   18
 #define CMD23   23
 #define CMD24   24
 #define CMD25   25

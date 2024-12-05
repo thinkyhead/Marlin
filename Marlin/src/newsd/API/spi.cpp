@@ -9,7 +9,7 @@ void SPI3_Pins_Init(void)
 }
 
 void SPI3_Init(void)
-{	 
+{
   uint32_t tempreg=0;
 
   SPI3_Pins_Init();
@@ -36,7 +36,7 @@ void SPI3_Init(void)
   SPI3->CFG2=tempreg;
   SPI3->I2SCFGR&=~(1<<0);
   SPI3->CR1|=1<<0;
-}   
+}
 
 void SPI3_SetSpeed(uint8_t SpeedSet)
 {
@@ -45,11 +45,11 @@ void SPI3_SetSpeed(uint8_t SpeedSet)
   SPI3->CFG1&=~(7<<28);
   SPI3->CFG1|=(uint32_t)SpeedSet<<28;
   SPI3->CR1|=1<<0;
-} 
+}
 
 uint8_t SPI3_ReadWriteByte(uint8_t TxData)
-{			 	   
-  uint8_t RxData=0;	
+{
+  uint8_t RxData=0;
   SPI3->CR1|=1<<0;
   SPI3->CR1|=1<<9;
 

@@ -22,7 +22,7 @@
 #include "STM32_USB_Host_Library/Core/Inc/usbh_core.h"
 
 HCD_HandleTypeDef hhcd;
- 
+
 //初始化HSI48和CRS校准,选择HSI48作为USB时钟源(带CRS自动校准)
 void USB_OTG_HSI48_CRS_Init(void)
 {
@@ -30,36 +30,36 @@ void USB_OTG_HSI48_CRS_Init(void)
 	while((RCC->CR&(1<<13))==0);//等待HSI48RDY=1,等待HSI48稳定
 	RCC->APB1HENR|=1<<1;		//CRSEN=1,使能CRS
 	RCC->APB1HRSTR|=1<<1;		//CRSRST=1,复位CRS
-	RCC->APB1HRSTR&=~(1<<1);	//CRSRST=0,取消复位 
+	RCC->APB1HRSTR&=~(1<<1);	//CRSRST=0,取消复位
 	CRS->CFGR&=~(3<<28);		//SYNCSRC[1:0]=0,选择USB2 SOF作为SYNC信号
-	CRS->CR|=3<<5;				//CEN和AUTIOTRIMEN都为1,使能自动校准以及计数器 
+	CRS->CR|=3<<5;				//CEN和AUTIOTRIMEN都为1,使能自动校准以及计数器
 	RCC->D2CCIP2R&=~(3<<20);	//USBSEL[1:0]=0,清零原来的设置.
 	RCC->D2CCIP2R|=3<<20;		//USBSEL[1:0]=3,USB时钟源来自hsi48_ck.
 }
- 
+
 //初始化PCD MSP
 //hpcd:PCD结构体指针
 //返回值:无
 void HAL_HCD_MspInit(HCD_HandleTypeDef * hhcd)
-{ 
+{
 	if(hhcd->Instance==USB2_OTG_FS)
 	{
-		// RCC->AHB4ENR|=1<<0;    				//使能PORTA时钟	     
-		// RCC->AHB1ENR|=1<<27;    			//使能USB2 OTG时钟	
+		// RCC->AHB4ENR|=1<<0;    				//使能PORTA时钟
+		// RCC->AHB1ENR|=1<<27;    			//使能USB2 OTG时钟
 		// PWR->CR3|=1<<24;					//使能USB VDD3电压检测
-		// USB_OTG_HSI48_CRS_Init();			//设置USB时钟来自hsi48_ck,使能CRS	
+		// USB_OTG_HSI48_CRS_Init();			//设置USB时钟来自hsi48_ck,使能CRS
 		// GPIO_Set(GPIOA,3<<11,GPIO_MODE_AF,GPIO_OTYPE_PP,GPIO_SPEED_HIGH,GPIO_PUPD_NONE);	//PA11/12复用功能输出
 		// GPIO_AF_Set(GPIOA,11,10);			//PA11,AF10(USB)
-		// GPIO_AF_Set(GPIOA,12,10);			//PA12,AF10(USB)  
-		// MY_NVIC_Init(0,3,OTG_FS_IRQn,2);	//优先级设置为抢占0,子优先级3，组2	
+		// GPIO_AF_Set(GPIOA,12,10);			//PA12,AF10(USB)
+		// MY_NVIC_Init(0,3,OTG_FS_IRQn,2);	//优先级设置为抢占0,子优先级3，组2
 	}else if (hhcd->Instance == USB1_OTG_HS)
 	{
     GPIO_InitTypeDef GPIO_InitStruct;
-		RCC->AHB4ENR|=1<<1;    				//使能PORTA时钟	     
-		RCC->AHB1ENR|=1<<25;    			//使能USB2 OTG时钟	
+		RCC->AHB4ENR|=1<<1;    				//使能PORTA时钟
+		RCC->AHB1ENR|=1<<25;    			//使能USB2 OTG时钟
 		PWR->CR3|=1<<24;					//使能USB VDD3电压检测
-		USB_OTG_HSI48_CRS_Init();			//设置USB时钟来自hsi48_ck,使能CRS	
-  
+		USB_OTG_HSI48_CRS_Init();			//设置USB时钟来自hsi48_ck,使能CRS
+
     __HAL_RCC_GPIOB_CLK_ENABLE();
     GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -73,17 +73,17 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef * hhcd)
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
 		// GPIO_Set(GPIOB,3<<14,GPIO_MODE_AF,GPIO_OTYPE_PP,GPIO_SPEED_HIGH,GPIO_PUPD_NONE);	//PA11/12复用功能输出
 		// GPIO_AF_Set(GPIOB,14,10);			//PA11,AF10(USB)
-		// GPIO_AF_Set(GPIOB,15,10);			//PA12,AF10(USB)  
-		// MY_NVIC_Init(0,3,OTG_HS_IRQn,2);	//优先级设置为抢占0,子优先级3，组2	
+		// GPIO_AF_Set(GPIOB,15,10);			//PA12,AF10(USB)
+		// MY_NVIC_Init(0,3,OTG_HS_IRQn,2);	//优先级设置为抢占0,子优先级3，组2
 		//USB1 OTG本例程没用到,故不做处理
 	}
-} 
+}
 
 //USB OTG 中断服务函数
 //处理所有USB中断
 void OTG_HS_IRQHandler(void)
 {
-	HAL_HCD_IRQHandler(&hhcd);	
+	HAL_HCD_IRQHandler(&hhcd);
 }
 
 
@@ -102,7 +102,7 @@ void HAL_HCD_SOF_Callback(HCD_HandleTypeDef * hhcd)
 //返回值:无
 void HAL_HCD_Connect_Callback(HCD_HandleTypeDef * hhcd)
 {
-	USBH_DbgLog("Connected!\r\n\r\n");	
+	USBH_DbgLog("Connected!\r\n\r\n");
 	USBH_LL_Connect(hhcd->pData);
 }
 
@@ -111,19 +111,19 @@ void HAL_HCD_Connect_Callback(HCD_HandleTypeDef * hhcd)
 //返回值:无
 void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef * hhcd)
 {
-	USBH_DbgLog("Disconnected!\r\n\r\n");	
+	USBH_DbgLog("Disconnected!\r\n\r\n");
 	USBH_LL_Disconnect(hhcd->pData);
 }
 
 void HAL_HCD_PortEnabled_Callback(HCD_HandleTypeDef *hhcd)
 {
-	USBH_DbgLog("Prot enabled!\r\n\r\n");	
+	USBH_DbgLog("Prot enabled!\r\n\r\n");
   USBH_LL_PortEnabled(hhcd->pData);
 }
 
 void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd)
 {
-	USBH_DbgLog("Prot disabled!\r\n\r\n");	
+	USBH_DbgLog("Prot disabled!\r\n\r\n");
   USBH_LL_PortDisabled(hhcd->pData);
 }
 
@@ -144,7 +144,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef * hhcd,uint8_t chnum,
   * @retval USBH Status
   */
 USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
-{    
+{
   #ifdef USE_USB_FS
     //设置LL驱动相关参数
     hhcd.Instance = USB1_OTG_HS;			//使用USB2 OTG
@@ -156,16 +156,16 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
     hhcd.Init.speed = HCD_SPEED_FULL;		//USB全速(12Mbps)
     hhcd.Init.vbus_sensing_enable = 0;		//不使能VBUS检测
     hhcd.Init.lpm_enable = 0;				//使能连接电源管理
-  
+
     hhcd.pData = phost;						//hhcd的pData指向phost
-    phost->pData = &hhcd;					//phost的pData指向hhcd 
-    
+    phost->pData = &hhcd;					//phost的pData指向hhcd
+
     HAL_HCD_Init(&hhcd);					//初始化LL驱动
   #endif
 
-  #ifdef USE_USB_HS 
+  #ifdef USE_USB_HS
     //未实现
-  #endif       
+  #endif
 	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd));
 	return USBH_OK;
 
@@ -179,7 +179,7 @@ USBH_StatusTypeDef  USBH_LL_Init(USBH_HandleTypeDef *phost)
   * @retval USBH Status
   */
 USBH_StatusTypeDef  USBH_LL_DeInit(USBH_HandleTypeDef *phost)
-{  
+{
 	HAL_HCD_DeInit(phost->pData);
 
   return USBH_OK;

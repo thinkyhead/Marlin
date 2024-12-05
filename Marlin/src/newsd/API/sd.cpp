@@ -79,36 +79,36 @@ uint8_t SD_Wait_Ready(void) {
   uint32_t t=0;
   do {
     if(SD_SPI_Read() == 0XFF) return 0;
-    t++;        
+    t++;
   } while(t < 0XFFFFFF);
   return 1;
 }
 
 
 uint8_t SD_Get_Ack(uint8_t Response) {
-  uint16_t Count = 0xFFFF;                  
+  uint16_t Count = 0xFFFF;
   while ((SD_SPI_Read() != Response) && Count) Count--;
-  
+
   if (Count == 0)
-    return SD_RESPONSE_FAILURE; 
-  else 
+    return SD_RESPONSE_FAILURE;
+  else
     return SD_RESPONSE_NO_ERROR;
 }
 
 
-uint8_t SD_RecvData(uint8_t*buf, uint16_t len) {            
+uint8_t SD_RecvData(uint8_t*buf, uint16_t len) {
   if(SD_Get_Ack(0xFE)) return 1;
 
   SD_SPI_ReadBuf(buf, len);
 
   SD_SPI_Read();
-  SD_SPI_Read();                                  
+  SD_SPI_Read();
   return 0;
 }
 
 
-uint8_t SD_Send_Data(uint8_t*buf, uint8_t cmd) {  
-  uint16_t t;          
+uint8_t SD_Send_Data(uint8_t*buf, uint8_t cmd) {
+  uint16_t t;
   if(SD_Wait_Ready())  return 1;
   SD_SPI_Write(cmd);
   if(cmd != 0XFD) {
@@ -118,14 +118,14 @@ uint8_t SD_Send_Data(uint8_t*buf, uint8_t cmd) {
     SD_SPI_Read();
     t = SD_SPI_Read();
     if ((t & 0x1F) != 0x05) return 2;
-  }                                               
+  }
   return 0;
 }
 
 
 uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
-  uint8_t r1;  
-  uint8_t Retry = 0; 
+  uint8_t r1;
+  uint8_t Retry = 0;
   SD_Cancel_CS();
 
   if(SD_Select())  return 0XFF;
@@ -134,22 +134,22 @@ uint8_t SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc) {
   SD_SPI_Write(arg >> 24);
   SD_SPI_Write(arg >> 16);
   SD_SPI_Write(arg >> 8);
-  SD_SPI_Write(arg);    
-  SD_SPI_Write(crc); 
+  SD_SPI_Write(arg);
+  SD_SPI_Write(crc);
 
   if(cmd == CMD12)  SD_SPI_Read();
 
   Retry = 0X1F;
   do {
     r1 = SD_SPI_Read();
-  }while((r1 & 0X80) && Retry--);   
+  }while((r1 & 0X80) && Retry--);
 
   return r1;
-}  
+}
 
 
 uint8_t SD_GetCID(uint8_t *cid_data) {
-  uint8_t r1;     
+  uint8_t r1;
 
   r1 = SD_SendCmd(CMD10, 0, 0x01);
   if(r1 == 0x00) {
@@ -158,7 +158,7 @@ uint8_t SD_GetCID(uint8_t *cid_data) {
   SD_Cancel_CS();
   if(r1) return 1;
   else   return 0;
-}  
+}
 
 uint8_t SD_GetCSD(uint8_t *csd_data) {
   uint8_t r1;
@@ -170,18 +170,18 @@ uint8_t SD_GetCSD(uint8_t *csd_data) {
   SD_Cancel_CS();
   if(r1) return 1;
   else   return 0;
-}  
+}
 
 uint32_t SD_Get_Sector_Count(void) {
   uint8_t  csd[16];
-  uint32_t Capacity;  
+  uint32_t Capacity;
   uint8_t  n;
-  uint16_t csize;                
+  uint16_t csize;
   if(SD_GetCSD(csd) != 0) return 0;
-  if((csd[0] & 0xC0) == 0x40) {  
+  if((csd[0] & 0xC0) == 0x40) {
     csize = csd[9] + ((uint16_t)csd[8] << 8) + 1;
     Capacity = (uint32_t)csize << 10;
-  } else {  
+  } else {
     n = (csd[5] & 15) + ((csd[10] & 128) >> 7) + ((csd[9] & 3) << 1) + 2;
     csize = (csd[8] >> 6) + ((uint16_t)csd[7] << 2) + ((uint16_t)(csd[6] & 3) << 10) + 1;
     Capacity= (uint32_t)csize << (n - 9);
@@ -193,7 +193,7 @@ uint32_t SD_Get_Sector_Count(void) {
 uint8_t SD_Init(void) {
   uint8_t r1;
   uint16_t retry;
-  uint8_t buf[4];  
+  uint8_t buf[4];
   uint16_t i;
 
   SD_SPI_Init();
@@ -216,14 +216,14 @@ uint8_t SD_Init(void) {
         if(retry && SD_SendCmd(CMD58, 0, 0X01) == 0) {
           SD_SPI_ReadBuf(buf, 4);
           if(buf[0] & 0x40) SD_Type = SD_TYPE_V2HC;
-          else SD_Type = SD_TYPE_V2;   
+          else SD_Type = SD_TYPE_V2;
         }
       }
     }
     else { //SD V1.x/ MMC  V3
       SD_SendCmd(CMD55, 0, 0X01);
       r1 = SD_SendCmd(CMD41, 0, 0X01);
-      if(r1 <= 1) {    
+      if(r1 <= 1) {
         SD_Type = SD_TYPE_V1;
         retry = 0XFFFE;
         do {
@@ -234,9 +234,9 @@ uint8_t SD_Init(void) {
       else {
         SD_Type = SD_TYPE_MMC; //MMC V3
         retry = 0XFFFE;
-        do {                          
+        do {
           r1 = SD_SendCmd(CMD1, 0, 0X01);
-        }while(r1 && retry--);  
+        }while(r1 && retry--);
       }
       if(retry == 0 || SD_SendCmd(CMD16, 512, 0X01) != 0)
         SD_Type = SD_TYPE_ERR;
@@ -245,7 +245,7 @@ uint8_t SD_Init(void) {
   SD_Cancel_CS();
   SD_SetHighSpeed();
   if(SD_Type) return 0;
-  else if(r1) return r1;      
+  else if(r1) return r1;
   return 0xaa;
 }
 
@@ -262,10 +262,10 @@ uint8_t SD_ReadDisk(uint8_t *buf, uint32_t sector, uint32_t cnt) {
     r1 = SD_SendCmd(CMD18, sector, 0X01);
     do {
       r1 = SD_RecvData(buf, 512);
-      buf += 512;  
-    }while(--cnt && r1==0);   
+      buf += 512;
+    }while(--cnt && r1==0);
     SD_SendCmd(CMD12, 0, 0X01);
-  }   
+  }
   SD_Cancel_CS();
   return r1;
 }
@@ -281,18 +281,18 @@ uint8_t SD_WriteDisk(uint8_t *buf, uint32_t sector, uint32_t cnt) {
     }
   } else {
     if(SD_Type != SD_TYPE_MMC) {
-      SD_SendCmd(CMD55, 0, 0X01);  
+      SD_SendCmd(CMD55, 0, 0X01);
       SD_SendCmd(CMD23, cnt, 0X01);
     }
     r1 = SD_SendCmd(CMD25, sector, 0X01);
     if(r1 == 0) {
       do {
         r1 = SD_Send_Data(buf, 0xFC);
-        buf += 512;  
+        buf += 512;
       }while(--cnt && r1==0);
       r1 = SD_Send_Data(0, 0xFD);
     }
-  }   
+  }
   SD_Cancel_CS();
   return r1;
-}  
+}

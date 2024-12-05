@@ -1,4 +1,4 @@
-/**
+  /**
  * Marlin 3D Printer Firmware
  * Copyright (c) 2024 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -35,7 +35,7 @@ class FatApi {
   FatApi() {}
   FatApi(const char* name, BYTE oflag);
   FIL fat_fil;
-  
+
   bool writeError;
   bool file_opened;
 
@@ -44,7 +44,7 @@ class FatApi {
   bool isOpen() const { return file_opened; }
   uint32_t filePos() const { return fat_fil.fptr; }
   uint32_t fileSize() const { return fat_fil.obj.objsize; }
-  
+
   bool open(const char* path, BYTE mode);
   bool sync();
   bool close();
