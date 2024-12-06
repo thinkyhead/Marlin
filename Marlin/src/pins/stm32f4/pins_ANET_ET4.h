@@ -24,7 +24,7 @@
 #include "env_validate.h"
 
 #if HAS_MULTI_HOTEND || E_STEPPERS > 1
-  #error "Anet ET4 only supports 1 hotend / E stepper."
+  #error "Anet ET4 only supports one hotend / E-stepper. Comment out this line to continue."
 #endif
 
 #ifndef BOARD_INFO_NAME
@@ -59,6 +59,7 @@
 #define X_STOP_PIN                          PC13
 #define Y_STOP_PIN                          PE12
 #define Z_STOP_PIN                          PE11
+#define Z_MIN_PIN                           PC3
 
 //
 // Z Probe

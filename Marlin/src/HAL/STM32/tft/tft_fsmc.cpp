@@ -33,13 +33,17 @@
 
 SRAM_HandleTypeDef TFT_FSMC::SRAMx;
 DMA_HandleTypeDef TFT_FSMC::DMAtx;
-LCD_CONTROLLER_TypeDef *TFT_FSMC::LCD;
+#if !IS_ANET_ET
+  LCD_CONTROLLER_TypeDef *TFT_FSMC::LCD;
+#endif
 
 void TFT_FSMC::init() {
   uint32_t controllerAddress;
   FMC_OR_FSMC(NORSRAM_TimingTypeDef) timing, extTiming;
 
-  uint32_t nsBank = (uint32_t)pinmap_peripheral(digitalPinToPinName(TFT_CS_PIN), pinMap_FSMC_CS);
+  #if !IS_ANET_ET
+    uint32_t nsBank = (uint32_t)pinmap_peripheral(digitalPinToPinName(TFT_CS_PIN), PinMap_FSMC_CS);
+  #endif
 
   // Perform the SRAM1 memory initialization sequence
   SRAMx.Instance = FMC_OR_FSMC(NORSRAM_DEVICE);
@@ -49,10 +53,14 @@ void TFT_FSMC::init() {
   SRAMx.Init.NSBank = nsBank;
   SRAMx.Init.DataAddressMux     = FMC_OR_FSMC(DATA_ADDRESS_MUX_DISABLE);
   SRAMx.Init.MemoryType         = FMC_OR_FSMC(MEMORY_TYPE_SRAM);
-  #ifdef STM32F446xx
-    SRAMx.Init.MemoryDataWidth  = TERN(TFT_INTERFACE_FMC_8BIT, FMC_NORSRAM_MEM_BUS_WIDTH_8, FMC_NORSRAM_MEM_BUS_WIDTH_16);
-  #else
+  #if IS_ANET_ET
     SRAMx.Init.MemoryDataWidth  = TERN(TFT_INTERFACE_FSMC_8BIT, FSMC_NORSRAM_MEM_BUS_WIDTH_8, FSMC_NORSRAM_MEM_BUS_WIDTH_16);
+  #else
+    #ifdef STM32F446xx
+      SRAMx.Init.MemoryDataWidth  = TERN(TFT_INTERFACE_FMC_8BIT, FMC_NORSRAM_MEM_BUS_WIDTH_8, FMC_NORSRAM_MEM_BUS_WIDTH_16);
+    #else
+      SRAMx.Init.MemoryDataWidth = TERN(TFT_INTERFACE_FSMC_8BIT, FSMC_NORSRAM_MEM_BUS_WIDTH_8, FSMC_NORSRAM_MEM_BUS_WIDTH_16);
+    #endif
   #endif
   SRAMx.Init.BurstAccessMode    = FMC_OR_FSMC(BURST_ACCESS_MODE_DISABLE);
   SRAMx.Init.WaitSignalPolarity = FMC_OR_FSMC(WAIT_SIGNAL_POLARITY_LOW);
@@ -60,7 +68,7 @@ void TFT_FSMC::init() {
   SRAMx.Init.WaitSignalActive   = FMC_OR_FSMC(WAIT_TIMING_BEFORE_WS);
   SRAMx.Init.WriteOperation     = FMC_OR_FSMC(WRITE_OPERATION_ENABLE);
   SRAMx.Init.WaitSignal         = FMC_OR_FSMC(WAIT_SIGNAL_DISABLE);
-  SRAMx.Init.ExtendedMode       = FMC_OR_FSMC(EXTENDED_MODE_ENABLE);
+  SRAMx.Init.ExtendedMode       = TERN(IS_ANET_ET, FMC_OR_FSMC(EXTENDED_MODE_DISABLE), FMC_OR_FSMC(EXTENDED_MODE_ENABLE));
   SRAMx.Init.AsynchronousWait   = FMC_OR_FSMC(ASYNCHRONOUS_WAIT_DISABLE);
   SRAMx.Init.WriteBurst         = FMC_OR_FSMC(WRITE_BURST_DISABLE);
   #if defined(STM32F446xx) || defined(STM32F4xx)
@@ -72,9 +80,9 @@ void TFT_FSMC::init() {
   timing.AddressSetupTime         = 15;
   timing.AddressHoldTime          = 15;
   timing.DataSetupTime            = 24;
-  timing.BusTurnAroundDuration    =  0;
-  timing.CLKDivision              = 16;
-  timing.DataLatency              = 17;
+  timing.BusTurnAroundDuration    = 0;
+  timing.CLKDivision              = TERN(IS_ANET_ET, 0, 16);
+  timing.DataLatency              = TERN(IS_ANET_ET, 0, 17);
   timing.AccessMode               = FMC_OR_FSMC(ACCESS_MODE_A);
 
   // Write Timing
@@ -98,7 +106,9 @@ void TFT_FSMC::init() {
   pinmap_pinout(digitalPinToPinName(TFT_CS_PIN), pinMap_FSMC_CS);
   pinmap_pinout(digitalPinToPinName(TFT_RS_PIN), pinMap_FSMC_RS);
 
-  controllerAddress = FSMC_BANK1_1;
+  #if !IS_ANET_ET
+    controllerAddress = FSMC_BANK1_1;
+  #endif
   #ifdef PF0
     switch (nsBank) {
       case FMC_OR_FSMC(NORSRAM_BANK2): controllerAddress = FSMC_BANK1_2; break;
@@ -107,7 +117,9 @@ void TFT_FSMC::init() {
     }
   #endif
 
-  controllerAddress |= (uint32_t)pinmap_peripheral(digitalPinToPinName(TFT_RS_PIN), pinMap_FSMC_RS);
+  #if !IS_ANET_ET
+    controllerAddress |= (uint32_t)pinmap_peripheral(digitalPinToPinName(TFT_RS_PIN), PinMap_FSMC_RS);
+  #endif
 
   HAL_SRAM_Init(&SRAMx, &timing, &extTiming);
 
@@ -131,7 +143,12 @@ void TFT_FSMC::init() {
   DMAtx.Init.Mode                 = DMA_NORMAL;
   DMAtx.Init.Priority             = DMA_PRIORITY_HIGH;
 
-  LCD = (LCD_CONTROLLER_TypeDef *)controllerAddress;
+  #if !IS_ANET_ET
+    controllerAddress = uint32_t(0x60000000U);
+    LCD = (LCD_CONTROLLER_TypeDef *)controllerAddress;
+    LCD = (LCD_CONTROLLER_TypeDef *)controllerAddress;
+    LCD->RAM = (uint16_t *)0x60040000U;
+  #endif
 }
 
 uint32_t TFT_FSMC::getID() {

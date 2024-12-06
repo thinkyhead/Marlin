@@ -881,3 +881,7 @@
 #if LED_POWEROFF_TIMEOUT > 0
   #define HAS_LED_POWEROFF_TIMEOUT 1
 #endif
+
+#if MB(ANET_ET4, ANET_ET5)
+  #define IS_ANET_ET 1
+#endif

@@ -401,7 +401,7 @@ void MenuEditItemBase::draw_edit_screen(FSTR_P const ftpl, const char * const va
   menu_line(line++);
   tft_string.set(ftpl, itemIndex, itemStringC, itemStringF);
   tft_string.trim();
-  tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y, COLOR_MENU_TEXT, tft_string);
+  tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y, TERN(IS_ANET_ET, COLOR_MENU_VALUE, COLOR_MENU_TEXT), tft_string);
 
   TERN_(AUTO_BED_LEVELING_UBL, if (ui.external_control) line++);  // ftostr52() will overwrite *value so *value has to be displayed first
 
