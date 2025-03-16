@@ -717,36 +717,37 @@ void unified_bed_leveling::G29() {
  *                   Find the mean average and shift the mesh to center on that value.
  */
 void unified_bed_leveling::adjust_mesh_to_mean(const bool cflag, const_float_t offset) {
-  float sum = 0;
   uint8_t n = 0;
-  GRID_LOOP(x, y)
-    if (!isnan(z_values[x][y])) {
-      sum += z_values[x][y];
+  float sum = 0, sum_of_diff_squared = 0;
+  GRID_LOOP(x, y) {
+    const float &v = z_values[x][y];
+    if (!isnan(v)) {
       n++;
+      sum += v;
+      sum_of_diff_squared += sq(v - mean);
     }
+  }
 
   const float mean = sum / n;
-
-  //
-  // Sum the squares of difference from mean
-  //
-  float sum_of_diff_squared = 0;
-  GRID_LOOP(x, y)
-    if (!isnan(z_values[x][y]))
-      sum_of_diff_squared += sq(z_values[x][y] - mean);
-
   SERIAL_ECHOLNPGM("# of samples: ", n);
   SERIAL_ECHOLNPGM("Mean Mesh Height: ", p_float_t(mean, 6));
 
   const float sigma = SQRT(sum_of_diff_squared / (n + 1));
   SERIAL_ECHOLNPGM("Standard Deviation: ", p_float_t(sigma, 6));
 
-  if (cflag)
-    GRID_LOOP(x, y)
-      if (!isnan(z_values[x][y])) {
-        z_values[x][y] -= mean + offset;
-        TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(x, y, z_values[x][y]));
+  if (cflag) {
+    // Subtract the mean to correct the probe Z offset
+    TERN(HAS_BED_PROBE, probe.offset.z -= mean);
+    // Subtract the mean and offset from all values
+    const float zadj = mean + offset;
+    GRID_LOOP(x, y) {
+      float &v = z_values[x][y];
+      if (!isnan(v)) {
+        v -= zadj;
+        TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(x, y, v));
       }
+    }
+  }
 }
 
 /**

@@ -28,7 +28,7 @@
 #include "../../feature/bedlevel/bedlevel.h"
 #include "../../module/planner.h"
 
-#if ENABLED(MARLIN_DEV_MODE)
+#if ANY(HAS_BED_PROBE, MARLIN_DEV_MODE)
   #include "../../module/probe.h"
 #endif
 
@@ -56,7 +56,8 @@
  *
  * With mesh-based leveling only:
  *
- *   C         Center mesh on the mean of the lowest and highest
+ *   C         Center mesh on the mean of the lowest and highest.
+ *             For ABL this also applies the correction to M851 Z.
  *
  * With MARLIN_DEV_MODE:
  *   S2        Create a simple random mesh and enable
@@ -178,6 +179,8 @@ void GcodeSuite::M420() {
           // If not very close to 0, adjust the mesh
           if (!NEAR_ZERO(zmean)) {
             set_bed_leveling_enabled(false);
+            // Subtract the mean to correct the probe Z offset
+            TERN(HAS_BED_PROBE, probe.offset.z -= zmean);
             // Subtract the mean from all values
             GRID_LOOP(x, y) {
               bedlevel.z_values[x][y] -= zmean;
