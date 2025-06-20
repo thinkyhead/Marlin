@@ -50,11 +50,14 @@ RTS rts;
 #include "../../feature/babystep.h"
 #include "../../feature/powerloss.h"
 #include "../../feature/bedlevel/bedlevel.h"
-#include "../../feature/tmc_util.h"
 #include "../../gcode/queue.h"
 #include "../../gcode/gcode.h"
 #include "../marlinui.h"
 #include "../../libs/BL24CXX.h"
+
+#if HAS_TRINAMIC_CONFIG
+  #include "../../feature/tmc_util.h"
+#endif
 
 #if ENABLED(FIX_MOUNTED_PROBE)
   #include "../../module/endstops.h"
