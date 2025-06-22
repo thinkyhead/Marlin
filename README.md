@@ -67,19 +67,23 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
 
 ---
 
-## Marlin 2.1 Bugfix Branch
+## Marlin 2.1.3 Beta 3
 
 __Not for production use. Use with caution!__
 
-Marlin 2.1 continues to support both 32-bit ARM and 8-bit AVR boards while adding support for up to 9 coordinated axes and to up to 8 extruders.
+This branch is for testing and bug fixes for Marlin 2.1.3. We'll use this time to collect bug reports and patch as many issues as we can. This should help the release version of 2.1.3 to be as robust as we can make it. Are you ready to do some testing?
 
-This branch is for patches to the latest 2.1.x release version. Periodically this branch will form the basis for the next minor 2.1.x release.
+## Configuration Migration
 
-Download earlier versions of Marlin on the [Releases page](//github.com/MarlinFirmware/Marlin/releases).
+There are a lot of configuration changes in Marlin 2.1.3. We're working on automated tools to migrate configurations, so if you want to help us test those get in touch on the [Marlin Discord](//discord.com/servers/marlin-firmware-461605380783472640). If you need help migrating your configurations to Marlin 2.1.3, we'll have a dedicated channel for this purpose. Post your configurations there and we'll send back updated configurations. We can also send a built `firmware.bin` file if you need it.
 
 ## Example Configurations
 
 Before you can build Marlin for your machine you'll need a configuration for your specific hardware. Upon request, your vendor will be happy to provide you with the complete source code and configurations for your machine, but you'll need to get updated configuration files if you want to install a newer version of Marlin. Fortunately, Marlin users have contributed dozens of tested configurations to get you started. Visit the [MarlinFirmware/Configurations](//github.com/MarlinFirmware/Configurations) repository to find the right configuration for your hardware.
+
+## Marlin Builds
+
+We now publish builds for all our posted example configurations. See the [MarlinBuilds](//github.com/MarlinFirmware/MarlinBuilds) repository for details. This is a new process so bear with us while we work out all the best variants. If you like the way an example configuration works but think it could be better, please submit your suggested improvements in a **Pull Request**.
 
 ## Building Marlin 2.1
 
