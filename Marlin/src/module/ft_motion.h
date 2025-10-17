@@ -191,7 +191,7 @@ class FTMotion {
       uint32_t plan() {
         if (steps_pending > 0) return interval;
 
-        #define OVERSAMPLING 5
+        #define OVERSAMPLING 10
         float delta_max = 0;
         xyze_float_t delta = {0};
         while (delta_max < 1) {
@@ -241,7 +241,7 @@ class FTMotion {
           LOGICAL_AXIS_MAP(SHIFT32);
         #undef SHIFT32
 
-        advance_dividend_q32 = dividend.asUInt32(); // XYZEval<uint32_t>{ (uint32_t)e, (uint32_t)x, ... }
+        advance_dividend_q32 = dividend.asUInt32();
 
         float interval_till_next_traj = STEPPER_TIMER_RATE * FTM_TS * trajectory_points_in_curr_plan + interval_carry;
 
@@ -263,8 +263,8 @@ class FTMotion {
        *  * Technically a step would be lost every billion consecutive steps (2^30) in the same direction.
       */
       ft_command_t pop_command() {
+        if (steps_pending == 0) return 0;
         ft_command_t cmd = pre_loaded_directons;
-        if (steps_pending == 0) return cmd;
         steps_pending--;
         #define RUN_AXIS(A)                                                   \
           do {                                                                \
