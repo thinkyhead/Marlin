@@ -640,15 +640,15 @@ struct XYval {
   FI bool operator> (const XYval<T>   &rs) const { return x >  rs.x && y >  rs.y; }
   FI bool operator>=(const XYval<T>   &rs) const { return x >= rs.x && y >= rs.y; }
 
-  FI bool operator< (const XYZval<T>  &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x <  rs.x, && y <  rs.y); }
-  FI bool operator<=(const XYZval<T>  &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x <= rs.x, && y <= rs.y); }
-  FI bool operator> (const XYZval<T>  &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x >  rs.x, && y >  rs.y); }
-  FI bool operator>=(const XYZval<T>  &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x >= rs.x, && y >= rs.y); }
+  FI bool operator< (const XYZval<T>  &rs) const { return true XY_GANG(&& x <  rs.x, && y <  rs.y); }
+  FI bool operator<=(const XYZval<T>  &rs) const { return true XY_GANG(&& x <= rs.x, && y <= rs.y); }
+  FI bool operator> (const XYZval<T>  &rs) const { return true XY_GANG(&& x >  rs.x, && y >  rs.y); }
+  FI bool operator>=(const XYZval<T>  &rs) const { return true XY_GANG(&& x >= rs.x, && y >= rs.y); }
 
-  FI bool operator< (const XYZEval<T> &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x <  rs.x, && y <  rs.y); }
-  FI bool operator<=(const XYZEval<T> &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x <= rs.x, && y <= rs.y); }
-  FI bool operator> (const XYZEval<T> &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x >  rs.x, && y >  rs.y); }
-  FI bool operator>=(const XYZEval<T> &rs) const { return ENABLED(HAS_X_AXIS) XY_GANG(&& x >= rs.x, && y >= rs.y); }
+  FI bool operator< (const XYZEval<T> &rs) const { return true XY_GANG(&& x <  rs.x, && y <  rs.y); }
+  FI bool operator<=(const XYZEval<T> &rs) const { return true XY_GANG(&& x <= rs.x, && y <= rs.y); }
+  FI bool operator> (const XYZEval<T> &rs) const { return true XY_GANG(&& x >  rs.x, && y >  rs.y); }
+  FI bool operator>=(const XYZEval<T> &rs) const { return true XY_GANG(&& x >= rs.x, && y >= rs.y); }
 
 };
 
