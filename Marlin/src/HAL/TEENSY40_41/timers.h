@@ -58,7 +58,7 @@ typedef uint32_t hal_timer_t;
 
 #define STEPPER_TIMER_RATE     GPT1_TIMER_RATE
 #define STEPPER_TIMER_TICKS_PER_US ((STEPPER_TIMER_RATE) / 1000000)
-#define STEPPER_TIMER_PRESCALE ((GPT_TIMER_RATE / 1000000) / STEPPER_TIMER_TICKS_PER_US)
+#define STEPPER_TIMER_PRESCALE (GPT_TIMER_RATE / STEPPER_TIMER_RATE)
 
 #define PULSE_TIMER_RATE       STEPPER_TIMER_RATE   // frequency of pulse timer
 #define PULSE_TIMER_PRESCALE   STEPPER_TIMER_PRESCALE
@@ -87,15 +87,15 @@ void HAL_timer_start(const uint8_t timer_num, const uint32_t frequency);
 
 FORCE_INLINE static void HAL_timer_set_compare(const uint8_t timer_num, const hal_timer_t compare) {
   switch (timer_num) {
-    case MF_TIMER_STEP: GPT1_OCR1 = compare - 1; break;
-    case MF_TIMER_TEMP: GPT2_OCR1 = compare - 1; break;
+    case MF_TIMER_STEP: GPT1_OCR2 = compare - 1; break;
+    case MF_TIMER_TEMP: GPT2_OCR2 = compare - 1; break;
   }
 }
 
 FORCE_INLINE static hal_timer_t HAL_timer_get_compare(const uint8_t timer_num) {
   switch (timer_num) {
-    case MF_TIMER_STEP: return GPT1_OCR1;
-    case MF_TIMER_TEMP: return GPT2_OCR1;
+    case MF_TIMER_STEP: return GPT1_OCR2;
+    case MF_TIMER_TEMP: return GPT2_OCR2;
   }
   return 0;
 }
