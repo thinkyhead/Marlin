@@ -225,10 +225,6 @@ extern bool axis_known_position[XYZ];
 extern bool axis_homed[XYZ];
 extern volatile bool wait_for_heatup;
 
-#if HAS_RESUME_CONTINUE
-  extern volatile bool wait_for_user;
-#endif
-
 extern float current_position[NUM_AXIS];
 
 // Workspace offsets
@@ -338,6 +334,7 @@ extern float soft_endstop_min[XYZ], soft_endstop_max[XYZ];
 
 #if HAS_BED_PROBE
   extern float zprobe_zoffset;
+  extern float last_zoffset;
   void refresh_zprobe_zoffset(const bool no_babystep=false);
   #define DEPLOY_PROBE() set_probe_deployed(true)
   #define STOW_PROBE() set_probe_deployed(false)
@@ -413,6 +410,10 @@ extern uint8_t active_extruder;
 #endif
 
 void calculate_volumetric_multipliers();
+
+#if ENABLED(SDSUPPORT) && ENABLED(POWEROFF_SAVE_SD_FILE)
+  void init_power_off_info();
+#endif
 
 /**
  * Blocking movement and shorthand functions

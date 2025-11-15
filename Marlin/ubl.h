@@ -61,7 +61,7 @@
   // External references
 
   char *ftostr43sign(const float&, char);
-  bool ubl_lcd_clicked();
+  //bool ubl_lcd_clicked();
   void home_all_axes();
 
   extern uint8_t ubl_cnt;
@@ -70,7 +70,7 @@
 
   #if ENABLED(ULTRA_LCD)
     extern char lcd_status_message[];
-    void lcd_quick_feedback();
+    //void lcd_quick_feedback();
   #endif
 
   #define MESH_X_DIST (float(UBL_MESH_MAX_X - (UBL_MESH_MIN_X)) / float(GRID_MAX_POINTS_X - 1))
@@ -308,7 +308,7 @@
 
           #if ENABLED(ULTRA_LCD)
             strcpy(lcd_status_message, "get_z_correction() indexes out of range.");
-            lcd_quick_feedback();
+            //lcd_quick_feedback();
           #endif
           return NAN; // this used to return state.z_offset
         }

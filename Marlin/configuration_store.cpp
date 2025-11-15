@@ -182,7 +182,6 @@ MarlinSettings settings;
 #include "endstops.h"
 #include "planner.h"
 #include "temperature.h"
-#include "ultralcd.h"
 #include "stepper.h"
 
 #if ENABLED(INCH_MODE_SUPPORT) || (ENABLED(ULTIPANEL) && ENABLED(TEMPERATURE_UNITS_SUPPORT))
@@ -467,7 +466,7 @@ void MarlinSettings::postprocess() {
       for (uint8_t q = 12; q--;) EEPROM_WRITE(dummy);
     #endif
 
-    #if DISABLED(ULTIPANEL)
+    #if ENABLED(ULTIPANEL)
       constexpr int lcd_preheat_hotend_temp[2] = { PREHEAT_1_TEMP_HOTEND, PREHEAT_2_TEMP_HOTEND },
                     lcd_preheat_bed_temp[2] = { PREHEAT_1_TEMP_BED, PREHEAT_2_TEMP_BED },
                     lcd_preheat_fan_speed[2] = { PREHEAT_1_FAN_SPEED, PREHEAT_2_FAN_SPEED };
@@ -856,7 +855,7 @@ void MarlinSettings::postprocess() {
         for (uint8_t q=12; q--;) EEPROM_READ(dummy);
       #endif
 
-      #if DISABLED(ULTIPANEL)
+      #if ENABLED(ULTIPANEL)
         int lcd_preheat_hotend_temp[2], lcd_preheat_bed_temp[2], lcd_preheat_fan_speed[2];
       #endif
 
@@ -1248,7 +1247,7 @@ void MarlinSettings::reset() {
 
   #endif
 
-  #if ENABLED(ULTIPANEL)
+  #if DISABLED(ULTIPANEL)
     lcd_preheat_hotend_temp[0] = PREHEAT_1_TEMP_HOTEND;
     lcd_preheat_hotend_temp[1] = PREHEAT_2_TEMP_HOTEND;
     lcd_preheat_bed_temp[0] = PREHEAT_1_TEMP_BED;
@@ -1667,7 +1666,7 @@ void MarlinSettings::reset() {
       SERIAL_ECHOLNPAIR("  M666 Z", LINEAR_UNIT(z_endstop_adj));
     #endif // DELTA
 
-    #if ENABLED(ULTIPANEL)
+    #if DISABLED(ULTIPANEL)
       if (!forReplay) {
         CONFIG_ECHO_START;
         SERIAL_ECHOLNPGM("Material heatup parameters:");

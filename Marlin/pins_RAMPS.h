@@ -58,10 +58,12 @@
 // Servos
 //
 #ifdef IS_RAMPS_13
-  #define SERVO0_PIN        7 // RAMPS_13 // Will conflict with BTN_EN2 on LCD_I2C_VIKI
+  #define SERVO0_PIN       11   // 7 // RAMPS_13 // Will conflict with BTN_EN2 on LCD_I2C_VIKI
 #else
   #define SERVO0_PIN       11
 #endif
+// Add change filament pins
+#define CHECK_FILAMENT      2
 #define SERVO1_PIN          6
 #define SERVO2_PIN          5
 #ifndef SERVO3_PIN
@@ -77,8 +79,8 @@
 #endif
 #define Y_MIN_PIN          14
 #define Y_MAX_PIN          15
-#define Z_MIN_PIN          18
-#define Z_MAX_PIN          19
+#define Z_MIN_PIN          19
+#define Z_MAX_PIN          18
 
 //
 // Z Probe (when not Z_MIN_PIN)
@@ -196,7 +198,7 @@
 // Misc. Functions
 //
 #define SDSS               53
-#define LED_PIN            13
+#define LED_PIN            -1   // 13
 
 #ifndef FILWIDTH_PIN
   #define FILWIDTH_PIN      5   // Analog Input on AUX2
@@ -212,7 +214,7 @@
 #if ENABLED(CASE_LIGHT_ENABLE) && !PIN_EXISTS(CASE_LIGHT) && !defined(SPINDLE_LASER_ENABLE_PIN)
   #if !defined(NUM_SERVOS) || NUM_SERVOS == 0 // try to use servo connector first
     #define CASE_LIGHT_PIN   6      // MUST BE HARDWARE PWM
-  #elif !(ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL) \
+  #elif !(ENABLED(ULTRA_LCD) && DISABLED(NEWPANEL) \
       && (ENABLED(PANEL_ONE) || ENABLED(VIKI2) || ENABLED(miniVIKI) || ENABLED(MINIPANEL) || ENABLED(REPRAPWORLD_KEYPAD)))  // try to use AUX 2
     #define CASE_LIGHT_PIN   44     // MUST BE HARDWARE PWM
   #endif
@@ -226,7 +228,7 @@
     #define SPINDLE_LASER_ENABLE_PIN  4  // Pin should have a pullup/pulldown!
     #define SPINDLE_LASER_PWM_PIN     6  // MUST BE HARDWARE PWM
     #define SPINDLE_DIR_PIN           5
-  #elif !(ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL) \
+  #elif !(ENABLED(ULTRA_LCD) && DISABLED(NEWPANEL) \
       && (ENABLED(PANEL_ONE) || ENABLED(VIKI2) || ENABLED(miniVIKI) || ENABLED(MINIPANEL) || ENABLED(REPRAPWORLD_KEYPAD)))  // try to use AUX 2
     #define SPINDLE_LASER_ENABLE_PIN 40  // Pin should have a pullup/pulldown!
     #define SPINDLE_LASER_PWM_PIN    44  // MUST BE HARDWARE PWM
@@ -262,7 +264,7 @@
     #define LCD_PINS_ENABLE     51 // SID (MOSI)
     #define LCD_PINS_D4         52 // SCK (CLK) clock
 
-  #elif ENABLED(NEWPANEL) && ENABLED(PANEL_ONE)
+  #elif DISABLED(NEWPANEL) && ENABLED(PANEL_ONE)
 
     #define LCD_PINS_RS         40
     #define LCD_PINS_ENABLE     42
@@ -294,28 +296,19 @@
         #define DOGLCD_SCK      23
         #define DOGLCD_A0       LCD_PINS_DC
       #else
-        #define LCD_PINS_RS     16
-        #define LCD_PINS_ENABLE 17
-        #define LCD_PINS_D4     23
-        #define LCD_PINS_D5     25
-        #define LCD_PINS_D6     27
+        //#define LCD_PINS_RS     16
+        //#define LCD_PINS_ENABLE 17
+        //#define LCD_PINS_D4     23
+        //#define LCD_PINS_D5     25
+        //#define LCD_PINS_D6     27
       #endif
 
-      #define LCD_PINS_D7       29
+      //#define LCD_PINS_D7       29
 
       #if DISABLED(NEWPANEL)
         #define BEEPER_PIN      33
       #endif
 
-    #endif
-
-    #if DISABLED(NEWPANEL)
-      // Buttons are attached to a shift register
-      // Not wired yet
-      //#define SHIFT_CLK       38
-      //#define SHIFT_LD        42
-      //#define SHIFT_OUT       40
-      //#define SHIFT_EN        17
     #endif
 
   #endif
@@ -429,12 +422,12 @@
 
     #elif ENABLED(MINIPANEL)
 
-      #define BEEPER_PIN        42
+      #define BEEPER_PIN        37		// 42
       // not connected to a pin
-      #define LCD_BACKLIGHT_PIN 65 // backlight LED on A11/D65
+      #define LCD_BACKLIGHT_PIN -1		// 65 // backlight LED on A11/D65
 
-      #define DOGLCD_A0         44
-      #define DOGLCD_CS         66
+      #define DOGLCD_A0         27		// 44
+      #define DOGLCD_CS         25		// 66
 
       // GLCD features
       //#define LCD_CONTRAST   190
@@ -443,9 +436,9 @@
       //#define LCD_SCREEN_ROT_180
       //#define LCD_SCREEN_ROT_270
 
-      #define BTN_EN1           40
-      #define BTN_EN2           63
-      #define BTN_ENC           59
+      #define BTN_EN1           31		// 40
+      #define BTN_EN2           33		// 63
+      #define BTN_ENC           35		// 59
 
       #define SDSS              53
       #define SD_DETECT_PIN     49

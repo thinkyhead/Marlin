@@ -22,6 +22,7 @@
 
 #include "Marlin.h"
 #include "stopwatch.h"
+#include "cardreader.h"
 
 Stopwatch::Stopwatch() {
   this->reset();
@@ -67,6 +68,13 @@ bool Stopwatch::start() {
     return true;
   }
   else return false;
+}
+
+millis_t Stopwatch::power_off_start() {
+  this->state = RUNNING;
+  this->stopTimestamp = 0;
+  this->startTimestamp = millis();
+  this->accumulator = power_off_info.print_job_ms;
 }
 
 void Stopwatch::reset() {

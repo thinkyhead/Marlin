@@ -77,6 +77,14 @@ class Stopwatch {
     bool start();
 
     /**
+     * @brief Power-off Starts the stopwatch
+     * @detailsStarts the  Power-off timer, it will silently ignore the request
+     * if the timer is already running.
+     * @return the total number of seconds the timer has been running.
+     */
+    millis_t power_off_start();
+
+    /**
      * @brief Resets the stopwatch
      * @details Resets all settings to their default values.
      */

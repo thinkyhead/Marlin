@@ -27,7 +27,6 @@
 #include "Marlin.h"
 #include "temperature.h"
 #include "thermistortables.h"
-#include "ultralcd.h"
 #include "planner.h"
 #include "language.h"
 
@@ -49,6 +48,16 @@
 
 #ifdef K1 // Defined in Configuration.h in the PID settings
   #define K2 (1.0-K1)
+#endif
+
+//===========================================================================
+//================================== LCD_RTS ================================
+//===========================================================================
+#ifdef RTS_AVAILABLE
+  #include "LCD_RTS.h"
+  extern RTSSHOW rtscheck;
+  extern char PrinterStatusKey[2];
+  int room_temperature = 0;
 #endif
 
 #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
@@ -395,8 +404,11 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
 
         temp_ms = ms;
       } // every 2 seconds
-      // Over 2 minutes?
-      if (((ms - t1) + (ms - t2)) > (10L * 60L * 1000L * 2L)) {
+      // Over 3 minutes?
+      if (((ms - t1) + (ms - t2)) > (10L * 60L * 1000L * 3L)) {
+        #ifdef RTS_AVAILABLE
+          rtscheck.RTS_SndData(ExchangePageBase + 89, ExchangepageAddr);
+        #endif
         SERIAL_PROTOCOLLNPGM(MSG_PID_TIMEOUT);
         return;
       }
@@ -445,7 +457,8 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
         }
         return;
       }
-      lcd_update();
+
+      RTSUpdate();
     }
     if (!wait_for_heatup) disable_all_heaters();
   }
@@ -512,20 +525,32 @@ void Temperature::_temp_error(const int8_t e, const char * const serial_msg, con
     SERIAL_ERROR_START();
     serialprintPGM(serial_msg);
     SERIAL_ERRORPGM(MSG_STOPPED_HEATER);
-    if (e >= 0) SERIAL_ERRORLN((int)e); else SERIAL_ERRORLNPGM(MSG_HEATER_BED);
+    if (e >= 0) {
+      SERIAL_ERRORLN((int)e);
+    }
+    else {
+      SERIAL_ERRORLNPGM(MSG_HEATER_BED);
+    }
   }
   #if DISABLED(BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE)
     if (!killed) {
+      // Generate error temperature, close firmware.
       Running = false;
       killed = true;
+      // Disable lcd message display
       kill(lcd_msg);
     }
-    else
-      disable_all_heaters(); // paranoia
+    else {
+      // paranoia prohibits all heating.
+      disable_all_heaters();
+    }
   #endif
 }
 
 void Temperature::max_temp_error(const int8_t e) {
+  #ifdef RTS_AVAILABLE
+    rtscheck.RTS_SndData(ExchangePageBase + 90, ExchangepageAddr);
+  #endif
   #if HAS_TEMP_BED
     _temp_error(e, PSTR(MSG_T_MAXTEMP), e >= 0 ? PSTR(MSG_ERR_MAXTEMP) : PSTR(MSG_ERR_MAXTEMP_BED));
   #else
@@ -536,6 +561,9 @@ void Temperature::max_temp_error(const int8_t e) {
   #endif
 }
 void Temperature::min_temp_error(const int8_t e) {
+  #ifdef RTS_AVAILABLE
+    rtscheck.RTS_SndData(ExchangePageBase + 90, ExchangepageAddr);
+  #endif
   #if HAS_TEMP_BED
     _temp_error(e, PSTR(MSG_T_MINTEMP), e >= 0 ? PSTR(MSG_ERR_MINTEMP) : PSTR(MSG_ERR_MINTEMP_BED));
   #else
@@ -559,6 +587,37 @@ float Temperature::get_pid_output(const int8_t e) {
       pid_error[HOTEND_INDEX] = target_temperature[HOTEND_INDEX] - current_temperature[HOTEND_INDEX];
       dTerm[HOTEND_INDEX] = K2 * PID_PARAM(Kd, HOTEND_INDEX) * (current_temperature[HOTEND_INDEX] - temp_dState[HOTEND_INDEX]) + K1 * dTerm[HOTEND_INDEX];
       temp_dState[HOTEND_INDEX] = current_temperature[HOTEND_INDEX];
+
+      #ifdef RTS_AVAILABLE
+        static unsigned char count = 0;
+        if (!room_temperature) {
+          room_temperature = current_temperature[0];
+        }
+
+        if (pid_error[e] <= 0 && PrinterStatusKey[1] == 1) {
+          if (LanguageRecbuf != 0) {
+            // 7 for Heating Done
+            rtscheck.RTS_SndData(7,IconPrintstatus);
+          }
+          else {
+            rtscheck.RTS_SndData(7 + CEIconGrap,IconPrintstatus);
+            Update_Time_Value = RTS_UPDATE_VALUE;
+            PrinterStatusKey[1] = 0;
+          }
+        }
+        else if ( PrinterStatusKey[1] == 2 && ((!target_temperature[e] && pid_error[e] >= -(room_temperature +5) ) ||(target_temperature[e] && pid_error[e] >= 0))) {
+          if (LanguageRecbuf != 0) {
+            // 9 for Cooling Done
+            rtscheck.RTS_SndData(9,IconPrintstatus);
+          }
+          else {
+            rtscheck.RTS_SndData(9 + CEIconGrap,IconPrintstatus);
+          }
+          Update_Time_Value = RTS_UPDATE_VALUE;
+          PrinterStatusKey[1] = 0;
+        }
+      #endif
+
       #if HEATER_IDLE_HANDLER
         if (heater_idle_timeout_exceeded[HOTEND_INDEX]) {
           pid_output = 0;
@@ -741,10 +800,15 @@ void Temperature::manage_heater() {
     #if WATCH_HOTENDS
       // Make sure temperature is increasing
       if (watch_heater_next_ms[e] && ELAPSED(ms, watch_heater_next_ms[e])) { // Time to check this extruder?
-        if (degHotend(e) < watch_target_temp[e])                             // Failed to increase enough?
+        if (degHotend(e) < watch_target_temp[e]) {                           // Failed to increase enough?
+          #ifdef RTS_AVAILABLE
+            rtscheck.RTS_SndData(ExchangePageBase + 89, ExchangepageAddr);
+          #endif
           _temp_error(e, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
-        else                                                                 // Start again if the target is still far off
+        }
+        else {                                                               // Start again if the target is still far off
           start_watching_heater(e);
+        }
       }
     #endif
 
@@ -780,10 +844,15 @@ void Temperature::manage_heater() {
   #if WATCH_THE_BED
     // Make sure temperature is increasing
     if (watch_bed_next_ms && ELAPSED(ms, watch_bed_next_ms)) {        // Time to check the bed?
-      if (degBed() < watch_target_bed_temp)                           // Failed to increase enough?
+      if (degBed() < watch_target_bed_temp) {                         // Failed to increase enough?
+        #ifdef RTS_AVAILABLE
+          rtscheck.RTS_SndData(ExchangePageBase + 89, ExchangepageAddr);
+        #endif
         _temp_error(-1, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
-      else                                                            // Start again if the target is still far off
+      }
+      else {                                                          // Start again if the target is still far off
         start_watching_bed();
+      }
     }
   #endif // WATCH_THE_BED
 
@@ -1331,6 +1400,9 @@ void Temperature::init() {
         else if (PENDING(millis(), *timer)) break;
         *state = TRRunaway;
       case TRRunaway:
+        #ifdef RTS_AVAILABLE
+          rtscheck.RTS_SndData(ExchangePageBase + 88, ExchangepageAddr);
+        #endif
         _temp_error(heater_id, PSTR(MSG_T_THERMAL_RUNAWAY), PSTR(MSG_THERMAL_RUNAWAY));
     }
   }
@@ -1902,7 +1974,7 @@ void Temperature::isr() {
   // Update lcd buttons 488 times per second
   //
   static bool do_buttons;
-  if ((do_buttons ^= true)) lcd_buttons_update();
+  //if ((do_buttons ^= true)) lcd_buttons_update();
 
   /**
    * One sensor is sampled on every other call of the ISR.

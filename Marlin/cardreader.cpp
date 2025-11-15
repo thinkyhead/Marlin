@@ -22,8 +22,8 @@
 
 #include "cardreader.h"
 
-#include "ultralcd.h"
 #include "stepper.h"
+#include "temperature.h"
 #include "language.h"
 
 #include "Marlin.h"
@@ -310,6 +310,53 @@ void CardReader::openLogFile(char* name) {
   openFile(name, false);
 }
 
+#if ENABLED(POWEROFF_SAVE_SD_FILE)
+  void CardReader::openPowerOffFile(char* name, uint8_t oflag) {
+    if (!cardOK) return;
+    if (powerOffFile.isOpen()) return;
+    if (!powerOffFile.open(&root, name, oflag)) {
+      SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
+      SERIAL_PROTOCOL(name);
+      SERIAL_PROTOCOLPGM(".\n");
+    }
+    else {
+      SERIAL_PROTOCOLPGM(MSG_SD_WRITE_TO_FILE);
+      SERIAL_PROTOCOLLN(name);
+    }
+  }
+
+  void CardReader::closePowerOffFile() {
+    powerOffFile.close();
+  }
+
+  bool CardReader::existPowerOffFile(char* name) {
+    bool ret = powerOffFile.open(&root, name, O_READ);
+    // if (ret) {
+    //   powerOffFile.close();
+    // }
+    return ret;
+  }
+
+  int16_t CardReader::savePowerOffInfo(const void* data, uint16_t size) {
+    powerOffFile.seekSet(0);
+    return powerOffFile.write(data, size);
+  }
+
+  int16_t CardReader::getPowerOffInfo(void* data, uint16_t size) {
+    return powerOffFile.read(data, size);
+  }
+
+  void CardReader::removePowerOffFile() {
+    if (powerOffFile.remove(&root, power_off_info.power_off_filename)) {
+      SERIAL_PROTOCOLPGM("File(bin) deleted");
+    }
+    else {
+      SERIAL_PROTOCOLPGM("Deletion(bin) failed");
+    }
+    SERIAL_PROTOCOLPGM(".\n");
+  }
+#endif
+
 void CardReader::getAbsFilename(char *t) {
   uint8_t cnt = 0;
   *t = '/'; t++; cnt++;
@@ -416,7 +463,6 @@ void CardReader::openFile(char* name, bool read, bool push_current/*=false*/) {
 
       SERIAL_PROTOCOLLNPGM(MSG_SD_FILE_SELECTED);
       getfilename(0, fname);
-      lcd_setstatus(longFilename[0] ? longFilename : fname);
     }
     else {
       SERIAL_PROTOCOLPAIR(MSG_SD_OPEN_FILE_FAIL, fname);
@@ -433,7 +479,6 @@ void CardReader::openFile(char* name, bool read, bool push_current/*=false*/) {
     else {
       saving = true;
       SERIAL_PROTOCOLLNPAIR(MSG_SD_WRITE_TO_FILE, name);
-      lcd_setstatus(fname);
     }
   }
 }
@@ -871,6 +916,16 @@ void CardReader::printingHasFinished() {
   }
   else {
     sdprinting = false;
+    #if ENABLED(POWEROFF_SAVE_SD_FILE)
+      openPowerOffFile(power_off_info.power_off_filename, O_CREAT | O_WRITE | O_TRUNC | O_SYNC);
+      power_off_info.valid_head = 0;
+      power_off_info.valid_foot = 0;
+      if (savePowerOffInfo(&power_off_info, sizeof(power_off_info)) == -1) {
+        SERIAL_PROTOCOLLN("Stop to Write power off file failed.");
+      }
+      closePowerOffFile();
+      power_off_commands_count = 0;
+    #endif
     if (SD_FINISHED_STEPPERRELEASE)
       enqueue_and_echo_commands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     print_job_timer.stop();

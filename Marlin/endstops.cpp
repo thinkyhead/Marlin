@@ -29,7 +29,6 @@
 #include "endstops.h"
 #include "temperature.h"
 #include "stepper.h"
-#include "ultralcd.h"
 
 // TEST_ENDSTOP: test the old and the current status of an endstop
 #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits & old_endstop_bits, ENDSTOP))
@@ -165,10 +164,6 @@ void Endstops::report_state() {
       if (TEST(endstop_hit_bits, Z_MIN_PROBE)) _ENDSTOP_HIT_ECHO(P, 'P');
     #endif
     SERIAL_EOL();
-
-    #if ENABLED(ULTRA_LCD)
-      lcd_status_printf_P(0, PSTR(MSG_LCD_ENDSTOPS " %c %c %c %c"), chrX, chrY, chrZ, chrP);
-    #endif
 
     hit_on_purpose();
 

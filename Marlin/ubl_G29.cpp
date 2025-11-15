@@ -28,7 +28,6 @@
   #include "Marlin.h"
   #include "hex_print_routines.h"
   #include "configuration_store.h"
-  #include "ultralcd.h"
   #include "stepper.h"
   #include "planner.h"
   #include "gcode.h"
@@ -40,13 +39,9 @@
 
   extern float destination[XYZE], current_position[XYZE];
 
-  #if ENABLED(NEWPANEL)
+  #if DISABLED(NEWPANEL)
     void lcd_return_to_status();
-    void lcd_mesh_edit_setup(float initial);
-    float lcd_mesh_edit();
-    void lcd_z_offset_edit_setup(float);
     extern void _lcd_ubl_output_map_lcd();
-    float lcd_z_offset_edit();
   #endif
 
   extern float meshedit_done;
@@ -712,7 +707,6 @@
           if (ELAPSED(millis(), nxt)) {
             SERIAL_PROTOCOLLNPGM("\nZ-Offset Adjustment Stopped.");
             do_blocking_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
-            LCD_MESSAGEPGM(MSG_UBL_Z_OFFSET_STOPPED);
             restore_ubl_active_state_and_leave();
             goto LEAVE;
           }
@@ -722,21 +716,12 @@
 
         state.z_offset = measured_z;
 
-        lcd_refresh();
         restore_ubl_active_state_and_leave();
       }
     }
     #endif
 
     LEAVE:
-
-    #if ENABLED(NEWPANEL)
-      lcd_reset_alert_level();
-      LCD_MESSAGEPGM("");
-      lcd_quick_feedback();
-
-      has_control_of_lcd_panel = false;
-    #endif
 
     return;
   }
@@ -804,7 +789,6 @@
         #if ENABLED(NEWPANEL)
           if (ubl_lcd_clicked()) {
             SERIAL_PROTOCOLLNPGM("\nMesh only partially populated.\n");
-            lcd_quick_feedback();
             STOW_PROBE();
             while (ubl_lcd_clicked()) idle();
             has_control_of_lcd_panel = false;
@@ -972,7 +956,6 @@
       stepper.synchronize();
 
       SERIAL_PROTOCOLPGM("Place shim under nozzle");
-      LCD_MESSAGEPGM(MSG_UBL_BC_INSERT);
       lcd_return_to_status();
       echo_and_take_a_measurement();
 
@@ -981,7 +964,6 @@
       stepper.synchronize();
 
       SERIAL_PROTOCOLPGM("Remove shim");
-      LCD_MESSAGEPGM(MSG_UBL_BC_REMOVE);
       echo_and_take_a_measurement();
 
       const float z2 = measure_point_with_encoder();
@@ -1030,8 +1012,6 @@
 
         do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
 
-        LCD_MESSAGEPGM(MSG_UBL_MOVING_TO_NEXT);
-
         do_blocking_move_to_xy(xProbe, yProbe);
         do_blocking_move_to_z(z_clearance);
 
@@ -1066,7 +1046,6 @@
             do_blocking_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
 
             #if ENABLED(NEWPANEL)
-              lcd_quick_feedback();
               while (ubl_lcd_clicked()) idle();
               has_control_of_lcd_panel = false;
             #endif
@@ -1096,12 +1075,6 @@
 
   bool unified_bed_leveling::g29_parameter_parsing() {
     bool err_flag = false;
-
-    #if ENABLED(NEWPANEL)
-      LCD_MESSAGEPGM(MSG_UBL_DOING_G29);
-      lcd_quick_feedback();
-    #endif
-
     g29_constant = 0.0;
     g29_repetition_cnt = 0;
 
@@ -1216,12 +1189,6 @@
     ubl_state_recursion_chk++;
     if (ubl_state_recursion_chk != 1) {
       SERIAL_ECHOLNPGM("save_ubl_active_state_and_disabled() called multiple times in a row.");
-
-      #if ENABLED(NEWPANEL)
-        LCD_MESSAGEPGM(MSG_UBL_SAVE_ERROR);
-        lcd_quick_feedback();
-      #endif
-
       return;
     }
     ubl_state_at_invocation = state.active;
@@ -1231,12 +1198,6 @@
   void unified_bed_leveling::restore_ubl_active_state_and_leave() {
     if (--ubl_state_recursion_chk) {
       SERIAL_ECHOLNPGM("restore_ubl_active_state_and_leave() called too many times.");
-
-      #if ENABLED(NEWPANEL)
-        LCD_MESSAGEPGM(MSG_UBL_RESTORE_ERROR);
-        lcd_quick_feedback();
-      #endif
-
       return;
     }
     set_bed_leveling_enabled(ubl_state_at_invocation);
@@ -1496,7 +1457,6 @@
 
       save_ubl_active_state_and_disable();
 
-      LCD_MESSAGEPGM(MSG_UBL_FINE_TUNE_MESH);
 
       do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
       do_blocking_move_to_xy(lx, ly);
@@ -1532,12 +1492,9 @@
 
         if (do_ubl_mesh_map) display_map(g29_map_type);  // show the user which point is being adjusted
 
-        lcd_refresh();
 
-        lcd_mesh_edit_setup(new_z);
 
         do {
-          new_z = lcd_mesh_edit();
           #if ENABLED(UBL_MESH_EDIT_MOVES_Z)
             do_blocking_move_to_z(h_offset + new_z); // Move the nozzle as the point is edited
           #endif
@@ -1560,7 +1517,6 @@
           if (ELAPSED(millis(), nxt)) {
             lcd_return_to_status();
             do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
-            LCD_MESSAGEPGM(MSG_EDITING_STOPPED);
 
             while (ubl_lcd_clicked()) idle();
 
@@ -1571,8 +1527,6 @@
         safe_delay(20);                       // We don't want any switch noise.
 
         z_values[location.x_index][location.y_index] = new_z;
-
-        lcd_refresh();
 
       } while (location.x_index >= 0 && --g29_repetition_cnt > 0);
 
@@ -1587,7 +1541,6 @@
 
       do_blocking_move_to_xy(lx, ly);
 
-      LCD_MESSAGEPGM(MSG_UBL_DONE_EDITING_MESH);
       SERIAL_ECHOLNPGM("Done Editing Mesh");
 
       if (ubl_lcd_map_control)

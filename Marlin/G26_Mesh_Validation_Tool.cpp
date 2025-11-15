@@ -33,7 +33,6 @@
   #include "planner.h"
   #include "stepper.h"
   #include "temperature.h"
-  #include "ultralcd.h"
   #include "gcode.h"
 
   #define EXTRUSION_MULTIPLIER 1.0
@@ -138,10 +137,6 @@
   void prepare_move_to_destination();
   inline void sync_plan_position_e() { planner.set_e_position_mm(current_position[E_AXIS]); }
   inline void set_current_to_destination() { COPY(current_position, destination); }
-  #if ENABLED(NEWPANEL)
-    void lcd_setstatusPGM(const char* const message, const int8_t level);
-    void chirp_at_user();
-  #endif
 
   // Private functions
 
@@ -189,18 +184,11 @@
       if (!ubl_lcd_clicked()) return false;
       safe_delay(10);                       // Wait for click to settle
 
-      #if ENABLED(ULTRA_LCD)
-        lcd_setstatusPGM(PSTR("Mesh Validation Stopped."), 99);
-        lcd_quick_feedback();
-      #endif
-
       while (!ubl_lcd_clicked()) idle();    // Wait for button release
 
       // If the button is suddenly pressed again,
       // ask the user to resolve the issue
-      lcd_setstatusPGM(PSTR("Release button"), 99); // will never appear...
       while (ubl_lcd_clicked()) idle();             // unless this loop happens
-      lcd_reset_status();
 
       return true;
     }
@@ -362,7 +350,6 @@
     } while (--g26_repeats && location.x_index >= 0 && location.y_index >= 0);
 
     LEAVE:
-    lcd_setstatusPGM(PSTR("Leaving G26"), -1);
 
     retract_filament(destination);
     destination[Z_AXIS] = Z_CLEARANCE_BETWEEN_PROBES;
@@ -754,7 +741,6 @@
 
   #if ENABLED(NEWPANEL)
     bool unified_bed_leveling::exit_from_g26() {
-      lcd_setstatusPGM(PSTR("Leaving G26"), -1);
       while (ubl_lcd_clicked()) idle();
       return UBL_ERR;
     }
@@ -769,8 +755,6 @@
     #if HAS_TEMP_BED
       #if ENABLED(ULTRA_LCD)
         if (g26_bed_temp > 25) {
-          lcd_setstatusPGM(PSTR("G26 Heating Bed."), 99);
-          lcd_quick_feedback();
       #endif
           has_control_of_lcd_panel = true;
           thermalManager.setTargetBed(g26_bed_temp);
@@ -789,8 +773,6 @@
           }
       #if ENABLED(ULTRA_LCD)
         }
-        lcd_setstatusPGM(PSTR("G26 Heating Nozzle."), 99);
-        lcd_quick_feedback();
       #endif
     #endif
 
@@ -810,11 +792,6 @@
       idle();
     }
 
-    #if ENABLED(ULTRA_LCD)
-      lcd_reset_status();
-      lcd_quick_feedback();
-    #endif
-
     return UBL_OK;
   }
 
@@ -829,15 +806,12 @@
       if (g26_prime_flag == -1) {  // The user wants to control how much filament gets purged
 
         has_control_of_lcd_panel = true;
-        lcd_setstatusPGM(PSTR("User-Controlled Prime"), 99);
-        chirp_at_user();
 
         set_destination_to_current();
 
         recover_filament(destination); // Make sure G26 doesn't think the filament is retracted().
 
         while (!ubl_lcd_clicked()) {
-          chirp_at_user();
           destination[E_AXIS] += 0.25;
           #ifdef PREVENT_LENGTHY_EXTRUDE
             Total_Prime += 0.25;
@@ -858,8 +832,6 @@
         #if ENABLED(ULTRA_LCD)
           strcpy_P(lcd_status_message, PSTR("Done Priming")); // We can't do lcd_setstatusPGM() without having it continue;
                                                               // So... We cheat to get a message up.
-          lcd_setstatusPGM(PSTR("Done Priming"), 99);
-          lcd_quick_feedback();
         #endif
 
         has_control_of_lcd_panel = false;
@@ -869,10 +841,6 @@
     #else
     {
     #endif
-      #if ENABLED(ULTRA_LCD)
-        lcd_setstatusPGM(PSTR("Fixed Length Prime."), 99);
-        lcd_quick_feedback();
-      #endif
       set_destination_to_current();
       destination[E_AXIS] += g26_prime_length;
       G26_line_to_destination(planner.max_feedrate_mm_s[E_AXIS] / 15.0);

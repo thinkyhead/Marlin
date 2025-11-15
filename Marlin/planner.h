@@ -35,6 +35,8 @@
 #include "types.h"
 #include "enum.h"
 #include "Marlin.h"
+#include "cardreader.h"
+#include "lcd_rts.h"
 
 #if HAS_ABL
   #include "vector_3.h"
@@ -294,7 +296,7 @@ class Planner {
      */
     static FORCE_INLINE void buffer_line(ARG_X, ARG_Y, ARG_Z, const float &e, const float &fr_mm_s, const uint8_t extruder) {
       #if PLANNER_LEVELING && IS_CARTESIAN
-        apply_leveling(lx, ly, lz);
+        if (!AutoLevelStatus) apply_leveling(lx, ly, lz);
       #endif
       _buffer_line(lx, ly, lz, e, fr_mm_s, extruder);
     }
