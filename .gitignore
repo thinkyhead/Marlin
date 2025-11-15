@@ -139,3 +139,9 @@ CMakeListsPrivate.txt
 
 #CLion
 cmake-build-*
+
+imgui.ini
+mczip.h
+eeprom.dat
+*.sublime-workspace
+*.pyc
