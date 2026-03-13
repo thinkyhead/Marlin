@@ -1092,6 +1092,7 @@ namespace LanguageWide_en {
     LSTR MSG_CANCEL_OBJECT_N              = _UxGT("Cancel Object {");
     LSTR MSG_HOST_START_PRINT             = _UxGT("Start Host Print");
     LSTR MSG_END_LOOPS                    = _UxGT("End Repeat Loops");
+    LSTR MSG_CONTINUE_TUNE_A              = _UxGT("Move Axis @ to Center");
     LSTR MSG_CONTINUE_PRINT_JOB           = _UxGT("Continue Print Job");
     LSTR MSG_TURN_OFF                     = _UxGT("Turn off the printer");
     LSTR MSG_PLEASE_PREHEAT               = _UxGT("Please preheat the hot end.");

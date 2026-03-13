@@ -3629,6 +3629,9 @@
    * @section tmc/stallguard
    */
   #define SENSORLESS_HOMING // StallGuard capable drivers only
+  #if ENABLED(SENSORLESS_HOMING)
+    //#define STALLGUARD_TUNING   // Add G-code M49 to tune stall sensitivity
+  #endif
 
   #if ANY(SENSORLESS_HOMING, SENSORLESS_PROBING)
     // TMC2209: 0...255. TMC2130: -64...63
@@ -3680,7 +3683,7 @@
    * Enable M122 debugging command for TMC stepper drivers.
    * M122 S0/1 will enable continuous reporting.
    */
-  //#define TMC_DEBUG
+  #define TMC_DEBUG
 
   /**
    * You can set your own advanced settings by filling in predefined functions.

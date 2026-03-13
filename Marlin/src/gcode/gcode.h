@@ -730,6 +730,10 @@ private:
     static void M48();
   #endif
 
+  #if ENABLED(STALLGUARD_TUNING)
+    static void M49();
+  #endif
+
   #if ENABLED(SET_PROGRESS_MANUALLY)
     static void M73();
   #endif

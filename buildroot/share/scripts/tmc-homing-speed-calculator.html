@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trinamic Homing Rate Calculator</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;padding:20px;}
+  h1{font-size:1.5rem; margin-bottom:.4em;}
+  label{display:block;margin-top:.8em;font-weight:bold;}
+  input[type=number]{width:100%;padding:.4em;margin-top:.2em;font-size:1rem;}
+  .output{margin-top:1.2em;padding:.8em;background:#f9f9f9;border-radius:4px;}
+  .output p{margin:.2em 0;font-size:1.1rem;}
+</style>
+</head>
+<body>
+
+<h1>Trinamic Homing Rate Calculator</h1>
+
+<p>The Trinamic “half‑revolution‑per‑second” rule is a reliable maximum
+homing speed.
+Enter your motor and belt geometry to see the corresponding steps/s and mm/s.</p>
+
+<label for="stepsPerRev">Micro‑steps per revolution (e.g., 3200, 6400)</label>
+<input type="number" id="stepsPerRev" min="1" value="3200">
+
+<label for="pulleyTeeth">Pulley teeth (e.g., 20)</label>
+<input type="number" id="pulleyTeeth" min="1" value="20">
+
+<label for="beltPitch">Belt pitch (mm, e.g., 2)</label>
+<input type="number" id="beltPitch" min=".01" step="any" value="2">
+
+<label for="gearRatio">Gear ratio (motor:pulley, optional)</label>
+<input type="number" id="gearRatio" min=".01" step="any" value="1">
+
+<div class="output" id="result">
+  <p>Steps per mm: <span id="stepsPerMm">-</span></p>
+  <p>Steps per second (½rev/s): <span id="stepsPerSec">-</span></p>
+  <p>Recommended homing speed (mm/m): <span id="mmPerMin">-</span></p>
+  <small>Derived from the Trinamic recommendation of ½ revolution/second.</small>
+</div>
+
+<script>
+(function(){
+  const stepsPerRevInput = document.getElementById('stepsPerRev');
+  const pulleyTeethInput  = document.getElementById('pulleyTeeth');
+  const beltPitchInput    = document.getElementById('beltPitch');
+  const gearRatioInput    = document.getElementById('gearRatio');
+
+  const stepsPerMmOut     = document.getElementById('stepsPerMm');
+  const stepsPerSecOut    = document.getElementById('stepsPerSec');
+  const mmPerMinOut       = document.getElementById('mmPerMin');
+
+  function update(){
+    const stepsPerRev = parseFloat(stepsPerRevInput.value);
+    const teeth       = parseFloat(pulleyTeethInput.value);
+    const pitch       = parseFloat(beltPitchInput.value);
+    const gearRatio   = parseFloat(gearRatioInput.value);
+
+    if (isNaN(stepsPerRev) || stepsPerRev <= 0 ||
+        isNaN(teeth)       || teeth <= 0   ||
+        isNaN(pitch)       || pitch <= 0   ||
+        isNaN(gearRatio)   || gearRatio <= 0){
+      stepsPerMmOut.textContent = '-';
+      stepsPerSecOut.textContent = '-';
+      mmPerMinOut.textContent    = '-';
+      return;
+    }
+
+    // 1. Circumference of the pulley (mm) – motor rev * gear ratio
+    const circumference = teeth * pitch * gearRatio;   // mm per motor rev
+
+    // 2. Steps per millimetre
+    const stepsPerMm = stepsPerRev / circumference;
+
+    // 3. Steps per second at ½ rev/s
+    const stepsPerSec = stepsPerRev * 0.5;   // ½ rev/s
+
+    // 4. Linear speed mm/s
+    const mmPerMin = 60 * stepsPerSec / stepsPerMm;
+
+    // Output
+    stepsPerMmOut.textContent  = stepsPerMm.toFixed(2);
+    stepsPerSecOut.textContent = Math.round(stepsPerSec);
+    mmPerMinOut.textContent    = mmPerMin.toFixed(2);
+  }
+
+  // Hook up
+  stepsPerRevInput.addEventListener('input', update);
+  pulleyTeethInput.addEventListener('input', update);
+  beltPitchInput.addEventListener('input', update);
+  gearRatioInput.addEventListener('input', update);
+
+  // Initial run
+  update();
+})();
+</script>
+
+</body>
+</html>

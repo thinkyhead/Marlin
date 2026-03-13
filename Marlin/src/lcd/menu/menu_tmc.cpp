@@ -58,7 +58,7 @@ void menu_tmc_current() {
 
 #if ENABLED(HYBRID_THRESHOLD)
 
-  #define TMC_EDIT_STORED_HYBRID_THRS(ST, STR) EDIT_ITEM_FAST_F(uint16_3, F(STR), &stepper##ST.stored.hybrid_thrs, 0, STEPPER_MAX_THRS(ST), []{ stepper##ST.refresh_hybrid_thrs(); });
+  #define TMC_EDIT_STORED_HYBRID_THRS(ST, STR) EDIT_ITEM_FAST_F(uint16_3, F(STR), &stepper##ST.stored.hybrid_thrs, 0, STEPPER_MAX_THRS(ST), []{ stepper##ST.refresh_hybrid_thrs(); })
 
   void menu_tmc_hybrid_thrs() {
     START_MENU();
@@ -86,12 +86,48 @@ void menu_tmc_current() {
 
 #if ENABLED(SENSORLESS_HOMING)
 
+  /**
+   * Sensorless Tuning Wizard
+   *
+   * - TODO: Put extra labels on screen for Threshold editing. Label which end has "-more  sensitivity  +less"
+   *
+   * 1. Skip homing since we don't yet trust it.
+   * 2. Have user align axis all the way to the endstop. Then we know what is a hard stop.
+   * - Carefully control the speed of the axis being tested. Start very slow.
+   * - Move away from endstop position, try different threshold values looking for false endstop hits. Lowered acceleration is also better for sensorless homing.
+   * - Move towards endstop for intentional hits, then away, then towards again, until only real endstop hits register.
+   * - Re-test with a range of homing current values and homing speeds. Rule of thumb: Safe stall sense value is 20mm/s for 80 step/mm 0.8mm stepper.
+   * - Could be worth studying what Prusa Firmware or others do, but they are more narrowly spec'ed.
+   * - When we can monitor threshold values during a move look for changes in StallGuard value readings.
+   */
+
+  /*
+  AxisEnum tuning_axis = NO_AXIS_ENUM;
+
+  void sensorless_wizard_start(const AxisEnum axis) {
+    stepper.disable_axis(axis);
+    CONFIRM_ITEM_N(axis, MSG_CONTINUE_TUNE_A,
+      MSG_BUTTON_TUNE, MSG_BUTTON_CANCEL,
+      [&]{
+        // Display screens showing what is being done at each stage of tuning.
+        tuning_axis = axis;
+        ui.goto_screen(sensorless_tuning_run);
+      },
+      nullptr,
+      GET_TEXT_F(MSG_INIT_EEPROM),
+      (const char *)nullptr, F("?")
+    );
+  }
+  #define TMC_TUNE_SENSORLESS(A) SUBMENU_N(_AXIS(A), MSG_SENSORLESS_WIZARD_N, []{ sensorless_wizard_start(_AXIS(A)); })
+  */
+
   #define TMC_EDIT_STORED_SGT(ST) EDIT_ITEM_F(int4, F(STR_##ST), &stepper##ST.stored.homing_thrs, stepper##ST.sgt_min, stepper##ST.sgt_max, []{ stepper##ST.refresh_homing_thrs(); })
   #define TMC_HOME_TEST(N) TERN_(SENSORLESS_HOMING_TEST_MENU_ITEMS, GCODES_ITEM_N(N##_AXIS, MSG_AUTO_HOME_N, F("G28" STR_##N)))
 
   void menu_tmc_homing_thrs() {
     START_MENU();
     BACK_ITEM(MSG_TMC_DRIVERS);
+
     TERN_( X_SENSORLESS, TMC_EDIT_STORED_SGT(X));
     TERN_(X2_SENSORLESS, TMC_EDIT_STORED_SGT(X2));  TERN_( X_SENSORLESS, TMC_HOME_TEST(X));
     TERN_( Y_SENSORLESS, TMC_EDIT_STORED_SGT(Y));
@@ -108,6 +144,9 @@ void menu_tmc_current() {
     TERN_( W_SENSORLESS, TMC_EDIT_STORED_SGT(W));   TERN_( W_SENSORLESS, TMC_HOME_TEST(W));
 
     TERN_(SENSORLESS_HOMING_TEST_MENU_ITEMS, GCODES_ITEM(MSG_DISABLE_STEPPERS, F("M84")));
+
+    //TERN_( X_SENSORLESS, TMC_TUNE_SENSORLESS(X));
+    //TERN_( Y_SENSORLESS, TMC_TUNE_SENSORLESS(Y));
 
     END_MENU();
   }
