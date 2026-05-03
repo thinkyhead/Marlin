@@ -38,3 +38,11 @@ jobs:
         run: |
           npm install --save-dev prettier
           make validate-lines -j
+
+      # buildroot/bin/config.py and buildroot/share/PlatformIO/scripts/config.py must be identical. Fast (MD5, SHA1) checksums must match.
+      - name: Validate matching config.py files
+        run: |
+          if [[ $(md5sum ./buildroot/bin/config.py | awk '{ print $1 }') != $(md5sum ./buildroot/share/PlatformIO/scripts/config.py | awk '{ print $1 }') ]]; then
+            echo "Error: config.py files do not match"
+            exit 1
+          fi

@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 #
-# opt_find
-# Find one or more Marlin options - Configuration lines starting with #define
+# opt_find - Find Marlin configuration options
+#
+# Usage: opt_find [OPTIONS] PATTERN [PATTERN ...]
+#
+# Find #define lines matching a pattern in both
+# Configuration.h and Configuration_adv.h files.
+#
+# Options:
+#   -d, --disabled   Only show disabled (commented) defines
+#   -e, --enabled    Only show enabled (uncommented) defines
+#   -h, --help       Show this help message
 #
 
 MYNAME=$(basename $0)

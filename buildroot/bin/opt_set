@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
+"""
+opt_set - Set Marlin configuration option values
 
+Usage: opt_set OPTION_NAME VALUE [OPTION_NAME VALUE ...]
+
+For each name/value pair given, sets the #define value in both
+Configuration.h and Configuration_adv.h files. If the option is
+not found, adds it to Configuration.h via config.add().
+
+Requires an even number of arguments (name value pairs).
+"""
 import sys, os, config
 
 def main():

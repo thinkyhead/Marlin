@@ -5,6 +5,14 @@ Make sure both copies always match:
  - buildroot/bin/config.py
  - buildroot/share/PlatformIO/scripts/config.py
 
+Functions:
+  - set(file_path, define_name, value) -> bool
+      Replace a #define value; returns True if found and replaced
+  - add(file_path, define_name, value="")
+      Insert a new #define at first blank line
+  - enable(file_path, define_name, enable=True) -> bool
+      Uncomment (enable=True) or comment out (enable=False) a #define;
+      returns True if the define was found
 '''
 import re
 

@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
+"""
+opt_add - Add a new Marlin configuration option
 
+Usage: opt_add OPTION_NAME [VALUE]
+
+Adds a new #define OPTION_NAME [VALUE] to Configuration.h (first file
+in config.FILES tuple). Inserts at the first blank line found, or
+appends to end of file if no blank line exists.
+"""
 import sys, config
 
 def main():

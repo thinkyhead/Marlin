@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
+"""
+opt_enable - Enable Marlin configuration options
 
+Usage: opt_enable OPTION_NAME [OPTION_NAME ...]
+
+For each option name given, uncomments the #define line
+in both Configuration.h and Configuration_adv.h files.
+
+Exits with error if any option is not found in either file.
+"""
 import sys, os, config
 
 def main():
