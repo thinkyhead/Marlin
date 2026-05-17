@@ -3782,6 +3782,10 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
   #elif defined(E7_HYBRID_THRESHOLD) && E7_HYBRID_THRESHOLD == 0
     #error "E7_HYBRID_THRESHOLD must be greater than 0."
   #endif
+#else // !HYBRID_THRESHOLD
+  #if ANY_DRIVER_HAS(STEALTHCHOP) && !ANY_DRIVER_HAS(HYBRID)
+    #error "HYBRID_THRESHOLD is required for STEALTHCHOP drivers."
+  #endif
 #endif // HYBRID_THRESHOLD
 
 // Other TMC feature requirements
