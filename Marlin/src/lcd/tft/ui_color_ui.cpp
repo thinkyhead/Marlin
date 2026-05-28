@@ -404,11 +404,12 @@ void MarlinUI::draw_status_screen() {
 
 typedef const char*(*to_str_edit_t)(const int32_t);
 static bool mode_keypad = false;
-static int32_t keypad_value = 0, keypad_value_decimal = 0;
+static int32_t keypad_value = 0;
+static uint32_t keypad_value_decimal = 0;
 
 #if ENABLED(TOUCH_SCREEN)
 
-  static int stepSize = -1;
+  static float stepSize = -1;
   static void stepChange(touch_event_t *e) {
     stepSize = e->index;
     ui.refresh();
@@ -448,7 +449,7 @@ static int32_t keypad_value = 0, keypad_value_decimal = 0;
 
   static void okClicked() {
     if (mode_keypad) {
-      float newVal = (float) keypad_value / (keypad_value_decimal?:1);
+      const float newVal = (float)keypad_value / (keypad_value_decimal ?: 1);
       MenuEditItemBase::put_new_value(newVal);
       touch_event_t te;
       te.index = -3;
@@ -488,15 +489,10 @@ void TFT::drawSimpleBtn(const char *label, uint16_t x, uint16_t y, uint16_t w, u
     const float minDisplayVal = minEditValue / valueStep,
                 maxDisplayVal = maxEditValue / valueStep;
 
-    DEBUG_ECHOLNPGM("INPUT: New value ", newDisplayVal, " Min ", minDisplayVal, " Max ", maxDisplayVal);
-
     NOMORE(newDisplayVal, maxDisplayVal);
     NOLESS(newDisplayVal, minDisplayVal);
 
     const int32_t newVal = newDisplayVal * valueStep;
-
-    DEBUG_ECHOLNPGM("After clip: New value ", newDisplayVal, " Min ", minDisplayVal, " Max ", maxDisplayVal);
-    DEBUG_ECHOLNPGM("After clip Encoder: New value ", newVal, " Min ", minEditValue, " Max ", maxEditValue);
 
     ui.encoderPosition = newVal;
     // TODO: Fix junction dev (minEditVal is not 0) always adds minEditVal to input value
@@ -565,7 +561,7 @@ void MenuEditItemBase::draw_edit_screen(FSTR_P const ftpl, const char * const va
     tft_string.add(ftostr7xrj(keypad_value, keypad_value_decimal ?: 1));
     if (keypad_value_decimal == 1) tft_string.add('.');
     tft_string.trim();
-    tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y_OFFSET, COLOR_MENU_VALUE, tft_string);
+    tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y, COLOR_MENU_VALUE, tft_string);
   }
   else {
 
@@ -586,7 +582,7 @@ void MenuEditItemBase::draw_edit_screen(FSTR_P const ftpl, const char * const va
 
         tft_string.set(Y_LBL);
         tft.add_text(UBL_Y_LABEL_X, MENU_TEXT_Y, COLOR_MENU_TEXT, tft_string);
-        tft_string.set(ftostr52(LOGICAL_X_POSITION(motion.position.y)));
+        tft_string.set(ftostr52(LOGICAL_Y_POSITION(motion.position.y)));
         tft_string.trim();
         tft.add_text(UBL_Y_TEXT_X, MENU_TEXT_Y, COLOR_MENU_VALUE, tft_string);
       }
@@ -607,19 +603,19 @@ void MenuEditItemBase::draw_edit_screen(FSTR_P const ftpl, const char * const va
         touch.add_control(SLIDER, (TFT_WIDTH - SLIDER_W) / 2, SLIDER_Y - 8, SLIDER_W, 32, maxEditValue);
       #endif
 
-      int w = (TFT_WIDTH - SLIDER_LENGTH) / 2 - 2;
+      int w = (TFT_WIDTH - SLIDER_W) / 2 - 2;
       int h = FONT_LINE_HEIGHT;
       tft_string.set(shortenNum(to_str_edit_t(valueToString)(minEditValue)));
-      tft.canvas(0, SLIDER_Y_POSITION, w, h);
+      tft.canvas(0, SLIDER_Y, w, h);
       tft.set_background(COLOR_BACKGROUND);
       tft.add_text(tft_string.center(w), tft_string.vcenter(h), COLOR_WHITE, tft_string, w);
-      touch.add_control(CALLBACK, 0, SLIDER_Y_POSITION, w, h, intptr_t(setValue), minEditValue);
+      touch.add_control(CALLBACK, 0, SLIDER_Y, w, h, intptr_t(setValue), minEditValue);
 
       tft_string.set(shortenNum(to_str_edit_t(valueToString)(maxEditValue)));
-      tft.canvas(TFT_WIDTH - w, SLIDER_Y_POSITION, w, h);
+      tft.canvas(TFT_WIDTH - w, SLIDER_Y, w, h);
       tft.set_background(COLOR_BACKGROUND);
       tft.add_text(tft_string.center(w), tft_string.vcenter(h), COLOR_WHITE, tft_string, w);
-      touch.add_control(CALLBACK, TFT_WIDTH - w, SLIDER_Y_POSITION, w, h, intptr_t(setValue), maxEditValue);
+      touch.add_control(CALLBACK, TFT_WIDTH - w, SLIDER_Y, w, h, intptr_t(setValue), maxEditValue);
     }
 
     int8_t stepCount = 0;
@@ -640,7 +636,7 @@ void MenuEditItemBase::draw_edit_screen(FSTR_P const ftpl, const char * const va
     int x_pos = (TFT_WIDTH - stepCount * (BTN_WIDTH + X_MARGIN) + X_MARGIN) / 2;
 
     for (int i = 0; i < stepCount; i++) {
-      tft.drawSimpleBtn(shortenNum(to_str_edit_t(valueToString)(steps[i])), x_pos, SLIDER_Y_POSITION + 24 + Y_MARGIN, BTN_WIDTH, FONT_LINE_HEIGHT, COLOR_WHITE, COLOR_BACKGROUND, BTN_TOGGLE, stepSize == steps[i], CALLBACK, intptr_t(stepChange), int32_t(steps[i]));
+      tft.drawSimpleBtn(shortenNum(to_str_edit_t(valueToString)(steps[i])), x_pos, SLIDER_Y + 24 + Y_MARGIN, BTN_WIDTH, FONT_LINE_HEIGHT, COLOR_WHITE, COLOR_BACKGROUND, BTN_TOGGLE, stepSize == steps[i], CALLBACK, intptr_t(stepChange), int32_t(steps[i]));
       x_pos += BTN_WIDTH + X_MARGIN;
     }
 
