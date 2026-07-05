@@ -46,8 +46,8 @@ touch_control_t Touch::controls[];
 touch_control_t *Touch::current_control;
 uint16_t Touch::controls_count;
 millis_t Touch::next_touch_ms = 0,
-         Touch::time_to_hold,
-         Touch::repeat_delay,
+         Touch::next_control_ms,
+         Touch::touch_delay_ms,
          Touch::nada_start_ms;
 TouchControlType Touch::touch_control_type = NONE;
 #if HAS_DISPLAY_SLEEP
@@ -77,14 +77,15 @@ void Touch::add_control(TouchControlType type, uint16_t x, uint16_t y, uint16_t 
 void Touch::idle() {
   if (!enabled) return;
 
-  // Return if Touch::idle is called within the same millisecond
   const millis_t now = millis();
+
+  // Return if Touch::idle is called within the same millisecond
   if (now == next_touch_ms) return;
   next_touch_ms = now;
 
   // Get the point where the screen is touched
-  int16_t _x, _y;
-  const bool is_touched = get_point(&_x, &_y);
+  int16_t x, y;
+  const bool is_touched = get_point(&x, &y);
 
   // If no touch is occurring then reset all touch info and exit
   if (!is_touched) {
@@ -92,12 +93,12 @@ void Touch::idle() {
     current_control = nullptr;
     nada_start_ms = 0;
     touch_control_type = NONE;
-    time_to_hold = 0;
-    repeat_delay = MINIMUM_HOLD_TIME;
+    next_control_ms = 0;
+    touch_delay_ms = MINIMUM_TOUCH_TIME;
     return;
   }
 
-  // A new touch or a drag...
+  // A new touch or a continuing drag...
 
   #if HAS_RESUME_CONTINUE
     // UI is waiting for a click anywhere?
@@ -109,6 +110,7 @@ void Touch::idle() {
     }
   #endif
 
+  // Delay automatic return to Status Screen
   ui.reset_status_timeout(now);
 
   // If nada_start_ms is set, a touch outside of controls is being held down.
@@ -122,53 +124,48 @@ void Touch::idle() {
     return;
   }
 
-  // First time touched, ignore the control for a tiny interval as a debounce
-  if (time_to_hold == 0) time_to_hold = now + MINIMUM_HOLD_TIME;
+  // The initial touch event is ignored for a tiny interval (default 15ms) as a debounce
+  if (next_control_ms == 0) next_control_ms = now + MINIMUM_TOUCH_TIME;
 
-  // For a held control ignore the continuing touch until time elapses
-  // to prevent spamming controls.
-  // This timestamp will be updated as controls are held down.
-  if (PENDING(now, time_to_hold)) return;
+  // Control handlers manage their next callback time.
+  // This timestamp is updated when a control handler calls hold().
+  if (PENDING(now, next_control_ms)) return;
 
-  // Was a previous point recorded? Then we are dragging, maybe in a control.
-  if (x != 0 && y != 0) {
-    // If a control was set by hold() keep sliding it until its bounds are exited
-    if (current_control) {
-      if (WITHIN(x, current_control->x - FREE_MOVE_RANGE, current_control->x + current_control->width + FREE_MOVE_RANGE) && WITHIN(y, current_control->y - FREE_MOVE_RANGE, current_control->y + current_control->height + FREE_MOVE_RANGE)) {
-        LIMIT(x, current_control->x, current_control->x + current_control->width);
-        LIMIT(y, current_control->y, current_control->y + current_control->height);
-        touch(current_control);
-      }
-      else
-        current_control = nullptr;
-    }
-    else {
-      // Initiate a touch on the first control containing the touch position.
-      // If this is a button the touch initiates the action on the button.
-      // TODO: Apply standard UI practice for Tap events:
-      //  - Take a short press-and-release as a Tap.
-      //  - If more taps occur before "tap detect time" elapses, increment taps counter.
-      //  - When "tap detect time" elapses activate the button, sending the number of taps.
-      for (uint16_t i = 0; i < controls_count; ++i) {
-        auto &c = controls[i];
-        if ((WITHIN(x, c.x, c.x + c.width) && WITHIN(y, c.y, c.y + c.height)) || TERN0(TOUCH_SCREEN_CALIBRATION, c.type == CALIBRATE)) {
-          touch_control_type = c.type;
-          touch(&c);
-          break;
-        }
+  // If the point is still not set then return
+  if (x == 0 || y == 0) return;
+
+  // Was a control recorded? Then we are touching (or dragging) the control. (i.e., A "touch" is a very short drag.)
+  // If a control was set by hold() keep sliding within it until the touch ends
+  // Sliders are continuous; other controls may repeat like a keyboard key after a long initial press
+  if (current_control) {
+    LIMIT(x, current_control->x, current_control->x + current_control->width);
+    LIMIT(y, current_control->y, current_control->y + current_control->height);
+    touch(current_control, x, y);
+  }
+  else {
+    // Initiate a touch on the first control containing the current touch position.
+    // If this is a button the touch initiates the action on the button.
+    // TODO: Apply standard UI practice for multi-tap events (i.e., double-click):
+    //  - Take a short press-and-release as a Tap.
+    //  - If more taps occur before "tap detect time" elapses, increment taps counter.
+    //  - When "tap detect time" elapses activate the button, sending the number of taps.
+    for (uint16_t i = 0; i < controls_count; ++i) {
+      auto &c = controls[i];
+      if ((WITHIN(x, c.x, c.x + c.width) && WITHIN(y, c.y, c.y + c.height)) || TERN0(TOUCH_SCREEN_CALIBRATION, c.type == CALIBRATE)) {
+        touch_control_type = c.type;
+        touch(&c, x, y);
+        break;
       }
     }
 
+    // A touch occurred outside of any control
+    // Store the start time in case it is held down
     if (!current_control) nada_start_ms = now;
   }
-
-  // Update previous point in continuing touch or drag
-  x = _x;
-  y = _y;
 }
 
 // Handle a touch, repeat-touch, or drag in a control
-void Touch::touch(touch_control_t * const control) {
+void Touch::touch(touch_control_t * const control, const int16_t x, const int16_t y) {
   switch (control->type) {
 
     #if ENABLED(TOUCH_SCREEN_CALIBRATION)
@@ -192,7 +189,7 @@ void Touch::touch(touch_control_t * const control) {
     case MENU_CLICK:
       TERN_(SINGLE_TOUCH_NAVIGATION, ui.encoderPosition = control->data);
       // Effectively ignore the touch until it is released
-      time_to_hold = next_touch_ms + 2000;
+      next_control_ms = next_touch_ms + 2000;
       // fall thru
 
     // Tap to Continue. e.g., Anywhere on the whole screen.
@@ -221,19 +218,19 @@ void Touch::touch(touch_control_t * const control) {
       ui.refresh();
       break;
 
-    // A slider is held until the touch ends, no repeat delay
+    // A slider is held until the touch ends. Frequent callbacks are needed.
     case SLIDER:
-      hold(control);
+      hold(control, 20UL);
       ui.encoderPosition = (x - control->x) * control->data / control->width;
       break;
 
     // Increase / Decrease controls are held with an ever-decreasing repeat delay
     case INCREASE:
-      hold(control, repeat_delay - (FAST_REPEAT_DECREMENT));
+      hold(control, touch_delay_ms - (FAST_REPEAT_DECREMENT), TOUCH_REPEAT_FIRST_DELAY);
       TERN(AUTO_BED_LEVELING_UBL, ui.external_control ? bedlevel.encoder_diff++ : ui.encoderPosition++, ui.encoderPosition++);
       break;
     case DECREASE:
-      hold(control, repeat_delay - (FAST_REPEAT_DECREMENT));
+      hold(control, touch_delay_ms - (FAST_REPEAT_DECREMENT), TOUCH_REPEAT_FIRST_DELAY);
       TERN(AUTO_BED_LEVELING_UBL, ui.external_control ? bedlevel.encoder_diff-- : ui.encoderPosition--, ui.encoderPosition--);
       break;
 
@@ -311,7 +308,7 @@ void Touch::touch(touch_control_t * const control) {
 
     #if ENABLED(AUTO_BED_LEVELING_UBL)
       case UBL:
-        hold(control, UBL_REPEAT_DELAY);
+        hold(control, UBL_REPEAT_DELAY, TOUCH_REPEAT_FIRST_DELAY);
         ui.encoderPosition += control->data;
         break;
     #endif
@@ -323,14 +320,21 @@ void Touch::touch(touch_control_t * const control) {
   }
 }
 
-//
-// Set the control as "held" until the touch is released
-//
-void Touch::hold(touch_control_t * const control, const millis_t delay/*=0*/) {
+/**
+ * Called by Touch::idle whenever next_control_ms (debounce or repeat) elapses.
+ *
+ * Either:
+ * - Start to hold the given control (if no control is set yet). Next call after 'first_delay'.
+ * - Hold the control until released. Next call after 'delay'.
+ * In either case:
+ * - Either the given delay or a minimum delay will be used
+ */
+void Touch::hold(touch_control_t * const control, const millis_t delay/*=0*/, const millis_t first_delay/*=0*/) {
+  const millis_t use_delay = current_control ? delay : first_delay;
   current_control = control;
-  if (delay) {
-    repeat_delay = _MAX(delay, uint32_t(MIN_REPEAT_DELAY));
-    time_to_hold = next_touch_ms + repeat_delay;
+  if (use_delay) {
+    touch_delay_ms = _MAX(use_delay, millis_t(MIN_REPEAT_DELAY));
+    next_control_ms = next_touch_ms + touch_delay_ms; // Unset uses MINIMUM_TOUCH_TIME or control's set value
   }
   ui.refresh();
 }
@@ -338,17 +342,19 @@ void Touch::hold(touch_control_t * const control, const millis_t delay/*=0*/) {
 bool Touch::get_point(int16_t * const x, int16_t * const y) {
   #if ANY(TFT_TOUCH_DEVICE_XPT2046, TFT_TOUCH_DEVICE_GT911)
     const bool is_touched = TOUCH_PORTRAIT == _TOUCH_ORIENTATION ? io.getRawPoint(y, x) : io.getRawPoint(x, y);
-  #endif
-  #if ENABLED(TFT_TOUCH_DEVICE_XPT2046)
-    #if ENABLED(TOUCH_SCREEN_CALIBRATION)
-      if (is_touched && TOUCH_ORIENTATION_NONE != _TOUCH_ORIENTATION) {
-        *x = int16_t((int32_t(*x) * _TOUCH_CALIBRATION_X) >> 16) + _TOUCH_OFFSET_X;
-        *y = int16_t((int32_t(*y) * _TOUCH_CALIBRATION_Y) >> 16) + _TOUCH_OFFSET_Y;
-      }
-    #else
-      *x = uint16_t((uint32_t(*x) * _TOUCH_CALIBRATION_X) >> 16) + _TOUCH_OFFSET_X;
-      *y = uint16_t((uint32_t(*y) * _TOUCH_CALIBRATION_Y) >> 16) + _TOUCH_OFFSET_Y;
+    #if ENABLED(TFT_TOUCH_DEVICE_XPT2046)
+      #if ENABLED(TOUCH_SCREEN_CALIBRATION)
+        if (is_touched && TOUCH_ORIENTATION_NONE != _TOUCH_ORIENTATION) {
+          *x = int16_t((int32_t(*x) * _TOUCH_CALIBRATION_X) >> 16) + _TOUCH_OFFSET_X;
+          *y = int16_t((int32_t(*y) * _TOUCH_CALIBRATION_Y) >> 16) + _TOUCH_OFFSET_Y;
+        }
+      #else
+        *x = uint16_t((uint32_t(*x) * _TOUCH_CALIBRATION_X) >> 16) + _TOUCH_OFFSET_X;
+        *y = uint16_t((uint32_t(*y) * _TOUCH_CALIBRATION_Y) >> 16) + _TOUCH_OFFSET_Y;
+      #endif
     #endif
+  #else
+    constexpr bool is_touched = false;
   #endif
 
   #if HAS_DISPLAY_SLEEP
@@ -378,7 +384,7 @@ bool Touch::get_point(int16_t * const x, int16_t * const y) {
       #elif PIN_EXISTS(TFT_BACKLIGHT)
         WRITE(TFT_BACKLIGHT_PIN, HIGH);
       #endif
-      next_touch_ms = millis() + 100;
+      next_control_ms = millis() + 100;
       safe_delay(20);
     }
     next_sleep_ms = ui.sleep_timeout_minutes ? millis() + MIN_TO_MS(ui.sleep_timeout_minutes) : 0;
