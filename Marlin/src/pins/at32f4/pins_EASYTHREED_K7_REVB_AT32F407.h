@@ -152,6 +152,22 @@
 #define DEFAULT_PWM_MOTOR_CURRENT { 1000, 1000, 1000 }
 
 //
+// Early safe output states
+//
+// Keep the heater, fan, and motor-current outputs inactive and disable
+// all stepper drivers before serial, media, EEPROM, and subsystem init.
+//
+#define BOARD_PREINIT() do { \
+  OUT_WRITE(HEATER_0_PIN, LOW); \
+  OUT_WRITE(FAN0_PIN, LOW); \
+  OUT_WRITE(X_ENABLE_PIN, HIGH); \
+  OUT_WRITE(E0_ENABLE_PIN, HIGH); \
+  OUT_WRITE(MOTOR_CURRENT_PWM_XY_PIN, LOW); \
+  OUT_WRITE(MOTOR_CURRENT_PWM_Z_PIN, LOW); \
+  OUT_WRITE(MOTOR_CURRENT_PWM_E_PIN, LOW); \
+} while (0)
+
+//
 // SD Card
 //
 #define SD_DETECT_PIN                       PC10
