@@ -18,6 +18,7 @@
 #                     [-p|--purge]           - Purge the status file and start over
 #                     [-r|--resume=<path>]   - Start at some config in the filesystem order
 #                     [-s|--skip]            - Continue the paused build, skipping one
+#                     [-S|--shard=I[,J..]/N] - Build only every Nth example (slots I,J.. of N, counting from 0)
 #
 
 HERE=`dirname $0`
@@ -46,6 +47,7 @@ build_all_examples [-a|--archive]         - Copy the binary to the export locati
                    [-p|--purge]           - Purge the status file and start over
                    [-r|--resume=<path>]   - Start at some config in the filesystem order
                    [-s|--skip]            - Continue the paused build, skipping one
+                   [-S|--shard=I[,J..]/N] - Build only every Nth example (slots I,J.. of N, counting from 0)
 "
 }
 
@@ -54,7 +56,7 @@ unset FIRST_CONF
 EXIT_USAGE=
 LIMIT=1000
 
-while getopts 'aB:b:cde:fhl:mno:pr:sv-:' OFLAG; do
+while getopts 'aB:b:cde:fhl:mno:pr:sS:v-:' OFLAG; do
   case "${OFLAG}" in
     a) ARCHIVE=1                ; bugout "Archiving" ;;
     B) CBASE=${OPTARG%/}        ; bugout "Base: $CBASE" ;;
@@ -71,6 +73,7 @@ while getopts 'aB:b:cde:fhl:mno:pr:sv-:' OFLAG; do
     p) PURGE=1                  ; bugout "Purge stat file" ;;
     r) ISRES=1 ; FIRST_CONF=$OPTARG ; bugout "Resume: $FIRST_CONF" ;;
     s) CONTSKIP=1               ; bugout "Continue, skipping" ;;
+    S) SHARD=$OPTARG            ; bugout "Shard: $SHARD" ;;
     -) ONAM="${OPTARG%%=*}" ; OVAL="${OPTARG#*=}"
        case "$ONAM" in
       archive) ARCHIVE=1        ; bugout "Archiving" ;;
@@ -88,6 +91,7 @@ while getopts 'aB:b:cde:fhl:mno:pr:sv-:' OFLAG; do
         debug) DEBUG=1          ; bugout "Debug ON" ;;
       nobuild) DRYRUN=1         ; bugout "Dry Run" ;;
         purge) PURGE=1          ; bugout "Purge stat file" ;;
+        shard) SHARD=$OVAL      ; bugout "Shard: $SHARD" ;;
             *) EXIT_USAGE=2 ; echo "$SELF: unrecognized option \`--$ONAM'" ; break ;;
        esac
        ;;
@@ -103,6 +107,17 @@ shift $((OPTIND - 1))
 # Assume import-2.1.x if no --base or --branch is given.
 # If no --base is supplied, one will be created.
 [[ -z $BRANCH && -z $CBASE ]] && BRANCH=import-2.1.x
+
+# Validate --shard=I[,J..]/N and split it into SHARD_SET and SHARD_N
+if [[ -n $SHARD ]]; then
+  if [[ $SHARD =~ ^[0-9]+(,[0-9]+)*/[0-9]+$ ]]; then
+    SHARD_SET=${SHARD%/*} ; SHARD_N=${SHARD#*/}
+    for I in ${SHARD_SET//,/ }; do ((I < SHARD_N)) || { echo "Shard slot $I must be less than $SHARD_N" ; echo ; EXIT_USAGE=2 ; }; done
+    ((SHARD_N > 0)) || { echo "Shard count must be at least 1" ; echo ; EXIT_USAGE=2 ; }
+  else
+    echo "Bad --shard=$SHARD (expected I[,J..]/N, e.g. 0,1/5)" ; echo ; EXIT_USAGE=2
+  fi
+fi
 
 # Exit with helpful usage information
 ((EXIT_USAGE)) && { usage ; let EXIT_USAGE-- ; exit $EXIT_USAGE ; }
@@ -168,6 +183,12 @@ while IFS= read -r -d '' CONF; do
 
   # Get a config's directory name
   DIR=${CONF#$CBASE/config/examples/}
+
+  # Sharding: take every Nth example from the sorted list (the count includes skipped ones)
+  if [[ -n $SHARD_N ]]; then
+    SHARD_IDX=$((SHARD_IDX + 1))
+    [[ ",$SHARD_SET," == *",$(((SHARD_IDX - 1) % SHARD_N)),"* ]] || { ((DEBUG)) && echo "[SHARD] $DIR" ; continue ; }
+  fi
 
   # If looking for a config, skip others
   [[ $FIRST_CONF ]] && [[ $FIRST_CONF != $DIR && "$FIRST_CONF/" != $DIR ]] && { ((DEBUG)) && echo "[SKIP] $DIR" ; continue ; }
