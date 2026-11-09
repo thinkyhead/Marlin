@@ -133,12 +133,12 @@ echo
 
 # If -c is given start from the last attempted build
 if ((CONTINUE)); then
-  if [[ -z $BRANCH || -z $FIRST_CONF ]]; then
+  if [[ ( -z $BRANCH && -z $CBASE ) || -z $FIRST_CONF ]]; then
     echo "Nothing to continue"
     exit
   fi
 elif ((CONTSKIP)); then
-  if [[ -n $BRANCH && -n $FIRST_CONF ]]; then
+  if [[ ( -n $BRANCH || -n $CBASE ) && -n $FIRST_CONF ]]; then
     SKIP_CONF=1
   else
     echo "Nothing to skip"
