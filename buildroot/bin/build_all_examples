@@ -237,7 +237,7 @@ done < <(
   find "$CBASE/config/examples" \
     -type f \( -name Configuration.h -o -name Configuration_adv.h \) \
     -exec dirname {} \; |
-  LC_ALL=C sort -zu |
+  LC_ALL=C sort -u |
   tr '\n' '\0'
 )
 
