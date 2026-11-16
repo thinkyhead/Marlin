@@ -1424,6 +1424,10 @@ private:
     static void M7219();
   #endif
 
+  #if MB(ANKERMAKE_V8111)
+    static void M7700();
+  #endif
+
   #if ENABLED(CONTROLLER_FAN_EDITABLE)
     static void M710();
     static void M710_report(const bool forReplay=true);
