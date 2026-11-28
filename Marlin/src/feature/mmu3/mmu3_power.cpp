@@ -33,10 +33,6 @@
 
 #include "../../MarlinCore.h"
 
-#include "../../core/macros.h"
-#include "../../core/boards.h"
-#include "../../pins/pins.h"
-
 namespace MMU3 {
 
   // On MK3 we cannot do actual power cycle on HW. Instead trigger a hardware reset.

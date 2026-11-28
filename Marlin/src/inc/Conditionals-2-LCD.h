@@ -658,6 +658,7 @@
   #define HAS_STATUS_MESSAGE 1
 #endif
 
+// Marlin custom UTF string expansion of chars: $ { ~ * @
 #if HAS_WIRED_LCD && !HAS_GRAPHICAL_TFT && !IS_DWIN_MARLINUI
   #define HAS_LCDPRINT 1
 #endif
@@ -678,6 +679,30 @@
     #define LCD_PIXEL_HEIGHT 64
   #endif
 #endif
+
+#if HAS_WIRED_LCD
+  // LCD character width/height
+  #ifndef LCD_WIDTH
+    #if ANY(IS_DWIN_MARLINUI, DWIN_LCD_PROUI)
+      // Defined by header
+    #elif HAS_MARLINUI_U8GLIB
+      #define LCD_WIDTH 21
+    #elif HAS_GRAPHICAL_TFT
+      #define LCD_WIDTH ((TFT_WIDTH) / TERN(TFT_FONT_LARGE, 20, 16))
+    #else
+      #define LCD_WIDTH TERN(IS_ULTIPANEL, 20, 16)
+    #endif
+  #endif
+  #ifndef LCD_HEIGHT
+    #if ANY(IS_DWIN_MARLINUI, DWIN_LCD_PROUI)
+      // Defined by header
+    #elif HAS_MARLINUI_U8GLIB
+      #define LCD_HEIGHT 5
+    #else
+      #define LCD_HEIGHT TERN(IS_ULTIPANEL, 4, 2)
+    #endif
+  #endif
+#endif // HAS_WIRED_LCD
 
 /**
  * Unused LCD options
