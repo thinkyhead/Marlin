@@ -1473,10 +1473,11 @@
   #define HAS_STATUS_MESSAGE_TIMEOUT 1
 #endif
 
-// Status message buffer size. STATUS_MESSAGE_SCROLLING allows a longer message.
+// Status message size, in characters (LENGTH) and buffer bytes (BYTES).
+// STATUS_MESSAGE_SCROLLING allows a longer message, such as a long filename.
 #if ANY(HAS_WIRED_LCD, DWIN_LCD_PROUI)
   #if ALL(HAS_MEDIA, STATUS_MESSAGE_SCROLLING)
-    #define MAX_MESSAGE_LENGTH _MAX(LONG_FILENAME_BYTES, LCD_WIDTH)
+    #define MAX_MESSAGE_LENGTH _MAX(FILENAME_LENGTH * VFAT_ENTRIES_LIMIT, LCD_WIDTH)
     #define MAX_MESSAGE_BYTES _MAX(LONG_FILENAME_BYTES, MAX_LANG_CHARSIZE * (LCD_WIDTH))
   #else
     #define MAX_MESSAGE_LENGTH LCD_WIDTH

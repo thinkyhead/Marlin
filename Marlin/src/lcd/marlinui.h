@@ -967,8 +967,8 @@ private:
  * @param ind An index value to use for = ~ * substitution
  * @param cstr An SRAM C-string to use for $ substitution
  * @param fstr A ROM F-string to use for $ substitution
- * @param maxlen The maximum size of the string (in pixels on GLCD)
- * @return the output width (in pixels on GLCD)
+ * @param maxlen The maximum number of characters to output
+ * @return the number of characters output
  */
 uint8_t expand_u8str_P(char * const outstr, PGM_P const ptpl, const int8_t ind, const char *cstr=nullptr, FSTR_P const fstr=nullptr, const uint8_t maxlen=MAX_MESSAGE_BYTES);
 

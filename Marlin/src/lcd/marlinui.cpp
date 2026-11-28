@@ -1585,7 +1585,7 @@ void MarlinUI::host_notify(const char * const cstr) {
 uint8_t expand_u8str_P(char * const outstr, PGM_P const ptpl, const int8_t ind, const char *cstr/*=nullptr*/, FSTR_P const fstr/*=nullptr*/, const uint8_t maxlen/*=MAX_MESSAGE_BYTES*/) {
   const uint8_t *p = (uint8_t*)ptpl;
   char *o = outstr;
-  int8_t n = maxlen;
+  int16_t n = maxlen;               // Must hold any uint8_t value, or a large maxlen draws nothing
   while (n > 0) {
     lchar_t wc;
     uint8_t *psc = (uint8_t *)p;
