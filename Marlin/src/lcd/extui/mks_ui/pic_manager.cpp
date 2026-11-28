@@ -470,7 +470,7 @@ uint32_t picInfoWrite(uint8_t *P_name, uint32_t P_size) {
   #define ASSET_TYPE_FONT       4
   static void loadAsset(MediaFile &dir, dir_t& entry, FSTR_P const fn, int8_t assetType) {
     MediaFile file;
-    char dosFilename[FILENAME_LENGTH];
+    char dosFilename[SHORT_FILENAME_BYTES];
     createFilename(dosFilename, entry);
     if (!file.open(&dir, dosFilename, O_READ)) {
       #if ENABLED(MARLIN_DEV_MODE)

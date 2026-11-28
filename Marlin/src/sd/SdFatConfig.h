@@ -101,12 +101,19 @@
  * Defines for 8.3 and long (vfat) filenames
  */
 
-#define FILENAME_LENGTH 13 // Number of UTF-16 characters per entry
+#define SHORT_FILENAME_BYTES 13   // An 8.3 name: 8 + '.' + 3 + nul
+#define LFN_CHARS_PER_ENTRY 13    // UTF-16 characters in one VFAT entry (fixed by the FAT format)
 
-// UTF-8 may use up to 3 bytes to represent single UTF-16 code point.
-// We discard 3-byte characters allowing only 2-bytes
-// or 1-byte if UTF_FILENAME_SUPPORT disabled.
+// The longest long filename kept, in characters
+#define LONG_FILENAME_CHARS (LFN_CHARS_PER_ENTRY * (VFAT_ENTRIES_LIMIT))
+
+// The most bytes per character in a decoded long filename.
+// UTF-8 may use up to 3 bytes to represent a single UTF-16 code point.
+// We discard 3-byte characters, allowing only 2-byte
+// or 1-byte if UTF_FILENAME_SUPPORT is disabled.
 #define LONG_FILENAME_CHARSIZE TERN(UTF_FILENAME_SUPPORT, 2, 1)
 
-// Total bytes needed to store a single long filename
-#define LONG_FILENAME_BYTES (FILENAME_LENGTH * LONG_FILENAME_CHARSIZE * VFAT_ENTRIES_LIMIT + 1)
+// Bytes needed to store a decoded long filename, with its nul.
+// With UTF_FILENAME_SUPPORT the same buffer first holds the name as UTF-16LE,
+// which fits LONG_FILENAME_CHARS with no room for a nul.
+#define LONG_FILENAME_BYTES (LONG_FILENAME_CHARS * LONG_FILENAME_CHARSIZE + 1)

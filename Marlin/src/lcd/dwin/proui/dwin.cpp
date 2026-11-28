@@ -1009,7 +1009,7 @@ void onClickSDItem() {
 
 #else // !SCROLL_LONG_FILENAMES
 
-  char shift_name[FILENAME_LENGTH + 1] = "";
+  char shift_name[SHORT_FILENAME_BYTES + 1] = "";
 
 #endif
 

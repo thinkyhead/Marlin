@@ -1136,8 +1136,8 @@ bool SdBaseFile::openNext(SdBaseFile *dirFile, const uint8_t oflag) {
    * Get the LFN filename block from a dir. Get the block in lname at startOffset
    */
   void SdBaseFile::getLFNName(vfat_t *pFatDir, char *lname, const uint8_t sequenceNumber) {
-    const uint8_t startOffset = (sequenceNumber - 1) * FILENAME_LENGTH;
-    for (uint8_t i = 0; i < FILENAME_LENGTH; ++i) {
+    const uint8_t startOffset = (sequenceNumber - 1) * LFN_CHARS_PER_ENTRY;
+    for (uint8_t i = 0; i < LFN_CHARS_PER_ENTRY; ++i) {
       const uint16_t utf16_ch = (i >= 11) ? pFatDir->name3[i - 11] : (i >= 5) ? pFatDir->name2[i - 5] : pFatDir->name1[i];
       #if ENABLED(UTF_FILENAME_SUPPORT)
         // We can't reconvert to UTF-8 here as UTF-8 is variable-size encoding, but joining LFN blocks
@@ -1156,9 +1156,9 @@ bool SdBaseFile::openNext(SdBaseFile *dirFile, const uint8_t oflag) {
    * Set the LFN filename block lname to a dir. Put the block based on sequence number
    */
   void SdBaseFile::setLFNName(vfat_t *pFatDir, char *lname, const uint8_t sequenceNumber) {
-    const uint8_t startOffset = (sequenceNumber - 1) * FILENAME_LENGTH,
+    const uint8_t startOffset = (sequenceNumber - 1) * LFN_CHARS_PER_ENTRY,
                   nameLength = strlen(lname);
-    for (uint8_t i = 0; i < FILENAME_LENGTH; ++i) {
+    for (uint8_t i = 0; i < LFN_CHARS_PER_ENTRY; ++i) {
       uint16_t ch = 0;
       if ((startOffset + i) < nameLength)
         ch = lname[startOffset + i];
@@ -1334,7 +1334,7 @@ void SdBaseFile::printFatTime(const uint16_t fatTime) {
  * \return true for success, false for failure.
  */
 bool SdBaseFile::printName() {
-  char name[FILENAME_LENGTH];
+  char name[SHORT_FILENAME_BYTES];
   if (!getDosName(name)) return false;
   SERIAL_ECHO(name);
   return true;
@@ -1480,9 +1480,9 @@ int8_t SdBaseFile::readDir(dir_t * const dir, char * const longFilename) {
 
             #else // !LONG_FILENAME_WRITE_SUPPORT
 
-              n = (seq - 1) * (FILENAME_LENGTH);
+              n = (seq - 1) * (LFN_CHARS_PER_ENTRY);
 
-              for (uint8_t i = 0; i < FILENAME_LENGTH; ++i) {
+              for (uint8_t i = 0; i < LFN_CHARS_PER_ENTRY; ++i) {
                 const uint16_t utf16_ch = (i >= 11) ? VFAT->name3[i - 11] : (i >= 5) ? VFAT->name2[i - 5] : VFAT->name1[i];
                 #if ENABLED(UTF_FILENAME_SUPPORT)
                   // We can't reconvert to UTF-8 here as UTF-8 is variable-size encoding, but joining LFN blocks
@@ -1499,8 +1499,16 @@ int8_t SdBaseFile::readDir(dir_t * const dir, char * const longFilename) {
             #endif // !LONG_FILENAME_WRITE_SUPPORT
 
             // If this VFAT entry is the last one, add a NUL terminator at the end of the string
-            if (VFAT->sequenceNumber & 0x40)
-              longFilename[LONG_FILENAME_CHARSIZE * TERN(LONG_FILENAME_WRITE_SUPPORT, seq * FILENAME_LENGTH, (n + FILENAME_LENGTH))] = '\0';
+            if (VFAT->sequenceNumber & 0x40) {
+              const uint16_t endChar = TERN(LONG_FILENAME_WRITE_SUPPORT, seq * (LFN_CHARS_PER_ENTRY), n + (LFN_CHARS_PER_ENTRY));
+              #if ENABLED(UTF_FILENAME_SUPPORT)
+                // A UTF-16 NUL is 2 bytes. A full-length name has no room, and needs none.
+                if (endChar < LONG_FILENAME_CHARS)
+                  longFilename[endChar * 2] = longFilename[endChar * 2 + 1] = '\0';
+              #else
+                longFilename[endChar] = '\0';
+              #endif
+            }
           }
         }
       }
@@ -1512,31 +1520,37 @@ int8_t SdBaseFile::readDir(dir_t * const dir, char * const longFilename) {
 
     // Post-process normal file or subdirectory longname, if any
     if (DIR_IS_FILE_OR_SUBDIR(dir)) {
-      #if ENABLED(UTF_FILENAME_SUPPORT)
-        // Is there a long filename to decode?
-        if (longFilename) {
-          n = convertUtf16ToUtf8(longFilename);
-        }
-      #endif
-      return n;
+      if (longFilename) {
+        #if ENABLED(UTF_FILENAME_SUPPORT)
+          convertUtf16ToUtf8(longFilename);           // Decode the long filename, if any
+        #else
+          longFilename[LONG_FILENAME_CHARS] = '\0';   // A truncated name has no terminator yet
+        #endif
+      }
+      return n;                                       // Bytes read, which always fits int8_t
     } // DIR_IS_FILE_OR_SUBDIR
   }
 }
 
 #if ENABLED(UTF_FILENAME_SUPPORT)
 
-  uint8_t SdBaseFile::convertUtf16ToUtf8(char * const longFilename) {
+  /**
+   * Convert a long filename from UTF-16LE to UTF-8, in place.
+   * The input is up to LONG_FILENAME_CHARS characters, ended early by a NUL.
+   * The output is always NUL terminated and fits in LONG_FILENAME_BYTES.
+   */
+  void SdBaseFile::convertUtf16ToUtf8(char * const longFilename) {
     #if LONG_FILENAME_CHARSIZE > 2
       // Add warning for developers for unsupported 3-byte cases.
       // (Converting 2-byte codepoints to 3-byte in-place would break the rest of filename.)
       #error "Currently filename re-encoding is done in-place. It may break the remaining chars to use 3-byte codepoints."
     #endif
 
-    int16_t n;
-    // Reset n to the start of the long name
-    n = 0;
-    for (uint16_t idx = 0; idx < (LONG_FILENAME_BYTES); idx += 2) {   // idx is fixed since FAT LFN always contains UTF-16LE encoding
-      const uint16_t utf16_ch = longFilename[idx] | (longFilename[idx + 1] << 8);
+    uint16_t n = 0;
+    for (uint16_t idx = 0; idx < (LONG_FILENAME_CHARS) * 2; idx += 2) { // idx is fixed since FAT LFN always contains UTF-16LE encoding
+      // Combine as unsigned bytes. 'char' is signed on some platforms.
+      const uint16_t utf16_ch = uint8_t(longFilename[idx]) | (uint16_t(uint8_t(longFilename[idx + 1])) << 8);
+      if (0 == utf16_ch) break;                                       // End of filename
       if (0xD800 == (utf16_ch & 0xF800))                              // Surrogate pair - encode as '_'
         longFilename[n++] = '_';
       else if (0 == (utf16_ch & 0xFF80))                              // Encode as 1-byte UTF-8 char
@@ -1554,10 +1568,9 @@ int8_t SdBaseFile::readDir(dir_t * const dir, char * const longFilename) {
           longFilename[n++] = '_';
         #endif
       }
-      if (0 == utf16_ch) break; // End of filename
     } // idx
 
-    return n;
+    longFilename[n] = '\0';
   }
 
 #endif // UTF_FILENAME_SUPPORT

@@ -209,7 +209,7 @@ void mount_file_sys(const uint8_t disk_type) {
 #else // !LONG_FILENAME_WRITE_SUPPORT
 
   static bool longName2DosName(const char *longName, char *dosName) {
-    uint8_t i = FILENAME_LENGTH;
+    uint8_t i = SHORT_FILENAME_BYTES;
     while (i) dosName[--i] = '\0';
 
     // An 8.3 name keeps up to 8 characters before the dot.
@@ -1024,7 +1024,7 @@ static void wifi_gcode_exec(uint8_t * const cmd_line) {
                   strcat_P((char *)MKSW_SEL_FILE, PSTR("/"));
 
                 if (file_writer.fileTransfer == 1) {
-                  char dosName[TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, FILENAME_LENGTH)];
+                  char dosName[TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, SHORT_FILENAME_BYTES)];
                   uint8_t fileName[sizeof(MKSW_SEL_FILE)];
                   fileName[0] = '\0';
                   if (has_path_selected == 1) {
@@ -1053,7 +1053,7 @@ static void wifi_gcode_exec(uint8_t * const cmd_line) {
               // An uploaded file is stored under its sanitized (8.3) name, so a long name
               // from the host isn't found as given. Try the name the upload would have used.
               if (!card.isFileOpen() && cur_name && MKSW_WIFI_TYPE == ESP_WIFI) {
-                char dosName[TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, FILENAME_LENGTH)];
+                char dosName[TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, SHORT_FILENAME_BYTES)];
                 if (sanitizeName(cur_name + 1, dosName)) {
                   strcpy(cur_name + 1, dosName);
                   card.openFileRead(cur_name);
@@ -1582,7 +1582,7 @@ static void file_first_msg_handle(const uint8_t * const msg, const uint16_t msgL
   wifi_delay(1000);
 
   #if HAS_MEDIA
-    char dosName[TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, FILENAME_LENGTH)];
+    char dosName[TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, SHORT_FILENAME_BYTES)];
 
     if (!sanitizeName((const char *)file_writer.saveFileName, dosName)) {
       MKSW_UI_CLEAR();

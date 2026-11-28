@@ -84,7 +84,7 @@ static_assert(THUMB_W <= (TFT_BUFFER_WORDS) / 2, "The G-code preview needs TFT_B
 enum ThumbFormat : uint8_t { THUMB_NONE, THUMB_JPEG, THUMB_QOI, THUMB_MKS };
 
 static struct {
-  char name[FILENAME_LENGTH];   // 8.3 name of the file to print
+  char name[SHORT_FILENAME_BYTES];   // 8.3 name of the file to print
   ThumbFormat format;           // Format of the chosen thumbnail
   uint32_t data_pos, data_len;  // File position and length of its base64 data
   uint16_t w, h;                // Size it will be drawn

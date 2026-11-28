@@ -310,6 +310,9 @@ class SdBaseFile {
   int16_t read();
   int16_t read(void * const buf, uint16_t nbyte);
   int8_t readDir(dir_t * const dir, char * const longFilename);
+  #if ENABLED(UTF_FILENAME_SUPPORT)
+    static void convertUtf16ToUtf8(char * const longFilename);
+  #endif
   static bool remove(SdBaseFile * const dirFile, const char * const path);
   bool remove();
 
@@ -403,17 +406,13 @@ class SdBaseFile {
   bool openCachedEntry(const uint8_t dirIndex, const uint8_t oflags);
   dir_t* readDirCache();
 
-  #if ENABLED(UTF_FILENAME_SUPPORT)
-    uint8_t convertUtf16ToUtf8(char * const longFilename);
-  #endif
-
   // Long Filename create/write support
   #if ENABLED(LONG_FILENAME_WRITE_SUPPORT)
     static bool isDirLFN(const dir_t* dir);
     static bool isDirNameLFN(const char * const dirname);
     static bool parsePath(const char *str, uint8_t * const name, uint8_t * const lname, const char **ptr);
     // Return the number of entries needed in the FAT for this LFN
-    static uint8_t getLFNEntriesNum(const char * const lname) { return (strlen(lname) + 12) / 13; }
+    static uint8_t getLFNEntriesNum(const char * const lname) { return (strlen(lname) + (LFN_CHARS_PER_ENTRY) - 1) / (LFN_CHARS_PER_ENTRY); }
     static void getLFNName(vfat_t *vFatDir, char *lname, const uint8_t sequenceNumber);
     static void setLFNName(vfat_t *vFatDir, char *lname, const uint8_t sequenceNumber);
   #endif

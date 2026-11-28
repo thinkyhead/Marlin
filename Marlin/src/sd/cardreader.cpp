@@ -83,7 +83,7 @@ CardReader card;
 // public:
 
 card_flags_t CardReader::flag;
-char CardReader::filename[FILENAME_LENGTH], CardReader::longFilename[LONG_FILENAME_BYTES];
+char CardReader::filename[SHORT_FILENAME_BYTES], CardReader::longFilename[LONG_FILENAME_BYTES];
 
 IF_DISABLED(NO_SD_AUTOSTART, uint8_t CardReader::autofile_index); // = 0
 
@@ -111,7 +111,7 @@ int16_t CardReader::nrItems = -1;
   #if ENABLED(SDSORT_USES_RAM)
 
     #if ENABLED(SDSORT_CACHE_NAMES)
-      char (*CardReader::sortshort)[FILENAME_LENGTH];
+      char (*CardReader::sortshort)[SHORT_FILENAME_BYTES];
     #endif
     #if ENABLED(SDSORT_CACHE_NAMES) || DISABLED(SDSORT_USES_STACK)
       char (*CardReader::sortnames)[SORTED_LONGNAME_STORAGE];
@@ -164,7 +164,7 @@ CardReader::CardReader() {
       sort_order = sort_order_static;
     #endif
     #if ENABLED(SDSORT_CACHE_NAMES) && DISABLED(SDSORT_DYNAMIC_RAM)
-      static char sortshort_static[SDSORT_LIMIT][FILENAME_LENGTH];
+      static char sortshort_static[SDSORT_LIMIT][SHORT_FILENAME_BYTES];
       sortshort = sortshort_static;
     #endif
     #if ENABLED(SDSORT_USES_RAM) && DISABLED(SDSORT_DYNAMIC_RAM) && (ENABLED(SDSORT_CACHE_NAMES) || DISABLED(SDSORT_USES_STACK))
@@ -312,7 +312,7 @@ void CardReader::printListing(MediaFile parent, const char * const prepend, cons
 
       const size_t lenPrepend = prepend ? strlen(prepend) + 1 : 0;
       // Allocate enough stack space for the full path including / separator
-      char path[lenPrepend + FILENAME_LENGTH];
+      char path[lenPrepend + SHORT_FILENAME_BYTES];
       if (prepend) { strcpy(path, prepend); path[lenPrepend - 1] = '/'; }
       char * const dosFilename = path + lenPrepend;
       createFilename(dosFilename, p);
@@ -456,7 +456,7 @@ void CardReader::ls(const uint8_t lsflags/*=0*/) {
   void CardReader::getLongPath(char * const pathLong, char * const pathShort) {
 
     int i, pathLen = strlen(pathShort);
-    char bufShort[FILENAME_LENGTH] = { '\0' };
+    char bufShort[SHORT_FILENAME_BYTES] = { '\0' };
     strcpy_P(bufShort, pathShort);
 
     // Zero out slashes to make segments
@@ -493,7 +493,7 @@ void CardReader::ls(const uint8_t lsflags/*=0*/) {
 //
 void CardReader::printSelectedFilename() {
   if (myfile.isOpen()) {
-    char dosFilename[FILENAME_LENGTH];
+    char dosFilename[SHORT_FILENAME_BYTES];
     myfile.getDosName(dosFilename);
     SERIAL_ECHO(dosFilename);
     #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
@@ -885,7 +885,7 @@ void CardReader::getAbsFilenameInCWD(char *dst) {
   for (uint8_t i = 0; i < workDirDepth; ++i)                // Loop down to current work dir
     appendAtom(workDirParents[i]);
 
-  if (cnt < MAXPATHNAMELENGTH - (FILENAME_LENGTH) - 1) {    // Leave room for filename and nul
+  if (cnt < MAXPATHNAMELENGTH - (SHORT_FILENAME_BYTES) - 1) {    // Leave room for filename and nul
     appendAtom(myfile);
     --dst;
   }
@@ -1183,7 +1183,7 @@ void CardReader::write_command(char * const buf) {
       // If the item is a dir, recurse into it
       if (DIR_IS_SUBDIR(&p)) {
         // Get the name of the dir for opening
-        char dirname[FILENAME_LENGTH];
+        char dirname[SHORT_FILENAME_BYTES];
         createFilename(dirname, p);
 
         // Open the item in a new MediaFile
@@ -1213,7 +1213,7 @@ void CardReader::write_command(char * const buf) {
   bool CardReader::selectNewestFile() {
     uint32_t dateTimeStorage = 0;
     MediaFile foundDir;
-    char foundName[FILENAME_LENGTH];
+    char foundName[SHORT_FILENAME_BYTES];
     foundName[0] = '\0';
 
     diveToNewestFile(root, dateTimeStorage, foundDir, foundName);

@@ -41,9 +41,9 @@ extern DIR_OFFSET dir_offset[10];
 #define MAX_DIR_LEVEL  10
 
 typedef struct {
-  char file_name[FILE_NUM][FILENAME_LENGTH * MAX_DIR_LEVEL + 1];
-  char long_name[FILE_NUM][TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, FILENAME_LENGTH * 2) + 1];
-  char curDirPath[FILENAME_LENGTH * MAX_DIR_LEVEL + 1];
+  char file_name[FILE_NUM][SHORT_FILENAME_BYTES * MAX_DIR_LEVEL + 1];
+  char long_name[FILE_NUM][TERN(LONG_FILENAME_WRITE_SUPPORT, LONG_FILENAME_BYTES, SHORT_FILENAME_BYTES * 2) + 1];
+  char curDirPath[SHORT_FILENAME_BYTES * MAX_DIR_LEVEL + 1];
   bool IsFolder[FILE_NUM];
   char Sd_file_cnt;
   char sd_file_index;

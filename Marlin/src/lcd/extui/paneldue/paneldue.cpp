@@ -629,7 +629,7 @@ static void get_path_arg(const char *args, const char letter, char * const out, 
       if (!fname)
         err = 2;
       else {
-        char dosname[FILENAME_LENGTH];
+        char dosname[SHORT_FILENAME_BYTES];
         bool isDir, first = true;
         dirPtr->rewind();
         while (card.nextVisibleItem(*dirPtr, dosname, isDir)) {

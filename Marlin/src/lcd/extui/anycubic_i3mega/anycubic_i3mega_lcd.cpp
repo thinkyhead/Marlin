@@ -63,7 +63,7 @@ AnycubicMediaPrintState AnycubicTFT::mediaPrintingState = AMPRINTSTATE_NOT_PRINT
 AnycubicMediaPauseState AnycubicTFT::mediaPauseState = AMPAUSESTATE_NOT_PAUSED;
 
 char AnycubicTFT::selectedDirectory[30];
-char AnycubicTFT::selectedFile[FILENAME_LENGTH];
+char AnycubicTFT::selectedFile[SHORT_FILENAME_BYTES];
 
 // Serial helpers
 static void sendNewLine() { LCD_SERIAL.write('\r'); LCD_SERIAL.write('\n'); }

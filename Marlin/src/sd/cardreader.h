@@ -45,7 +45,7 @@ extern const char M23_STR[], M24_STR[];
 
 #define MAX_DIR_DEPTH     10       // Maximum folder depth
 #define MAXDIRNAMELENGTH   8       // DOS folder name size
-#define MAXPATHNAMELENGTH  (1 + (MAXDIRNAMELENGTH + 1) * (MAX_DIR_DEPTH) + 1 + FILENAME_LENGTH) // "/" + N * ("ADIRNAME/") + "filename.ext"
+#define MAXPATHNAMELENGTH  (1 + (MAXDIRNAMELENGTH + 1) * (MAX_DIR_DEPTH) + 1 + SHORT_FILENAME_BYTES) // "/" + N * ("ADIRNAME/") + "filename.ext"
 
 #include "SdFile.h"
 #include "disk_io_driver.h"
@@ -100,7 +100,7 @@ enum SortFlag : int8_t { AS_REV = -1, AS_OFF, AS_FWD, AS_ALSO_REV };
 class CardReader {
 public:
   static card_flags_t flag;                         // Flags (above)
-  static char filename[FILENAME_LENGTH],            // DOS 8.3 filename of the selected item
+  static char filename[SHORT_FILENAME_BYTES],            // DOS 8.3 filename of the selected item
               longFilename[LONG_FILENAME_BYTES];    // Long name of the selected item
 
   // Fast! binary file transfer
@@ -374,14 +374,14 @@ private:
     static uint8_t *sort_order;   // Pointer to the static or dynamic sort index
 
     #if ENABLED(SDSORT_CACHE_NAMES) && DISABLED(SDSORT_DYNAMIC_RAM)
-      #define SORTED_LONGNAME_MAXLEN (SDSORT_CACHE_VFATS) * (FILENAME_LENGTH)
+      #define SORTED_LONGNAME_MAXLEN (SDSORT_CACHE_VFATS) * (LFN_CHARS_PER_ENTRY)
       #define SORTED_LONGNAME_STORAGE (SORTED_LONGNAME_MAXLEN + 1)
     #else
       #define SORTED_LONGNAME_MAXLEN LONG_FILENAME_BYTES
       #define SORTED_LONGNAME_STORAGE SORTED_LONGNAME_MAXLEN
     #endif
 
-    #define SORTED_SHORTNAME_STORAGE FILENAME_LENGTH
+    #define SORTED_SHORTNAME_STORAGE SHORT_FILENAME_BYTES
 
     // Cache filenames to speed up SD menus.
     #if ENABLED(SDSORT_USES_RAM)

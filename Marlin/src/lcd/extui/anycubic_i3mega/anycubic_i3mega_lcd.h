@@ -21,7 +21,7 @@
 #pragma once
 
 #include "../../../inc/MarlinConfigPre.h"
-#include "../../../sd/SdFatConfig.h"   // for the FILENAME_LENGTH macro
+#include "../../../sd/SdFatConfig.h"   // for the SHORT_FILENAME_BYTES macro
 
 #define TFTBUFSIZE 4
 #define TFT_MAX_CMD_SIZE 96
@@ -85,7 +85,7 @@ private:
   static void stopPrint();
 
   static char selectedDirectory[30];
-  static char selectedFile[FILENAME_LENGTH];
+  static char selectedFile[SHORT_FILENAME_BYTES];
 };
 
 extern AnycubicTFT anycubicTFT;

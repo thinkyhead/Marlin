@@ -154,8 +154,8 @@ static float axis_unit = 1.0f, zoffset_unit = 0.1f;
 static int16_t filament_length = 10, filament_speed = manual_feedrate_mm_m.e;  // (mm/min)
 static bool status_led1, status_led2;
 
-static char file_short[N3_FILE_COUNT][FILENAME_LENGTH], file_name[N3_FILE_COUNT][N3_NAME_LENGTH],
-            printed_short[FILENAME_LENGTH];
+static char file_short[N3_FILE_COUNT][SHORT_FILENAME_BYTES], file_name[N3_FILE_COUNT][N3_NAME_LENGTH],
+            printed_short[SHORT_FILENAME_BYTES];
 static uint8_t file_count;
 static int8_t file_selected = -1, file_printed = -1;
 
